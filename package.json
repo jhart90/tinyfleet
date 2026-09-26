@@ -1,0 +1,12 @@
+{
+  "name": "tinyfleet-downloads",
+  "private": true,
+  "type": "module",
+  "description": "The TinyFleet download page: Windows and Mac builds",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
