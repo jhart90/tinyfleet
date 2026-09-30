@@ -2,9 +2,9 @@
   "name": "tinyfleet-downloads",
   "private": true,
   "type": "module",
-  "description": "The TinyFleet download page: Windows and Mac builds",
+  "description": "The TinyFleet download page and the TinyFleet Online server",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.mjs"
   },
   "engines": {
     "node": ">=18"

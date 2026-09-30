@@ -1,15 +1,29 @@
-# TinyFleet downloads
+# TinyFleet: downloads and the online server
 
-The download page for TinyFleet: Windows and Mac builds, served by a small Node server with no
-dependencies. Railway deploys it from this repo: it runs `npm start` and supplies `PORT`.
+One Node server, no dependencies to install. Railway deploys it from this repo: it runs `npm start`
+(`node server.mjs`) and supplies `PORT`.
 
-- `index.html`: the page
-- `server.js`: serves the page, `version.json`, `favicon.svg`, `media/` (in ranges, for Safari) and `downloads/*.zip` only
-- `media/hero.webm`, `hero.mp4`, `hero.jpg`: the header footage, filmed in the game at 1920×1080 (9 shots, 75 s loop: a police chase over a harbour arch at night, a race meeting, a convoy of ten cars past a desert pyramid, a busy port, a Dutch town, five boats in a V up a city harbour, a resort, a beach, a village; standard-range colour, as Chrome refuses full-range VP9) and its poster
-- `downloads/`: `TinyFleet-Windows.zip` and `TinyFleet-Mac.zip`
-- `/health` returns `ok`, for a Railway health check
+- `/` is the download page, as it has always been: `index.html`, `version.json`, `favicon.svg`,
+  `media/` (in ranges, for Safari) and `downloads/*.zip`, and nothing else from this folder
+- `/play/` is the game itself (`play/`), and **Play online** there signs in to this server
+- the same address takes the game's WebSocket; `/online.json` says how many are signed in
+- `/health` and `/healthz` return `ok`, for Railway's health check
+
+`server.mjs` and `play/` are made by `npm run online` in the game's project: don't edit them here.
+
+## What Railway needs
+
+- A **Postgres** database in the same project, and on this service the variable
+  `DATABASE_URL` = `${{Postgres.DATABASE_URL}}`. Without it the online world is kept in files that the
+  next deploy throws away.
+- Optional: `PIN_PEPPER` (any long random text; set it before anyone signs up and never change it),
+  `WORLD_SEED` (changing it later starts the world again), `MAX_PLAYERS` (100).
 
 ## A new release
 
-In the game's project: `npm run package`, then `npm run site`. Then commit and push this folder,
-and Railway redeploys.
+In the game's project: `npm run package`, `npm run site` (the downloads) and `npm run online` (the
+server and the game at /play/). Then commit and push this folder, and Railway redeploys. Anyone playing
+online sees a reconnecting card for a few seconds; nothing is lost.
+
+`media/hero.webm`, `hero.mp4`, `hero.jpg` are the header footage, filmed in the game at 1920×1080
+(standard-range colour, as Chrome refuses full-range VP9), and its poster.
