@@ -9245,6 +9245,8 @@ var World = class {
   // deck world height at the tile's low-x / low-z edge
   deckHi = new Float32Array(N * N);
   // ... and at its high edge
+  deckRoad = new Uint8Array(N * N);
+  // the road that deck carries: its surface is painted ROAD_INFO.lift above the deck
   townId = new Int8Array(N * N).fill(-1);
   lot = new Uint8Array(N * N);
   // Lot finish on town tiles

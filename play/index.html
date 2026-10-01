@@ -572,16 +572,16 @@
     #fleet .veh { margin: 2px 0 6px; color: #7d8a92; font-size: 11.5px; }
     #fleet .veh .rate { font-style: normal; font-weight: 700; color: #1e9e4a; }
     #fleet ul { list-style: none; margin: 0; padding: 0; }
-    #fleet li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #eef2f4; }
-    #fleet li .ic { font-size: 20px; }
-    #fleet li .what b { font-size: 13.5px; color: #1f2b33; }
-    #fleet li .what small { display: block; font-size: 11px; color: #7d8a92; line-height: 1.4; }
-    #fleet li .what small.mood { display: inline; margin-left: 4px; font-weight: 600; }
-    #fleet li .what small.state { color: #4c5a63; font-weight: 600; }
-    #fleet li.s-haul .what small.state { color: #1e9e4a; }
-    #fleet li.s-road .what small.state { color: #e2412f; }
-    #fleet li.s-held .what small.state { color: #7d8a92; }
-    #fleet li.s-tow .what small.state { color: #e2702f; }
+    :is(#fleet, #dock .dk-unit) li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #eef2f4; }
+    :is(#fleet, #dock .dk-unit) li .ic { font-size: 20px; }
+    :is(#fleet, #dock .dk-unit) li .what b { font-size: 13.5px; color: #1f2b33; }
+    :is(#fleet, #dock .dk-unit) li .what small { display: block; font-size: 11px; color: #7d8a92; line-height: 1.4; }
+    :is(#fleet, #dock .dk-unit) li .what small.mood { display: inline; margin-left: 4px; font-weight: 600; }
+    :is(#fleet, #dock .dk-unit) li .what small.state { color: #4c5a63; font-weight: 600; }
+    :is(#fleet, #dock .dk-unit) li.s-haul .what small.state { color: #1e9e4a; }
+    :is(#fleet, #dock .dk-unit) li.s-road .what small.state { color: #e2412f; }
+    :is(#fleet, #dock .dk-unit) li.s-held .what small.state { color: #7d8a92; }
+    :is(#fleet, #dock .dk-unit) li.s-tow .what small.state { color: #e2702f; }
     #fleet .convoy { margin: 2px 0 6px; padding: 5px 8px; border-radius: 6px; background: #fdeeec; color: #c5331f; font-size: 11.5px; font-weight: 600; }
     /* follow mode: the fleet's two buttons over the list, a row's pair on hover, and the line they make */
     #fleet .allmodes { display: flex; justify-content: space-between; align-items: center; margin: 0 0 6px; padding: 5px 8px; border-radius: 6px; background: #f2f6f8; }
@@ -592,12 +592,12 @@
     #fleet button.mode.on { background: #1f2b33; border-color: #1f2b33; color: #fff; }
     #fleet button.mode.off { opacity: .45; }
     #fleet .modes.row { display: inline-flex; margin-top: 4px; visibility: hidden; }
-    #fleet li:hover .modes.row, #fleet li:focus-within .modes.row { visibility: visible; }
-    #fleet li .modes.row button.mode.on { background: #2f7fb5; border-color: #2f7fb5; }
+    :is(#fleet, #dock .dk-unit) li:hover .modes.row, :is(#fleet, #dock .dk-unit) li:focus-within .modes.row { visibility: visible; }
+    :is(#fleet, #dock .dk-unit) li .modes.row button.mode.on { background: #2f7fb5; border-color: #2f7fb5; }
     #fleet .form { margin: 2px 0 6px; padding: 5px 8px; border-radius: 6px; background: #eaf4ec; color: #1e7a3f; font-size: 11.5px; font-weight: 600; }
-    #fleet li.s-form .what small.state { color: #1e9e4a; }
-    #fleet li.s-closing .what small.state { color: #2f7fb5; }
-    #fleet .towed { color: #d2342a; font-weight: 700; }
+    :is(#fleet, #dock .dk-unit) li.s-form .what small.state { color: #1e9e4a; }
+    :is(#fleet, #dock .dk-unit) li.s-closing .what small.state { color: #2f7fb5; }
+    :is(#fleet, #dock .dk-unit) .towed { color: #d2342a; font-weight: 700; }
     #fleet .veh .net { font-style: normal; font-weight: 700; color: #1f2b33; }
     #fleet button.over { margin-top: 4px; font: inherit; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; border: 1px solid #e2412f; background: #fff; color: #c5331f; cursor: pointer; }
     #fleet button.over:hover { background: #fdeeec; }
@@ -776,12 +776,19 @@
     .notice.earn.rent .n-body > b { color: #b98a12; }
     #town .lots em.own, #town .lots em.word { font-style: normal; font-weight: 600; color: #b98a12; }
 
-    #fleet li .what { min-width: 0; }
-    #fleet li .pay { text-align: right; max-width: 112px; }
-    #fleet li .pay em { white-space: nowrap; }
-    #fleet li .pay em { display: block; font-style: normal; font-size: 14px; font-weight: 700; color: #1e9e4a; }
-    #fleet li .pay small { display: block; font-size: 10.5px; color: #7d8a92; line-height: 1.35; }
-    #fleet .m-content { color: #1e9e4a; } #fleet .m-fine { color: #2f7fb5; } #fleet .m-restless { color: #e2702f; } #fleet .m-leaving { color: #d2342a; }
+    :is(#fleet, #dock .dk-unit) li .what { min-width: 0; }
+    :is(#fleet, #dock .dk-unit) li .pay { text-align: right; max-width: 112px; }
+    :is(#fleet, #dock .dk-unit) li .pay em { white-space: nowrap; }
+    :is(#fleet, #dock .dk-unit) li .pay em { display: block; font-style: normal; font-size: 15px; font-weight: 700; color: #1e9e4a; }
+    :is(#fleet, #dock .dk-unit) li .pay em.none { font-size: 13px; color: #9aa6ad; }
+    /* the bubble over a fleet square in the dock: that unit's row from the fleet window, on white */
+    #dock .dk-tip.dk-unit { width: min(340px, calc(100vw - 16px)); padding: 8px 12px 7px; background: rgba(255,255,255,.97); color: #4c5a63; box-shadow: 0 8px 24px rgba(31,43,51,.22); }
+    #dock .dk-tip.dk-unit::after { border-top-color: rgba(255,255,255,.97); }
+    #dock .dk-unit ul { list-style: none; margin: 0; padding: 0; }
+    #dock .dk-unit li { border-top: 0; padding: 0; }
+    #dock .dk-unit .hint { display: block; margin-top: 5px; padding-top: 5px; border-top: 1px solid #eef2f4; font-size: 10.5px; color: #9aa6ad; }
+    :is(#fleet, #dock .dk-unit) li .pay small { display: block; font-size: 10.5px; color: #7d8a92; line-height: 1.35; }
+    :is(#fleet, #dock .dk-unit) .m-content { color: #1e9e4a; } :is(#fleet, #dock .dk-unit) .m-fine { color: #2f7fb5; } :is(#fleet, #dock .dk-unit) .m-restless { color: #e2702f; } :is(#fleet, #dock .dk-unit) .m-leaving { color: #d2342a; }
     #fleet .none, #fleet .idle { margin: 8px 0 0; line-height: 1.55; color: #7d8a92; }
     #fleet kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 11px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
     /* the earnings ticker: a green card for every dollar a driver makes you, newest on top */
@@ -1365,7 +1372,7 @@
       #title-menu .tm-logo br { display: none; }
       #title-menu .tm-seedline { margin: 2px 0 6px 2px; font-size: 11px; }
       #title-menu .tm-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-      #title-menu .tm-menu .continue { grid-column: 1 / -1; }
+      #title-menu .tm-menu .continue, #title-menu .tm-menu .wide { grid-column: 1 / -1; }
       #title-menu .tm-menu .tm-mini { display: none; }
       #title-menu .tm-menu .tm-btn { padding: 9px 12px; font-size: 14px; }
       #title-menu .tm-player { margin-top: 4px; }
@@ -1668,7 +1675,7 @@
     #title-menu .tm-online-state.up i { background: #1e9e4a; box-shadow: 0 0 0 3px rgba(30,158,74,.2); }
     #title-menu .tm-online-state.down i { background: #c2331f; }
   </style>
-  <script type="module" crossorigin src="./assets/index-BdBof2o0.js"></script>
+  <script type="module" crossorigin src="./assets/index-CEr-cfdT.js"></script>
 </head>
 <body>
   <canvas id="game"></canvas>
@@ -1746,6 +1753,6 @@
       <p id="loading-seed"></p>
     </div>
   </div>
-
+
 </body>
 </html>
