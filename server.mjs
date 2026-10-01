@@ -9413,7 +9413,7 @@ api('games').then(function (j) { if (j.ok) { showApp(true); load(); } else showA
 </body></html>`;
 
 // server/admin.ts
-var ADMIN_PATH = "/jack";
+var ADMIN_PATH = "/dev";
 var ADMIN_NAME = (process.env.ADMIN_NAME || "Jack").toLowerCase();
 var ADMIN_PIN = process.env.ADMIN_PIN || "";
 var SESSION_MS = 12 * 36e5;
