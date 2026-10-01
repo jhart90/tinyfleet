@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TinyFleet</title>
-<meta name="description" content="TinyFleet: a tiny tilt-shift driving and hauling game. Download for Windows or Mac.">
+<meta name="description" content="TinyFleet: a tiny tilt-shift driving and hauling game. Play free in your browser, or download it for Windows or Mac.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -42,26 +42,36 @@
   .logo span { color: #ff5a45; }
   .tag { font-size: clamp(17px, 2.2vw, 21px); color: rgba(255,255,255,.92); margin: 16px 0 0; max-width: 34ch; text-shadow: 0 1px 10px rgba(0,0,0,.45); }
   .meta { margin-top: 18px; font-family: "IBM Plex Mono", monospace; font-size: 13px; color: rgba(255,255,255,.75); text-shadow: 0 1px 8px rgba(0,0,0,.5); }
-  .jump { display: inline-flex; margin-top: 26px; gap: 10px; flex-wrap: wrap; }
-  .jump a { text-decoration: none; font-weight: 600; font-size: 15px; padding: 10px 16px; border-radius: 11px; background: rgba(255,255,255,.14); color: #fff; border: 1px solid rgba(255,255,255,.35); backdrop-filter: blur(6px); }
-  .jump a:hover { background: rgba(255,255,255,.24); }
-  .jump a.mine { background: var(--car); border-color: var(--car-2); }
+  /* the one thing to do here: play, in the browser. Big, red and first */
+  .play { display: inline-flex; align-items: center; gap: 12px; margin-top: 28px; text-decoration: none; font-family: Fredoka, sans-serif; font-weight: 600; font-size: clamp(22px, 2.6vw, 26px); letter-spacing: .01em;
+    padding: 16px 30px 16px 24px; border-radius: 16px; background: var(--car); color: #fff; border: 1px solid var(--car-2);
+    box-shadow: 0 10px 28px rgba(226,65,47,.42), inset 0 1px 0 rgba(255,255,255,.22); transition: transform .12s ease, box-shadow .12s ease, background .12s ease; }
+  .play:hover { background: #f4705f; transform: translateY(-2px); box-shadow: 0 14px 34px rgba(226,65,47,.5), inset 0 1px 0 rgba(255,255,255,.22); }
+  .play:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .play svg { width: 22px; height: 22px; flex: none; }
+  .play-note { margin: 10px 0 0; font-size: 14px; color: rgba(255,255,255,.82); text-shadow: 0 1px 8px rgba(0,0,0,.5); }
+  /* the downloads, offered after it: quiet text links over the footage */
+  .jump { display: flex; margin-top: 18px; gap: 6px 16px; flex-wrap: wrap; align-items: baseline; font-size: 14px; color: rgba(255,255,255,.7); text-shadow: 0 1px 8px rgba(0,0,0,.5); }
+  .jump a { text-decoration: none; font-weight: 600; color: rgba(255,255,255,.92); border-bottom: 1px solid rgba(255,255,255,.4); }
+  .jump a:hover { color: #fff; border-bottom-color: #fff; }
 
-  /* the two downloads */
-  .dl { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+  /* the two downloads: second to playing in the browser, so outlined rather than filled */
+  .dl-head { margin: 8px 0 14px; padding: 16px 22px; }
+  .dl-head h3 { margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 22px; }
+  .dl-head p { margin: 2px 0 0; color: var(--ink-2); font-size: 14.5px; }
+  .dl-head a { color: #ff8a7a; font-weight: 600; }
+  .dl { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 22px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 14px; position: relative; }
-  .card.mine { border: 2px solid var(--car); }
-  .card .you { position: absolute; top: -12px; left: 20px; background: var(--car); color: #fff; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; display: none; }
+  .card.mine { border-color: var(--ink-3); }
+  .card .you { position: absolute; top: -12px; left: 20px; background: var(--panel-2); color: var(--ink-2); border: 1px solid var(--line); font-size: 12px; font-weight: 600; padding: 1px 10px; border-radius: 999px; display: none; }
   .card.mine .you { display: block; }
   .card h2 { margin: 0; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 26px; display: flex; align-items: center; gap: 10px; }
   .card h2 svg { width: 26px; height: 26px; flex: none; }
   .card .sub { margin: -8px 0 0; color: var(--ink-3); font-size: 14px; }
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font-weight: 600; font-size: 17px; padding: 14px 18px; border-radius: 12px; background: var(--gold); color: #3d2b00; border: 1px solid #d49a12; transition: transform .12s ease, box-shadow .12s ease, background .12s ease; }
-  .btn:hover { background: #f6c552; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(212,154,18,.3); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; font-weight: 600; font-size: 16px; padding: 12px 18px; border-radius: 12px; background: transparent; color: var(--ink); border: 1.5px solid var(--line); transition: border-color .12s ease, background .12s ease; }
+  .btn:hover { background: var(--panel-2); border-color: var(--ink-3); }
   .btn:focus-visible { outline: 3px solid var(--water); outline-offset: 2px; }
-  .card.mine .btn { background: var(--car); border-color: var(--car-2); color: #fff; }
-  .card.mine .btn:hover { background: var(--car-2); box-shadow: 0 6px 16px rgba(226,65,47,.3); }
-  .btn small { font-family: "IBM Plex Mono", monospace; font-weight: 500; font-size: 12.5px; opacity: .85; }
+  .btn small { font-family: "IBM Plex Mono", monospace; font-weight: 500; font-size: 12.5px; color: var(--ink-3); }
   ol { margin: 0; padding-left: 20px; color: var(--ink-2); font-size: 14.5px; }
   ol li { margin-bottom: 6px; }
   ol b { color: var(--ink); }
@@ -86,7 +96,8 @@
     .dl { grid-template-columns: 1fr; gap: 22px; }
     .wrap.below { margin-top: -80px; }
   }
-  @media (prefers-reduced-motion: reduce) { .btn, .btn:hover { transition: none; transform: none; } }
+  @media (max-width: 760px) { .play { width: 100%; justify-content: center; } }
+  @media (prefers-reduced-motion: reduce) { .btn, .btn:hover, .play, .play:hover { transition: none; transform: none; } }
 </style>
 </head>
 <body>
@@ -100,11 +111,17 @@
   <div class="hero-in">
     <h1 class="logo">TinyFleet<span>.</span></h1>
     <p class="tag">A tiny tilt-shift driving game. Haul cargo between towns, hire drivers, buy an HQ and grow a fleet across endless islands.</p>
-    <p class="meta" id="meta">Free · Windows and Mac</p>
-    <div class="jump"><a href="#win" id="jump-win">Download for Windows</a><a href="#mac" id="jump-mac">Download for Mac</a></div>
+    <p class="meta" id="meta">Free · plays in your browser</p>
+    <a class="play" href="play/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Play Now</a>
+    <p class="play-note">Right here in your browser: nothing to download or install.</p>
+    <div class="jump"><span>Rather have the app?</span><a href="#win" id="jump-win">Windows</a><a href="#mac" id="jump-mac">Mac</a></div>
   </div>
 </section>
 <div class="wrap below">
+  <div class="dl-head glass">
+    <h3>Or download the app</h3>
+    <p>The same game in its own window, for when you’d rather not play in a browser tab. You don’t need it to play: <a href="play/">play now in your browser</a>.</p>
+  </div>
   <div class="dl">
     <div class="card" id="win">
       <span class="you">For this computer</span>
@@ -141,17 +158,17 @@
   </section>
 
   <footer class="glass">
-    <span>Both open the game in its own window in Chrome or Edge if you have one, otherwise in your default browser. Your saves stay on your computer and carry over to new versions.</span>
+    <span>In the browser, your saves are kept in that browser, and an online career is kept on the server so you can sign in from anywhere. The apps open the game in its own window in Chrome or Edge if you have one, otherwise in your default browser, and keep their saves on your computer.</span>
     <span id="built"></span>
   </footer>
 </div>
 <script>
-  // the download for this computer gets the red button
+  // the download for this computer is marked as the one for it
   (function () {
     var ua = navigator.userAgent || '', p = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
     var mac = /Mac/i.test(p) || /Macintosh/.test(ua), win = /Win/i.test(p) || /Windows/.test(ua);
-    if (mac && !/iPhone|iPad/.test(ua)) { document.getElementById('mac').classList.add('mine'); document.getElementById('jump-mac').classList.add('mine'); }
-    else if (win) { document.getElementById('win').classList.add('mine'); document.getElementById('jump-win').classList.add('mine'); }
+    if (mac && !/iPhone|iPad/.test(ua)) { document.getElementById('mac').classList.add('mine'); }
+    else if (win) { document.getElementById('win').classList.add('mine'); }
     // the footage stays put while the page scrolls over it, dimming a little once past the header
     var filmBox = document.querySelector('.film'), hero = document.querySelector('.hero'), ticking = false;
     var dim = function () { ticking = false; var h = hero.offsetHeight || 1; filmBox.style.setProperty('--dim', (Math.min(1, window.scrollY / h) * 0.45).toFixed(3)); };
@@ -168,7 +185,7 @@
     var mb = function (b) { return (b / 1e6).toFixed(1) + ' MB'; };
     document.getElementById('win-size').textContent = mb(v.windows.bytes);
     document.getElementById('mac-size').textContent = mb(v.mac.bytes);
-    document.getElementById('meta').textContent = 'Version ' + v.version + ' · free · Windows and Mac';
+    document.getElementById('meta').textContent = 'Version ' + v.version + ' · free · plays in your browser';
     document.getElementById('built').textContent = 'TinyFleet ' + v.version + ' · ' + v.date;
   }).catch(function () {});
 </script>
