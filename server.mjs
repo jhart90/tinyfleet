@@ -2277,7 +2277,7 @@ var require_websocket = __commonJS({
     var http2 = __require("http");
     var net = __require("net");
     var tls = __require("tls");
-    var { randomBytes: randomBytes2, createHash: createHash2 } = __require("crypto");
+    var { randomBytes: randomBytes3, createHash: createHash3 } = __require("crypto");
     var { Duplex, Readable } = __require("stream");
     var { URL: URL2 } = __require("url");
     var PerMessageDeflate2 = require_permessage_deflate();
@@ -2828,7 +2828,7 @@ var require_websocket = __commonJS({
         }
       }
       const defaultPort = isSecure ? 443 : 80;
-      const key = randomBytes2(16).toString("base64");
+      const key = randomBytes3(16).toString("base64");
       const request = isSecure ? https.request : http2.request;
       const protocolSet = /* @__PURE__ */ new Set();
       let perMessageDeflate;
@@ -2958,7 +2958,7 @@ var require_websocket = __commonJS({
           abortHandshake(websocket, socket, "Invalid Upgrade header");
           return;
         }
-        const digest = createHash2("sha1").update(key + GUID).digest("base64");
+        const digest = createHash3("sha1").update(key + GUID).digest("base64");
         if (res.headers["sec-websocket-accept"] !== digest) {
           abortHandshake(websocket, socket, "Invalid Sec-WebSocket-Accept header");
           return;
@@ -3327,7 +3327,7 @@ var require_websocket_server = __commonJS({
     var EventEmitter = __require("events");
     var http2 = __require("http");
     var { Duplex } = __require("stream");
-    var { createHash: createHash2 } = __require("crypto");
+    var { createHash: createHash3 } = __require("crypto");
     var extension2 = require_extension();
     var PerMessageDeflate2 = require_permessage_deflate();
     var subprotocol2 = require_subprotocol();
@@ -3634,7 +3634,7 @@ var require_websocket_server = __commonJS({
           );
         }
         if (this._state > RUNNING) return abortHandshake(socket, 503);
-        const digest = createHash2("sha1").update(key + GUID).digest("base64");
+        const digest = createHash3("sha1").update(key + GUID).digest("base64");
         const headers = [
           "HTTP/1.1 101 Switching Protocols",
           "Upgrade: websocket",
@@ -4830,20 +4830,20 @@ var require_utils = __commonJS({
       }
       return config;
     }
-    var escapeIdentifier2 = function(str) {
-      return '"' + str.replace(/"/g, '""') + '"';
+    var escapeIdentifier2 = function(str2) {
+      return '"' + str2.replace(/"/g, '""') + '"';
     };
-    var escapeLiteral2 = function(str) {
+    var escapeLiteral2 = function(str2) {
       let hasBackslash = false;
       let escaped = "'";
-      if (str == null) {
+      if (str2 == null) {
         return "''";
       }
-      if (typeof str !== "string") {
+      if (typeof str2 !== "string") {
         return "''";
       }
-      for (let i = 0; i < str.length; i++) {
-        const c = str[i];
+      for (let i = 0; i < str2.length; i++) {
+        const c = str2[i];
         if (c === "'") {
           escaped += c + c;
         } else if (c === "\\") {
@@ -4876,7 +4876,7 @@ var require_utils2 = __commonJS({
     var nodeCrypto = __require("crypto");
     module.exports = {
       postgresMd5PasswordHash,
-      randomBytes: randomBytes2,
+      randomBytes: randomBytes3,
       deriveKey,
       sha256,
       hashByName,
@@ -4886,7 +4886,7 @@ var require_utils2 = __commonJS({
     var webCrypto = nodeCrypto.webcrypto || globalThis.crypto;
     var subtleCrypto = webCrypto.subtle;
     var textEncoder = new TextEncoder();
-    function randomBytes2(length) {
+    function randomBytes3(length) {
       return webCrypto.getRandomValues(Buffer.alloc(length));
     }
     async function md5(string) {
@@ -5258,22 +5258,22 @@ var require_type_overrides = __commonJS({
 var require_pg_connection_string = __commonJS({
   "node_modules/pg-connection-string/index.js"(exports, module) {
     "use strict";
-    function parse(str, options = {}) {
-      if (str.charAt(0) === "/") {
-        const config2 = str.split(" ");
+    function parse(str2, options = {}) {
+      if (str2.charAt(0) === "/") {
+        const config2 = str2.split(" ");
         return { host: config2[0], database: config2[1] };
       }
       const config = /* @__PURE__ */ Object.create(null);
       let result;
       let dummyHost = false;
-      if (/ |%[^a-f0-9]|%[a-f0-9][^a-f0-9]/i.test(str)) {
-        str = encodeURI(str).replace(/%25(\d\d)/g, "%$1");
+      if (/ |%[^a-f0-9]|%[a-f0-9][^a-f0-9]/i.test(str2)) {
+        str2 = encodeURI(str2).replace(/%25(\d\d)/g, "%$1");
       }
       try {
         try {
-          result = new URL(str, "postgres://base");
+          result = new URL(str2, "postgres://base");
         } catch (e) {
-          result = new URL(str.replace("@/", "@___DUMMY___/"), "postgres://base");
+          result = new URL(str2.replace("@/", "@___DUMMY___/"), "postgres://base");
           dummyHost = true;
         }
       } catch (err) {
@@ -5419,8 +5419,8 @@ var require_pg_connection_string = __commonJS({
       }, /* @__PURE__ */ Object.create(null));
       return poolConfig;
     }
-    function parseIntoClientConfig(str) {
-      return toClientConfig(parse(str));
+    function parseIntoClientConfig(str2) {
+      return toClientConfig(parse(str2));
     }
     function deprecatedSslModeWarning(sslmode) {
       if (!deprecatedSslModeWarning.warned && typeof process !== "undefined" && process.emitWarning) {
@@ -7841,11 +7841,11 @@ var require_client = __commonJS({
       // escapeIdentifier and escapeLiteral moved to utility functions & exported
       // on PG
       // re-exported here for backwards compatibility
-      escapeIdentifier(str) {
-        return utils.escapeIdentifier(str);
+      escapeIdentifier(str2) {
+        return utils.escapeIdentifier(str2);
       }
-      escapeLiteral(str) {
-        return utils.escapeLiteral(str);
+      escapeLiteral(str2) {
+        return utils.escapeLiteral(str2);
       }
       _pulseQueryQueue() {
         if (this.pipeline) {
@@ -9034,7 +9034,7 @@ var init_esm = __esm({
 // server/index.ts
 import { createServer } from "node:http";
 import { createReadStream, existsSync, statSync } from "node:fs";
-import { createHash, randomBytes, scrypt, timingSafeEqual } from "node:crypto";
+import { createHash as createHash2, randomBytes as randomBytes2, scrypt, timingSafeEqual as timingSafeEqual2 } from "node:crypto";
 import { extname, join as join2, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9049,7 +9049,7 @@ var import_websocket = __toESM(require_websocket(), 1);
 var import_websocket_server = __toESM(require_websocket_server(), 1);
 
 // server/store.ts
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 var fileOf = (key) => `${key.replace(/[^a-zA-Z0-9_.-]/g, (c) => `~${c.charCodeAt(0).toString(16)}`)}.json`;
 var FileStore = class {
@@ -9071,6 +9071,18 @@ var FileStore = class {
     writeFileSync(tmp, JSON.stringify(value));
     renameSync(tmp, path);
   }
+  async list(prefix) {
+    const want = fileOf(prefix).replace(/\.json$/, "");
+    const out = [];
+    for (const f of readdirSync(this.dir)) {
+      if (!f.startsWith(want) || !f.endsWith(".json")) continue;
+      try {
+        out.push({ key: f.slice(0, -5).replace(/~([0-9a-f]{2})/g, (_, h) => String.fromCharCode(parseInt(h, 16))), value: JSON.parse(readFileSync(join(this.dir, f), "utf8")) });
+      } catch {
+      }
+    }
+    return out;
+  }
   async close() {
   }
 };
@@ -9089,6 +9101,10 @@ var PgStore = class {
       "insert into tinyfleet_kv (k, v, at) values ($1, $2::jsonb, now()) on conflict (k) do update set v = excluded.v, at = excluded.at",
       [key, JSON.stringify(value)]
     );
+  }
+  async list(prefix) {
+    const r = await this.pool.query("select k, v from tinyfleet_kv where k like $1", [`${prefix}%`]);
+    return r.rows.map((row) => ({ key: row.k, value: row.v }));
   }
   async close() {
     await this.pool.end();
@@ -9169,6 +9185,483 @@ var Docs = class {
     return this.live.size;
   }
 };
+
+// server/admin.ts
+import { randomBytes, timingSafeEqual, createHash } from "node:crypto";
+
+// server/adminPage.ts
+var ADMIN_PAGE = String.raw`<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>TinyFleet Dev</title>
+<style>
+:root{--bg:#f4f6f7;--card:#fff;--ink:#1f2b33;--mute:#76848c;--line:#e2e8eb;--acc:#e2412f;--ok:#1e9e4a;--warn:#c98a12;--chip:#eef2f4}
+@media (prefers-color-scheme:dark){:root{--bg:#12171b;--card:#1b2227;--ink:#e6edf0;--mute:#8d9aa2;--line:#2a343a;--chip:#232c32}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{display:flex;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:0;z-index:2;flex-wrap:wrap}
+header h1{font-size:17px;margin:0}header h1 span{color:var(--acc)}
+.tabs{display:flex;gap:4px}
+.tabs button,.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:6px 12px;border-radius:8px;cursor:pointer;font:inherit}
+.tabs button.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+.grow{flex:1}
+main{padding:20px;max-width:1500px;margin:0 auto}
+#login{max-width:320px;margin:12vh auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:10px}
+#login h2{margin:0 0 6px}
+input{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.err{color:var(--acc);font-size:13px;min-height:1em}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:120px}
+.stat b{display:block;font-size:20px}.stat span{color:var(--mute);font-size:12px}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:top}
+th{position:sticky;top:0;background:var(--card);color:var(--mute);font-weight:600;cursor:pointer;user-select:none;font-size:12px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr.row{cursor:pointer}tbody tr.row:hover{background:var(--chip)}
+tr.sel{background:var(--chip)}
+.mute{color:var(--mute)}
+.chip{display:inline-block;padding:1px 7px;border-radius:999px;background:var(--chip);font-size:12px;margin:1px 2px 1px 0}
+.chip.done{background:rgba(30,158,74,.15);color:var(--ok)}.chip.failed{background:rgba(226,65,47,.14);color:var(--acc)}.chip.active{background:rgba(201,138,18,.16);color:var(--warn)}
+#detail{margin-top:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.card h3{margin:0 0 10px;font-size:15px}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px 18px}
+.kv div span{display:block;color:var(--mute);font-size:12px}
+.mission{border-top:1px solid var(--line);padding:9px 0}.mission:first-child{border-top:0}
+.mission ul{margin:4px 0 0 18px;padding:0;color:var(--mute);font-size:12.5px}
+.fb{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.fb h4{margin:0 0 4px;font-size:15px}.fb p{margin:8px 0 0;white-space:pre-wrap}
+.fb .meta{color:var(--mute);font-size:12px}
+a.link{color:var(--acc);cursor:pointer;text-decoration:underline}
+#search{min-width:220px}
+@media (max-width:600px){main{padding:12px}header{padding:10px 12px}}
+</style></head>
+<body>
+<div id="login" hidden>
+  <h2>TinyFleet <span style="color:var(--acc)">dev</span></h2>
+  <input id="name" placeholder="Name" autocomplete="username">
+  <input id="pin" placeholder="PIN" type="password" inputmode="numeric" autocomplete="current-password">
+  <button class="btn primary" id="go">Sign in</button>
+  <div class="err" id="lerr"></div>
+</div>
+<div id="app" hidden>
+  <header>
+    <h1>TinyFleet <span>dev</span></h1>
+    <div class="tabs"><button id="t-games" class="on">Games</button><button id="t-fb">Feedback</button></div>
+    <div class="grow"></div>
+    <input id="search" placeholder="Search fleet, player, seed…">
+    <button class="btn" id="reload">Refresh</button>
+    <button class="btn" id="out">Sign out</button>
+  </header>
+  <main>
+    <section id="games">
+      <div class="stats" id="stats"></div>
+      <div class="wrap"><table><thead id="ghead"></thead><tbody id="gbody"></tbody></table></div>
+      <div id="detail"></div>
+    </section>
+    <section id="feedback" hidden></section>
+  </main>
+</div>
+<script>
+var $ = function (id) { return document.getElementById(id); };
+function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function num(v) { return v == null || v === '' ? '—' : Number(v).toLocaleString('en-US'); }
+function money(v) { return v == null ? '—' : (v < 0 ? '-$' : '$') + Math.abs(Math.round(v)).toLocaleString('en-US'); }
+function hrs(s) { if (!s) return '0m'; var h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return h ? h + 'h ' + m + 'm' : m + 'm'; }
+function when(t) { if (!t) return '—'; var d = new Date(t); return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }); }
+function ago(t) { var s = (Date.now() - t) / 1000; if (s < 90) return 'just now'; if (s < 5400) return Math.round(s / 60) + ' min ago'; if (s < 129600) return Math.round(s / 3600) + ' h ago'; return Math.round(s / 86400) + ' days ago'; }
+function cellTxt(c) { return c && c.length === 2 ? c[0] + ', ' + c[1] : '—'; }
+function gameHour(h) { if (h == null) return '—'; var d = Math.floor(h / 24) + 1, hh = Math.floor(h % 24), mm = Math.round((h % 1) * 60); return 'day ' + d + ' ' + String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0'); }
+
+async function api(path, body) {
+  var r = await fetch('/api/admin/' + path, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : {});
+  var j = {}; try { j = await r.json(); } catch (e) {}
+  j.status = r.status;
+  return j;
+}
+
+var games = [], feedback = [], sortKey = 'last', sortDir = -1, openGid = null;
+var COLS = [
+  ['fleet', 'Fleet'], ['player', 'Player'], ['seed', 'Seed'], ['start', 'Start cell'], ['played', 'Played', 1], ['day', 'Game day', 1],
+  ['worth', 'Net worth', 1], ['earned', '$ earned', 1], ['vehicles', 'Vehicles', 1], ['youTiles', 'Tiles (you)', 1], ['hiredTiles', 'Tiles (hired)', 1],
+  ['started', 'Missions', 1], ['done', 'Done', 1], ['delivered', 'Cargo', 1], ['buildings', 'Buildings', 1], ['cells', 'Cells', 1], ['deeds', 'Deeds', 1], ['last', 'Last seen', 1]
+];
+
+function showApp(on) { $('login').hidden = on; $('app').hidden = !on; if (!on) setTimeout(function () { $('name').focus(); }, 0); }
+
+async function login() {
+  $('lerr').textContent = '';
+  var j = await api('login', { name: $('name').value, pin: $('pin').value });
+  if (j.ok) { $('pin').value = ''; showApp(true); load(); }
+  else $('lerr').textContent = j.why || 'Could not sign in.';
+}
+$('go').onclick = login;
+$('pin').onkeydown = $('name').onkeydown = function (e) { if (e.key === 'Enter') login(); };
+$('out').onclick = async function () { await api('logout', {}); showApp(false); };
+$('reload').onclick = function () { load(); };
+$('search').oninput = function () { renderGames(); renderFeedback(); };
+$('t-games').onclick = function () { tab('games'); };
+$('t-fb').onclick = function () { tab('fb'); };
+function tab(t) {
+  $('t-games').classList.toggle('on', t === 'games'); $('t-fb').classList.toggle('on', t === 'fb');
+  $('games').hidden = t !== 'games'; $('feedback').hidden = t !== 'fb';
+}
+
+async function load() {
+  var a = await api('games'), b = await api('feedback');
+  if (a.status === 401 || b.status === 401) { showApp(false); return; }
+  games = a.games || []; feedback = b.feedback || [];
+  $('t-fb').textContent = 'Feedback (' + feedback.length + ')';
+  $('t-games').textContent = 'Games (' + games.length + ')';
+  renderGames(); renderFeedback();
+  if (openGid) openGame(openGid);
+}
+
+function matches(text) { var q = $('search').value.trim().toLowerCase(); return !q || text.toLowerCase().indexOf(q) >= 0; }
+
+function renderGames() {
+  var list = games.filter(function (g) { return matches([g.fleet, g.player, g.seed, g.online, g.gid].join(' ')); });
+  list.sort(function (a, b) { var x = a[sortKey], y = b[sortKey]; if (x == null) return 1; if (y == null) return -1; return (typeof x === 'string' ? x.localeCompare(y) : x - y) * sortDir; });
+  var tot = { play: 0, earned: 0, you: 0, hired: 0, done: 0, players: {} };
+  games.forEach(function (g) { tot.play += g.played || 0; tot.earned += g.earned || 0; tot.you += g.youTiles || 0; tot.hired += g.hiredTiles || 0; tot.done += g.done || 0; tot.players[(g.player || '') + '|' + (g.online || '')] = 1; });
+  var week = games.filter(function (g) { return Date.now() - g.last < 7 * 86400000; }).length;
+  $('stats').innerHTML = [
+    [games.length, 'games'], [Object.keys(tot.players).length, 'player profiles'], [week, 'played this week'], [hrs(tot.play), 'total play'],
+    [money(tot.earned), 'earned, all games'], [num(tot.you), 'tiles driven by players'], [num(tot.hired), 'tiles by hired drivers'], [num(tot.done), 'missions completed'], [feedback.length, 'feedback']
+  ].map(function (s) { return '<div class="stat"><b>' + esc(s[0]) + '</b><span>' + esc(s[1]) + '</span></div>'; }).join('');
+  $('ghead').innerHTML = '<tr>' + COLS.map(function (c) { return '<th data-k="' + c[0] + '"' + (c[2] ? ' class="n"' : '') + '>' + esc(c[1]) + (sortKey === c[0] ? (sortDir > 0 ? ' ▲' : ' ▼') : '') + '</th>'; }).join('') + '</tr>';
+  Array.prototype.forEach.call($('ghead').querySelectorAll('th'), function (th) {
+    th.onclick = function () { var k = th.dataset.k; if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = typeof (games[0] || {})[k] === 'string' ? 1 : -1; } renderGames(); };
+  });
+  $('gbody').innerHTML = list.map(function (g) {
+    var cells = {
+      fleet: '<b>' + esc(g.fleet || '(unnamed)') + '</b>' + (g.online ? ' <span class="chip">online: ' + esc(g.online) + '</span>' : ''),
+      player: esc(g.player), seed: '<span class="mute">' + esc(g.seed) + '</span>', start: cellTxt(g.start), played: hrs(g.played), day: num(g.day),
+      worth: money(g.worth), earned: money(g.earned), vehicles: num(g.vehicles), youTiles: num(g.youTiles), hiredTiles: num(g.hiredTiles),
+      started: num(g.started), done: num(g.done), delivered: num(g.delivered), buildings: num(g.buildings), cells: num(g.cells), deeds: num(g.deeds),
+      last: '<span title="' + esc(when(g.last)) + '">' + esc(ago(g.last)) + '</span>'
+    };
+    return '<tr class="row' + (g.gid === openGid ? ' sel' : '') + '" data-gid="' + esc(g.gid) + '">' + COLS.map(function (c) { return '<td' + (c[2] ? ' class="n"' : '') + '>' + cells[c[0]] + '</td>'; }).join('') + '</tr>';
+  }).join('') || '<tr><td colspan="' + COLS.length + '" class="mute">No games reported yet.</td></tr>';
+  Array.prototype.forEach.call($('gbody').querySelectorAll('tr.row'), function (tr) { tr.onclick = function () { openGame(tr.dataset.gid); }; });
+}
+
+function kv(pairs) { return '<div class="kv">' + pairs.map(function (p) { return '<div><span>' + esc(p[0]) + '</span>' + p[1] + '</div>'; }).join('') + '</div>'; }
+function table(head, rows) {
+  if (!rows.length) return '<div class="mute">None.</div>';
+  return '<div class="wrap"><table><thead><tr>' + head.map(function (h) { return '<th' + (h[1] ? ' class="n"' : '') + '>' + esc(h[0]) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+    rows.map(function (r) { return '<tr>' + r.map(function (c, i) { return '<td' + (head[i][1] ? ' class="n"' : '') + '>' + c + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
+}
+
+async function openGame(gid) {
+  openGid = gid;
+  Array.prototype.forEach.call($('gbody').querySelectorAll('tr.row'), function (tr) { tr.classList.toggle('sel', tr.dataset.gid === gid); });
+  var j = await api('game?gid=' + encodeURIComponent(gid));
+  if (!j.ok) { $('detail').innerHTML = '<div class="card mute">Could not load that game.</div>'; return; }
+  var g = j.game, m = g.money || {}, met = g.metrics || {}, dr = g.driven || {}, dl = g.delivered || {}, ex = g.explored || {};
+  var missions = Object.keys(g.missions || {}).map(function (k) { return g.missions[k]; }).sort(function (a, b) { return (b.posted || 0) - (a.posted || 0); });
+  var done = missions.filter(function (x) { return x.state === 'done'; }).length, failed = missions.filter(function (x) { return x.state === 'failed'; }).length;
+  var h = '';
+  h += '<div class="card"><h3>' + esc((g.fleet && g.fleet.name) || '(unnamed fleet)') + ' <span class="mute" style="font-weight:400">· ' + esc(g.player && g.player.name) + (g.online ? ' · online as ' + esc(g.online) : '') + '</span>' +
+    ' <a class="link" style="float:right;font-weight:400;font-size:13px" onclick="openGid=null;document.getElementById(\'detail\').innerHTML=\'\';renderGames()">close</a></h3>' + kv([
+    ['Seed', esc(g.seed) + ' <span class="mute">(' + esc(g.mode) + ')</span>'], ['Starting cell', cellTxt(g.start)], ['Current cell', cellTxt(g.cell)],
+    ['Play time', hrs(g.played)], ['Game day', num(g.day) + ' <span class="mute">at ' + esc(g.hour) + 'h</span>'],
+    ['First seen', when(g.first)], ['Last seen', when(g.last) + ' <span class="mute">(' + ago(g.last) + ')</span>'], ['Reports', num(g.reports)],
+    ['Cash', money(m.cash)], ['$ earned (lifetime)', money(m.earned)], ['$ from hired drivers', money(m.fleetEarned)], ['Tow bills', money(m.towed)],
+    ['Net worth', money(met.worth)], ['Vehicle value', money(met.fleetValue)], ['Property value', money(met.estateValue)], ['Takings, 7 days', money(met.week)],
+    ['Tiles driven (you)', num(dr.you)], ['Tiles driven (hired drivers)', num(dr.hired)], ['Cargo delivered (you)', num(dl.you)], ['Cargo delivered (fleet)', num(dl.fleet)],
+    ['Cells explored', num(ex.cells)], ['Cells visited', num(ex.seen)], ['Drivers', num(g.drivers)], ['HQ', g.hq ? 'grade ' + g.hq.grade + ' · ' + g.hq.slots + ' slots' : '—'],
+    ['Towns carried', num(met.towns)], ['Territory', num(met.held)], ['◆ a day', num(met.gems)], ['Missions', missions.length + ' started · ' + done + ' done · ' + failed + ' failed'],
+    ['Game id', '<span class="mute">' + esc(g.gid) + '</span>'], ['Build', 'gen ' + esc(g.gen) + ' · save ' + esc(g.save) + ' · ' + esc(g.where)]
+  ]) + '</div>';
+  h += '<div class="card"><h3>Vehicles (' + (g.vehicles || []).length + ')</h3>' + table([['Name'], ['Model'], ['Driver'], ['Where'], ['Tiles', 1], ['Deliveries', 1], ['Earned', 1]],
+    (g.vehicles || []).map(function (v) { return [esc(v.name), esc(v.model), v.driver ? esc(v.driver) + ' <span class="mute">' + esc(v.rank) + '</span>' : '<span class="mute">you / none</span>', esc(v.where), num(v.tiles), num(v.deliveries), money(v.earned)]; })) + '</div>';
+  h += '<div class="card"><h3>Missions (' + missions.length + ')</h3>' + (missions.length ? missions.map(function (x) {
+    return '<div class="mission"><b>' + esc(x.title) + '</b> <span class="chip ' + esc(x.state) + '">' + esc(x.state) + '</span> <span class="chip">' + esc(x.thread) + '</span> <span class="chip">' + esc(x.kind) + '</span>' +
+      (x.arc ? ' <span class="chip">arc ' + esc(x.arc) + '</span>' : '') +
+      '<div class="mute">' + esc(x.giver) + (x.town ? ' · ' + esc(x.town) : '') + ' · offered ' + gameHour(x.posted) + (x.ended != null ? ' · ended ' + gameHour(x.ended) : '') + (x.outcome ? ' · <b>' + esc(x.outcome) + '</b>' : '') + '</div>' +
+      '<div>' + esc(x.why) + '</div>' +
+      '<ul>' + (x.objs || []).map(function (o) { return '<li>' + esc(o) + '</li>'; }).join('') + '</ul>' +
+      ((x.reward || []).length ? '<div class="mute">Reward: ' + x.reward.map(esc).join(' · ') + '</div>' : '') + '<div class="mute" style="font-size:11px">' + esc(x.tpl) + ' #' + esc(x.id) + '</div></div>';
+  }).join('') : '<div class="mute">None.</div>') + '</div>';
+  h += '<div class="card"><h3>Buildings bought (' + (g.buildings || []).length + ')</h3>' + table([['Name'], ['Kind'], ['Town'], ['Bought', 1], ['Paid', 1], ['Taken in', 1]],
+    (g.buildings || []).map(function (b) { return [esc(b.name), esc(b.kind), esc(b.town), 'day ' + num(b.day), money(b.paid), money(b.took)]; })) + '</div>';
+  var TIER = ['', 'Bronze', 'Silver', 'Gold', 'Platinum', 'Diamond'];
+  h += '<div class="card"><h3>Achievements (' + (g.deeds || []).length + ')</h3>' + table([['Achievement'], ['Group'], ['Tier'], ['Count', 1]],
+    (g.deeds || []).map(function (d) { return [esc(d.name), esc(d.group), esc(TIER[d.tier] || d.tier), num(d.value)]; })) + '</div>';
+  if ((j.feedback || []).length) h += '<div class="card"><h3>Feedback from this game</h3>' + j.feedback.map(fbHtml).join('') + '</div>';
+  $('detail').innerHTML = h;
+  $('detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function fbHtml(f) {
+  return '<div class="fb"><h4>' + esc(f.subject) + '</h4><div class="meta">' + esc(when(f.at)) + ' · ' + esc(f.fleet || 'no fleet') + ' · ' + esc(f.player || '?') +
+    (f.online ? ' · online as ' + esc(f.online) : '') + (f.seed ? ' · ' + esc(f.seed) + ' cell ' + cellTxt(f.cell) : '') + (f.day ? ' · day ' + esc(f.day) : '') +
+    (f.gid ? ' · <a class="link" data-gid="' + esc(f.gid) + '">open game</a>' : '') + '</div><p>' + esc(f.text) + '</p></div>';
+}
+function renderFeedback() {
+  var list = feedback.filter(function (f) { return matches([f.subject, f.text, f.fleet, f.player, f.online].join(' ')); });
+  $('feedback').innerHTML = list.map(fbHtml).join('') || '<div class="mute">No feedback yet.</div>';
+  Array.prototype.forEach.call($('feedback').querySelectorAll('a[data-gid]'), function (a) { a.onclick = function () { tab('games'); openGame(a.dataset.gid); }; });
+}
+
+api('games').then(function (j) { if (j.ok) { showApp(true); load(); } else showApp(false); });
+</script>
+</body></html>`;
+
+// server/admin.ts
+var ADMIN_PATH = "/jack";
+var ADMIN_NAME = (process.env.ADMIN_NAME || "Jack").toLowerCase();
+var ADMIN_PIN = process.env.ADMIN_PIN || "";
+var SESSION_MS = 12 * 36e5;
+var REPORT_MAX = 6e5;
+var FEEDBACK_MAX = 2e4;
+var GID = /^[a-z0-9-]{8,48}$/i;
+var sessions = /* @__PURE__ */ new Map();
+var hits = /* @__PURE__ */ new Map();
+function limited(key, max, windowMs) {
+  const now = Date.now();
+  let h = hits.get(key);
+  if (!h || h.until < now) {
+    h = { n: 0, until: now + windowMs };
+    hits.set(key, h);
+  }
+  if (hits.size > 2e4) {
+    for (const [k, v] of hits) if (v.until < now) hits.delete(k);
+  }
+  return ++h.n > max;
+}
+var failsAll = [];
+var ipOf = (req) => String(req.headers["x-forwarded-for"] ?? req.socket.remoteAddress ?? "").split(",")[0].trim();
+function readBody(req, max) {
+  return new Promise((resolve2) => {
+    let size = 0;
+    const parts = [];
+    req.on("data", (c) => {
+      size += c.length;
+      if (size > max) {
+        resolve2(null);
+        req.destroy();
+        return;
+      }
+      parts.push(c);
+    });
+    req.on("end", () => resolve2(Buffer.concat(parts).toString("utf8")));
+    req.on("error", () => resolve2(null));
+  });
+}
+var OPEN = { "access-control-allow-origin": "*", "access-control-allow-methods": "POST, OPTIONS", "access-control-allow-headers": "content-type" };
+function json(res, code, body, head = {}) {
+  res.writeHead(code, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...head }).end(JSON.stringify(body));
+}
+var str = (v, max) => (typeof v === "string" ? v : v == null ? "" : String(v)).slice(0, max);
+function cookieOf(req, name) {
+  const m = new RegExp(`(?:^|;\\s*)${name}=([^;]+)`).exec(String(req.headers.cookie ?? ""));
+  return m ? m[1] : "";
+}
+function signedIn(req) {
+  const t = cookieOf(req, "tfa");
+  if (!t) return false;
+  const until = sessions.get(t);
+  if (!until || until < Date.now()) {
+    sessions.delete(t);
+    return false;
+  }
+  return true;
+}
+var same = (a, b) => {
+  const ha = createHash("sha256").update(a).digest(), hb = createHash("sha256").update(b).digest();
+  return timingSafeEqual(ha, hb);
+};
+function summary(gid, r) {
+  const missions = Object.values(r.missions ?? {});
+  const fleet = r.fleet;
+  const player = r.player;
+  const money = r.money ?? {};
+  const metrics = r.metrics ?? {};
+  const driven = r.driven ?? {};
+  const delivered = r.delivered ?? {};
+  const explored = r.explored ?? {};
+  return {
+    gid,
+    first: r.first,
+    last: r.last,
+    reports: r.reports,
+    fleet: fleet?.name ?? "",
+    player: player?.name ?? "",
+    online: r.online ?? null,
+    seed: r.seed,
+    start: r.start,
+    cell: r.cell,
+    played: r.played,
+    day: r.day,
+    cash: money.cash ?? 0,
+    earned: money.earned ?? 0,
+    worth: metrics.worth ?? null,
+    vehicles: Array.isArray(r.vehicles) ? r.vehicles.length : 0,
+    youTiles: driven.you ?? 0,
+    hiredTiles: driven.hired ?? 0,
+    delivered: (delivered.you ?? 0) + (delivered.fleet ?? 0),
+    started: missions.length,
+    done: missions.filter((m) => m.state === "done").length,
+    buildings: Array.isArray(r.buildings) ? r.buildings.length : 0,
+    cells: explored.cells ?? 0,
+    deeds: Array.isArray(r.deeds) ? r.deeds.length : 0,
+    where: r.where,
+    gen: r.gen
+  };
+}
+async function adminHttp(req, res, path, store2) {
+  const ip = ipOf(req);
+  if (path === "/api/report" || path === "/api/feedback") {
+    if (req.method === "OPTIONS") {
+      res.writeHead(204, OPEN).end();
+      return true;
+    }
+    if (req.method !== "POST") {
+      json(res, 405, { ok: false }, OPEN);
+      return true;
+    }
+    const report = path === "/api/report";
+    if (limited(`${report ? "r" : "f"}|${ip}`, report ? 30 : 6, report ? 6e4 : 6e5)) {
+      json(res, 429, { ok: false }, OPEN);
+      return true;
+    }
+    const text = await readBody(req, report ? REPORT_MAX : FEEDBACK_MAX);
+    let m;
+    try {
+      m = JSON.parse(text ?? "");
+      if (!m || typeof m !== "object" || Array.isArray(m)) throw new Error("not an object");
+    } catch {
+      json(res, 400, { ok: false }, OPEN);
+      return true;
+    }
+    const now = Date.now();
+    if (report) {
+      const gid = str(m.gid, 64);
+      if (!GID.test(gid)) {
+        json(res, 400, { ok: false }, OPEN);
+        return true;
+      }
+      const had = await store2.get(`report:${gid}`);
+      const missions = { ...had?.missions ?? {} };
+      if (Array.isArray(m.missions)) {
+        for (const q of m.missions.slice(0, 500)) if (q && typeof q === "object" && "id" in q) missions[String(q.id)] = q;
+      }
+      const kept = { ...m, missions, first: had?.first ?? now, last: now, reports: (had?.reports ?? 0) + 1 };
+      await store2.set(`report:${gid}`, kept);
+    } else {
+      const body = str(m.text, 5e3).trim();
+      if (!body) {
+        json(res, 400, { ok: false }, OPEN);
+        return true;
+      }
+      const doc = {
+        at: now,
+        subject: str(m.subject, 120).trim() || "(no subject)",
+        text: body,
+        gid: GID.test(str(m.gid, 64)) ? str(m.gid, 64) : null,
+        player: str(m.player, 40) || null,
+        fleet: str(m.fleet, 40) || null,
+        online: str(m.online, 40) || null,
+        seed: str(m.seed, 80) || null,
+        cell: Array.isArray(m.cell) ? m.cell.slice(0, 2) : null,
+        day: typeof m.day === "number" ? m.day : null,
+        gen: typeof m.gen === "number" ? m.gen : null,
+        where: str(m.where, 80) || null
+      };
+      await store2.set(`feedback:${now.toString(36)}-${randomBytes(4).toString("hex")}`, doc);
+    }
+    json(res, 200, { ok: true }, OPEN);
+    return true;
+  }
+  if (path === ADMIN_PATH || path === `${ADMIN_PATH}/`) {
+    res.writeHead(200, {
+      "content-type": "text/html; charset=utf-8",
+      "cache-control": "no-store",
+      "x-robots-tag": "noindex, nofollow",
+      "x-frame-options": "DENY",
+      "referrer-policy": "no-referrer"
+    }).end(ADMIN_PAGE);
+    return true;
+  }
+  if (!path.startsWith("/api/admin/")) return false;
+  const what = path.slice("/api/admin/".length);
+  if (what === "login") {
+    if (req.method !== "POST") {
+      json(res, 405, { ok: false });
+      return true;
+    }
+    const now = Date.now();
+    failsAll = failsAll.filter((t) => t > now - 36e5);
+    if (!ADMIN_PIN) {
+      json(res, 503, { ok: false, why: "Signing in is not set up: add ADMIN_PIN to the server\u2019s variables." });
+      return true;
+    }
+    const ipFails = hits.get(`login|${ip}`);
+    if (ipFails && ipFails.until > now && ipFails.n >= 5 || failsAll.length >= 30) {
+      json(res, 429, { ok: false, why: "Too many tries. Wait a while and try again." });
+      return true;
+    }
+    let m = {};
+    try {
+      m = JSON.parse(await readBody(req, 2e3) ?? "");
+    } catch {
+    }
+    const ok = same(str(m.name, 40).trim().toLowerCase(), ADMIN_NAME) && same(str(m.pin, 40).trim(), ADMIN_PIN);
+    if (!ok) {
+      limited(`login|${ip}`, 5, 15 * 6e4);
+      failsAll.push(now);
+      json(res, 401, { ok: false, why: "That name and PIN don\u2019t match." });
+      return true;
+    }
+    const token = randomBytes(32).toString("hex");
+    sessions.set(token, now + SESSION_MS);
+    const secure = String(req.headers["x-forwarded-proto"] ?? "").includes("https") ? "; Secure" : "";
+    json(res, 200, { ok: true }, { "set-cookie": `tfa=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${SESSION_MS / 1e3}${secure}` });
+    return true;
+  }
+  if (what === "logout") {
+    sessions.delete(cookieOf(req, "tfa"));
+    json(res, 200, { ok: true }, { "set-cookie": "tfa=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0" });
+    return true;
+  }
+  if (!signedIn(req)) {
+    json(res, 401, { ok: false });
+    return true;
+  }
+  if (what === "games") {
+    const all = await store2.list("report:");
+    json(res, 200, { ok: true, games: all.map((e) => summary(e.key.slice("report:".length), e.value)).sort((a, b) => Number(b.last) - Number(a.last)) });
+    return true;
+  }
+  if (what === "game") {
+    const gid = new URL(req.url ?? "", "http://x").searchParams.get("gid") ?? "";
+    if (!GID.test(gid)) {
+      json(res, 400, { ok: false });
+      return true;
+    }
+    const r = await store2.get(`report:${gid}`);
+    if (!r) {
+      json(res, 404, { ok: false });
+      return true;
+    }
+    const fb = (await store2.list("feedback:")).map((e) => e.value).filter((f) => f.gid === gid);
+    json(res, 200, { ok: true, game: r, feedback: fb });
+    return true;
+  }
+  if (what === "feedback") {
+    const all = await store2.list("feedback:");
+    const list = all.map((e) => ({ id: e.key.slice("feedback:".length), ...e.value }));
+    json(res, 200, { ok: true, feedback: list.sort((a, b) => b.at - a.at) });
+    return true;
+  }
+  json(res, 404, { ok: false });
+  return true;
+}
 
 // shared/protocol.ts
 var PROTOCOL = 1;
@@ -10738,6 +11231,7 @@ var MAIN_SHARE = [["sea", 0.55], ["islet", 0.3], ["small", 0.15]];
 var KIND_SHARE = [["full", 0.55], ["small", 0.2], ["islet", 0.1], ["sea", 0.15]];
 var MEGA_CHANCE = 0.1;
 var MEGA_CHANCE_COUNTY = 0.24;
+var STRAIT_CHANCE = 0.6;
 var HOME_CONT = [4, 0];
 var HOME_CONT_R = 3.5;
 var HOME_ISLE = [0.5, 0.5];
@@ -10805,6 +11299,21 @@ function megaRoll(seedHash2, cx, cz, kind) {
   if (kind !== "continent" || !coastalContinent(seedHash2, cx, cz)) return false;
   return cell01(seedHash2, cx, cz, 2) < MEGA_CHANCE_COUNTY && landable(seedHash2, cx, cz);
 }
+function sharedEdge(cx, cz, d) {
+  const axis = d % 2 === 0 ? 0 : 1;
+  const ax = d === 2 ? cx - 1 : cx;
+  const az = d === 3 ? cz - 1 : cz;
+  return [ax, az, axis === 0 ? ax + 1 : ax, axis === 0 ? az : az + 1, axis];
+}
+function straitAt(seedHash2, cx, cz, d) {
+  const [ax, az, bx, bz, axis] = sharedEdge(cx, cz, d);
+  const ka = cellKind(seedHash2, ax, az), kb = cellKind(seedHash2, bx, bz);
+  if (ka === "sea" || kb === "sea" || ka === "continent" && kb === "continent") return -1;
+  if (ka === "atoll" || kb === "atoll") return -1;
+  if (cell01(seedHash2, ax, az, 300 + axis) >= STRAIT_CHANCE) return -1;
+  if (ka === "continent" && !landable(seedHash2, ax, az) || kb === "continent" && !landable(seedHash2, bx, bz)) return -1;
+  return Math.round(N * 0.25 + cell01(seedHash2, ax, az, 400 + axis) * N * 0.5);
+}
 function landable(seedHash2, cx, cz) {
   for (let j = 0; j < 7; j++) {
     for (let i = 0; i < 7; i++) {
@@ -10812,6 +11321,18 @@ function landable(seedHash2, cx, cz) {
     }
   }
   return false;
+}
+var DEALER_PLAN = 0.45;
+function plannedDealer(seedHash2, cx, cz) {
+  const k = cellKind(seedHash2, cx, cz);
+  if (k !== "continent" && k !== "full") return false;
+  return cell01(seedHash2, cx, cz, 2711) < DEALER_PLAN;
+}
+function landBorder(seedHash2, cx, cz, d) {
+  if (cellKind(seedHash2, cx, cz) !== "continent") return false;
+  const nx = cx + (d === 0 ? 1 : d === 2 ? -1 : 0);
+  const nz = cz + (d === 1 ? 1 : d === 3 ? -1 : 0);
+  return cellKind(seedHash2, nx, nz) === "continent";
 }
 var RARITY = { common: 1 / 2, uncommon: 1 / 4, rare: 1 / 12, veryRare: 1 / 40, legendary: 1 / 150 };
 var PROMISE = { rare: 6, veryRare: 12, legendary: 20 };
@@ -11188,31 +11709,31 @@ var ROAD_RANK = {
 };
 
 // src/world/townKinds.ts
-var OPEN = { solid: false, apart: 8 };
+var OPEN2 = { solid: false, apart: 8 };
 var KIND_SPEC = {
   // ---- parks and plazas ----
-  meadow: { w: [5, 8], d: [5, 7], zone: "edge", lot: 1 /* Lawn */, ...OPEN, frontage: false },
-  civicSquare: { w: [5, 6], d: [4, 5], zone: "core", lot: 7 /* Plaza */, ...OPEN },
-  fountainSquare: { w: 3, d: 3, zone: "core", lot: 7 /* Plaza */, ...OPEN },
-  greenway: { w: [6, 10], d: 2, zone: "any", lot: 3 /* Park */, ...OPEN, waterside: true, frontage: false },
-  picnicGround: { w: 3, d: 3, zone: "edge", lot: 1 /* Lawn */, ...OPEN },
-  dogRun: { w: 2, d: 3, zone: "mid", lot: 12 /* Gravel */, ...OPEN },
-  plazaSteps: { w: [3, 4], d: 3, zone: "core", lot: 7 /* Plaza */, ...OPEN, allow: 3 },
-  sculpturePark: { w: 4, d: 4, zone: "mid", lot: 3 /* Park */, ...OPEN },
-  bandstandGreen: { w: 4, d: 4, zone: "mid", lot: 3 /* Park */, ...OPEN },
-  memorial: { w: [2, 3], d: 2, zone: "core", lot: 12 /* Gravel */, ...OPEN },
-  skatePark: { w: 2, d: 3, zone: "mid", lot: 6 /* Asphalt */, ...OPEN },
-  promenade: { w: [6, 10], d: 1, zone: "any", lot: 7 /* Plaza */, ...OPEN, along: "wide" },
+  meadow: { w: [5, 8], d: [5, 7], zone: "edge", lot: 1 /* Lawn */, ...OPEN2, frontage: false },
+  civicSquare: { w: [5, 6], d: [4, 5], zone: "core", lot: 7 /* Plaza */, ...OPEN2 },
+  fountainSquare: { w: 3, d: 3, zone: "core", lot: 7 /* Plaza */, ...OPEN2 },
+  greenway: { w: [6, 10], d: 2, zone: "any", lot: 3 /* Park */, ...OPEN2, waterside: true, frontage: false },
+  picnicGround: { w: 3, d: 3, zone: "edge", lot: 1 /* Lawn */, ...OPEN2 },
+  dogRun: { w: 2, d: 3, zone: "mid", lot: 12 /* Gravel */, ...OPEN2 },
+  plazaSteps: { w: [3, 4], d: 3, zone: "core", lot: 7 /* Plaza */, ...OPEN2, allow: 3 },
+  sculpturePark: { w: 4, d: 4, zone: "mid", lot: 3 /* Park */, ...OPEN2 },
+  bandstandGreen: { w: 4, d: 4, zone: "mid", lot: 3 /* Park */, ...OPEN2 },
+  memorial: { w: [2, 3], d: 2, zone: "core", lot: 12 /* Gravel */, ...OPEN2 },
+  skatePark: { w: 2, d: 3, zone: "mid", lot: 6 /* Asphalt */, ...OPEN2 },
+  promenade: { w: [6, 10], d: 1, zone: "any", lot: 7 /* Plaza */, ...OPEN2, along: "wide" },
   cemetery: { w: [4, 6], d: [4, 5], zone: "edge", lot: 1 /* Lawn */, solid: true, apart: 10 },
-  amphitheatre: { w: 4, d: 4, zone: "edge", lot: 1 /* Lawn */, ...OPEN, allow: 3 },
-  marketSquare: { w: [4, 5], d: 4, zone: "core", lot: 7 /* Plaza */, ...OPEN },
+  amphitheatre: { w: 4, d: 4, zone: "edge", lot: 1 /* Lawn */, ...OPEN2, allow: 3 },
+  marketSquare: { w: [4, 5], d: 4, zone: "core", lot: 7 /* Plaza */, ...OPEN2 },
   lakePark: { w: [7, 9], d: [6, 8], zone: "mid", lot: 3 /* Park */, solid: true, apart: 12, waterside: "prefer", frontage: false },
-  courts: { w: [3, 4], d: 3, zone: "mid", lot: 4 /* Pitch */, ...OPEN },
-  formalGarden: { w: [4, 5], d: [4, 5], zone: "core", lot: 12 /* Gravel */, ...OPEN },
-  allotments: { w: [3, 4], d: 3, zone: "edge", lot: 5 /* Yard */, ...OPEN },
+  courts: { w: [3, 4], d: 3, zone: "mid", lot: 4 /* Pitch */, ...OPEN2 },
+  formalGarden: { w: [4, 5], d: [4, 5], zone: "core", lot: 12 /* Gravel */, ...OPEN2 },
+  allotments: { w: [3, 4], d: 3, zone: "edge", lot: 5 /* Yard */, ...OPEN2 },
   botanicalGarden: { w: [5, 6], d: [5, 6], zone: "mid", lot: 3 /* Park */, solid: true, apart: 12 },
-  playground: { w: [2, 3], d: [2, 3], zone: "mid", lot: 13 /* Sand */, ...OPEN },
-  grove: { w: [3, 4], d: [3, 4], zone: "edge", lot: 3 /* Park */, ...OPEN },
+  playground: { w: [2, 3], d: [2, 3], zone: "mid", lot: 13 /* Sand */, ...OPEN2 },
+  grove: { w: [3, 4], d: [3, 4], zone: "edge", lot: 3 /* Park */, ...OPEN2 },
   // ---- civic ----
   courthouse: { w: 3, d: 3, floors: 3, zone: "core", lot: 7 /* Plaza */ },
   postOffice: { w: 2, d: 1, zone: "core", lot: 2 /* Paved */ },
@@ -11298,7 +11819,7 @@ var KIND_SPEC = {
   stables: { w: 2, d: 2, zone: "edge", lot: 5 /* Yard */ },
   // ---- the biomes' own ----
   // the Sands
-  souk: { w: [4, 5], d: 2, zone: "core", lot: 7 /* Plaza */, ...OPEN, apart: 10 },
+  souk: { w: [4, 5], d: 2, zone: "core", lot: 7 /* Plaza */, ...OPEN2, apart: 10 },
   caravanserai: { w: 3, d: 3, zone: "edge", lot: 13 /* Sand */, roadside: true, apart: 14 },
   windTower: { w: 1, d: 1, zone: "mid", lot: 13 /* Sand */, frontage: false },
   kasbah: { w: 3, d: 3, zone: "core", lot: 13 /* Sand */ },
@@ -11395,7 +11916,7 @@ var KIND_SPEC = {
   glassSpire: { w: 2, d: 2, floors: [34, 58], zone: "core", lot: 7 /* Plaza */, apart: 30 },
   // Tokyo (the tokyo style's swaps; towers are 2x2 so they find room in a packed core)
   shibuyaTower: { w: 2, d: 2, floors: [5, 7], zone: "core", lot: 7 /* Plaza */, apart: 40 },
-  scrambleCrossing: { w: 3, d: 3, zone: "core", lot: 6 /* Asphalt */, ...OPEN, apart: 40 },
+  scrambleCrossing: { w: 3, d: 3, zone: "core", lot: 6 /* Asphalt */, ...OPEN2, apart: 40 },
   metroGovTower: { w: 4, d: 3, zone: "core", lot: 7 /* Plaza */, gap: 1, apart: 40 },
   cocoonTower: { w: 2, d: 2, floors: [34, 50], zone: "core", lot: 7 /* Plaza */, apart: 30 },
   godzillaTower: { w: 2, d: 2, floors: 30, zone: "core", lot: 2 /* Paved */, apart: 40 },
@@ -11425,7 +11946,7 @@ var KIND_SPEC = {
   radioTower: { w: 2, d: 2, zone: "edge", lot: 12 /* Gravel */, apart: 10 },
   windmillRow: { w: 3, d: 1, zone: "edge", lot: 12 /* Gravel */, highest: true, frontage: false },
   taverna: { w: 2, d: 1, zone: "any", lot: 7 /* Plaza */, waterside: "prefer", apart: 5 },
-  stoneAmphitheatre: { w: 4, d: 4, zone: "edge", lot: 12 /* Gravel */, ...OPEN, allow: 3 },
+  stoneAmphitheatre: { w: 4, d: 4, zone: "edge", lot: 12 /* Gravel */, ...OPEN2, allow: 3 },
   // ---- houses of worship (the parish church is drawn by the town mesher; these are the rest) ----
   synagogue: { w: [2, 3], d: 3, zone: "mid", lot: 2 /* Paved */, apart: 20 },
   orthodoxChurch: { w: 3, d: [3, 4], zone: "core", lot: 7 /* Plaza */, apart: 20 },
@@ -11659,11 +12180,112 @@ var SOURCE_MIN = SEA + 13;
 
 // src/world/generate.ts
 var NN = N * N;
-var GEN_VERSION = 38;
+var GEN_VERSION = 39;
 var PAD = 40;
 var P = N + 2 * PAD;
 var PP = P * P;
 var RIM_DEPTH = SEA - 5;
+
+// src/world/spawn.ts
+var SPAWN = {
+  /** Cells a car must be able to reach from the start, the start's own included. */
+  cells: 10,
+  /** Land dealers that must be reachable within `dealerReach` cells of the start. */
+  dealers: 2,
+  dealerReach: 3,
+  /** Auto Shops that must be reachable within `shopReach` cells of the start. */
+  shops: 2,
+  shopReach: 2,
+  /** How far (cells, by road) the reach is counted. */
+  depth: 6,
+  /** The share of passing candidates the start is chosen among, best first. */
+  top: 0.1
+};
+var START_KINDS = /* @__PURE__ */ new Set(["continent", "full"]);
+var SHOP_KINDS = /* @__PURE__ */ new Set(["continent", "full", "small"]);
+var STEPS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+function carAcross(seedHash2, cx, cz, d) {
+  return landBorder(seedHash2, cx, cz, d) || straitAt(seedHash2, cx, cz, d) >= 0;
+}
+var Lattice = class {
+  constructor(seedHash2) {
+    this.seedHash = seedHash2;
+  }
+  kinds = /* @__PURE__ */ new Map();
+  edges = /* @__PURE__ */ new Map();
+  kind(cx, cz) {
+    const k = `${cx},${cz}`;
+    let v = this.kinds.get(k);
+    if (v === void 0) {
+      v = cellKind(this.seedHash, cx, cz);
+      this.kinds.set(k, v);
+    }
+    return v;
+  }
+  across(cx, cz, d) {
+    const [ax, az, ad] = d === 2 ? [cx - 1, cz, 0] : d === 3 ? [cx, cz - 1, 1] : [cx, cz, d];
+    const k = `${ax},${az},${ad}`;
+    let v = this.edges.get(k);
+    if (v === void 0) {
+      v = carAcross(this.seedHash, ax, az, ad);
+      this.edges.set(k, v);
+    }
+    return v;
+  }
+  dealer(cx, cz) {
+    return plannedDealer(this.seedHash, cx, cz);
+  }
+};
+function scoreSpawn(seedHash2, cx, cz, lat = new Lattice(seedHash2)) {
+  const out = { cx, cz, ok: false, why: null, cells: 0, dealers: 0, shops: 0, score: 0 };
+  if (!START_KINDS.has(lat.kind(cx, cz))) {
+    out.why = "not a whole island or a county";
+    return out;
+  }
+  const dist = /* @__PURE__ */ new Map([[`${cx},${cz}`, 0]]);
+  const queue = [[cx, cz, 0]];
+  let score = 0;
+  for (let h = 0; h < queue.length; h++) {
+    const [x, z, d] = queue[h];
+    const dealer = lat.dealer(x, z), shop = SHOP_KINDS.has(lat.kind(x, z));
+    if (dealer && d <= SPAWN.dealerReach) out.dealers++;
+    if (shop && d <= SPAWN.shopReach) out.shops++;
+    score += ((dealer ? 3 : 0) + (shop ? 1 : 0) + 0.4) / (1 + d);
+    if (d >= SPAWN.depth) continue;
+    for (let s = 0; s < 4; s++) {
+      if (!lat.across(x, z, s)) continue;
+      const nx = x + STEPS[s][0], nz = z + STEPS[s][1], k = `${nx},${nz}`;
+      if (dist.has(k)) continue;
+      dist.set(k, d + 1);
+      queue.push([nx, nz, d + 1]);
+    }
+  }
+  out.cells = queue.length;
+  out.score = score + Math.min(out.cells, 30) * 0.05;
+  out.why = out.cells < SPAWN.cells ? `only ${out.cells} cells reachable by car` : out.dealers < SPAWN.dealers ? `${out.dealers} land dealer${out.dealers === 1 ? "" : "s"} within ${SPAWN.dealerReach} cells` : out.shops < SPAWN.shops ? `${out.shops} shop${out.shops === 1 ? "" : "s"} within ${SPAWN.shopReach} cells` : null;
+  out.ok = out.why === null;
+  return out;
+}
+function rankSpawns(seedHash2, around, radius, pick, allow = () => true) {
+  const lat = new Lattice(seedHash2);
+  let all = [];
+  for (const r of [radius, radius * 2, radius * 4]) {
+    all = [];
+    for (let dz = -r; dz <= r; dz++) {
+      for (let dx = -r; dx <= r; dx++) {
+        const cx = around[0] + dx, cz = around[1] + dz;
+        if (allow(cx, cz)) all.push(scoreSpawn(seedHash2, cx, cz, lat));
+      }
+    }
+    if (all.some((s) => s.ok)) break;
+  }
+  const ok = all.filter((s) => s.ok).sort((a, b) => b.score - a.score || a.cx - b.cx || a.cz - b.cz);
+  if (!ok.length) return all.filter((s) => s.why !== "not a whole island or a county").sort((a, b) => b.score - a.score);
+  const top = Math.max(1, Math.ceil(ok.length * SPAWN.top));
+  const i = Math.min(top - 1, Math.floor(pick * top));
+  return [ok[i], ...ok.slice(0, i), ...ok.slice(i + 1)];
+}
+var START_RADIUS = 8;
 
 // server/index.ts
 var PORT = Number(process.env.PORT) || 8787;
@@ -11691,9 +12313,9 @@ var LOT = /^(-?\d{1,5},-?\d{1,5})#[bp]\d{1,7}$/;
 var TOWN = /^(-?\d{1,5},-?\d{1,5})#\d{1,4}$/;
 var EDIT_KINDS = /* @__PURE__ */ new Set(["road", "raze", "build", "lift", "wear", "ring", "claim"]);
 var freshCell = () => ({ edits: [] });
-var sha = (s) => createHash("sha256").update(s).digest("hex");
+var sha = (s) => createHash2("sha256").update(s).digest("hex");
 var pinHash = (pin, salt) => new Promise((ok, no) => scrypt(`${pin}|${PEPPER}`, salt, 32, (e, k) => e ? no(e) : ok(k.toString("hex"))));
-var sameHex = (a, b) => a.length === b.length && timingSafeEqual(Buffer.from(a, "hex"), Buffer.from(b, "hex"));
+var sameHex = (a, b) => a.length === b.length && timingSafeEqual2(Buffer.from(a, "hex"), Buffer.from(b, "hex"));
 var cleanBrand = (b) => {
   const x = b;
   if (!x || typeof x.name !== "string" || typeof x.primary !== "number" || typeof x.accent !== "number" || typeof x.logo !== "string") return null;
@@ -11716,6 +12338,23 @@ function landAt(cx, cz, strict) {
   return strict ? k === "full" || k === "continent" : k !== "sea";
 }
 function pickHome() {
+  const open = (cx, cz) => Math.max(Math.abs(cx), Math.abs(cz)) <= SPAWN_REACH && !world.homes[cellKey(cx, cz)];
+  const spots = [...conns.values()].map((c) => cellOfKey(c.cell)).sort(() => Math.random() - 0.5);
+  for (const [ax, az] of spots) {
+    const best2 = rankSpawns(
+      seedHash,
+      [ax, az],
+      SPAWN_NEAR,
+      Math.random(),
+      (cx, cz) => open(cx, cz) && Math.max(Math.abs(cx - ax), Math.abs(cz - az)) <= SPAWN_NEAR
+    )[0];
+    if (best2?.ok) return [best2.cx, best2.cz];
+  }
+  const best = rankSpawns(seedHash, [0, 0], START_RADIUS, Math.random(), open)[0];
+  if (best?.ok) return [best.cx, best.cz];
+  return pickHomeAnywhere();
+}
+function pickHomeAnywhere() {
   const free = (cx, cz, strict) => Math.max(Math.abs(cx), Math.abs(cz)) <= SPAWN_REACH && !world.homes[cellKey(cx, cz)] && landAt(cx, cz, strict);
   const near = (ax, az, r, strict) => {
     const out = [];
@@ -11844,7 +12483,7 @@ async function hello(ws, ip, m) {
     }
     signups.set(ip, [...made, now]);
     pid = `p:${world.nextId++}`;
-    const salt = randomBytes(12).toString("hex");
+    const salt = randomBytes2(12).toString("hex");
     const home = pickHome();
     doc = await players.open(pid);
     Object.assign(doc, {
@@ -11902,7 +12541,7 @@ async function hello(ws, ip, m) {
     refuse(ws, "full", "The world is full just now: try again in a little while.");
     return null;
   }
-  const token = randomBytes(24).toString("base64url");
+  const token = randomBytes2(24).toString("base64url");
   doc.token = sha(token);
   doc.tokenAt = now;
   doc.seen = now;
@@ -12374,6 +13013,15 @@ function http(req, res) {
   }
   if (path === "/healthz" || path === "/health") {
     res.writeHead(200, { "content-type": "text/plain" }).end("ok");
+    return;
+  }
+  if (path.startsWith("/api/") || path === ADMIN_PATH || path === `${ADMIN_PATH}/`) {
+    adminHttp(req, res, path, store).then((done) => {
+      if (!done && !res.headersSent) res.writeHead(404, { "content-type": "text/plain" }).end("Not found");
+    }).catch((e) => {
+      console.error("admin:", e.message);
+      if (!res.headersSent) res.writeHead(500).end();
+    });
     return;
   }
   if (path === "/online.json" || path === "/play/online.json") {
