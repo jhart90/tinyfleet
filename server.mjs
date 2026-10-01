@@ -9199,6 +9199,7 @@ var ADMIN_PAGE = String.raw`<!doctype html>
 :root{--bg:#f4f6f7;--card:#fff;--ink:#1f2b33;--mute:#76848c;--line:#e2e8eb;--acc:#e2412f;--ok:#1e9e4a;--warn:#c98a12;--chip:#eef2f4}
 @media (prefers-color-scheme:dark){:root{--bg:#12171b;--card:#1b2227;--ink:#e6edf0;--mute:#8d9aa2;--line:#2a343a;--chip:#232c32}}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
 header{display:flex;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:0;z-index:2;flex-wrap:wrap}
 header h1{font-size:17px;margin:0}header h1 span{color:var(--acc)}
