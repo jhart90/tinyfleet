@@ -178,6 +178,57 @@
     var film = document.getElementById('film');
     if (film && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { film.removeAttribute('autoplay'); film.pause(); }
     else if (film) { var go = function () { var p = film.play(); if (p && p.catch) p.catch(function () {}); }; go(); document.addEventListener('visibilitychange', function () { if (!document.hidden) go(); }); }
+
+    // Each shot's subject, so a phone (or any screen whose shape crops the 16:9 footage) shows it rather
+    // than whatever happens to be in the middle. Per shot: its start and end in seconds, and where the
+    // subject is (fractions of the frame, x from the left, y from the top) at the start, the middle and the
+    // end of it. The footage pans to keep that point as central as the crop allows.
+    var SHOTS = [
+      [0, 6, [0.70, 0.54, 0.35], 0.72],          // Dutch town: the windmill the camera passes
+      [6, 15, [0.50, 0.50, 0.50], 0.62],         // boats in a V up the harbour
+      [15, 23, [0.52, 0.58, 0.62], 0.42],        // the port: the container ship and the helicopter
+      [23, 29, [0.55, 0.55, 0.55], 0.45],        // a town from above: its square
+      [29, 35, [0.50, 0.50, 0.50], 0.45],        // the beach
+      [35, 41, [0.50, 0.52, 0.55], 0.50],        // the village
+      [41, 54.13, [0.58, 0.55, 0.50], 0.45],     // race meeting: the grid, then the hairpin
+      [54.13, 62.13, [0.22, 0.50, 0.70], 0.70],  // the convoy across the desert, the pyramid behind
+      [62.13, 999, [0.50, 0.48, 0.45], 0.55],    // the night chase: the searchlight's pool, then the bridge
+    ];
+    function subjectAt(t) {
+      for (var i = 0; i < SHOTS.length; i++) {
+        var s = SHOTS[i];
+        if (t < s[1] || i === SHOTS.length - 1) {
+          var k = Math.min(1, Math.max(0, (t - s[0]) / ((i === SHOTS.length - 1 ? 74.5 : s[1]) - s[0])));
+          var xs = s[2], x = k < 0.5 ? xs[0] + (xs[1] - xs[0]) * k * 2 : xs[1] + (xs[2] - xs[1]) * (k - 0.5) * 2;
+          return [x, s[3]];
+        }
+      }
+      return [0.5, 0.5];
+    }
+    // place the cropped footage so the subject sits at the middle of the screen, as near as the crop allows
+    var lastPos = '';
+    function frame() {
+      var vw = film.videoWidth || 1920, vh = film.videoHeight || 1080;
+      var cw = filmBox.clientWidth || innerWidth, ch = filmBox.clientHeight || innerHeight;
+      var scale = Math.max(cw / vw, ch / vh), iw = vw * scale, ih = vh * scale;
+      var p = subjectAt(film.currentTime || 0);
+      var ox = Math.min(0, Math.max(cw - iw, cw / 2 - p[0] * iw));
+      var oy = Math.min(0, Math.max(ch - ih, ch / 2 - p[1] * ih));
+      var pos = Math.round(ox) + 'px ' + Math.round(oy) + 'px';
+      if (pos !== lastPos) { film.style.objectPosition = pos; lastPos = pos; }
+    }
+    var looping = false;
+    function loop() { frame(); if (!film.paused && !document.hidden) requestAnimationFrame(loop); else looping = false; }
+    function start() { if (!looping) { looping = true; requestAnimationFrame(loop); } }
+    film.addEventListener('play', start);
+    film.addEventListener('playing', start);
+    film.addEventListener('loadedmetadata', frame);
+    film.addEventListener('seeked', frame);
+    window.addEventListener('resize', frame);
+    window.addEventListener('orientationchange', frame);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) start(); });
+    frame();
+    if (!film.paused) start();
   })();
   // the version and the sizes, from version.json (written by npm run site)
   fetch('version.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (v) {
