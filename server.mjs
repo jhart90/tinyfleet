@@ -9188,7 +9188,28 @@ var N = 256;
 var SEA = 2;
 var CHUNK = 16;
 var CHUNKS = N / CHUNK;
-var REGION_KINDS = ["sands", "icefield", "shallows", "green", "heights", "moors", "veldt", "fens", "terraces", "whitewash", "goldhills"];
+var REGION_KINDS = [
+  "sands",
+  "icefield",
+  "shallows",
+  "green",
+  "heights",
+  "moors",
+  "veldt",
+  "fens",
+  "terraces",
+  "whitewash",
+  "goldhills",
+  "firecoast",
+  "fjords",
+  "bigtimber",
+  "redrock",
+  "dragonbay",
+  "steppe",
+  "saltpan",
+  "mangrove",
+  "lavender"
+];
 var World = class {
   corners = new Int8Array(N * N * 4);
   water = new Int8Array(N * N).fill(-1);
@@ -10060,6 +10081,636 @@ var REGIONS = {
     swaps: { field: "vineyard", barn: "wineryBarn", farmhouse: "ranchHouse", iceRink: null, windTurbine: null },
     country: [{ kind: "ranchHouse", count: 4, w: 2, d: 2, where: "any" }, { kind: "wineryBarn", count: 2, w: 3, d: 2, where: "low" }, { kind: "vineyard", count: 3, w: 3, d: 3, where: "low" }],
     wonder: { kind: "mission", name: ["Mission San ", "the Old Mission", "Mission Santa "], w: 12, d: 12, where: "flat" }
+  },
+  // ================================================================================== 12 · the Fire Coast
+  firecoast: {
+    kind: "firecoast",
+    title: "the Fire Coast",
+    label: "volcanic",
+    temp: [0.15, 0.8],
+    cells: ["full", "continent"],
+    coastal: true,
+    islandSuffix: [" Fire Isle", " Cinders", " Ashlands", " Isle"],
+    // black sand, moss over old flows and a cone that still smokes: Iceland, Hawaii, the Canaries
+    moisture: 0.5,
+    arid: 0,
+    temperature: 0.42,
+    hills: 0.65,
+    hillAmp: 0.9,
+    massif: 0.6,
+    peakCap: 16,
+    cliff: 0.7,
+    water: 0.45,
+    falloff: 1.3,
+    beaches: 3,
+    farms: 1,
+    quarries: 1,
+    pistes: 0,
+    lakes: 2,
+    rivers: 0.7,
+    forbid: ["karstTowers", "mangroves", "dunes", "saltFlat", "mesaCountry", "badlands", "caldera"],
+    ask: ["volcano"],
+    lava: 0.5,
+    palette: {
+      plains: 7309912,
+      hills: 6452058,
+      forest: 5204554,
+      beach: 3025968,
+      cliffTop: 5000266,
+      desert: 5919824,
+      canyon: 6961712,
+      mountainLow: 3814968,
+      mountainHigh: 4998728,
+      track: 4867652,
+      lawn: 8034910,
+      park: 6982226,
+      cliffGreyTop: 3815482,
+      cliffGreyBot: 2236452,
+      cliffEarthTop: 4864566,
+      cliffEarthBot: 2761252,
+      cliffPaleTop: 5920344,
+      cliffPaleBot: 3420726,
+      bedSand: 3815484,
+      bedMud: 3025966,
+      waterShallow: 5218472,
+      waterMid: 2781064,
+      waterDeep: 1920880
+    },
+    sky: 14672614,
+    atlas: 5914438,
+    treeDensity: { forest: 0.14, hills: 0.02, plains: 0.01, beach: 0 },
+    trees: { birch: 2, spruce: 1 },
+    clutter: { shrub: 0.03, heather: 0.06 },
+    herds: ["sheep", "hikers"],
+    towns: ["suburb", "rural", "rural"],
+    tier: { metro: "city", mega: "city" },
+    site: "coast",
+    taste: { timber: 6, norse: 4 },
+    surface: {},
+    names: [["Reykja", "Akur", "H\xFAsa", "Borgar", "Eld", "Hraun", "Sel", "Grinda", "Hvera", "Skaga"], ["v\xEDk", "nes", "fj\xF6r\xF0ur", "dalur", "eyri", "holt", "ger\xF0i"]],
+    swaps: { church: "blackChurch", chapel: "blackChurch", lido: "hotSpringBaths", waterPark: "hotSpringBaths", powerPlant: "geothermalPlant", windTurbine: null, vineyard: null, orchard: null },
+    country: [{ kind: "geothermalPlant", count: 1, w: 4, d: 3, where: "any" }, { kind: "hotSpringBaths", count: 1, w: 3, d: 3, where: "low" }, { kind: "turfHouse", count: 5, w: 1, d: 1, where: "any" }],
+    wonder: { kind: "greatGeyser", name: ["the Great Geysir", "Old Steamer", "the Geyser of "], w: 12, d: 12, where: "flat" }
+  },
+  // ================================================================================== 13 · the Fjordlands
+  fjords: {
+    kind: "fjords",
+    title: "the Fjordlands",
+    label: "fjord",
+    temp: [-1, 0.52],
+    cells: ["full", "small", "continent"],
+    coastal: true,
+    islandSuffix: [" Fjord", " Sound", " Fjords", " Land"],
+    // the sea let deep into high green country: every road a ferry, a tunnel or a climb
+    temperature: 0.28,
+    moisture: 0.65,
+    hills: 0.7,
+    massif: 0.9,
+    cliff: 1,
+    fjords: true,
+    snowLine: 7.5,
+    water: 0.5,
+    falloff: 1.3,
+    beaches: 0,
+    farms: 2,
+    pistes: 1,
+    quarries: 1,
+    rivers: 1.3,
+    lakes: 2,
+    forbid: ["volcano", "caldera", "mangroves", "dunes", "badlands", "mesaCountry", "karstTowers", "saltFlat"],
+    palette: {
+      plains: 8038496,
+      hills: 8825960,
+      forest: 4157006,
+      beach: 12104872,
+      cliffTop: 8033384,
+      mountainLow: 6975090,
+      mountainHigh: 8817296,
+      track: 11050634,
+      lawn: 8696934,
+      park: 7775836,
+      cliffGreyTop: 6448748,
+      cliffGreyBot: 3817028,
+      cliffPaleTop: 9080466,
+      cliffPaleBot: 5527646,
+      waterShallow: 5216928,
+      waterMid: 2452092,
+      waterDeep: 1326938
+    },
+    sky: 14214896,
+    atlas: 4160138,
+    treeDensity: { forest: 0.75, hills: 0.14, plains: 0.03, beach: 0 },
+    trees: { spruce: 3, birch: 1.5, pine: 1 },
+    clutter: { haystack: 4e-3, mooredBoat: 0.05 },
+    herds: ["sheep", "hikers"],
+    towns: ["city", "suburb", "rural", "rural"],
+    tier: { metro: "city", mega: "city" },
+    site: "coast",
+    taste: { norse: 8, timber: 4 },
+    surface: {},
+    names: [["Sogn", "Hardang", "Geirang", "Lyse", "N\xE6r", "Aur", "Stav", "Ber", "Trond", "\xC5le", "Fl\xE5", "Bal"], ["fjord", "vik", "dal", "sund", "nes", "heim", "vang", "strand"]],
+    swaps: { chapel: "staveChurch", vineyard: null, windTurbine: null, waterPark: null, lido: "sauna" },
+    country: [{ kind: "boatShed", count: 5, w: 1, d: 1, where: "shore" }, { kind: "rorbu", count: 5, w: 1, d: 1, where: "shore" }, { kind: "fishFarm", count: 2, w: 3, d: 3, where: "water" }],
+    wonder: { kind: "arcticCathedral", name: ["the Arctic Cathedral", "the Cathedral of the Northern Lights", "the Ice Sea Cathedral"], w: 12, d: 12, where: "lake" }
+  },
+  // ================================================================================== 14 · the Big Timber
+  bigtimber: {
+    kind: "bigtimber",
+    title: "the Big Timber",
+    label: "giant forest",
+    temp: [0.2, 0.66],
+    wet: [0.48, 2],
+    cells: ["full", "small", "continent"],
+    islandSuffix: [" Timber", " Woods", " Forest", " Sound"],
+    // trees three hundred feet tall, logging roads and float-plane lakes: the Pacific Northwest, Siberia
+    moisture: 0.95,
+    arid: 0,
+    temperature: 0.4,
+    hills: 0.75,
+    hillAmp: 1.1,
+    massif: 0.6,
+    cliff: 0.6,
+    snowLine: 8.5,
+    water: 0.44,
+    falloff: 1.3,
+    beaches: 1,
+    farms: 0,
+    pistes: 1,
+    quarries: 1,
+    lakes: 5,
+    rivers: 1.4,
+    forbid: ["dunes", "saltFlat", "badlands", "mesaCountry", "karstTowers", "mangroves"],
+    palette: {
+      plains: 6263888,
+      hills: 5540426,
+      forest: 2907194,
+      beach: 11052180,
+      cliffTop: 5930060,
+      track: 8020552,
+      mountainLow: 5923422,
+      mountainHigh: 8028798,
+      lawn: 6725716,
+      park: 5804618,
+      cliffEarthTop: 5916210,
+      cliffEarthBot: 3812384,
+      bedMud: 5917238,
+      waterShallow: 5936784,
+      waterMid: 3107442,
+      waterDeep: 1919580
+    },
+    sky: 13951708,
+    atlas: 2050612,
+    treeDensity: { forest: 0.95, hills: 0.6, plains: 0.3, beach: 0.02 },
+    trees: { redwood: 3, spruce: 2, pine: 1 },
+    clutter: { fern: 0.1 },
+    herds: ["hikers"],
+    towns: ["city", "suburb", "rural", "rural"],
+    tier: { metro: "city", mega: "city" },
+    site: "clearing",
+    taste: { timber: 6, western: 2, chalet: 2, victorian: 0.6 },
+    surface: { rural: "dirt" },
+    names: [["Cedar", "Spruce", "Fir", "Eagle", "Bear", "Salmon", "Moss", "Raven", "Timber", "Otter", "Elk", "Hemlock"], [" Creek", " Falls", " Landing", "ton", " Bay", " Hollow", " Mill", " Ridge"]],
+    swaps: { field: null, vineyard: null, orchard: null, windTurbine: null, store: "generalStore", factory: "paperMill", clockTower: "lookoutTower" },
+    margin: 1.5,
+    country: [
+      { kind: "loggingCamp", count: 3, w: 3, d: 3, where: "any" },
+      { kind: "lookoutTower", count: 3, w: 1, d: 1, where: "high" },
+      { kind: "seaplaneBase", count: 2, w: 3, d: 2, where: "water" },
+      { kind: "lumberYard", count: 1, w: 5, d: 4, where: "low" }
+    ],
+    wonder: { kind: "giantTree", name: ["the Grandfather Tree", "the Cathedral Grove", "the Tunnel Tree"], w: 12, d: 12, where: "flat" }
+  },
+  // ================================================================================== 15 · the Red Rock
+  redrock: {
+    kind: "redrock",
+    title: "the Red Rock",
+    label: "badlands",
+    temp: [0.5, 2],
+    wet: DRY,
+    cells: ["continent"],
+    islandSuffix: [" Mesa", " Buttes", " Badlands", " Rock"],
+    // mesas, buttes and banded canyon walls, a roadhouse every hundred miles: Monument Valley, the Outback
+    moisture: 0.12,
+    arid: 0.95,
+    temperature: 0.85,
+    hills: 0.8,
+    hillAmp: 0.7,
+    massif: 0.2,
+    peakCap: 10,
+    cliff: 0.5,
+    badlands: true,
+    snowLine: null,
+    water: 0.4,
+    falloff: 1.3,
+    beaches: 0,
+    farms: 0,
+    quarries: 2,
+    pistes: 0,
+    lakes: 1,
+    rivers: 0.5,
+    dryRivers: true,
+    forbid: ["glacier", "mangroves", "karstTowers", "fjordCoast", "volcano", "caldera", "saltFlat", "dunes"],
+    ask: ["mesaCountry"],
+    palette: {
+      plains: 13142618,
+      hills: 12548684,
+      forest: 10127954,
+      desert: 13668444,
+      canyon: 12081210,
+      beach: 14727312,
+      mountainLow: 11031610,
+      mountainHigh: 12347980,
+      cliffTop: 12877902,
+      track: 12087882,
+      lawn: 11053152,
+      park: 10002520,
+      cliffEarthTop: 12081210,
+      cliffEarthBot: 8008740,
+      cliffPaleTop: 14195306,
+      cliffPaleBot: 10509372,
+      cliffGreyTop: 10115652,
+      cliffGreyBot: 6961708,
+      bedMud: 13146732,
+      bedSand: 14198904,
+      dune: 14195298,
+      duneShade: 12087358,
+      waterShallow: 6989984,
+      waterMid: 4164240,
+      waterDeep: 2779782
+    },
+    sky: 16049360,
+    atlas: 12079151,
+    treeDensity: { forest: 0.04, hills: 8e-3, plains: 6e-3, beach: 0 },
+    trees: { acacia: 1, olive: 0.4 },
+    clutter: { shrub: 0.05 },
+    cacti: true,
+    herds: ["cattle"],
+    towns: ["suburb", "rural", "rural"],
+    tier: { metro: "city", mega: "city", city: "suburb" },
+    site: "valley",
+    taste: { western: 6, motherroad: 5, adobe: 4 },
+    surface: { rural: "dirt", suburb: "dirt" },
+    names: [["Red ", "Dry ", "Copper ", "Dust ", "Coyote ", "Iron ", "Bitter ", "Lone ", "Broken ", "Rattlesnake "], ["Mesa", "Gulch", "Springs", "Wash", "Butte", "Creek", "Flat", "Wells", "Junction"]],
+    swaps: { store: "generalStore", pub: "roadhouse", motel: "roadhouse", house: "house", field: null, vineyard: null, orchard: null, windTurbine: "pumpWindmill", windmill: "pumpWindmill", iceRink: null, lido: null, waterPark: null, lakePark: null },
+    country: [
+      { kind: "roadhouse", count: 2, w: 3, d: 2, where: "any" },
+      { kind: "pueblo", count: 3, w: 2, d: 2, where: "high" },
+      { kind: "dinosaurDig", count: 1, w: 3, d: 3, where: "low" },
+      { kind: "pumpWindmill", count: 4, w: 1, d: 1, where: "low" },
+      { kind: "mineHeadframe", count: 1, w: 4, d: 4, where: "any" }
+    ],
+    wonder: { kind: "monumentButtes", name: ["the Three Sisters", "the Mittens", "the Monuments of "], w: 14, d: 14, where: "flat" },
+    lamp: "none"
+  },
+  // ================================================================================== 16 · Dragon Bay
+  dragonbay: {
+    kind: "dragonbay",
+    title: "Dragon Bay",
+    label: "karst",
+    temp: [0.55, 2],
+    wet: WET,
+    cells: ["full", "continent"],
+    coastal: true,
+    islandSuffix: [" Bay", " Towers", " Isles", " Karst"],
+    // limestone towers standing out of rice flats and a jade sea: Ha Long, Guilin
+    moisture: 0.85,
+    arid: 0,
+    temperature: 0.82,
+    hills: 0.3,
+    massif: 0.15,
+    peakCap: 8,
+    relief: 0.6,
+    cliff: 0.6,
+    shelf: 10,
+    snowLine: null,
+    water: 0.52,
+    falloff: 1.25,
+    beaches: 2,
+    farms: 4,
+    quarries: 0,
+    pistes: 0,
+    lakes: 2,
+    rivers: 1.4,
+    forbid: ["dunes", "saltFlat", "glacier", "badlands", "mesaCountry", "fjordCoast", "volcano", "caldera"],
+    ask: ["karstTowers"],
+    palette: {
+      plains: 8175712,
+      hills: 7254616,
+      forest: 3967560,
+      beach: 15261888,
+      cliffTop: 6988888,
+      track: 11048048,
+      mountainLow: 8030842,
+      mountainHigh: 9740948,
+      lawn: 8702052,
+      park: 7387220,
+      cliffGreyTop: 9081992,
+      cliffGreyBot: 5923932,
+      cliffPaleTop: 11055268,
+      cliffPaleBot: 7239792,
+      bedMud: 6974024,
+      waterShallow: 7329984,
+      waterMid: 3715236,
+      waterDeep: 2064520
+    },
+    crops: [9097322, 8044634, 10147962],
+    sky: 14479080,
+    atlas: 4173460,
+    treeDensity: { forest: 0.9, hills: 0.4, plains: 0.06, beach: 0.06 },
+    trees: { canopy: 2, bamboo: 2, palm: 0.8, round: 1 },
+    clutter: { fern: 0.04, mooredBoat: 0.08 },
+    herds: [],
+    beachAllYear: true,
+    towns: ["city", "suburb", "rural", "rural"],
+    tier: { mega: "metro" },
+    site: "coast",
+    taste: { chinese: 6, seasia: 4, eastern: 2, hongkong: 3 },
+    surface: { rural: "dirt", suburb: "brick", city: "brick" },
+    names: [["Long ", "Bai ", "Hai ", "Cat ", "Yang", "Gui", "Lan ", "Ha ", "Ninh ", "Xing"], ["Shan", "Wan", "Ba", "Shuo", "Lin", "Hai", "Tien", "Binh", "Ping"]],
+    swaps: { church: "temple", chapel: "shrine", waterTower: "karstPagoda", field: "riceTerraces", windTurbine: null, iceRink: null, diner: "teaHouse" },
+    lamp: "lantern",
+    country: [{ kind: "floatingVillage", count: 2, w: 3, d: 3, where: "water" }, { kind: "junkMooring", count: 4, w: 2, d: 2, where: "shore" }, { kind: "karstPagoda", count: 3, w: 1, d: 1, where: "high" }],
+    wonder: { kind: "cloudTemple", name: ["the Temple in the Clouds", "Dragon Gate Temple", "the Jade Pinnacle"], w: 12, d: 12, where: "high" }
+  },
+  // ================================================================================== 17 · the Steppe
+  steppe: {
+    kind: "steppe",
+    title: "the Steppe",
+    label: "steppe",
+    temp: [0.12, 0.72],
+    wet: [-1, 0.58],
+    cells: ["full", "continent"],
+    islandSuffix: [" Steppe", " Plain", " Grass", " Land"],
+    // grass to every horizon, a track instead of a road and felt tents instead of a town: Mongolia
+    moisture: 0.3,
+    arid: 0.1,
+    temperature: 0.4,
+    hills: 0.5,
+    hillAmp: 0.45,
+    massif: 0.1,
+    peakCap: 8,
+    relief: 0.7,
+    cliff: 0.2,
+    water: 0.4,
+    falloff: 1.3,
+    beaches: 0,
+    farms: 0,
+    quarries: 0,
+    pistes: 0,
+    lakes: 3,
+    rivers: 0.6,
+    forbid: ["dunes", "mangroves", "karstTowers", "fjordCoast", "volcano", "caldera", "mesaCountry", "badlands", "saltFlat"],
+    palette: {
+      plains: 11057256,
+      hills: 10267230,
+      forest: 9083990,
+      beach: 13682848,
+      cliffTop: 10003548,
+      desert: 12628080,
+      track: 10126424,
+      mountainLow: 9077352,
+      mountainHigh: 10525312,
+      lawn: 11189354,
+      park: 10268256,
+      cliffEarthTop: 9073224,
+      cliffEarthBot: 5917232,
+      bedMud: 9075284,
+      waterShallow: 6990008,
+      waterMid: 4163236,
+      waterDeep: 2779796
+    },
+    sky: 14871796,
+    atlas: 11055200,
+    treeDensity: { forest: 0.02, hills: 3e-3, plains: 2e-3, beach: 0 },
+    trees: { birch: 1, windPine: 1 },
+    clutter: { shrub: 0.015 },
+    cacti: false,
+    herds: ["horses", "sheep", "goats"],
+    towns: ["rural", "rural", "rural"],
+    tier: { metro: "suburb", mega: "suburb", city: "suburb", suburb: "rural" },
+    site: "valley",
+    taste: { himalayan: 4, russian: 3, timber: 2 },
+    surface: { rural: "dirt", suburb: "dirt", city: "dirt", metro: "dirt" },
+    names: [["Ulaan", "Khar", "Tsagaan", "Altan", "Bayan", "Erdene", "Dalan", "M\xF6r\xF6n", "T\xF6m\xF6r", "Kh\xF6kh"], ["gol", "nuur", "uul", "tal", "bulag", "khot", "sum", "dalai"]],
+    swaps: { house: "yurt", farmhouse: "yurt", cottage: "yurt", bungalow: "yurt", barn: "horseCorral", field: null, vineyard: null, orchard: null, windTurbine: null, waterPark: null, lido: null, memorial: "ovoo", chapel: "stupa" },
+    lamp: "none",
+    grid: 5,
+    country: [{ kind: "yurtCamp", count: 5, w: 3, d: 3, where: "any" }, { kind: "ovoo", count: 4, w: 1, d: 1, where: "high" }, { kind: "horseCorral", count: 3, w: 3, d: 2, where: "low" }],
+    wonder: { kind: "khanStatue", name: ["the Great Khan", "the Horseman of ", "the Steel Rider"], w: 12, d: 12, where: "flat" }
+  },
+  // ================================================================================== 18 · the Salt Pan
+  saltpan: {
+    kind: "saltpan",
+    title: "the Salt Pan",
+    label: "salt flats",
+    temp: [0.45, 2],
+    wet: DRY,
+    cells: ["continent"],
+    islandSuffix: [" Salar", " Flats", " Pan", " Salt"],
+    // a dry lake bed white to the horizon and flat enough to chase a record on: Bonneville, Uyuni
+    moisture: 0.1,
+    arid: 0.85,
+    temperature: 0.75,
+    hills: 0.15,
+    hillAmp: 0.4,
+    massif: 0.1,
+    peakCap: 9,
+    relief: 0.35,
+    cliff: 0.1,
+    snowLine: null,
+    water: 0.4,
+    falloff: 1.3,
+    beaches: 0,
+    farms: 0,
+    quarries: 1,
+    pistes: 0,
+    lakes: 0,
+    rivers: 0.3,
+    dryRivers: true,
+    forbid: ["glacier", "mangroves", "karstTowers", "fjordCoast", "volcano", "caldera", "mesaCountry", "dunes"],
+    ask: ["saltFlat"],
+    salt: 0.5,
+    palette: {
+      plains: 14208942,
+      hills: 13352856,
+      forest: 11053176,
+      desert: 14866616,
+      canyon: 12095600,
+      beach: 15657176,
+      mountainLow: 11045488,
+      mountainHigh: 12361864,
+      cliffTop: 13681824,
+      track: 13616292,
+      lawn: 11843704,
+      park: 10791532,
+      cliffEarthTop: 12098168,
+      cliffEarthBot: 8020552,
+      cliffPaleTop: 15262416,
+      cliffPaleBot: 11577488,
+      bedMud: 14735552,
+      bedSand: 15525588,
+      waterShallow: 9425104,
+      waterMid: 5941432,
+      waterDeep: 3835560
+    },
+    sky: 15790836,
+    atlas: 15789798,
+    treeDensity: { forest: 0.01, hills: 2e-3, plains: 1e-3, beach: 0 },
+    trees: { acacia: 1 },
+    clutter: { shrub: 0.02 },
+    cacti: true,
+    herds: [],
+    towns: ["suburb", "rural", "rural"],
+    tier: { metro: "city", mega: "city", city: "suburb" },
+    site: "lee",
+    taste: { western: 4, adobe: 3, motherroad: 3, andean: 3 },
+    surface: { rural: "dirt", suburb: "dirt" },
+    names: [["Salt ", "White ", "Mirror ", "Borax ", "Alkali ", "Salar ", "Blanca ", "Dry Lake ", "Speed "], ["Flats", "Wells", "Siding", "Junction", "Springs", "City", "Station", "Bend"]],
+    swaps: { field: null, vineyard: null, orchard: null, windTurbine: null, hotel: "saltHotel", motel: "saltHotel", factory: "saltWorks", iceRink: null, lakePark: null, lido: null, waterPark: null, scrapyard: "trainCemetery" },
+    lamp: "none",
+    country: [{ kind: "saltWorks", count: 2, w: 4, d: 3, where: "low" }, { kind: "saltHotel", count: 1, w: 2, d: 2, where: "any" }, { kind: "trainCemetery", count: 1, w: 4, d: 3, where: "any" }],
+    wonder: { kind: "speedStrip", name: ["the Measured Mile", "the Speedway of ", "the International Speedway"], w: 6, d: 30, where: "flat" }
+  },
+  // ================================================================================== 19 · the Mangroves
+  mangrove: {
+    kind: "mangrove",
+    title: "the Mangroves",
+    label: "mangrove delta",
+    temp: [0.7, 2],
+    wet: WET,
+    cells: ["full", "small", "continent"],
+    coastal: true,
+    islandSuffix: [" Delta", " Mangroves", " Creeks", " Sunderbans"],
+    // a delta going out to sea through a maze of creeks: airboat and stilt-house country
+    moisture: 0.95,
+    arid: 0,
+    temperature: 0.9,
+    hills: 0.05,
+    massif: 0,
+    relief: 0.35,
+    cap: 2,
+    cliff: 0,
+    shelf: 14,
+    mangroves: true,
+    snowLine: null,
+    water: 0.46,
+    falloff: 1.15,
+    beaches: 0,
+    farms: 2,
+    quarries: 0,
+    pistes: 0,
+    lakes: 4,
+    rivers: 2,
+    forbid: ["dunes", "saltFlat", "glacier", "mesaCountry", "badlands", "fjordCoast", "volcano", "caldera", "skerries", "karstTowers"],
+    palette: {
+      plains: 8035408,
+      hills: 8824920,
+      forest: 4616252,
+      beach: 11051128,
+      cliffTop: 8034900,
+      marsh: 6257216,
+      track: 9075284,
+      lawn: 8957014,
+      park: 8036428,
+      bedMud: 5919286,
+      waterShallow: 6982234,
+      waterMid: 4878424,
+      waterDeep: 3103324
+    },
+    crops: [10142298, 9091146, 11061354],
+    sky: 14739672,
+    atlas: 5208638,
+    treeDensity: { forest: 0.75, hills: 0.2, plains: 0.12, beach: 0.1 },
+    trees: { canopy: 2, palm: 1.5, cypress: 1 },
+    clutter: { reeds: 0.08, mooredBoat: 0.06 },
+    herds: [],
+    beachAllYear: true,
+    towns: ["suburb", "rural", "rural"],
+    tier: { metro: "city", mega: "city", city: "suburb" },
+    site: "levee",
+    taste: { seasia: 6, colonial: 3, havana: 2 },
+    surface: { rural: "dirt", suburb: "dirt", city: "brick" },
+    names: [["Sundar", "Khulna", "Mong", "Kali", "Bhola", "Pat", "Bari", "Gosa", "Hiron"], ["ban", "pur", "ganj", "khali", "hat", "dwip", "gram"]],
+    swaps: { store: "generalStore", house: "stiltHouse", field: "riceTerraces", windTurbine: null, iceRink: null, windmill: null, factory: "cannery", cemetery: null },
+    lamp: "lantern",
+    country: [
+      { kind: "stiltVillage", count: 3, w: 3, d: 3, where: "water" },
+      { kind: "shrimpFarm", count: 2, w: 3, d: 3, where: "low" },
+      { kind: "airboatDock", count: 3, w: 2, d: 2, where: "water" },
+      { kind: "stiltHouse", count: 6, w: 1, d: 1, where: "water" }
+    ],
+    wonder: { kind: "floatingMarket", name: ["the Floating Market", "the Market of a Thousand Boats", "the Water Bazaar"], w: 12, d: 12, where: "lake" }
+  },
+  // ================================================================================== 20 · the Lavender Plateau
+  lavender: {
+    kind: "lavender",
+    title: "the Lavender Plateau",
+    label: "provence",
+    temp: [0.45, 0.88],
+    wet: [-1, 0.66],
+    cells: ["full", "small", "continent"],
+    islandSuffix: [" Plateau", " Garrigue", " Lavande", " Hills"],
+    // purple rows to the hills, stone farmhouses, plane trees on the square: the Valensole plateau
+    moisture: 0.4,
+    arid: 0.1,
+    temperature: 0.7,
+    hills: 0.7,
+    hillAmp: 0.55,
+    massif: 0.25,
+    peakCap: 12,
+    relief: 0.8,
+    cliff: 0.5,
+    snowLine: null,
+    water: 0.45,
+    falloff: 1.3,
+    beaches: 1,
+    farms: 7,
+    quarries: 1,
+    pistes: 0,
+    lakes: 1,
+    rivers: 0.8,
+    forbid: ["dunes", "glacier", "mangroves", "karstTowers", "fjordCoast", "badlands", "saltFlat", "volcano", "caldera", "mesaCountry"],
+    palette: {
+      plains: 11975796,
+      hills: 10924140,
+      forest: 7244370,
+      beach: 15260864,
+      cliffTop: 12104828,
+      track: 13943968,
+      mountainLow: 12102288,
+      mountainHigh: 13286820,
+      lawn: 11057260,
+      park: 10005090,
+      cliffPaleTop: 14735040,
+      cliffPaleBot: 11050116,
+      cliffEarthTop: 13153424,
+      cliffEarthBot: 9337436,
+      waterShallow: 6275264,
+      waterMid: 3117232,
+      waterDeep: 2058912
+    },
+    crops: [9069248, 8017072, 10122444, 14202954],
+    cropKinds: ["lavender", "lavender", "lavender", "sunflower"],
+    sky: 14674680,
+    atlas: 10119880,
+    treeDensity: { forest: 0.3, hills: 0.05, plains: 0.025, beach: 0.01 },
+    trees: { cypress: 2, olive: 2, stonePine: 1, poplar: 0.6, oak: 0.6 },
+    clutter: { shrub: 0.03 },
+    herds: ["goats", "hikers"],
+    towns: ["city", "suburb", "rural", "rural"],
+    tier: { metro: "city", mega: "city" },
+    site: "cliffTop",
+    taste: { mediterranean: 8, roman: 2, medieval: 1.5, moorish: 1 },
+    surface: { rural: "cobble", suburb: "cobble" },
+    names: [["Saint-", "Mont", "Val", "Roque", "Beau", "Ch\xE2teauneuf-", "Aigue", "Puy", "Gran"], ["R\xE9my", "ensole", "brune", "mont", "vert", "luz", "morte", "sault", "ville", "Didier"]],
+    swaps: { field: "lavenderField", farmhouse: "bastide", barn: "perfumery", silo: "dovecote", windTurbine: "windmill", iceRink: null, brewery: "perfumery", pub: "taverna" },
+    country: [
+      { kind: "bastide", count: 4, w: 2, d: 2, where: "any" },
+      { kind: "lavenderField", count: 4, w: 6, d: 5, where: "low" },
+      { kind: "dovecote", count: 3, w: 1, d: 1, where: "any" },
+      { kind: "perfumery", count: 1, w: 2, d: 2, where: "low" }
+    ],
+    wonder: { kind: "lavenderAbbey", name: ["the Abbey of the Lavender", "Sainte-Lavande Abbey", "the Abbey of "], w: 12, d: 12, where: "flat" }
   }
 };
 
@@ -10235,7 +10886,15 @@ function guaranteedCell(seedHash2, f) {
 }
 var LONER = { saltFlat: 2, karstTowers: 2, mesaCountry: 2 };
 var featureCache = /* @__PURE__ */ new Map();
+function asked(seedHash2, cx, cz, f) {
+  if (f === "atoll" || f === "caldera" || cx === 0 && cz === 0) return false;
+  const region = regionAt(seedHash2, cx, cz);
+  if (!region || !REGIONS[region].ask?.includes(f)) return false;
+  const kind = rawKind(seedHash2, cx, cz);
+  return kind === "full" || kind === "continent";
+}
 function featureRolled(seedHash2, cx, cz, f) {
+  if (asked(seedHash2, cx, cz, f)) return true;
   if (!eligible(seedHash2, cx, cz, f)) return false;
   if (f === "volcano" && featureAt(seedHash2, cx, cz, "caldera")) return false;
   const rule = FEATURE_RULE[f];
@@ -10249,7 +10908,7 @@ function featureAt(seedHash2, cx, cz, f) {
   if (hit !== void 0) return hit;
   let out = featureRolled(seedHash2, cx, cz, f);
   const R = LONER[f];
-  if (out && R) {
+  if (out && R && !asked(seedHash2, cx, cz, f)) {
     const g = guaranteedCell(seedHash2, f);
     const promisedHere = !!g && g[0] === cx && g[1] === cz;
     const roll = cell01(seedHash2, cx, cz, FEATURE_RULE[f].salt);
@@ -10319,7 +10978,16 @@ function promises(seedHash2) {
   };
   const all = REGION_KINDS.map((_, i) => i);
   choose(FIRST_PROMISE, all, -2);
-  for (let ki = 0; ki < REGION_KINDS.length; ki++) {
+  const room = all.map((ki) => {
+    let n = 0;
+    for (let cz = -KIND_PROMISE; cz <= KIND_PROMISE; cz++) {
+      for (let cx = -KIND_PROMISE; cx <= KIND_PROMISE; cx++) {
+        if (cx * cx + cz * cz <= KIND_PROMISE * KIND_PROMISE && regionEligible(seedHash2, cx, cz, REGION_KINDS[ki])) n++;
+      }
+    }
+    return n;
+  });
+  for (const ki of [...all].sort((a, b) => room[a] - room[b] || a - b)) {
     if ([...out.cells.values()].some((v) => v.kind === REGION_KINDS[ki])) continue;
     choose(KIND_PROMISE, [ki], -1 + ki * 1e-3);
   }
@@ -10426,6 +11094,9 @@ function regionAt(seedHash2, cx, cz) {
 
 // src/world/landforms.ts
 var TAU = Math.PI * 2;
+
+// src/world/landformsLocal.ts
+var SWAMP = REGION_KINDS.indexOf("mangrove") + 1;
 
 // src/world/biomes.ts
 function hex(h) {
@@ -10774,7 +11445,155 @@ var KIND_SPEC = {
   waterMill: { w: 2, d: 2, zone: "edge", lot: 5 /* Yard */, waterside: true, apart: 12 },
   leaningTower: { w: 1, d: 1, zone: "core", lot: 7 /* Plaza */, apart: 40 },
   stoneCircle: { w: 3, d: 3, zone: "edge", lot: 1 /* Lawn */, solid: false, frontage: false, highest: true, apart: 24 },
-  airshipMast: { w: 1, d: 1, zone: "edge", lot: 12 /* Gravel */, highest: true, apart: 30 }
+  airshipMast: { w: 1, d: 1, zone: "edge", lot: 12 /* Gravel */, highest: true, apart: 30 },
+  // ---- the nine newer biomes' own ----
+  // the Fire Coast
+  geothermalPlant: { w: 4, d: 3, zone: "edge", lot: 12 /* Gravel */, apart: 30 },
+  hotSpringBaths: { w: 3, d: 3, zone: "edge", lot: 12 /* Gravel */, apart: 14 },
+  turfHouse: { w: 1, d: 1, zone: "any", lot: 1 /* Lawn */, gap: 1 },
+  blackChurch: { w: 1, d: 2, zone: "edge", lot: 1 /* Lawn */, apart: 14 },
+  // the Fjordlands
+  boatShed: { w: 1, d: 1, zone: "any", lot: 12 /* Gravel */, waterside: "prefer", apart: 3 },
+  fishFarm: { w: 3, d: 3, zone: "edge", lot: 8 /* Deck */, waterside: true, apart: 16 },
+  rorbu: { w: 1, d: 1, zone: "any", lot: 8 /* Deck */, waterside: "prefer" },
+  // the Big Timber
+  loggingCamp: { w: 3, d: 3, zone: "edge", lot: 5 /* Yard */, apart: 14 },
+  lookoutTower: { w: 1, d: 1, zone: "edge", lot: 12 /* Gravel */, highest: true, apart: 10 },
+  seaplaneBase: { w: 3, d: 2, zone: "edge", lot: 8 /* Deck */, waterside: true, apart: 20 },
+  // the Red Rock
+  roadhouse: { w: 3, d: 2, zone: "edge", lot: 12 /* Gravel */, roadside: true, apart: 12 },
+  pueblo: { w: 2, d: 2, zone: "edge", lot: 13 /* Sand */, apart: 8 },
+  dinosaurDig: { w: 3, d: 3, zone: "edge", lot: 13 /* Sand */, solid: false, apart: 30 },
+  // Dragon Bay
+  floatingVillage: { w: 3, d: 3, zone: "any", lot: 8 /* Deck */, waterside: true, apart: 14 },
+  junkMooring: { w: 2, d: 2, zone: "any", lot: 8 /* Deck */, waterside: true, apart: 8 },
+  karstPagoda: { w: 1, d: 1, zone: "mid", lot: 12 /* Gravel */, apart: 10 },
+  // the Steppe
+  yurtCamp: { w: 3, d: 3, zone: "edge", lot: 5 /* Yard */, solid: false },
+  yurt: { w: 1, d: 1, zone: "any", lot: 5 /* Yard */, gap: 1 },
+  ovoo: { w: 1, d: 1, zone: "edge", lot: 12 /* Gravel */, highest: true, frontage: false, apart: 8 },
+  horseCorral: { w: 3, d: 2, zone: "edge", lot: 5 /* Yard */, solid: false, frontage: false },
+  // the Salt Pan
+  saltWorks: { w: 4, d: 3, zone: "edge", lot: 12 /* Gravel */, apart: 14 },
+  saltHotel: { w: 2, d: 2, zone: "mid", lot: 12 /* Gravel */, apart: 10 },
+  trainCemetery: { w: 4, d: 3, zone: "edge", lot: 12 /* Gravel */, apart: 20 },
+  // the Mangroves
+  stiltVillage: { w: 3, d: 3, zone: "any", lot: 8 /* Deck */, waterside: true, apart: 12 },
+  shrimpFarm: { w: 3, d: 3, zone: "edge", lot: 5 /* Yard */, solid: false, waterside: "prefer", apart: 12 },
+  // the Lavender Plateau
+  lavenderField: { w: [5, 7], d: [4, 6], zone: "edge", lot: 5 /* Yard */, solid: false, frontage: false },
+  perfumery: { w: 2, d: 2, zone: "edge", lot: 5 /* Yard */, apart: 10 },
+  bastide: { w: 2, d: 2, zone: "edge", lot: 5 /* Yard */, gap: 1 },
+  dovecote: { w: 1, d: 1, zone: "edge", lot: 5 /* Yard */, frontage: false, apart: 4 },
+  // ---- things to find (placed out in the country: world/roadside.ts) ----
+  ghostTown: { w: 6, d: 5, zone: "edge", lot: 5 /* Yard */, apart: 40 },
+  abandonedMine: { w: 3, d: 3, zone: "edge", lot: 12 /* Gravel */, apart: 30 },
+  shipwreck: { w: 3, d: 2, zone: "edge", lot: 13 /* Sand */, apart: 30 },
+  planeWreck: { w: 3, d: 3, zone: "edge", lot: 0 /* None */, apart: 30 },
+  ruinedAbbey: { w: 4, d: 5, zone: "edge", lot: 1 /* Lawn */, apart: 40 },
+  bunker: { w: 2, d: 2, zone: "edge", lot: 1 /* Lawn */, apart: 30 },
+  crashedSatellite: { w: 2, d: 2, zone: "edge", lot: 0 /* None */, solid: false, apart: 40 },
+  capeLight: { w: 2, d: 2, zone: "edge", lot: 12 /* Gravel */, highest: true, apart: 40 },
+  hermitCabin: { w: 1, d: 1, zone: "edge", lot: 5 /* Yard */, apart: 20 },
+  // ---- heavy industry and energy ----
+  refinery: { w: 6, d: 5, zone: "edge", lot: 12 /* Gravel */, gap: 1, waterside: "prefer", apart: 40 },
+  steelworks: { w: 6, d: 5, zone: "edge", lot: 12 /* Gravel */, gap: 1, apart: 40 },
+  textileMill: { w: 4, d: 3, zone: "edge", lot: 2 /* Paved */, waterside: "prefer", apart: 30 },
+  paperMill: { w: 5, d: 4, zone: "edge", lot: 12 /* Gravel */, apart: 30 },
+  cementPlant: { w: 5, d: 4, zone: "edge", lot: 12 /* Gravel */, apart: 30 },
+  containerTerminal: { w: 6, d: 5, zone: "edge", lot: 6 /* Asphalt */, waterside: "prefer", apart: 40 },
+  autoPlant: { w: 7, d: 5, zone: "edge", lot: 6 /* Asphalt */, apart: 40 },
+  solarFarm: { w: 6, d: 5, zone: "edge", lot: 12 /* Gravel */, frontage: false, apart: 30 },
+  offshoreWind: { w: 3, d: 3, zone: "any", lot: 0 /* None */, waterside: true, frontage: false, apart: 12 },
+  tidalBarrage: { w: 8, d: 2, zone: "any", lot: 2 /* Paved */, waterside: true, frontage: false, apart: 60 },
+  pumpedHydro: { w: 5, d: 4, zone: "edge", lot: 12 /* Gravel */, highest: true, apart: 40 },
+  // ---- the driver's destinations ----
+  summitCafe: { w: 2, d: 2, zone: "edge", lot: 12 /* Gravel */, highest: true, apart: 30 },
+  scenicOverlook: { w: 2, d: 2, zone: "edge", lot: 6 /* Asphalt */, highest: true, apart: 16 },
+  hillClimb: { w: 3, d: 2, zone: "edge", lot: 6 /* Asphalt */, apart: 40 },
+  rallyStage: { w: 4, d: 3, zone: "edge", lot: 12 /* Gravel */, apart: 40 },
+  dragStrip: { w: 3, d: 14, zone: "edge", lot: 6 /* Asphalt */, frontage: false, apart: 60 },
+  provingGround: { w: 10, d: 8, zone: "edge", lot: 6 /* Asphalt */, frontage: false, apart: 80 },
+  iceRoadCheckpoint: { w: 2, d: 2, zone: "edge", lot: 12 /* Gravel */, waterside: "prefer", apart: 30 },
+  motorwayServices: { w: 6, d: 4, zone: "edge", lot: 6 /* Asphalt */, roadside: true, apart: 40 },
+  // ---- institutions ----
+  filmStudio: { w: 6, d: 5, zone: "edge", lot: 6 /* Asphalt */, apart: 40 },
+  militaryBase: { w: 8, d: 6, zone: "edge", lot: 12 /* Gravel */, gap: 1, apart: 60 },
+  borderFort: { w: 4, d: 4, zone: "edge", lot: 1 /* Lawn */, apart: 40 },
+  cableCarStation: { w: 2, d: 2, zone: "edge", lot: 12 /* Gravel */, apart: 30 },
+  researchDome: { w: 3, d: 3, zone: "edge", lot: 12 /* Gravel */, apart: 30 },
+  festivalGrounds: { w: 6, d: 6, zone: "edge", lot: 1 /* Lawn */, frontage: false, apart: 40 },
+  // ---- the newer styles' signature buildings (swapped in by the town's style: STYLE_SWAPS in towns.ts) ----
+  // Mughal India
+  tajMahal: { w: [5, 6], d: [5, 6], zone: "mid", lot: 7 /* Plaza */, gap: 1, apart: 60 },
+  stepwell: { w: 3, d: 3, zone: "mid", lot: 7 /* Plaza */, apart: 20 },
+  hawaMahal: { w: 3, d: 1, floors: 5, zone: "core", lot: 2 /* Paved */, apart: 30 },
+  // Andalusia
+  alhambra: { w: [5, 6], d: [4, 5], zone: "core", lot: 7 /* Plaza */, gap: 1, apart: 60 },
+  giralda: { w: 1, d: 1, zone: "core", lot: 7 /* Plaza */, apart: 30 },
+  // the Andes
+  machuPicchu: { w: [6, 7], d: [5, 6], zone: "edge", lot: 12 /* Gravel */, highest: true, gap: 1, apart: 60 },
+  sunTemple: { w: 3, d: 3, zone: "core", lot: 7 /* Plaza */, apart: 30 },
+  // the Sahel
+  mudMosque: { w: [4, 5], d: 4, zone: "core", lot: 13 /* Sand */, apart: 40 },
+  mudGranary: { w: 1, d: 1, zone: "edge", lot: 13 /* Sand */, apart: 3 },
+  // the Himalaya
+  dzong: { w: [6, 7], d: [4, 5], zone: "edge", lot: 12 /* Gravel */, highest: true, gap: 1, apart: 60 },
+  // the Norse
+  longhouse: { w: 3, d: 2, zone: "core", lot: 5 /* Yard */, apart: 12 },
+  runestone: { w: 1, d: 1, zone: "any", lot: 1 /* Lawn */, apart: 10 },
+  // Venice
+  campanile: { w: 1, d: 1, zone: "core", lot: 7 /* Plaza */, apart: 40 },
+  dogePalace: { w: 4, d: 3, zone: "core", lot: 7 /* Plaza */, waterside: "prefer", apart: 60 },
+  marcoBasilica: { w: 3, d: 4, zone: "core", lot: 7 /* Plaza */, apart: 60 },
+  // a stretch of quay with the gondolas tied up below it: open ground, on the water, a few blocks apart
+  gondolaStation: { w: 1, d: 1, zone: "any", lot: 7 /* Plaza */, solid: false, waterside: true, apart: 7 },
+  // London
+  bigBen: { w: 2, d: 3, zone: "core", lot: 7 /* Plaza */, waterside: "prefer", apart: 80 },
+  gherkin: { w: 2, d: 2, floors: [30, 44], zone: "core", lot: 7 /* Plaza */, apart: 40 },
+  // New Orleans
+  jazzClub: { w: 1, d: 1, floors: 2, zone: "core", lot: 2 /* Paved */, apart: 4 },
+  tombYard: { w: 4, d: 4, zone: "edge", lot: 12 /* Gravel */, apart: 20 },
+  // Havana
+  cigarFactory: { w: 3, d: 2, zone: "mid", lot: 2 /* Paved */, apart: 20 },
+  morroFort: { w: 4, d: 4, zone: "edge", lot: 12 /* Gravel */, waterside: "prefer", apart: 60 },
+  // Hong Kong
+  bankTower: { w: 2, d: 2, floors: [60, 80], zone: "core", lot: 7 /* Plaza */, apart: 40 },
+  walledCity: { w: 3, d: 3, floors: [10, 14], zone: "mid", lot: 2 /* Paved */, apart: 16 },
+  // Las Vegas
+  casinoPyramid: { w: 4, d: 4, zone: "mid", lot: 7 /* Plaza */, apart: 40 },
+  welcomeSign: { w: 1, d: 1, zone: "edge", lot: 1 /* Lawn */, roadside: true, apart: 40 },
+  needleTower: { w: 2, d: 2, zone: "core", lot: 7 /* Plaza */, apart: 60 },
+  fountainResort: { w: 5, d: 4, zone: "mid", lot: 7 /* Plaza */, apart: 40 },
+  // the Gulf
+  supertall: { w: 2, d: 2, floors: [140, 170], zone: "core", lot: 7 /* Plaza */, apart: 80 },
+  sailHotel: { w: 3, d: 3, zone: "any", lot: 7 /* Plaza */, waterside: "prefer", apart: 60 },
+  // the Mother Road
+  neonMotel: { w: 3, d: 1, zone: "edge", lot: 6 /* Asphalt */, roadside: true, apart: 8 },
+  wigwamMotel: { w: 3, d: 2, zone: "edge", lot: 12 /* Gravel */, roadside: true, apart: 20 },
+  giantArrows: { w: 1, d: 1, zone: "edge", lot: 12 /* Gravel */, roadside: true, apart: 30 },
+  // the Shire
+  hobbitHole: { w: 1, d: 1, zone: "any", lot: 1 /* Lawn */ },
+  partyTree: { w: 3, d: 3, zone: "mid", lot: 1 /* Lawn */, apart: 20 },
+  hobbitInn: { w: 2, d: 1, zone: "core", lot: 1 /* Lawn */, apart: 8 },
+  // the White City
+  whiteCitadel: { w: [6, 7], d: [5, 6], zone: "core", lot: 7 /* Plaza */, gap: 1, highest: true, apart: 80 },
+  beaconTower: { w: 1, d: 1, zone: "edge", lot: 12 /* Gravel */, highest: true, apart: 12 },
+  // the spirit town
+  grandBathhouse: { w: [4, 5], d: 4, zone: "mid", lot: 7 /* Plaza */, waterside: "prefer", apart: 40 },
+  clockGate: { w: 2, d: 2, zone: "core", lot: 7 /* Plaza */, apart: 30 },
+  // steampunk
+  clockworkTower: { w: 2, d: 2, zone: "core", lot: 7 /* Plaza */, apart: 40 },
+  boilerWorks: { w: 3, d: 3, zone: "edge", lot: 12 /* Gravel */, apart: 14 },
+  skyDock: { w: 3, d: 3, zone: "edge", lot: 12 /* Gravel */, apart: 40 },
+  // solarpunk
+  gardenTower: { w: 2, d: 2, floors: [24, 36], zone: "mid", lot: 1 /* Lawn */, apart: 5 },
+  solarCanopy: { w: 3, d: 3, zone: "core", lot: 7 /* Plaza */, apart: 8 },
+  bioDome: { w: 3, d: 3, zone: "mid", lot: 3 /* Park */, apart: 30 },
+  // cyberpunk
+  megablock: { w: 3, d: 3, floors: [34, 46], zone: "mid", lot: 2 /* Paved */, apart: 12 },
+  holoTower: { w: 2, d: 2, floors: [50, 70], zone: "core", lot: 7 /* Plaza */, apart: 14 },
+  nightMarket: { w: 3, d: 1, zone: "mid", lot: 2 /* Paved */, apart: 6 }
 };
 
 // src/world/railSurface.ts
@@ -10821,7 +11640,16 @@ var FINISH = {
   moatedCastle: 1 /* Lawn */,
   mission: 5 /* Yard */,
   goldenTemple: 7 /* Plaza */,
-  launchPad: 12 /* Gravel */
+  launchPad: 12 /* Gravel */,
+  greatGeyser: 12 /* Gravel */,
+  arcticCathedral: 2 /* Paved */,
+  giantTree: 3 /* Park */,
+  monumentButtes: 13 /* Sand */,
+  cloudTemple: 12 /* Gravel */,
+  khanStatue: 2 /* Paved */,
+  speedStrip: 13 /* Sand */,
+  floatingMarket: 8 /* Deck */,
+  lavenderAbbey: 5 /* Yard */
 };
 
 // src/world/geology.ts
@@ -10829,7 +11657,7 @@ var SOURCE_MIN = SEA + 13;
 
 // src/world/generate.ts
 var NN = N * N;
-var GEN_VERSION = 35;
+var GEN_VERSION = 37;
 var PAD = 40;
 var P = N + 2 * PAD;
 var PP = P * P;
