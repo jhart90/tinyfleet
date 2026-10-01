@@ -55,13 +55,18 @@
     #br-row > #br { position: relative; bottom: auto; right: auto; }
     /* with the controls sheet open the buttons sit over its right-hand end instead */
     #br-row:has(> #br:not(.collapsed)) { flex-direction: column; align-items: flex-end; }
-    #tool-btns { display: flex; gap: 8px; }
-    .tool-btn { pointer-events: auto; position: relative; width: 46px; height: 46px; padding: 0; display: grid; place-items: center; border: none; cursor: pointer; background: rgba(255,255,255,.96); }
-    .tool-btn:hover { background: #fff; box-shadow: 0 3px 14px rgba(31,43,51,.2); }
-    .tool-btn.on { box-shadow: 0 0 0 2px #2f7fb5 inset, 0 3px 14px rgba(31,43,51,.2); }
-    .tool-btn img { width: 40px; height: 40px; image-rendering: auto; pointer-events: none; }
-    .tool-btn .tb-k { position: absolute; right: 3px; bottom: 2px; font: 700 9px/1 "IBM Plex Mono", monospace; color: #7d8a92; pointer-events: none; }
-    .tool-btn img:not([hidden]) + .tb-k { color: #4c5a63; }
+    /* the build tools: one chip, two buttons, each a line icon, its name and its key */
+    #tool-btns { display: flex; gap: 2px; height: 46px; box-sizing: border-box; padding: 4px; border-radius: 14px; pointer-events: auto; background: rgba(255,255,255,.96); }
+    .tool-btn { display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 9px 0 9px; border: 0; border-radius: 10px; background: transparent; font: inherit; font-size: 12.5px; font-weight: 600; color: #1f2b33; cursor: pointer; transition: background .12s, color .12s; }
+    .tool-btn svg { width: 20px; height: 20px; flex: none; color: #4c5a63; transition: color .12s; }
+    .tool-btn kbd { font: 600 10.5px/1 "IBM Plex Mono", monospace; padding: 2px 5px; border-radius: 4px; border: 1px solid #d5ddd0; border-bottom-width: 2px; background: #fff; color: #7d8a92; }
+    .tool-btn:hover { background: #eef2ea; }
+    .tool-btn:hover svg { color: #1f2b33; }
+    .tool-btn:focus-visible { outline: 2px solid #2f7fb5; outline-offset: 1px; }
+    .tool-btn.on { background: #1f2b33; color: #fff; }
+    .tool-btn.on svg { color: #ffc83d; }
+    .tool-btn.on kbd { background: transparent; border-color: rgba(255,255,255,.35); color: rgba(255,255,255,.8); }
+    #tool-btns i { width: 1px; margin: 9px 1px; background: #e2e8e4; }
     #br { bottom: 16px; right: 16px; font-size: 12.5px; color: #4c5a63; line-height: 1.7; padding-right: 42px; z-index: 6; background: rgba(255,255,255,.96); }
     #br-toggle { pointer-events: auto; position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; padding: 0; display: grid; place-items: center; border-radius: 8px; border: 1px solid #d5ddd0; border-bottom-width: 2px; background: #fff; color: #4c5a63; cursor: pointer; }
     #br-toggle:hover { border-color: #8a979e; color: #1f2b33; }
@@ -1144,6 +1149,17 @@
     #town .bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: #15803d; }
     #town .perf.mid .bar i { background: #d69e2e; } #town .perf.bad .bar i { background: #d2564f; } #town .perf.standing .bar i { background: #ffc83d; }
     #town .bar s { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: rgba(31,43,51,.35); }
+    #town .ladder { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; margin-top: 6px; }
+    #town .ladder span { font-size: 10px; padding: 1px 5px; border-radius: 999px; background: #eef2ea; color: #9aa6ad; white-space: nowrap; }
+    #town .ladder span.past { color: #4c5a63; }
+    #town .ladder span.on { background: #ffc83d; color: #1f2b33; font-weight: 700; }
+    #town h5 { margin: 10px 0 2px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: #9aa6ad; }
+    #town ul.perks { margin: 2px 0 0; }
+    #town ul.perks li { position: relative; padding: 1px 0 1px 16px; color: #1f2b33; line-height: 1.4; }
+    #town ul.perks li::before { content: '✓'; position: absolute; left: 1px; color: #15803d; font-weight: 700; }
+    #town ul.perks.gain li::before { content: '+'; color: #b7791f; }
+    #town ul.perks.risk li::before { content: '!'; left: 4px; color: #c2372a; }
+    #town p.how { margin: 4px 0 0; color: #1f2b33; line-height: 1.45; }
     #town .tick { display: inline-block; margin-right: 6px; color: #9aa6ad; white-space: nowrap; }
     #town .tick.ok { color: #15803d; }
     #town .cg { display: inline-block; margin: 0 6px 2px 0; white-space: nowrap; }
@@ -1691,7 +1707,7 @@
     #title-menu .tm-online-state.up i { background: #1e9e4a; box-shadow: 0 0 0 3px rgba(30,158,74,.2); }
     #title-menu .tm-online-state.down i { background: #c2331f; }
   </style>
-  <script type="module" crossorigin src="./assets/index-CdywOAhh.js"></script>
+  <script type="module" crossorigin src="./assets/index-CRDGCbUj.js"></script>
 </head>
 <body>
   <canvas id="game"></canvas>
@@ -1714,9 +1730,21 @@
     <span id="hold" class="hold empty"><i><i></i></i><span>Empty</span></span>
   </div>
   <div id="br-row" class="hud">
-  <div id="tool-btns">
-    <button id="tb-road" type="button" class="chip tool-btn" tabindex="-1" title="Build roads (B)"><img alt="" hidden><span class="tb-k">B</span></button>
-    <button id="tb-dozer" type="button" class="chip tool-btn" tabindex="-1" title="Bulldoze (X)"><img alt="" hidden><span class="tb-k">X</span></button>
+  <div id="tool-btns" class="chip" role="toolbar" aria-label="Build tools">
+    <button id="tb-road" type="button" class="tool-btn" tabindex="-1" title="Build roads (B)">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 3 5 21M15.5 3 19 21"/><path d="M12 4v2.4M12 10v3M12 16.8V20"/></svg>
+      <span>Roads</span><kbd>B</kbd>
+    </button>
+    <i aria-hidden="true"></i>
+    <button id="tb-dozer" type="button" class="tool-btn" tabindex="-1" title="Bulldoze (X)">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="15" width="12.5" height="5" rx="2.5"/><path d="M4 15v-4h4V6h4.5L14 11v4"/><path d="M15 12.5h3"/><path d="M19.5 9c-1.2 2.6-1.2 6.4 0 9.5H22"/></svg>
+      <span>Bulldoze</span><kbd>X</kbd>
+    </button>
+    <i aria-hidden="true"></i>
+    <button id="tb-earth" type="button" class="tool-btn" tabindex="-1" title="Terrain: raise and lower land and water (T)">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 19.5 8.5 9.5l3.6 5.4L15 11l6.5 8.5Z"/><path d="M18 3.5v4.5M16 5.5l2-2 2 2"/></svg>
+      <span>Terrain</span><kbd>T</kbd>
+    </button>
   </div>
   <div id="br" class="hud chip">
     <button id="br-toggle" type="button" tabindex="-1" aria-controls="br" aria-expanded="true" title="Hide the controls">
@@ -1726,7 +1754,7 @@
     <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> drive</div>
     <div><kbd>Q</kbd><kbd>E</kbd> or right-drag orbit · wheel zoom</div>
     <div><kbd>R</kbd> <span id="camlock">lock camera behind car</span> · <kbd>P</kbd> camera pitch · <kbd>M</kbd> island overview</div>
-    <div><kbd>G</kbd> garage · <kbd>J</kbd> journal: missions · <kbd>F</kbd> fleet (beside your own car: take its wheel) · <kbd>K</kbd> estate · <kbd>B</kbd> build roads · <kbd>X</kbd> bulldoze · <kbd>U</kbd> earthworks</div>
+    <div><kbd>G</kbd> garage · <kbd>J</kbd> journal: missions · <kbd>F</kbd> fleet (beside your own car: take its wheel) · <kbd>K</kbd> estate · <kbd>B</kbd> build roads · <kbd>X</kbd> bulldoze · <kbd>T</kbd> terrain</div>
     <div><kbd>Shift</kbd> nitrous · hold <kbd>Space</kbd> handbrake · <kbd>H</kbd> horn, once bought at a Vehicle Shop (stop in its striped ring, <kbd>Space</kbd>)</div>
     <div><kbd>O</kbd> settings and music</div>
     <div>tap <kbd>Space</kbd> or click load cargo</div>
