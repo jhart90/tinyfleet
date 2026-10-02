@@ -12181,7 +12181,7 @@ var SOURCE_MIN = SEA + 13;
 
 // src/world/generate.ts
 var NN = N * N;
-var GEN_VERSION = 39;
+var GEN_VERSION = 40;
 var PAD = 40;
 var P = N + 2 * PAD;
 var PP = P * P;
@@ -12355,6 +12355,16 @@ function pickHome() {
   if (best?.ok) return [best.cx, best.cz];
   return pickHomeAnywhere();
 }
+var nextHome = null;
+function upcomingHome() {
+  if (!nextHome || world.homes[cellKey(nextHome.at[0], nextHome.at[1])] || Date.now() - nextHome.t > 6e5) nextHome = { at: pickHome(), t: Date.now() };
+  return nextHome.at;
+}
+function takeHome() {
+  const at = upcomingHome();
+  nextHome = null;
+  return at;
+}
 function pickHomeAnywhere() {
   const free = (cx, cz, strict) => Math.max(Math.abs(cx), Math.abs(cz)) <= SPAWN_REACH && !world.homes[cellKey(cx, cz)] && landAt(cx, cz, strict);
   const near = (ax, az, r, strict) => {
@@ -12485,7 +12495,7 @@ async function hello(ws, ip, m) {
     signups.set(ip, [...made, now]);
     pid = `p:${world.nextId++}`;
     const salt = randomBytes2(12).toString("hex");
-    const home = pickHome();
+    const home = takeHome();
     doc = await players.open(pid);
     Object.assign(doc, {
       id: pid,
@@ -12528,7 +12538,7 @@ async function hello(ws, ip, m) {
   }
   pid = doc.id;
   if (doc.epoch !== world.epoch) {
-    doc.home = pickHome();
+    doc.home = takeHome();
     doc.epoch = world.epoch;
     world.homes[cellKey(doc.home[0], doc.home[1])] = pid;
     worldDirty = true;
@@ -12803,7 +12813,8 @@ async function handle(c, m) {
           towns: Math.round(num(me.towns)),
           primary: c.doc.brand?.primary ?? 14827823,
           accent: c.doc.brand?.accent ?? 16777215,
-          logo: c.doc.brand?.logo ?? ""
+          logo: c.doc.brand?.logo ?? "",
+          v: metricValues(me.v)
         };
         boardDirty = true;
       }
@@ -12819,7 +12830,8 @@ async function handle(c, m) {
           towns: Math.round(num(row.towns)),
           primary: num(row.primary) & 16777215,
           accent: num(row.accent) & 16777215,
-          logo: [...String(row.logo ?? "")].slice(0, 2).join("")
+          logo: [...String(row.logo ?? "")].slice(0, 2).join(""),
+          v: metricValues(row.v)
         };
         boardDirty = true;
       }
@@ -12851,6 +12863,14 @@ async function handle(c, m) {
     default:
       return;
   }
+}
+function metricValues(v) {
+  if (!v || typeof v !== "object") return void 0;
+  const out = {};
+  for (const [k, n] of Object.entries(v).slice(0, 24)) {
+    if (/^[a-zA-Z]{1,16}$/.test(k) && typeof n === "number" && Number.isFinite(n)) out[k] = Math.round(n * 100) / 100;
+  }
+  return out;
 }
 function boardRows() {
   const rows = [
@@ -13026,7 +13046,7 @@ function http(req, res) {
     return;
   }
   if (path === "/online.json" || path === "/play/online.json") {
-    res.writeHead(200, { "content-type": "application/json", "access-control-allow-origin": "*", "cache-control": "no-store" }).end(JSON.stringify({ tinyfleet: true, protocol: PROTOCOL, gen: world.gen, players: conns.size, max: MAX_PLAYERS, day: Math.floor(world.hours / 24) + 1 }));
+    res.writeHead(200, { "content-type": "application/json", "access-control-allow-origin": "*", "cache-control": "no-store" }).end(JSON.stringify({ tinyfleet: true, protocol: PROTOCOL, gen: world.gen, seed: world.seed, start: upcomingHome(), players: conns.size, max: MAX_PLAYERS, day: Math.floor(world.hours / 24) + 1 }));
     return;
   }
   if (SITE) {

@@ -570,74 +570,57 @@
     #settings .quality button.q.on { background: #1f2b33; color: #fff; border-color: #1f2b33; }
     #settings .q-note { margin: 2px 0 14px; font-size: 12px; color: #7d8a92; line-height: 1.45; }
     /* the fleet window (F): the cargo hold's chip, a driver a row */
-    #fleet { top: var(--tr-below, 72px); right: 16px; width: 360px; max-width: calc(100vw - 32px); max-height: calc(100vh - var(--tr-below, 72px) - 226px); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 5; }
-    #fleet header { display: flex; justify-content: space-between; align-items: baseline; }
-    #fleet header b { font-size: 18px; font-weight: 700; color: #1f2b33; }
-    #fleet header b span { color: #1e9e4a; }
-    #fleet .veh { margin: 2px 0 6px; color: #7d8a92; font-size: 11.5px; }
-    #fleet .veh .rate { font-style: normal; font-weight: 700; color: #1e9e4a; }
-    #fleet ul { list-style: none; margin: 0; padding: 0; }
-    :is(#fleet, #dock .dk-unit) li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #eef2f4; }
-    :is(#fleet, #dock .dk-unit) li .ic { font-size: 20px; }
-    :is(#fleet, #dock .dk-unit) li .what b { font-size: 13.5px; color: #1f2b33; }
-    :is(#fleet, #dock .dk-unit) li .what small { display: block; font-size: 11px; color: #7d8a92; line-height: 1.4; }
-    :is(#fleet, #dock .dk-unit) li .what small.mood { display: inline; margin-left: 4px; font-weight: 600; }
-    :is(#fleet, #dock .dk-unit) li .what small.state { color: #4c5a63; font-weight: 600; }
-    :is(#fleet, #dock .dk-unit) li.s-haul .what small.state { color: #1e9e4a; }
-    :is(#fleet, #dock .dk-unit) li.s-road .what small.state { color: #e2412f; }
-    :is(#fleet, #dock .dk-unit) li.s-held .what small.state { color: #7d8a92; }
-    :is(#fleet, #dock .dk-unit) li.s-tow .what small.state { color: #e2702f; }
-    #fleet .convoy { margin: 2px 0 6px; padding: 5px 8px; border-radius: 6px; background: #fdeeec; color: #c5331f; font-size: 11.5px; font-weight: 600; }
+    #dock .dk-unit li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #eef2f4; }
+    #dock .dk-unit li .ic { font-size: 20px; }
+    #dock .dk-unit li .what b { font-size: 13.5px; color: #1f2b33; }
+    #dock .dk-unit li .what small { display: block; font-size: 11px; color: #7d8a92; line-height: 1.4; }
+    #dock .dk-unit li .what small.mood { display: inline; margin-left: 4px; font-weight: 600; }
+    #dock .dk-unit li .what small.state { color: #4c5a63; font-weight: 600; }
+    #dock .dk-unit li.s-haul .what small.state { color: #1e9e4a; }
+    #dock .dk-unit li.s-road .what small.state { color: #e2412f; }
+    #dock .dk-unit li.s-held .what small.state { color: #7d8a92; }
+    #dock .dk-unit li.s-tow .what small.state { color: #e2702f; }
+    #dock .dk-unit .convoy { margin: 2px 0 6px; padding: 5px 8px; border-radius: 6px; background: #fdeeec; color: #c5331f; font-size: 11.5px; font-weight: 600; }
     /* follow mode: the fleet's two buttons over the list, a row's pair on hover, and the line they make */
-    #fleet .allmodes { display: flex; justify-content: space-between; align-items: center; margin: 0 0 6px; padding: 5px 8px; border-radius: 6px; background: #f2f6f8; }
-    #fleet .allmodes > span { font-size: 11.5px; font-weight: 600; color: #7d8a92; }
-    #fleet .modes { display: inline-flex; gap: 4px; }
-    #fleet button.mode { font: inherit; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid #d5ddd0; background: #fff; color: #7d8a92; cursor: pointer; }
-    #fleet button.mode:hover { border-color: #9fb0a6; color: #4c5a63; }
-    #fleet button.mode.on { background: #1f2b33; border-color: #1f2b33; color: #fff; }
-    #fleet button.mode.off { opacity: .45; }
-    #fleet .modes.row { display: inline-flex; margin-top: 4px; visibility: hidden; }
-    :is(#fleet, #dock .dk-unit) li:hover .modes.row, :is(#fleet, #dock .dk-unit) li:focus-within .modes.row { visibility: visible; }
-    :is(#fleet, #dock .dk-unit) li .modes.row button.mode.on { background: #2f7fb5; border-color: #2f7fb5; }
-    #fleet .form { margin: 2px 0 6px; padding: 5px 8px; border-radius: 6px; background: #eaf4ec; color: #1e7a3f; font-size: 11.5px; font-weight: 600; }
-    :is(#fleet, #dock .dk-unit) li.s-form .what small.state { color: #1e9e4a; }
-    :is(#fleet, #dock .dk-unit) li.s-closing .what small.state { color: #2f7fb5; }
-    :is(#fleet, #dock .dk-unit) .towed { color: #d2342a; font-weight: 700; }
-    #fleet .veh .net { font-style: normal; font-weight: 700; color: #1f2b33; }
-    #fleet button.over { margin-top: 4px; font: inherit; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; border: 1px solid #e2412f; background: #fff; color: #c5331f; cursor: pointer; }
-    #fleet button.over:hover { background: #fdeeec; }
-    #fleet .tabs { display: flex; gap: 4px; margin: 4px 0 6px; }
-    #fleet button.tab { font: inherit; font-size: 11.5px; font-weight: 700; padding: 3px 11px; border-radius: 999px; border: 1px solid #d5ddd0; background: #fff; color: #7d8a92; cursor: pointer; }
-    #fleet button.tab:hover { color: #4c5a63; border-color: #9fb0a6; }
-    #fleet button.tab.on { background: #1f2b33; border-color: #1f2b33; color: #fff; }
-    #fleet .veh b { color: #1f2b33; }
-    #fleet table.metrics { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 8px; }
-    #fleet table.metrics th { text-align: left; font-size: 10.5px; font-weight: 600; color: #9aa6ad; padding: 2px 4px; }
-    #fleet table.metrics td { padding: 3px 4px; border-top: 1px solid #eef2f4; color: #4c5a63; white-space: nowrap; }
-    #fleet table.metrics .n { text-align: right; font-variant-numeric: tabular-nums; }
-    #fleet table.metrics .p { text-align: center; font-weight: 700; color: #7d8a92; }
-    #fleet table.metrics tbody tr { cursor: pointer; }
-    #fleet table.metrics tbody tr:hover td { background: #f5f8f6; }
-    #fleet table.metrics tr.on td { background: #eaf1f6; color: #1f2b33; font-weight: 600; }
-    #fleet table.metrics tr.top .p { color: #1e9e4a; }
-    #fleet table.metrics td.best { color: #7d8a92; }
-    #fleet .rankhead { padding: 5px 0 3px; border-top: 1px solid #dfe6ea; }
-    #fleet .rankhead b { font-size: 13px; color: #1f2b33; margin-right: 6px; }
-    #fleet .rankhead small { display: block; color: #9aa6ad; font-size: 10.5px; }
-    #fleet ul.ranking li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 5px 0; }
-    #fleet ul.ranking .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    #fleet ul.ranking .nm i { display: inline-block; width: 18px; font-style: normal; font-weight: 700; color: #9aa6ad; }
-    #fleet ul.ranking .nm b { font-size: 12px; color: #1f2b33; font-weight: 600; }
-    #fleet ul.ranking .nm small { font-size: 10px; font-weight: 700; color: #1e9e4a; text-transform: uppercase; letter-spacing: .04em; }
-    #fleet ul.ranking em { font-style: normal; font-weight: 700; color: #4c5a63; font-variant-numeric: tabular-nums; }
-    #fleet ul.ranking em.neg { color: #d2342a; }
-    #fleet ul.ranking .bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: #eef2f4; overflow: hidden; }
-    #fleet ul.ranking .bar i { display: block; height: 100%; border-radius: 3px; }
-    #fleet ul.ranking .note { grid-column: 1 / -1; font-size: 10.5px; color: #9aa6ad; font-family: "IBM Plex Mono", monospace; letter-spacing: 1px; }
-    #fleet ul.ranking li.you { background: #f5f8f6; border-radius: 6px; padding-left: 4px; padding-right: 4px; }
-    #fleet ul.ranking li.gone { opacity: .5; }
+    #dock .dk-unit .allmodes { display: flex; justify-content: space-between; align-items: center; margin: 0 0 6px; padding: 5px 8px; border-radius: 6px; background: #f2f6f8; }
+    #dock .dk-unit .allmodes > span { font-size: 11.5px; font-weight: 600; color: #7d8a92; }
+    #dock .dk-unit .modes { display: inline-flex; gap: 4px; }
+    #dock .dk-unit button.mode { font: inherit; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid #d5ddd0; background: #fff; color: #7d8a92; cursor: pointer; }
+    #dock .dk-unit button.mode:hover { border-color: #9fb0a6; color: #4c5a63; }
+    #dock .dk-unit button.mode.on { background: #1f2b33; border-color: #1f2b33; color: #fff; }
+    #dock .dk-unit button.mode.off { opacity: .45; }
+    #dock .dk-unit .form { margin: 2px 0 6px; padding: 5px 8px; border-radius: 6px; background: #eaf4ec; color: #1e7a3f; font-size: 11.5px; font-weight: 600; }
+    #dock .dk-unit li.s-form .what small.state { color: #1e9e4a; }
+    #dock .dk-unit li.s-closing .what small.state { color: #2f7fb5; }
+    #dock .dk-unit .towed { color: #d2342a; font-weight: 700; }
+    #dock .dk-unit button.over { margin-top: 4px; font: inherit; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; border: 1px solid #e2412f; background: #fff; color: #c5331f; cursor: pointer; }
+    #dock .dk-unit button.over:hover { background: #fdeeec; }
+    #standings table.metrics { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 8px; }
+    #standings table.metrics th { text-align: left; font-size: 10.5px; font-weight: 600; color: #9aa6ad; padding: 2px 4px; }
+    #standings table.metrics td { padding: 3px 4px; border-top: 1px solid #eef2f4; color: #4c5a63; white-space: nowrap; }
+    #standings table.metrics .n { text-align: right; font-variant-numeric: tabular-nums; }
+    #standings table.metrics .p { text-align: center; font-weight: 700; color: #7d8a92; }
+    #standings table.metrics tbody tr { cursor: pointer; }
+    #standings table.metrics tbody tr:hover td { background: #f5f8f6; }
+    #standings table.metrics tr.on td { background: #eaf1f6; color: #1f2b33; font-weight: 600; }
+    #standings table.metrics tr.top .p { color: #1e9e4a; }
+    #standings table.metrics td.best { color: #7d8a92; }
+    #standings .rankhead { padding: 5px 0 3px; border-top: 1px solid #dfe6ea; }
+    #standings .rankhead b { font-size: 13px; color: #1f2b33; margin-right: 6px; }
+    #standings .rankhead small { display: block; color: #9aa6ad; font-size: 10.5px; }
+    #standings ul.ranking li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 5px 0; }
+    #standings ul.ranking .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #standings ul.ranking .nm i { display: inline-block; width: 18px; font-style: normal; font-weight: 700; color: #9aa6ad; }
+    #standings ul.ranking .nm b { font-size: 12px; color: #1f2b33; font-weight: 600; }
+    #standings ul.ranking .nm small { font-size: 10px; font-weight: 700; color: #1e9e4a; text-transform: uppercase; letter-spacing: .04em; }
+    #standings ul.ranking em { font-style: normal; font-weight: 700; color: #4c5a63; font-variant-numeric: tabular-nums; }
+    #standings ul.ranking em.neg { color: #d2342a; }
+    #standings ul.ranking .bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: #eef2f4; overflow: hidden; }
+    #standings ul.ranking .bar i { display: block; height: 100%; border-radius: 3px; }
+    #standings ul.ranking .note { grid-column: 1 / -1; font-size: 10.5px; color: #9aa6ad; font-family: "IBM Plex Mono", monospace; letter-spacing: 1px; }
+    #standings ul.ranking li.you { background: #f5f8f6; border-radius: 6px; padding-left: 4px; padding-right: 4px; }
+    #standings ul.ranking li.gone { opacity: .5; }
 
-    #fleet::-webkit-scrollbar { display: none; }
     /* property (docs/property.html): the K window, the deed footer on a building's card, rent floats and cards */
     /* the rivals window (L), docs/rivals.html */
     .livery { display: inline-flex; vertical-align: -2px; margin-right: 6px; border-radius: 3px; overflow: hidden; border: 1px solid rgba(0,0,0,.2); flex: none; }
@@ -670,8 +653,8 @@
     #firms .more .log li { display: block; border: 0; padding: 1px 0; color: #4c5a63; }
     #firms .more .log li span { color: #9aa6ad; margin-right: 6px; }
     #firms button.link { all: unset; cursor: pointer; color: #2f6f9c; text-decoration: underline; }
-    #fleet button.allranks { all: unset; cursor: pointer; display: block; margin: 6px 0 2px; font-size: 11.5px; font-weight: 600; color: #2f7fb5; }
-    #fleet button.allranks:hover { text-decoration: underline; }
+    #standings button.allranks { all: unset; cursor: pointer; display: block; margin: 6px 0 2px; font-size: 11.5px; font-weight: 600; color: #2f7fb5; }
+    #standings button.allranks:hover { text-decoration: underline; }
     #firms .town { margin-top: 8px; padding-top: 7px; border-top: 2px solid #e6ecef; }
     #firms .town > b { color: #1f2b33; font-size: 13px; }
     #firms .town small { display: block; color: #7d8a92; line-height: 1.45; margin-top: 3px; }
@@ -781,21 +764,21 @@
     .notice.earn.rent .n-body > b { color: #b98a12; }
     #town .lots em.own, #town .lots em.word { font-style: normal; font-weight: 600; color: #b98a12; }
 
-    :is(#fleet, #dock .dk-unit) li .what { min-width: 0; }
-    :is(#fleet, #dock .dk-unit) li .pay { text-align: right; max-width: 112px; }
-    :is(#fleet, #dock .dk-unit) li .pay em { white-space: nowrap; }
-    :is(#fleet, #dock .dk-unit) li .pay em { display: block; font-style: normal; font-size: 15px; font-weight: 700; color: #1e9e4a; }
-    :is(#fleet, #dock .dk-unit) li .pay em.none { font-size: 13px; color: #9aa6ad; }
+    #dock .dk-unit li .what { min-width: 0; }
+    #dock .dk-unit li .pay { text-align: right; max-width: 112px; }
+    #dock .dk-unit li .pay em { white-space: nowrap; }
+    #dock .dk-unit li .pay em { display: block; font-style: normal; font-size: 15px; font-weight: 700; color: #1e9e4a; }
+    #dock .dk-unit li .pay em.none { font-size: 13px; color: #9aa6ad; }
     /* the bubble over a fleet square in the dock: that unit's row from the fleet window, on white */
     #dock .dk-tip.dk-unit { width: min(340px, calc(100vw - 16px)); padding: 8px 12px 7px; background: rgba(255,255,255,.97); color: #4c5a63; box-shadow: 0 8px 24px rgba(31,43,51,.22); }
     #dock .dk-tip.dk-unit::after { border-top-color: rgba(255,255,255,.97); }
     #dock .dk-unit ul { list-style: none; margin: 0; padding: 0; }
     #dock .dk-unit li { border-top: 0; padding: 0; }
     #dock .dk-unit .hint { display: block; margin-top: 5px; padding-top: 5px; border-top: 1px solid #eef2f4; font-size: 10.5px; color: #9aa6ad; }
-    :is(#fleet, #dock .dk-unit) li .pay small { display: block; font-size: 10.5px; color: #7d8a92; line-height: 1.35; }
-    :is(#fleet, #dock .dk-unit) .m-content { color: #1e9e4a; } :is(#fleet, #dock .dk-unit) .m-fine { color: #2f7fb5; } :is(#fleet, #dock .dk-unit) .m-restless { color: #e2702f; } :is(#fleet, #dock .dk-unit) .m-leaving { color: #d2342a; }
-    #fleet .none, #fleet .idle { margin: 8px 0 0; line-height: 1.55; color: #7d8a92; }
-    #fleet kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 11px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
+    #dock .dk-unit li .pay small { display: block; font-size: 10.5px; color: #7d8a92; line-height: 1.35; }
+    #dock .dk-unit .m-content { color: #1e9e4a; } #dock .dk-unit .m-fine { color: #2f7fb5; } #dock .dk-unit .m-restless { color: #e2702f; } #dock .dk-unit .m-leaving { color: #d2342a; }
+    #dock .dk-unit .none, #dock .dk-unit .idle { margin: 8px 0 0; line-height: 1.55; color: #7d8a92; }
+    #dock .dk-unit kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 11px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
     /* the earnings ticker: a green card for every dollar a driver makes you, newest on top */
     .cfloat.bad { font-size: 13.5px; color: #ffd9d4; text-shadow: 0 1px 0 #6d1f17, 0 0 5px rgba(80,20,10,.7); }
 
@@ -1218,7 +1201,11 @@
     #inventory li { --c: #1e9e4a; flex-wrap: wrap; position: relative; }
     /* hover a load for the one-click way out: a red pill in its top corner */
     #inventory li .abandon-pill { all: unset; position: absolute; top: -7px; right: 8px; cursor: pointer; padding: 2px 9px; border-radius: 99px; background: #d2342a; color: #fff; font-size: 11px; font-weight: 700; white-space: nowrap; box-shadow: 0 2px 8px rgba(210,52,42,.35); opacity: 0; transform: translateY(3px); pointer-events: none; transition: opacity .12s, transform .12s; }
-    #inventory li:hover .abandon-pill { opacity: 1; transform: none; pointer-events: auto; }
+    #inventory li:hover .abandon-pill, #inventory li.hov .abandon-pill { opacity: 1; transform: none; pointer-events: auto; }
+    /* the night run's contraband: a card of its own, at the top, in the dark */
+    #inventory li.night { --c: #3b2f6b; }
+    #inventory li.night em { color: #6b4fd1; }
+    #inventory li.night .late { color: #c2372a; font-weight: 600; }
     #inventory li .abandon-pill:hover { background: #b82a21; }
     #inventory li .mt-txt small { display: block; font-size: 11px; color: #7d8a92; line-height: 1.3; }
     #inventory li .pay { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
@@ -1661,7 +1648,7 @@
     #net-chat input:focus { border-color: #e2412f; box-shadow: 0 0 0 3px rgba(226,65,47,.25); }
     #net-chat .hint { margin-top: 5px; font-size: 11.5px; color: #4c5a63; background: rgba(255,255,255,.7); border-radius: 999px; padding: 2px 9px; display: inline-block; pointer-events: auto; cursor: text; }
     #net-chat.typing .hint { display: none; }
-    #net-chat kbd, #net-win kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
+    #net-chat kbd, #standings kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
     #net-chip { margin-top: 5px; font-size: 12px; font-weight: 600; color: #1e9e4a; display: flex; align-items: center; gap: 6px; }
     #net-chip[hidden] { display: none; }
     #net-chip i { width: 8px; height: 8px; border-radius: 50%; background: #1e9e4a; box-shadow: 0 0 0 3px rgba(30,158,74,.2); }
@@ -1670,28 +1657,68 @@
     .net-tag { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 12px; font-weight: 700; color: #fff; background: rgba(31,43,51,.72); padding: 1px 8px 1px 6px; border-radius: 999px; display: flex; align-items: center; gap: 5px; will-change: transform; }
     .net-tag[hidden] { display: none; }
     .net-tag i { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 1.5px rgba(255,255,255,.85); }
-    #net-win { top: 118px; left: 16px; width: 330px; max-width: calc(100vw - 32px); max-height: calc(100vh - 340px); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 6; }
-    #net-win[hidden] { display: none; }
-    #net-win header { display: flex; justify-content: space-between; align-items: baseline; }
-    #net-win header b { font-size: 18px; font-weight: 700; color: #1f2b33; }
-    #net-win header b span { color: #e2412f; }
-    #net-win .tabs { display: flex; gap: 6px; margin: 6px 0 4px; }
-    #net-win .tabs button { all: unset; cursor: pointer; font-size: 12.5px; font-weight: 600; padding: 3px 11px; border-radius: 999px; background: #fff; border: 1.5px solid #dfe6ea; color: #4c5a63; }
-    #net-win .tabs button.on { background: #1f2b33; border-color: #1f2b33; color: #fff; }
-    #net-win ul, #net-win ol { list-style: none; margin: 0; padding: 0; }
-    #net-win li { display: flex; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #eef2f4; }
-    #net-win li .what { flex: 1; min-width: 0; }
-    #net-win li .what b { font-size: 13px; color: #1f2b33; }
-    #net-win li .what small { display: block; font-size: 11px; color: #7d8a92; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #net-win li .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
-    #net-win li .rank { width: 18px; text-align: right; font-weight: 700; color: #9aa6ad; font-variant-numeric: tabular-nums; }
-    #net-win li .badge { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
-    #net-win li .pay { font-size: 13.5px; font-weight: 700; color: #1f2b33; font-variant-numeric: tabular-nums; white-space: nowrap; }
-    #net-win li em { font-style: normal; font-weight: 700; font-size: 10px; letter-spacing: .06em; color: #9aa6ad; }
-    #net-win li em.pl { color: #2f6f9c; letter-spacing: 0; font-size: 11px; }
-    #net-win li em.pl.on::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1e9e4a; margin-right: 4px; vertical-align: middle; }
-    #net-win button.link { all: unset; cursor: pointer; color: #2f6f9c; text-decoration: underline; font-size: 12px; }
-    #net-win .foot { margin: 8px 0 0; font-size: 11px; color: #9aa6ad; line-height: 1.45; }
+    #standings { top: 104px; left: 16px; width: 380px; max-width: calc(100vw - 32px); max-height: calc(100vh - 220px); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 6; }
+    #standings[hidden] { display: none; }
+    /* the Standings window (I, game/standings.ts): scope switch, lead line, and the board's lines under a name */
+    #standings::-webkit-scrollbar { display: none; }
+    #standings .scope { display: flex; gap: 4px; margin: 2px 0 6px; }
+    #standings .scope button { all: unset; cursor: pointer; font-size: 11.5px; font-weight: 600; padding: 2px 10px; border-radius: 999px; border: 1px solid #d5ddd0; background: #fff; color: #7d8a92; }
+    #standings .scope button.on { background: #eaf1f6; border-color: #2f7fb5; color: #1f2b33; }
+    #standings .lead { margin: 2px 0 6px; color: #7d8a92; font-size: 11.5px; }
+    #standings .lead b { color: #1f2b33; }
+    #standings ul.ranking { list-style: none; margin: 0; padding: 0; }
+    #standings ul.ranking li { align-items: baseline; border-top: 1px solid #eef2f4; }
+    #standings ul.ranking .nm .sub { display: block; margin-left: 18px; font-size: 10.5px; color: #9aa6ad; }
+    #standings ul.ranking .nm .sub i.on { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1e9e4a; vertical-align: middle; }
+    /* the fleet dock's controls (game/fleetDock.ts, game/fleetPanel.ts): the bubble's buttons, the corner icons, the YOUR FLEET tray */
+    #dock .dk-sq { position: relative; }
+    #dock.lift { z-index: 8; }
+    #dock .dk-ic { position: absolute; top: 3px; right: 4px; z-index: 1; font-size: 13px; line-height: 1; pointer-events: none; filter: drop-shadow(0 1px 1px rgba(255,255,255,.9)); }
+    #dock .dk-ic:empty { display: none; }
+    #dock .dk-tip.dk-unit { pointer-events: auto; cursor: default; }
+    #dock .dk-tip.dk-unit::before { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 14px; }
+    #dock .dk-unit .dk-ctl { display: flex; align-items: center; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px solid #eef2f4; }
+    #dock .dk-unit .dk-ctl button.over { margin-top: 0; }
+    #dock .dk-head.fleet { pointer-events: auto; cursor: pointer; position: relative; align-self: flex-start; }
+    #dock .dk-head.fleet::after { content: ' ▴'; opacity: 0; transition: opacity .12s; }
+    #dock .dk-head.fleet:hover::after, #dock .dk-head.fleet.open::after { opacity: 1; }
+    #dock .dk-head.fleet.pinned { color: #1f2b33; }
+    #dock.dark .dk-head.fleet.pinned { color: #fff; }
+    #dock .dk-tip.dk-tray { left: 0; transform: translateX(var(--dx, 0px)); bottom: calc(100% + 8px); width: min(330px, calc(100vw - 16px)); text-transform: none; letter-spacing: normal; font-weight: 400; text-shadow: none; cursor: default; }
+    #dock .dk-tip.dk-tray::after { left: calc(28px - var(--dx, 0px)); }
+    #dock .dk-tip.dk-tray::before { height: 10px; }
+    #dock .dk-tray .tr-head { display: flex; justify-content: space-between; align-items: baseline; }
+    #dock .dk-tray .tr-head b { font-size: 15px; color: #1f2b33; }
+    #dock .dk-tray .tr-head span { font-size: 11.5px; color: #7d8a92; }
+    #dock .dk-tray .tr-money { margin: 2px 0 7px; font-size: 11.5px; color: #7d8a92; }
+    #dock .dk-tray .tr-money .rate { font-style: normal; font-weight: 700; color: #1e9e4a; }
+    #dock .dk-tray .tr-money .net { font-style: normal; font-weight: 700; color: #1f2b33; }
+    #dock .dk-tray .none, #dock .dk-tray .idle { margin: 6px 0 0; font-size: 11.5px; }
+    #dock .dk-tray button.standing { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: baseline; gap: 6px; width: 100%; margin-top: 8px; padding: 5px 8px; border-radius: 6px; background: #f2f6f8; font-size: 11.5px; color: #4c5a63; }
+    #dock .dk-tray button.standing:hover { background: #eaf1f6; }
+    #dock .dk-tray button.standing span { font-weight: 600; color: #7d8a92; }
+    #dock .dk-tray button.standing b { color: #1f2b33; }
+    #dock .dk-tray button.standing kbd { margin-left: auto; }
+    #standings header { display: flex; justify-content: space-between; align-items: baseline; }
+    #standings header b { font-size: 18px; font-weight: 700; color: #1f2b33; }
+    #standings header b span { color: #e2412f; }
+    #standings .tabs { display: flex; gap: 6px; margin: 6px 0 4px; }
+    #standings .tabs button { all: unset; cursor: pointer; font-size: 12.5px; font-weight: 600; padding: 3px 11px; border-radius: 999px; background: #fff; border: 1.5px solid #dfe6ea; color: #4c5a63; }
+    #standings .tabs button.on { background: #1f2b33; border-color: #1f2b33; color: #fff; }
+    #standings ul, #standings ol { list-style: none; margin: 0; padding: 0; }
+    #standings li { display: flex; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #eef2f4; }
+    #standings li .what { flex: 1; min-width: 0; }
+    #standings li .what b { font-size: 13px; color: #1f2b33; }
+    #standings li .what small { display: block; font-size: 11px; color: #7d8a92; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #standings li .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+    #standings li .rank { width: 18px; text-align: right; font-weight: 700; color: #9aa6ad; font-variant-numeric: tabular-nums; }
+    #standings li .badge { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+    #standings li .pay { font-size: 13.5px; font-weight: 700; color: #1f2b33; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    #standings li em { font-style: normal; font-weight: 700; font-size: 10px; letter-spacing: .06em; color: #9aa6ad; }
+    #standings li em.pl { color: #2f6f9c; letter-spacing: 0; font-size: 11px; }
+    #standings li em.pl.on::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1e9e4a; margin-right: 4px; vertical-align: middle; }
+    #standings button.link { all: unset; cursor: pointer; color: #2f6f9c; text-decoration: underline; font-size: 12px; }
+    #standings .foot { margin: 8px 0 0; font-size: 11px; color: #9aa6ad; line-height: 1.45; }
     #net-lost { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: rgba(31,43,51,.35); backdrop-filter: blur(3px); font-family: "Fredoka", "Segoe UI", sans-serif; color: #1f2b33; }
     #net-lost[hidden] { display: none; }
     #net-lost .card { background: rgba(255,255,255,.94); border-radius: 22px; padding: 26px 34px; box-shadow: 0 18px 60px rgba(31,43,51,.25); text-align: center; max-width: 340px; }
@@ -1707,7 +1734,7 @@
     #title-menu .tm-online-state.up i { background: #1e9e4a; box-shadow: 0 0 0 3px rgba(30,158,74,.2); }
     #title-menu .tm-online-state.down i { background: #c2331f; }
   </style>
-  <script type="module" crossorigin src="./assets/index-CRDGCbUj.js"></script>
+  <script type="module" crossorigin src="./assets/index-ethsloZH.js"></script>
 </head>
 <body>
   <canvas id="game"></canvas>
@@ -1731,19 +1758,19 @@
   </div>
   <div id="br-row" class="hud">
   <div id="tool-btns" class="chip" role="toolbar" aria-label="Build tools">
-    <button id="tb-road" type="button" class="tool-btn" tabindex="-1" title="Build roads (B)">
+    <button id="tb-road" type="button" class="tool-btn" tabindex="-1" title="Build roads, bridges and tunnels (B)">
       <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 3 5 21M15.5 3 19 21"/><path d="M12 4v2.4M12 10v3M12 16.8V20"/></svg>
-      <span>Roads</span><kbd>B</kbd>
-    </button>
-    <i aria-hidden="true"></i>
-    <button id="tb-dozer" type="button" class="tool-btn" tabindex="-1" title="Bulldoze (X)">
-      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="15" width="12.5" height="5" rx="2.5"/><path d="M4 15v-4h4V6h4.5L14 11v4"/><path d="M15 12.5h3"/><path d="M19.5 9c-1.2 2.6-1.2 6.4 0 9.5H22"/></svg>
-      <span>Bulldoze</span><kbd>X</kbd>
+      <span>Build</span><kbd>B</kbd>
     </button>
     <i aria-hidden="true"></i>
     <button id="tb-earth" type="button" class="tool-btn" tabindex="-1" title="Terrain: raise and lower land and water (T)">
       <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 19.5 8.5 9.5l3.6 5.4L15 11l6.5 8.5Z"/><path d="M18 3.5v4.5M16 5.5l2-2 2 2"/></svg>
       <span>Terrain</span><kbd>T</kbd>
+    </button>
+    <i aria-hidden="true"></i>
+    <button id="tb-dozer" type="button" class="tool-btn" tabindex="-1" title="Bulldoze (X)">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="15" width="12.5" height="5" rx="2.5"/><path d="M4 15v-4h4V6h4.5L14 11v4"/><path d="M15 12.5h3"/><path d="M19.5 9c-1.2 2.6-1.2 6.4 0 9.5H22"/></svg>
+      <span>Bulldoze</span><kbd>X</kbd>
     </button>
   </div>
   <div id="br" class="hud chip">
@@ -1754,7 +1781,7 @@
     <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> drive</div>
     <div><kbd>Q</kbd><kbd>E</kbd> or right-drag orbit · wheel zoom</div>
     <div><kbd>R</kbd> <span id="camlock">lock camera behind car</span> · <kbd>P</kbd> camera pitch · <kbd>M</kbd> island overview</div>
-    <div><kbd>G</kbd> garage · <kbd>J</kbd> journal: missions · <kbd>F</kbd> fleet (beside your own car: take its wheel) · <kbd>K</kbd> estate · <kbd>B</kbd> build roads · <kbd>X</kbd> bulldoze · <kbd>T</kbd> terrain</div>
+    <div><kbd>G</kbd> garage · <kbd>J</kbd> journal: missions · <kbd>I</kbd> standings · <kbd>F</kbd> beside your own vehicle: take its wheel · <kbd>K</kbd> estate · <kbd>B</kbd> build roads · <kbd>X</kbd> bulldoze · <kbd>T</kbd> terrain</div>
     <div><kbd>Shift</kbd> nitrous · hold <kbd>Space</kbd> handbrake · <kbd>H</kbd> horn, once bought at a Vehicle Shop (stop in its striped ring, <kbd>Space</kbd>)</div>
     <div><kbd>O</kbd> settings and music</div>
     <div>tap <kbd>Space</kbd> or click load cargo</div>
@@ -1779,7 +1806,6 @@
   <div id="cargo-prompt" class="hud chip" hidden></div>
   <div id="fleet-prompt" class="hud chip" hidden></div>
   <div id="tr-stack" class="hud"><div id="inventory" class="trk-sec" hidden></div></div>
-  <div id="fleet" class="hud chip" hidden></div>
   <div id="estate" class="hud chip" hidden></div>
   <div id="firms" class="hud chip" hidden></div>
 
@@ -1797,6 +1823,6 @@
       <p id="loading-seed"></p>
     </div>
   </div>
-
+
 </body>
 </html>
