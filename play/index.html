@@ -28,6 +28,8 @@
     #tl .seed { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: #4c5a63; margin-top: 2px; }
     #tl .stats { font-size: 12px; color: #7d8a92; margin-top: 4px; }
     #tr { top: 16px; right: 16px; font-family: "IBM Plex Mono", monospace; font-size: 12px; color: #4c5a63; display: flex; align-items: center; gap: 12px; }
+    /* buying in a shop, a dealer or the tech trees: the wallet (and the diamonds) stay sharp above the blurred backdrop */
+    body:has(> #vehicles:not([hidden])) #tr, body:has(> #cashmenu:not([hidden])) #tr, body:has(> #tech:not([hidden])) #tr { z-index: 24; }
     #clock { display: inline-flex; align-items: center; gap: 6px; }
     #clock b { font-size: 14px; font-weight: 500; color: #1f2b33; }
     #clock span { font-family: "Fredoka", "Segoe UI", sans-serif; color: #7d8a92; }
@@ -1136,6 +1138,10 @@
     #town .ladder span { font-size: 10px; padding: 1px 5px; border-radius: 999px; background: #eef2ea; color: #9aa6ad; white-space: nowrap; }
     #town .ladder span.past { color: #4c5a63; }
     #town .ladder span.on { background: #ffc83d; color: #1f2b33; font-weight: 700; }
+    /* standing: one column a rung, lined up with the bar's segments above */
+    #town .perf.standing .ladder { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
+    #town .perf.standing .ladder span { text-align: center; padding: 1px 2px; border-radius: 7px; overflow: hidden; text-overflow: ellipsis; }
+    #town .perf.standing .ladder em { display: block; font-style: normal; font-size: 9px; opacity: .8; }
     #town h5 { margin: 10px 0 2px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: #9aa6ad; }
     #town ul.perks { margin: 2px 0 0; }
     #town ul.perks li { position: relative; padding: 1px 0 1px 16px; color: #1f2b33; line-height: 1.4; }
@@ -1734,7 +1740,7 @@
     #title-menu .tm-online-state.up i { background: #1e9e4a; box-shadow: 0 0 0 3px rgba(30,158,74,.2); }
     #title-menu .tm-online-state.down i { background: #c2331f; }
   </style>
-  <script type="module" crossorigin src="./assets/index-ethsloZH.js"></script>
+  <script type="module" crossorigin src="./assets/index-CE0hsvBq.js"></script>
 </head>
 <body>
   <canvas id="game"></canvas>
@@ -1823,6 +1829,6 @@
       <p id="loading-seed"></p>
     </div>
   </div>
-
+
 </body>
 </html>

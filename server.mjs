@@ -12307,6 +12307,21 @@ var conns = /* @__PURE__ */ new Map();
 var rooms = /* @__PURE__ */ new Map();
 var rentToday = /* @__PURE__ */ new Map();
 var signups = /* @__PURE__ */ new Map();
+var PIN_WINDOW = 9e5;
+var PIN_PER_NAME = 5;
+var PIN_PER_IP = 20;
+var PIN_NAME_BACKSTOP = 40;
+var pinFails = /* @__PURE__ */ new Map();
+function recentFails(key, now) {
+  const a = (pinFails.get(key) ?? []).filter((t) => now - t < PIN_WINDOW);
+  if (a.length) pinFails.set(key, a);
+  else pinFails.delete(key);
+  return a;
+}
+function failPin(key, now) {
+  pinFails.set(key, [...recentFails(key, now), now]);
+  if (pinFails.size > 5e3) for (const k of [...pinFails.keys()]) recentFails(k, now);
+}
 var seedHash = 0;
 var CELL = /^-?\d{1,5},-?\d{1,5}$/;
 var NAME = /^[A-Za-z0-9_-]{3,16}$/;
@@ -12519,20 +12534,28 @@ async function hello(ws, ip, m) {
   } else {
     const byToken = !!m.token && !!doc.token && now - (doc.tokenAt ?? 0) < 90 * 864e5 && sha(m.token) === doc.token;
     if (!byToken) {
-      doc.fails = (doc.fails ?? []).filter((t) => now - t < 9e5);
-      if (doc.fails.length >= 5) {
-        refuse(ws, "locked", "Too many wrong PINs: this name is locked for a quarter of an hour.", false);
+      const mine = `${ip}|${doc.id}`;
+      doc.fails = (doc.fails ?? []).filter((t) => now - t < PIN_WINDOW);
+      if (recentFails(mine, now).length >= PIN_PER_NAME || recentFails(ip, now).length >= PIN_PER_IP) {
+        refuse(ws, "locked", `Too many wrong PINs from here: wait a quarter of an hour, or pick another name to start a fleet of your own.`, false);
+        return null;
+      }
+      if (doc.fails.length >= PIN_NAME_BACKSTOP) {
+        refuse(ws, "locked", `${doc.name} is getting too many wrong PINs just now: try again in a quarter of an hour.`, false);
         return null;
       }
       const ok = typeof m.pin === "string" && m.pin.length > 0 && sameHex(await pinHash(m.pin, doc.salt), doc.hash);
       if (!ok) {
         if (m.pin) {
+          failPin(mine, now);
+          failPin(ip, now);
           doc.fails.push(now);
           players.touch(doc.id);
         }
-        refuse(ws, "pin", m.pin ? "That isn\u2019t the PIN for this name." : "Type your PIN to sign in.", false);
+        refuse(ws, "pin", m.pin ? `That isn\u2019t the PIN for ${doc.name}. If ${doc.name} isn\u2019t you, that name belongs to another player: pick another to start your own fleet.` : `${doc.name} already belongs to a player here. Type its PIN to sign in, or pick another name to start your own fleet.`, false);
         return null;
       }
+      pinFails.delete(mine);
       doc.fails = [];
     }
   }
@@ -13099,7 +13122,8 @@ async function main() {
   const server = createServer(http);
   const wss = new import_websocket_server.default({ server, maxPayload: 6 * 1024 * 1024 });
   wss.on("connection", (ws, req) => {
-    const ip = String(req.headers["x-forwarded-for"] ?? req.socket.remoteAddress ?? "").split(",")[0].trim();
+    const fwd = String(req.headers["x-forwarded-for"] ?? "").split(",").map((h) => h.trim()).filter(Boolean);
+    const ip = String(req.headers["x-real-ip"] ?? "").trim() || fwd[fwd.length - 1] || String(req.socket.remoteAddress ?? "");
     let conn = null;
     let busy = Promise.resolve();
     let alive = true;
