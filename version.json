@@ -1,12 +1,12 @@
 {
-  "version": "3.8",
+  "version": "3.9",
   "date": "2026-10-03",
   "windows": {
     "file": "downloads/TinyFleet-Windows.zip",
-    "bytes": 1387304
+    "bytes": 1388446
   },
   "mac": {
     "file": "downloads/TinyFleet-Mac.zip",
-    "bytes": 1380628
+    "bytes": 1381773
   }
 }

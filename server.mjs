@@ -12181,7 +12181,7 @@ var SOURCE_MIN = SEA + 13;
 
 // src/world/generate.ts
 var NN = N * N;
-var GEN_VERSION = 40;
+var GEN_VERSION = 41;
 var PAD = 40;
 var P = N + 2 * PAD;
 var PP = P * P;
