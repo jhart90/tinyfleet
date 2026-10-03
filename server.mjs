@@ -9676,6 +9676,7 @@ var HOURS_PER_SECOND = 1 / 25;
 var isPid = (s) => s.startsWith("p:");
 var cellKey = (cx, cz) => `${cx},${cz}`;
 var cellOfKey = (k) => k.split("#")[0].split(",").map(Number);
+var FRIENDS_MAX = 100;
 
 // src/world/tiles.ts
 var N = 256;
@@ -12181,7 +12182,7 @@ var SOURCE_MIN = SEA + 13;
 
 // src/world/generate.ts
 var NN = N * N;
-var GEN_VERSION = 41;
+var GEN_VERSION = 42;
 var PAD = 40;
 var P = N + 2 * PAD;
 var PP = P * P;
@@ -12600,7 +12601,8 @@ async function hello(ws, ip, m) {
     joined: now,
     chat: [],
     msgs: 0,
-    msgsAt: now
+    msgsAt: now,
+    watch: null
   };
   const owed = Math.round(doc.owed || 0);
   doc.owed = 0;
@@ -12781,6 +12783,13 @@ async function handle(c, m) {
         (doc.deeds ??= {})[key] = row;
         cells.touch(dk);
         toRoom(lot[1], { t: "deed", key, row, who: c.who }, c);
+        if (row.hq !== void 0) {
+          c.doc.hq = { key, name: row.name, epoch: world.epoch };
+          players.touch(c.pid);
+        } else if (c.doc.hq?.key === key) {
+          delete c.doc.hq;
+          players.touch(c.pid);
+        }
       }
       for (const key of m.del ?? []) {
         const lot = LOT.exec(String(key));
@@ -12791,6 +12800,10 @@ async function handle(c, m) {
         delete doc.deeds[key];
         cells.touch(dk);
         toRoom(lot[1], { t: "deed", key, row: null }, c);
+        if (c.doc.hq?.key === key) {
+          delete c.doc.hq;
+          players.touch(c.pid);
+        }
       }
       return;
     }
@@ -12877,6 +12890,28 @@ async function handle(c, m) {
     case "chat":
       chat(c, String(m.text ?? ""));
       return;
+    case "friend": {
+      const id = String(m.id ?? "");
+      const list = c.doc.friends ??= [];
+      if (m.on) {
+        if (id === c.pid || !world.people[id] || list.includes(id) || list.length >= FRIENDS_MAX) {
+          send(c, { t: "friends", rows: await friendRows(c) });
+          return;
+        }
+        list.push(id);
+        const to = conns.get(id);
+        if (to) send(to, { t: "chat", kind: "sys", text: `${c.doc.name} added you as a friend${to.doc.friends?.includes(c.pid) ? "" : " \xB7 right-click their name to add them back"}` });
+      } else c.doc.friends = list.filter((x) => x !== id);
+      players.touch(c.pid);
+      send(c, { t: "friends", rows: await friendRows(c) });
+      return;
+    }
+    case "friends":
+      send(c, { t: "friends", rows: await friendRows(c) });
+      return;
+    case "watch":
+      c.watch = typeof m.c === "string" && CELL.test(m.c) ? m.c : null;
+      return;
     case "board":
       send(c, { t: "board", rows: boardRows() });
       return;
@@ -12894,6 +12929,18 @@ function metricValues(v) {
     if (/^[a-zA-Z]{1,16}$/.test(k) && typeof n === "number" && Number.isFinite(n)) out[k] = Math.round(n * 100) / 100;
   }
   return out;
+}
+async function friendRows(c) {
+  const rows = [];
+  for (const id of c.doc.friends ?? []) {
+    const p = world.people[id];
+    if (!p) continue;
+    const on = conns.get(id);
+    const doc = on?.doc ?? players.peek(id) ?? await players.open(id).catch(() => null);
+    const hq = doc?.hq && doc.hq.epoch === world.epoch ? { key: doc.hq.key, name: doc.hq.name } : void 0;
+    rows.push({ id, name: p.name, brand: on?.who.brand ?? p.brand, online: !!on, c: on?.cell, hq, mutual: !!doc?.friends?.includes(c.pid) });
+  }
+  return rows.sort((a, b) => Number(b.online) - Number(a.online) || a.name.localeCompare(b.name));
 }
 function boardRows() {
   const rows = [
@@ -12946,7 +12993,7 @@ function beat() {
   for (const to of conns.values()) {
     const a = [], f = [];
     for (const m of movers) {
-      if (m === to || cheb(m.cell, to.cell) > SEE_CELLS) continue;
+      if (m === to || cheb(m.cell, to.cell) > SEE_CELLS && !(to.watch && cheb(m.cell, to.watch) <= SEE_CELLS)) continue;
       a.push([m.pid, ...m.pose]);
       for (const u of m.fleet) f.push([m.pid, ...u]);
     }

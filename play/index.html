@@ -20,13 +20,25 @@
     /* a full-screen card's veil blurs the world behind it: the veil is darkened, and only the card inside is turned */
     body.dark-ui > :is(.worldmap, #loading, #vehicles, #cashmenu, #settings, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome) { filter: none !important; background: rgba(8,12,16,.55) !important; }
     body.dark-ui > :is(.worldmap, #loading, #vehicles, #cashmenu, #settings, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome) > * { filter: invert(1) hue-rotate(180deg); }
-    body.dark-ui > :not(#game) :is(img, canvas, video, .dk-canvas, .sw, .rb-sw) { filter: invert(1) hue-rotate(180deg); }
+    body.dark-ui > :not(#game) :is(img, canvas, video, .dk-canvas, .sw, .rb-sw, .terr-legend .tl-row i) { filter: invert(1) hue-rotate(180deg); }
+    /* the fleets' names over the overview are their own colours, with halos picked for them */
+    body.dark-ui > #terr-labels { filter: none !important; }
     .chip { background: rgba(255,255,255,.82); backdrop-filter: blur(6px); border-radius: 14px; padding: 10px 14px; box-shadow: 0 2px 10px rgba(31,43,51,.12); }
     #tl { top: 16px; left: 16px; }
     #tl h1 { font-size: 20px; margin: 0; font-weight: 700; letter-spacing: -.01em; }
     #tl h1 span { color: #e2412f; }
     #tl .seed { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: #4c5a63; margin-top: 2px; }
     #tl .stats { font-size: 12px; color: #7d8a92; margin-top: 4px; }
+    /*
+     * The compass, just right of the card and with no card of its own: a thin ring that turns with the
+     * camera, its four letters kept upright, and a fixed notch on top over the way the camera faces.
+     */
+    #compass { position: absolute; left: calc(100% + 12px); top: 50%; width: 46px; height: 46px; margin-top: -23px; color: #fff; filter: drop-shadow(0 1px 2px rgba(20,30,38,.55)); }
+    #compass::before { content: ""; position: absolute; left: 50%; top: -5px; margin-left: -4px; border: 4px solid transparent; border-top: 6px solid #fff; border-bottom: 0; }
+    #compass .ring { position: absolute; inset: 0; border: 1.5px solid rgba(255,255,255,.75); border-radius: 50%; }
+    #compass .ring i { position: absolute; left: 50%; top: 50%; width: 1.5px; height: 4px; margin: -23px 0 0 -.75px; background: rgba(255,255,255,.7); transform-origin: 50% 23px; }
+    #compass .ring b { position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; font: 700 11px/14px "Fredoka", "Segoe UI", sans-serif; text-align: center; }
+    #compass .ring b.n { color: #ff6a55; font-size: 12px; }
     #tr { top: 16px; right: 16px; font-family: "IBM Plex Mono", monospace; font-size: 12px; color: #4c5a63; display: flex; align-items: center; gap: 12px; }
     /* buying in a shop, a dealer or the tech trees: the wallet (and the diamonds) stay sharp above the blurred backdrop */
     body:has(> #vehicles:not([hidden])) #tr, body:has(> #cashmenu:not([hidden])) #tr, body:has(> #tech:not([hidden])) #tr { z-index: 24; }
@@ -107,6 +119,31 @@
     .terrbtn { bottom: 344px; justify-content: center; font-size: 13px; font-weight: 700; color: #1f2b33; }
     .terrbtn.on { box-shadow: inset 0 0 0 2px #ffc83d; }
     .regionmap { position: fixed; inset: 0; z-index: 12; cursor: grab; touch-action: none; }
+    /*
+     * Territory's key (render/territoryLayer.ts TerritoryLegend): a swatch, the fleet and its towns per
+     * holder. Over the two big maps it sits in the lower-left corner on their dark veil; in the
+     * overview it is a light chip over the territory toggle.
+     */
+    .terr-legend { position: absolute; left: 24px; bottom: 24px; z-index: 2; min-width: 170px; max-width: 240px; padding: 9px 12px 8px; border-radius: 12px; background: rgba(10,14,18,.72); color: #f4f7f1; font-size: 12px; line-height: 1.25; pointer-events: none; }
+    .terr-legend[hidden] { display: none; }
+    .terr-legend .tl-head { display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .7; margin-bottom: 5px; }
+    .terr-legend .tl-head span { letter-spacing: .04em; text-transform: none; font-weight: 600; }
+    .terr-legend .tl-row { display: flex; align-items: center; gap: 7px; padding: 2px 0; }
+    .terr-legend .tl-row i { flex: none; width: 12px; height: 12px; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.35); }
+    .terr-legend .tl-row b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+    .terr-legend .tl-row.you b { font-weight: 800; }
+    .terr-legend .tl-row span { font-family: "IBM Plex Mono", monospace; font-size: 11px; opacity: .8; }
+    .terr-legend .tl-more, .terr-legend .tl-none { font-size: 11px; opacity: .7; padding-top: 2px; }
+    .terr-legend .tl-key { margin-top: 5px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,.14); font-size: 10.5px; opacity: .65; }
+    .terr-legend.overview { position: fixed; left: 16px; bottom: 388px; width: 176px; min-width: 0; box-sizing: border-box; background: rgba(255,255,255,.82); color: #1f2b33; padding: 9px 12px 8px; }
+    .terr-legend.overview .tl-row i { box-shadow: inset 0 0 0 1px rgba(31,43,51,.2); }
+    .terr-legend.overview .tl-key { border-top-color: rgba(31,43,51,.12); }
+    body.title-mode .terr-legend.overview, body.title-mode #terr-labels { display: none; }
+    /* a fleet's name over its land: its colour, with a halo that suits it (dark colours get a light one) */
+    #terr-labels { inset: 0; z-index: 3; }
+    #terr-labels[hidden] { display: none; }
+    .terr-label { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; --halo: rgba(10,13,17,.8); text-shadow: 0 0 2px var(--halo), 0 0 2px var(--halo), 0 0 4px var(--halo); opacity: .95; }
+    .rtag.terr b { font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; text-shadow: 0 0 2px var(--halo), 0 0 2px var(--halo), 0 0 4px var(--halo); }
     .regionmap:active { cursor: grabbing; }
     .regionmap header { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); display: flex; align-items: baseline; gap: 14px; color: #f4f7f1; white-space: nowrap; padding: 8px 16px; border-radius: 14px; background: rgba(18,26,32,.62); backdrop-filter: blur(4px); cursor: default; }
     .regionmap header b { font-size: 20px; font-weight: 700; }
@@ -187,7 +224,10 @@
     #n-pill[hidden], body.title-mode #n-pill, body.title-mode #n-log { display: none; }
     #n-pill:hover, #n-pill.on { color: #1f2b33; box-shadow: 0 4px 16px rgba(31,43,51,.24); }
     #n-pill .np-ico { font-size: 12px; }
-    #n-pill b { display: inline-grid; place-items: center; min-width: 17px; height: 17px; padding: 0 4px; box-sizing: border-box; border-radius: 9px; background: #e2412f; color: #fff; font-size: 10.5px; }
+    /* the unread count: a circle for one digit, a lozenge for more, the figure centred both ways in each
+       (Plex's figures sit on the middle; the rounded face's ride high and wander with the digits) */
+    #n-pill b { display: inline-flex; justify-content: center; align-items: center; flex: none; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 9px; background: #e2412f; color: #fff;
+      font: 700 10.5px/1 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; font-variant-numeric: tabular-nums; letter-spacing: 0; }
     #n-pill .np-t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; opacity: .8; }
     #n-pill.bump { animation: np-bump .45s cubic-bezier(.2,1.5,.4,1); }
     @keyframes np-bump { from { opacity: 0; transform: translateY(-10px) scaleX(1.6) scaleY(.6); } }
@@ -311,6 +351,10 @@
     #cashmenu .act b { font-size: 15px; font-weight: 700; color: #1f2b33; }
     #cashmenu .act span { font-size: 12px; color: #7d8a92; }
     #cashmenu .act.danger b { color: #c2372a; }
+    /* the HQ and the estate: the camera goes to the HQ, and the estate window opens beside it */
+    #hqbtn { all: unset; pointer-events: auto; cursor: pointer; font-size: 14px; line-height: 1; padding: 0 2px; filter: grayscale(.35); transition: transform .15s, filter .15s; }
+    #hqbtn:hover { transform: scale(1.15); filter: none; }
+    body.title-mode #hqbtn { display: none; }
     #gear { all: unset; pointer-events: auto; cursor: pointer; font-size: 15px; line-height: 1; color: #4c5a63; padding: 0 2px; transition: transform .2s; }
     #gear:hover { transform: rotate(45deg); color: #1f2b33; }
     #settings { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(207,230,245,.5); backdrop-filter: blur(3px); padding: 16px; box-sizing: border-box; }
@@ -655,45 +699,48 @@
     /* the rivals window (L), docs/rivals.html */
     .livery { display: inline-flex; vertical-align: -2px; margin-right: 6px; border-radius: 3px; overflow: hidden; border: 1px solid rgba(0,0,0,.2); flex: none; }
     .livery i { display: block; width: 9px; height: 13px; }
-    #firms { top: var(--tr-below, 72px); right: 16px; width: 360px; max-width: calc(100vw - 32px); max-height: calc(100vh - var(--tr-below, 72px) - 226px); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 5; }
-    #firms::-webkit-scrollbar { display: none; }
-    #firms header { display: flex; justify-content: space-between; align-items: baseline; }
-    #firms header b { font-size: 18px; font-weight: 700; color: #1f2b33; }
-    #firms kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 11px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; }
-    #firms .veh { margin: 2px 0 6px; color: #7d8a92; font-size: 11.5px; }
-    #firms ul { list-style: none; margin: 0; padding: 0; }
-    #firms li { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #eef2f4; }
-    #firms li button.pick { all: unset; display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: start; cursor: pointer; min-width: 0; }
-    #firms li button.pick:hover b { text-decoration: underline; }
-    #firms li .what b { font-size: 13px; color: #1f2b33; }
-    #firms li .what small { display: block; font-size: 11px; color: #7d8a92; line-height: 1.4; }
-    #firms li.quiet { opacity: .65; }
-    #firms li.grp { display: block; padding: 8px 0 2px; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #9aa6ad; border-top: none; }
-    #firms li .pay { text-align: right; white-space: nowrap; }
-    #firms li .pay em { font-style: normal; font-size: 14px; font-weight: 700; color: #4c5a63; }
-    #firms li .pay small { color: #9aa6ad; }
-    #firms .more { grid-column: 1 / -1; background: #f5f8f6; border-radius: 8px; padding: 6px 9px; }
-    #firms .more p { margin: 3px 0; line-height: 1.45; }
-    #firms .more p b { color: #1f2b33; margin-right: 4px; }
-    #firms .more .stars { color: #d9a514; letter-spacing: 1px; font-size: 10.5px; }
-    #firms .more i { font-style: normal; color: #9aa6ad; }
-    #firms .more .q { color: #7d8a92; }
-    #firms .more .spark { font-family: "IBM Plex Mono", monospace; letter-spacing: 1px; color: #4c5a63; }
-    #firms .more .log { list-style: none; margin: 4px 0 0; padding: 0; }
-    #firms .more .log li { display: block; border: 0; padding: 1px 0; color: #4c5a63; }
-    #firms .more .log li span { color: #9aa6ad; margin-right: 6px; }
-    #firms button.link { all: unset; cursor: pointer; color: #2f6f9c; text-decoration: underline; }
+    .rivals .veh { margin: 2px 0 6px; color: #7d8a92; font-size: 11.5px; }
+    .rivals ul { list-style: none; margin: 0; padding: 0; }
+    .rivals li { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #eef2f4; }
+    .rivals li button.pick { all: unset; display: grid; grid-template-columns: auto 1fr; gap: 6px; align-items: start; cursor: pointer; min-width: 0; }
+    .rivals li button.pick:hover b { text-decoration: underline; }
+    .rivals li .what b { font-size: 13px; color: #1f2b33; }
+    .rivals li .what small { display: block; font-size: 11px; color: #7d8a92; line-height: 1.4; }
+    .rivals li.quiet { opacity: .65; }
+    .rivals li.grp { display: block; padding: 8px 0 2px; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #9aa6ad; border-top: none; }
+    .rivals li .pay { text-align: right; white-space: nowrap; }
+    .rivals li .pay em { font-style: normal; font-size: 14px; font-weight: 700; color: #4c5a63; }
+    .rivals li .pay small { color: #9aa6ad; }
+    .rivals .more { grid-column: 1 / -1; background: #f5f8f6; border-radius: 8px; padding: 6px 9px; }
+    .rivals .more p { margin: 3px 0; line-height: 1.45; }
+    .rivals .more p b { color: #1f2b33; margin-right: 4px; }
+    .rivals .more .stars { color: #d9a514; letter-spacing: 1px; font-size: 10.5px; }
+    .rivals .more i { font-style: normal; color: #9aa6ad; }
+    .rivals .more .q { color: #7d8a92; }
+    .rivals .more .spark { font-family: "IBM Plex Mono", monospace; letter-spacing: 1px; color: #4c5a63; }
+    .rivals .more .log { list-style: none; margin: 4px 0 0; padding: 0; }
+    .rivals .more .log li { display: block; border: 0; padding: 1px 0; color: #4c5a63; }
+    .rivals .more .log li span { color: #9aa6ad; margin-right: 6px; }
+    .rivals button.link { all: unset; cursor: pointer; color: #2f6f9c; text-decoration: underline; }
     #standings button.allranks { all: unset; cursor: pointer; display: block; margin: 6px 0 2px; font-size: 11.5px; font-weight: 600; color: #2f7fb5; }
     #standings button.allranks:hover { text-decoration: underline; }
-    #firms .town { margin-top: 8px; padding-top: 7px; border-top: 2px solid #e6ecef; }
-    #firms .town > b { color: #1f2b33; font-size: 13px; }
-    #firms .town small { display: block; color: #7d8a92; line-height: 1.45; margin-top: 3px; }
-    #firms .town small.pref { color: #4c5a63; }
-    #firms .bar, .tc-carry .bar { display: flex; height: 9px; border-radius: 5px; overflow: hidden; background: #eef2f4; margin-top: 5px; }
-    #firms .bar i, .tc-carry .bar i { display: block; height: 100%; }
-    #firms .none { margin: 8px 0 0; line-height: 1.55; color: #7d8a92; }
+    .rivals .town { margin-top: 8px; padding-top: 7px; border-top: 2px solid #e6ecef; }
+    .rivals .town > b { color: #1f2b33; font-size: 13px; }
+    .rivals .town small { display: block; color: #7d8a92; line-height: 1.45; margin-top: 3px; }
+    .rivals .town small.pref { color: #4c5a63; }
+    .rivals .bar, .tc-carry .bar { display: flex; height: 9px; border-radius: 5px; overflow: hidden; background: #eef2f4; margin-top: 5px; }
+    .rivals .bar i, .tc-carry .bar i { display: block; height: 100%; }
+    .rivals .none { margin: 8px 0 0; line-height: 1.55; color: #7d8a92; }
     #estate { top: var(--tr-below, 72px); right: 16px; width: 340px; max-width: calc(100vw - 32px); max-height: calc(100vh - var(--tr-below, 72px) - 226px); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 5; }
     #estate::-webkit-scrollbar { display: none; }
+    #estate .hq { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; margin: 6px 0 4px; padding: 7px 9px; border-radius: 10px; background: #fbf4e2; box-shadow: inset 0 0 0 1px #f0dfb2; }
+    #estate .hq.none { background: #f5f8f6; box-shadow: none; }
+    #estate .hq .ic { font-size: 18px; }
+    #estate .hq b { display: block; font-size: 13px; color: #1f2b33; }
+    #estate .hq small { display: block; font-size: 11px; color: #7d8a92; line-height: 1.35; }
+    #estate .hq .find { all: unset; cursor: pointer; font-size: 11.5px; font-weight: 700; padding: 4px 11px; border-radius: 999px; background: #1f2b33; color: #fff; }
+    #estate .hq .find:hover { background: #33444f; }
+    #estate .assets { margin: 0 0 4px; font-size: 11.5px; color: #4c5a63; }
     #estate header { display: flex; justify-content: space-between; align-items: baseline; }
     #estate header b { font-size: 18px; font-weight: 700; color: #1f2b33; }
     #estate header b span { color: #d49a12; }
@@ -1663,7 +1710,7 @@
     /* ---- online (src/net): the chat, who is signed in and the leaderboard, name tags, the lost-connection card ---- */
     #net-chat { position: fixed; left: 16px; bottom: 100px; width: 360px; max-width: calc(100vw - 32px); z-index: 5; font-size: 13px; color: #1f2b33; pointer-events: none; }
     #net-chat[hidden], body.title-mode #net-chat { display: none; }
-    /* a race, lap, game or night-op strip (.race-strip, bottom 86px) takes the corner: the chat steps up over it */
+    /* a night-op strip (.race-strip, bottom 86px) takes the corner: the chat steps up over it */
     body:has(.race-strip:not([hidden])) #net-chat { bottom: 142px; }
     #net-chat .lines { display: flex; flex-direction: column; gap: 3px; max-height: 172px; overflow: hidden; }
     #net-chat.typing .lines { overflow-y: auto; max-height: 260px; pointer-events: auto; scrollbar-width: thin; background: rgba(255,255,255,.6); backdrop-filter: blur(6px); border-radius: 12px; padding: 6px; }
@@ -1672,6 +1719,8 @@
     #net-chat .line.old { opacity: 0; }
     #net-chat.typing .line.old { opacity: 1; }
     #net-chat .line b { font-weight: 700; margin-right: 2px; }
+    /* a name in a line still showing takes a right-click (add them as a friend), though the chat lets clicks through */
+    #net-chat .line:not(.old) b[data-pid] { pointer-events: auto; }
     #net-chat .line i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
     #net-chat .line span { color: #7d8a92; font-style: italic; }
     #net-chat .line.w, #net-chat .line.wto { color: #7a3aa6; }
@@ -1691,8 +1740,20 @@
     .net-tag { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 12px; font-weight: 700; color: #fff; background: rgba(31,43,51,.72); padding: 1px 8px 1px 6px; border-radius: 999px; display: flex; align-items: center; gap: 5px; will-change: transform; }
     .net-tag[hidden] { display: none; }
     .net-tag i { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 1.5px rgba(255,255,255,.85); }
-    #standings { top: 104px; left: 16px; width: 380px; max-width: calc(100vw - 32px); max-height: calc(100vh - 220px); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 6; }
+    #standings { top: 104px; left: 16px; width: 380px; max-width: calc(100vw - 32px); max-height: calc(100vh - 264px); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 6; }
     #standings[hidden] { display: none; }
+    /* Friends (net/friends.ts): the tab's rows, and the menu a right-click on a player's name opens */
+    #standings .friends .acts { display: flex; gap: 8px; white-space: nowrap; }
+    #standings .friends i.on { display: inline-block; width: 6px; height: 6px; margin-right: 4px; border-radius: 50%; background: #1e9e4a; vertical-align: middle; }
+    #standings .friends .none { margin: 8px 0 0; color: #7d8a92; }
+    [data-pid] { cursor: context-menu; }
+    #net-tags .net-tag[data-pid] { pointer-events: auto; }
+    #friend-menu { position: fixed; z-index: 40; min-width: 170px; padding: 6px; border-radius: 10px; background: #fff; box-shadow: 0 8px 28px rgba(31,43,51,.25); font-size: 12.5px; color: #1f2b33; }
+    #friend-menu[hidden] { display: none; }
+    #friend-menu > b { display: block; padding: 3px 8px 0; font-size: 13px; }
+    #friend-menu > small { display: block; padding: 0 8px 4px; font-size: 11px; color: #7d8a92; }
+    #friend-menu button { all: unset; display: block; box-sizing: border-box; width: 100%; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+    #friend-menu button:hover { background: #eef3f6; }
     /* the Standings window (I, game/standings.ts): scope switch, lead line, and the board's lines under a name */
     #standings::-webkit-scrollbar { display: none; }
     #standings .scope { display: flex; gap: 4px; margin: 2px 0 6px; }
@@ -1768,7 +1829,7 @@
     #title-menu .tm-online-state.up i { background: #1e9e4a; box-shadow: 0 0 0 3px rgba(30,158,74,.2); }
     #title-menu .tm-online-state.down i { background: #c2331f; }
   </style>
-  <script type="module" crossorigin src="./assets/index-kYKABFGn.js"></script>
+  <script type="module" crossorigin src="./assets/index-DWUExF0m.js"></script>
 </head>
 <body>
   <canvas id="game"></canvas>
@@ -1778,8 +1839,9 @@
     <h1>TinyFleet<span>.</span></h1>
     <div class="seed" id="seed">—</div>
     <div class="stats" id="stats"></div>
+    <div id="compass" aria-hidden="true"><div class="ring"><i style="transform:rotate(45deg)"></i><i style="transform:rotate(135deg)"></i><i style="transform:rotate(225deg)"></i><i style="transform:rotate(315deg)"></i><b class="n">N</b><b>E</b><b>S</b><b>W</b></div></div>
   </div>
-  <div id="tr" class="hud chip"><span id="fleetname" hidden></span><span id="cash">$0</span><button id="gems" type="button" tabindex="-1" title="Diamonds · the tech trees">◆ 0</button><span id="clock"></span><span id="fps">— fps</span><button id="gear" type="button" tabindex="-1" title="Settings (O)">⚙</button></div>
+  <div id="tr" class="hud chip"><span id="fleetname" hidden></span><span id="cash">$0</span><button id="gems" type="button" tabindex="-1" title="Diamonds · the tech trees">◆ 0</button><span id="clock"></span><span id="fps">— fps</span><button id="hqbtn" type="button" tabindex="-1" title="Your HQ and everything you own (K)">🏢</button><button id="gear" type="button" tabindex="-1" title="Settings (O)">⚙</button></div>
   <div id="town-labels" hidden></div>
   <div id="cargo-tags"></div>
   <div id="notices"><div id="toast" class="notice" role="status" aria-live="polite"></div><div id="earnings"></div></div>
@@ -1841,7 +1903,6 @@
   <div id="fleet-prompt" class="hud chip" hidden></div>
   <div id="tr-stack" class="hud"><div id="inventory" class="trk-sec" hidden></div></div>
   <div id="estate" class="hud chip" hidden></div>
-  <div id="firms" class="hud chip" hidden></div>
 
   <div id="loading" hidden>
     <div class="card">
