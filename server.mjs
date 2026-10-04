@@ -9274,6 +9274,8 @@ function money(v) { return v == null ? '—' : (v < 0 ? '-$' : '$') + Math.abs(M
 function hrs(s) { if (!s) return '0m'; var h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return h ? h + 'h ' + m + 'm' : m + 'm'; }
 function when(t) { if (!t) return '—'; var d = new Date(t); return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) + ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }); }
 function ago(t) { var s = (Date.now() - t) / 1000; if (s < 90) return 'just now'; if (s < 5400) return Math.round(s / 60) + ' min ago'; if (s < 129600) return Math.round(s / 3600) + ' h ago'; return Math.round(s / 86400) + ' days ago'; }
+function secs(s) { if (s == null) return '—'; if (s < 90) return Math.round(s) + 's'; return hrs(s); }
+function fpsTxt(v) { if (v == null) return '<span class="mute">—</span>'; var c = v < 20 ? 'var(--acc)' : v < 40 ? 'var(--warn)' : 'var(--ok)'; return '<b style="color:' + c + '">' + Math.round(v) + '</b>'; }
 function cellTxt(c) { return c && c.length === 2 ? c[0] + ', ' + c[1] : '—'; }
 function gameHour(h) { if (h == null) return '—'; var d = Math.floor(h / 24) + 1, hh = Math.floor(h % 24), mm = Math.round((h % 1) * 60); return 'day ' + d + ' ' + String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0'); }
 
@@ -9284,9 +9286,11 @@ async function api(path, body) {
   return j;
 }
 
+var visits = [];
 var games = [], feedback = [], sortKey = 'last', sortDir = -1, openGid = null;
 var COLS = [
-  ['fleet', 'Fleet'], ['player', 'Player'], ['seed', 'Seed'], ['start', 'Start cell'], ['played', 'Played', 1], ['day', 'Game day', 1],
+  ['fleet', 'Fleet'], ['player', 'Player'], ['device', 'Device'], ['fps', 'Avg FPS', 1], ['low1', '1% low', 1], ['quality', 'Quality'], ['welcome', 'Welcome card'], ['firstKey', 'First drive key', 1], ['firstMove', 'First tile', 1], ['errors', 'Errors', 1],
+  ['seed', 'Seed'], ['start', 'Start cell'], ['played', 'Played', 1], ['wall', 'Real time', 1], ['day', 'Game day', 1],
   ['worth', 'Net worth', 1], ['earned', '$ earned', 1], ['vehicles', 'Vehicles', 1], ['youTiles', 'Tiles (you)', 1], ['hiredTiles', 'Tiles (hired)', 1],
   ['started', 'Missions', 1], ['done', 'Done', 1], ['delivered', 'Cargo', 1], ['buildings', 'Buildings', 1], ['cells', 'Cells', 1], ['deeds', 'Deeds', 1], ['last', 'Last seen', 1]
 ];
@@ -9312,7 +9316,8 @@ function tab(t) {
 }
 
 async function load() {
-  var a = await api('games'), b = await api('feedback');
+  var a = await api('games'), b = await api('feedback'), v = await api('visits');
+  visits = v.days || [];
   if (a.status === 401 || b.status === 401) { showApp(false); return; }
   games = a.games || []; feedback = b.feedback || [];
   $('t-fb').textContent = 'Feedback (' + feedback.length + ')';
@@ -9329,9 +9334,16 @@ function renderGames() {
   var tot = { play: 0, earned: 0, you: 0, hired: 0, done: 0, players: {} };
   games.forEach(function (g) { tot.play += g.played || 0; tot.earned += g.earned || 0; tot.you += g.youTiles || 0; tot.hired += g.hiredTiles || 0; tot.done += g.done || 0; tot.players[(g.player || '') + '|' + (g.online || '')] = 1; });
   var week = games.filter(function (g) { return Date.now() - g.last < 7 * 86400000; }).length;
+  var vis = { page: 0, mobile: 0, anyway: 0 };
+  visits.forEach(function (d) { vis.page += (d.n && d.n.page) || 0; vis.mobile += (d.n && d.n.mobile) || 0; vis.anyway += (d.n && d.n.anyway) || 0; });
+  var perfGames = games.filter(function (g) { return g.fps != null; });
+  var neverDrove = perfGames.filter(function (g) { return !g.youTiles; }).length;
   $('stats').innerHTML = [
     [games.length, 'games'], [Object.keys(tot.players).length, 'player profiles'], [week, 'played this week'], [hrs(tot.play), 'total play'],
-    [money(tot.earned), 'earned, all games'], [num(tot.you), 'tiles driven by players'], [num(tot.hired), 'tiles by hired drivers'], [num(tot.done), 'missions completed'], [feedback.length, 'feedback']
+    [money(tot.earned), 'earned, all games'], [num(tot.you), 'tiles driven by players'], [num(tot.hired), 'tiles by hired drivers'], [num(tot.done), 'missions completed'], [feedback.length, 'feedback'],
+    [num(vis.page), 'page loads (desktop, 30 days)'], [num(vis.mobile), 'phones/tablets turned away'], [num(vis.anyway), 'phones that went on anyway'],
+    [perfGames.length ? Math.round(perfGames.reduce(function (s, g) { return s + g.fps; }, 0) / perfGames.length) : '—', 'average FPS (games with perf data)'],
+    [neverDrove + ' / ' + perfGames.length, 'never drove a tile (perf-tracked games)']
   ].map(function (s) { return '<div class="stat"><b>' + esc(s[0]) + '</b><span>' + esc(s[1]) + '</span></div>'; }).join('');
   $('ghead').innerHTML = '<tr>' + COLS.map(function (c) { return '<th data-k="' + c[0] + '"' + (c[2] ? ' class="n"' : '') + '>' + esc(c[1]) + (sortKey === c[0] ? (sortDir > 0 ? ' ▲' : ' ▼') : '') + '</th>'; }).join('') + '</tr>';
   Array.prototype.forEach.call($('ghead').querySelectorAll('th'), function (th) {
@@ -9341,6 +9353,13 @@ function renderGames() {
     var cells = {
       fleet: '<b>' + esc(g.fleet || '(unnamed)') + '</b>' + (g.online ? ' <span class="chip">online: ' + esc(g.online) + '</span>' : ''),
       player: esc(g.player), seed: '<span class="mute">' + esc(g.seed) + '</span>', start: cellTxt(g.start), played: hrs(g.played), day: num(g.day),
+      device: g.device ? '<span class="chip' + (g.device === 'desktop' ? '' : ' failed') + '" title="' + esc(g.gpu || '') + '">' + esc(g.device) + '</span>' : '<span class="mute">—</span>',
+      fps: fpsTxt(g.fps), low1: fpsTxt(g.low1), quality: g.quality ? esc(g.quality) : '<span class="mute">—</span>',
+      welcome: g.welcome == null ? '<span class="mute">—</span>' : g.welcome === 'open' ? '<span class="chip active">still open</span>' : g.welcome === 'none' ? '<span class="mute">not shown</span>' : esc(Math.round(g.welcome)) + 's',
+      firstKey: g.firstKey == null ? (g.fps == null ? '—' : '<span class="chip failed">never</span>') : secs(g.firstKey),
+      firstMove: g.firstMove == null ? (g.fps == null ? '—' : '<span class="chip failed">never</span>') : secs(g.firstMove),
+      errors: g.errors == null ? '—' : g.errors ? '<span class="chip failed">' + g.errors + '</span>' : '0',
+      wall: g.wall == null ? '—' : secs(g.wall),
       worth: money(g.worth), earned: money(g.earned), vehicles: num(g.vehicles), youTiles: num(g.youTiles), hiredTiles: num(g.hiredTiles),
       started: num(g.started), done: num(g.done), delivered: num(g.delivered), buildings: num(g.buildings), cells: num(g.cells), deeds: num(g.deeds),
       last: '<span title="' + esc(when(g.last)) + '">' + esc(ago(g.last)) + '</span>'
@@ -9378,6 +9397,7 @@ async function openGame(gid) {
     ['Towns carried', num(met.towns)], ['Territory', num(met.held)], ['◆ a day', num(met.gems)], ['Missions', missions.length + ' started · ' + done + ' done · ' + failed + ' failed'],
     ['Game id', '<span class="mute">' + esc(g.gid) + '</span>'], ['Build', 'gen ' + esc(g.gen) + ' · save ' + esc(g.save) + ' · ' + esc(g.where)]
   ]) + '</div>';
+  h += perfCard(g.perf);
   h += '<div class="card"><h3>Vehicles (' + (g.vehicles || []).length + ')</h3>' + table([['Name'], ['Model'], ['Driver'], ['Where'], ['Tiles', 1], ['Deliveries', 1], ['Earned', 1]],
     (g.vehicles || []).map(function (v) { return [esc(v.name), esc(v.model), v.driver ? esc(v.driver) + ' <span class="mute">' + esc(v.rank) + '</span>' : '<span class="mute">you / none</span>', esc(v.where), num(v.tiles), num(v.deliveries), money(v.earned)]; })) + '</div>';
   h += '<div class="card"><h3>Missions (' + missions.length + ')</h3>' + (missions.length ? missions.map(function (x) {
@@ -9396,6 +9416,35 @@ async function openGame(gid) {
   if ((j.feedback || []).length) h += '<div class="card"><h3>Feedback from this game</h3>' + j.feedback.map(fbHtml).join('') + '</div>';
   $('detail').innerHTML = h;
   $('detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function perfCard(p) {
+  if (!p) return '<div class="card"><h3>Performance &amp; device</h3><div class="mute">This game was reported by a build from before performance tracking (4.2).</div></div>';
+  var d = p.device || {}, q = p.quality || {}, f = p.frames || {}, u = p.funnel || {}, s = p.settings || {};
+  var h = '<div class="card"><h3>Performance &amp; device <span class="mute" style="font-weight:400">· last report: ' + esc(p.why) + '</span></h3>';
+  h += kv([
+    ['Device', (d.mobile ? '<b style="color:var(--acc)">mobile</b>' : 'desktop') + ' · ' + esc(d.platform) + (d.mobileAnyway ? ' · <b>pressed “continue anyway”</b>' : '')],
+    ['Input', 'touch points ' + esc(d.touchPoints) + ' · ' + (d.fine ? 'mouse/trackpad' : 'no fine pointer') + (u.gamepad ? ' · gamepad' : '')],
+    ['GPU', esc(d.gpu) + ' <span class="mute">' + esc(d.gpuVendor) + '</span>'], ['WebGL', (d.webgl2 ? 'WebGL 2' : 'WebGL 1') + ' · max texture ' + esc(d.maxTexture)],
+    ['Screen', esc((d.screen || []).join('×')) + ' @' + esc(d.dpr) + 'x · window ' + esc((d.viewport || []).join('×'))], ['CPU / memory', esc(d.cores) + ' cores · ' + (d.memoryGb ? esc(d.memoryGb) + ' GB' : '? GB')],
+    ['Quality', esc(q.label) + ' <span class="mute">(setting: ' + esc(q.setting) + ', ' + esc(q.changes) + ' Auto changes)</span>'],
+    ['Time at each level', Object.keys(q.seconds || {}).map(function (k) { return esc(k) + ' ' + secs(q.seconds[k]); }).join(' · ') || '—'],
+    ['Average FPS', fpsTxt(f.avgFps) + ' <span class="mute">over ' + secs(f.seconds) + ', ' + num(f.count) + ' frames</span>'],
+    ['1% / 5% low', fpsTxt(f.low1) + ' / ' + fpsTxt(f.low5)], ['Worst frame', num(f.worstMs) + ' ms · ' + num(f.over50) + ' over 67 ms · ' + num(f.over250) + ' over 1 s'],
+    ['Tab hidden', secs(p.hiddenSeconds)], ['Load to play', p.loadMs == null ? '—' : (p.loadMs / 1000).toFixed(1) + 's'],
+    ['Welcome card', u.welcomeSeen ? 'up ' + secs(u.welcomeSeconds) + (u.welcomeClosedAt == null ? ' · <b style="color:var(--acc)">never closed</b>' : ' · closed at ' + secs(u.welcomeClosedAt)) : 'not shown'],
+    ['First key / drive key', secs(u.firstKeyAt) + ' / ' + (u.firstDriveKeyAt == null ? '<b style="color:var(--acc)">never</b>' : secs(u.firstDriveKeyAt))],
+    ['First tile driven', u.firstMoveAt == null ? '<b style="color:var(--acc)">never</b>' : secs(u.firstMoveAt)],
+    ['Keys pressed', Object.keys(u.keys || {}).map(function (k) { return esc(k.replace(/^Key|^Arrow/, '')) + ' ' + u.keys[k]; }).join(' · ') || 'none'],
+    ['Clicks / taps', num(u.clicks) + ' / ' + num(u.touches)], ['Menus', num(u.paused) + ' opened · ' + secs(u.menuSeconds) + ' in them'],
+    ['Settings', Object.keys(s).map(function (k) { var v = s[k]; return esc(k) + ': ' + esc(typeof v === 'object' ? JSON.stringify(v) : v); }).join(' · ') || 'all default'],
+    ['Browser', '<span class="mute" style="white-space:normal">' + esc(d.ua) + '</span>']
+  ]);
+  if ((f.timeline || []).length) h += '<div style="margin-top:12px"><span class="mute" style="font-size:12px">FPS every 15 s (colour = quality level)</span><div style="display:flex;align-items:flex-end;gap:2px;height:60px;margin-top:4px">' +
+    f.timeline.map(function (t) { var col = { high: '#1e9e4a', medium: '#3f7fb8', low: '#c98a12', lowest: '#e2412f' }[t[2]] || '#888'; return '<i title="' + esc(t[0]) + 's · ' + esc(t[1]) + ' fps · ' + esc(t[2]) + '" style="display:block;width:6px;background:' + col + ';height:' + Math.max(2, Math.min(60, t[1])) + 'px"></i>'; }).join('') + '</div></div>';
+  if ((f.hist || []).length) h += '<div class="mute" style="font-size:12px;margin-top:8px">Frame times: ' + ['≤12', '≤17', '≤20', '≤25', '≤33', '≤50', '≤67', '≤100', '≤250', '≤1000', '>1000'].map(function (b, i) { return b + 'ms ' + num(f.hist[i]); }).join(' · ') + '</div>';
+  if ((p.errors || []).length) h += '<h3 style="margin-top:14px">Errors (' + p.errors.length + ')</h3>' + p.errors.map(function (e) { return '<div class="mission"><b style="color:var(--acc)">' + esc(e.msg) + '</b> <span class="mute">×' + esc(e.n) + ' · first at ' + secs(e.at) + '</span>' + (e.stack ? '<pre style="white-space:pre-wrap;font-size:11px;color:var(--mute);margin:4px 0 0">' + esc(e.stack) + '</pre>' : '') + '</div>'; }).join('');
+  return h + '</div>';
 }
 
 function fbHtml(f) {
@@ -9490,6 +9539,7 @@ function summary(gid, r) {
   const driven = r.driven ?? {};
   const delivered = r.delivered ?? {};
   const explored = r.explored ?? {};
+  const perf = r.perf ?? {};
   return {
     gid,
     first: r.first,
@@ -9516,11 +9566,67 @@ function summary(gid, r) {
     cells: explored.cells ?? 0,
     deeds: Array.isArray(r.deeds) ? r.deeds.length : 0,
     where: r.where,
-    gen: r.gen
+    gen: r.gen,
+    fps: perf.frames?.avgFps ?? null,
+    low1: perf.frames?.low1 ?? null,
+    wall: perf.frames?.seconds ?? null,
+    quality: perf.quality?.label ?? null,
+    device: perf.device ? perf.device.mobile ? "mobile" : perf.device.touchPoints && !perf.device.fine ? "touch" : "desktop" : null,
+    gpu: perf.device?.gpu ?? null,
+    errors: Array.isArray(perf.errors) ? perf.errors.length : null,
+    firstKey: perf.funnel?.firstDriveKeyAt ?? null,
+    firstMove: perf.funnel?.firstMoveAt ?? null,
+    welcome: perf.funnel ? perf.funnel.welcomeSeen ? perf.funnel.welcomeClosedAt == null ? "open" : perf.funnel.welcomeSeconds ?? 0 : "none" : null,
+    why: perf.why ?? null
   };
 }
 async function adminHttp(req, res, path, store2, hooks) {
   const ip = ipOf(req);
+  if (path === "/api/visit") {
+    if (req.method === "OPTIONS") {
+      res.writeHead(204, OPEN).end();
+      return true;
+    }
+    if (req.method !== "POST") {
+      json(res, 405, { ok: false }, OPEN);
+      return true;
+    }
+    if (limited(`v|${ip}`, 12, 6e5)) {
+      json(res, 429, { ok: false }, OPEN);
+      return true;
+    }
+    let m = {};
+    try {
+      m = JSON.parse(await readBody(req, 4e3) ?? "");
+    } catch {
+      json(res, 400, { ok: false }, OPEN);
+      return true;
+    }
+    const kind = str(m.kind, 20);
+    if (kind !== "page" && kind !== "mobile" && kind !== "anyway") {
+      json(res, 400, { ok: false }, OPEN);
+      return true;
+    }
+    const now = Date.now();
+    const day = new Date(now).toISOString().slice(0, 10);
+    const doc = await store2.get(`visits:${day}`) ?? { day, n: {}, rows: [] };
+    doc.n[kind] = (doc.n[kind] ?? 0) + 1;
+    doc.rows.push({
+      t: now,
+      kind,
+      ua: str(m.ua, 300),
+      screen: Array.isArray(m.screen) ? m.screen.slice(0, 2) : null,
+      touch: typeof m.touch === "number" ? m.touch : null,
+      coarse: !!m.coarse,
+      fine: !!m.fine,
+      where: str(m.where, 80),
+      ref: str(m.ref, 160)
+    });
+    if (doc.rows.length > 300) doc.rows.splice(0, doc.rows.length - 300);
+    await store2.set(`visits:${day}`, doc);
+    json(res, 200, { ok: true }, OPEN);
+    return true;
+  }
   if (path === "/api/report" || path === "/api/feedback") {
     if (req.method === "OPTIONS") {
       res.writeHead(204, OPEN).end();
@@ -9656,6 +9762,11 @@ async function adminHttp(req, res, path, store2, hooks) {
     }
     const fb = (await store2.list("feedback:")).map((e) => e.value).filter((f) => f.gid === gid);
     json(res, 200, { ok: true, game: r, feedback: fb });
+    return true;
+  }
+  if (what === "visits") {
+    const all = await store2.list("visits:");
+    json(res, 200, { ok: true, days: all.map((e) => e.value).sort((a, b) => String(b.day).localeCompare(String(a.day))).slice(0, 30) });
     return true;
   }
   if (what === "feedback") {
@@ -10174,7 +10285,9 @@ var Community = class {
   }
   // ---- the player's own numbers ------------------------------------------------------------------------
   stats(p) {
-    return p.cs = { ...blankStats(), ...p.cs ?? {} };
+    p.cs = { ...blankStats(), ...p.cs ?? {} };
+    if (p.cs.likes === void 0) p.cs.likes = p.cs.loved;
+    return p.cs;
   }
   /** A change to a player's totals: told at once if they are signed in, kept for their next sign-in if not. */
   async credit(pid, f, nice) {
@@ -10291,6 +10404,7 @@ var Community = class {
     this.onHeart(line, on);
     await this.credit(w.by, (s, away) => {
       s.loved = Math.max(0, s.loved + (on ? 1 : -1));
+      s.likes = Math.max(0, (s.likes ?? 0) + (on ? 1 : -1));
       if (!away) return;
       const items = away.items ??= [];
       let it = items.find((x) => x.k === k);
@@ -10691,6 +10805,12 @@ var Community = class {
     }
     return null;
   }
+  /** Likes from something that isn't a work (a thumbs-up on a sign, server/marks.ts): into the purse, or out of it. */
+  async likes(pid, n) {
+    await this.credit(pid, (s) => {
+      s.likes = Math.max(0, (s.likes ?? 0) + n);
+    });
+  }
   /** A player's line on the board: hearts received and works built. */
   boardBits(p) {
     const s = this.stats(p);
@@ -10722,6 +10842,9 @@ var Marks = class {
   lost = /* @__PURE__ */ new Map();
   /** The last hand-over told for each town and pair of fleets (real ms), so a town flapping between two isn't told every minute. */
   toldAt = /* @__PURE__ */ new Map();
+  /** A thumbs-up given or taken back on a player's sign: their likes go up or down (server/community.ts likes). */
+  onLike = () => {
+  };
   async load() {
     const had = await this.host.store.get("picks");
     const week = weekOf(Date.now());
@@ -10877,12 +11000,15 @@ var Marks = class {
     const doc = this.host.cells.peek(this.docKey(cell)) ?? await this.host.cells.open(this.docKey(cell));
     const row = doc.signs?.[id];
     if (!row || row.by === c.pid) return;
-    const wasUp = row.up.includes(c.pid);
+    const wasUp = row.up.includes(c.pid), wasDown = row.dn.includes(c.pid);
     row.up = row.up.filter((p) => p !== c.pid);
     row.dn = row.dn.filter((p) => p !== c.pid);
     if (v === 1 && row.up.length < MARKS.votesMax) row.up.push(c.pid);
     if (v === -1 && row.dn.length < MARKS.votesMax) row.dn.push(c.pid);
     this.host.cells.touch(this.docKey(cell));
+    const isUp = row.up.includes(c.pid);
+    if (isUp !== wasUp) this.onLike(row.by, isUp ? 1 : -1);
+    void wasDown;
     const key = `${cell}#${id}`;
     const fate = signFate(row.up.length, row.dn.length);
     if (fate === "fallen" && !row.carved) {
@@ -14699,6 +14825,7 @@ async function main() {
   community.onHeart = (line, on) => marks.heart(line, on);
   community.onRoad = (line) => marks.road(line);
   community.tell = (pid, n, from) => void marks.news(pid, n, from);
+  marks.onLike = (pid, n) => void community.likes(pid, n);
   await marks.load();
   const server = createServer(http);
   const wss = new import_websocket_server.default({ server, maxPayload: 6 * 1024 * 1024 });

@@ -23,6 +23,19 @@
     body.dark-ui > :not(#game) :is(img, canvas, video, .dk-canvas, .sw, .rb-sw, .terr-legend .tl-row i) { filter: invert(1) hue-rotate(180deg); }
     /* the fleets' names over the overview are their own colours, with halos picked for them */
     body.dark-ui > #terr-labels { filter: none !important; }
+    /* phones and tablets: the game needs a keyboard, so a full-screen card says so (the inline script after <body>) */
+    #mobile-block { position: fixed; inset: 0; z-index: 2147483647; display: none; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; background: #f4f7f1; color: #1f2b33; font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; text-align: center; }
+    body.mobile-blocked #mobile-block { display: flex; }
+    body.mobile-blocked > :not(#mobile-block):not(script) { display: none !important; }
+    body.dark-ui > #mobile-block { filter: none !important; }
+    #mobile-block .mb-card { max-width: 420px; }
+    #mobile-block .mb-logo { font-family: "Fredoka", "Segoe UI", sans-serif; font-weight: 700; font-size: 44px; line-height: 1; margin: 0 0 18px; }
+    #mobile-block .mb-logo span { color: #e2412f; }
+    #mobile-block .mb-ic { font-size: 44px; margin-bottom: 10px; }
+    #mobile-block h2 { font-size: 22px; margin: 0 0 10px; }
+    #mobile-block p { font-size: 16px; line-height: 1.5; color: #4c5a63; margin: 0 0 12px; }
+    #mobile-block .mb-url { display: inline-block; margin-top: 6px; padding: 8px 14px; border-radius: 10px; background: #fff; border: 1.5px solid #d5ddd0; font-family: "IBM Plex Mono", monospace; font-size: 14px; color: #1f2b33; word-break: break-all; }
+    #mobile-block .mb-anyway { all: unset; cursor: pointer; display: inline-block; margin-top: 22px; font-size: 13px; color: #7d8a92; text-decoration: underline; }
     .chip { background: rgba(255,255,255,.82); backdrop-filter: blur(6px); border-radius: 14px; padding: 10px 14px; box-shadow: 0 2px 10px rgba(31,43,51,.12); }
     #tl { top: 16px; left: 16px; }
     #tl h1 { font-size: 20px; margin: 0; font-weight: 700; letter-spacing: -.01em; }
@@ -590,6 +603,8 @@
     #town-labels .tlabel.land span { font-size: 9.5px; }
     #town-labels .tlabel.minor b { font-size: 11.5px; font-weight: 600; }
     #town-labels .tlabel.minor span { font-size: 9.5px; }
+    #likes { font-family: "Fredoka", "Segoe UI", sans-serif; font-size: 15px; font-weight: 700; color: #e0457b; font-variant-numeric: tabular-nums; }
+    #likes[hidden] { display: none; }
     #cash { font-family: "Fredoka", "Segoe UI", sans-serif; font-size: 15px; font-weight: 700; color: #1e9e4a; font-variant-numeric: tabular-nums; display: inline-block; }
     #fleetname { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13.5px; color: #1f2b33; max-width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     #fleetname[hidden] { display: none; }
@@ -611,13 +626,14 @@
     .dtag b { font-size: 19px; font-weight: 700; color: #2fd35e; text-shadow: 0 1px 0 #145c2a, 0 0 6px rgba(10,50,20,.55), 0 0 2px #0b3d1a; letter-spacing: .01em; }
     .dtag i { font-style: normal; font-size: 11px; color: #2fd35e; text-shadow: 0 0 3px #0b3d1a; display: none; }
     /* off screen: a cartoon speech bubble with a tail pointing the way to the destination */
-    .dtag.edge { background: #fff; border-radius: 15px; padding: 4px 12px 5px; box-shadow: 0 3px 12px rgba(8,34,18,.34); flex-direction: row; }
-    .dtag.edge b { font-size: 15px; font-weight: 800; color: #17833c; text-shadow: none; font-variant-numeric: tabular-nums; }
+    /* the body and the tail are one white shape: the tail is a turned square of the same white, half under the
+       body, and the shadow is cast by the whole of it (a drop-shadow filter, not a box-shadow round the body) */
+    .dtag.edge { background: #fff; border-radius: 999px; padding: 4px 13px 5px; flex-direction: row; filter: drop-shadow(0 3px 5px rgba(8,34,18,.32)); }
+    .dtag.edge b { position: relative; z-index: 1; font-size: 15px; font-weight: 800; color: #17833c; text-shadow: none; font-variant-numeric: tabular-nums; }
     .dtag.edge i {
       display: block; position: absolute; left: 50%; top: 50%;
-      width: 0; height: 0; margin: -7px 0 0 -9px; font-size: 0;
-      border-left: 9px solid transparent; border-right: 9px solid transparent; border-bottom: 14px solid #fff;
-      filter: drop-shadow(0 2px 3px rgba(8,34,18,.26));
+      width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px;
+      background: #fff; border-radius: 4px 0 0 0;
     }
     /* in the overview, waiting goods show their icon instead of their price */
     .gtag.icon b { font-size: 21px; text-shadow: 0 1px 2px rgba(10,15,20,.55); }
@@ -1992,9 +2008,51 @@
     #title-menu .tm-online-state.up i { background: #1e9e4a; box-shadow: 0 0 0 3px rgba(30,158,74,.2); }
     #title-menu .tm-online-state.down i { background: #c2331f; }
   </style>
-  <script type="module" crossorigin src="./assets/index-CJDojm-N.js"></script>
+  <script type="module" crossorigin src="./assets/index-BIs17W-m.js"></script>
 </head>
 <body>
+  <div id="mobile-block" role="alertdialog" aria-labelledby="mb-title">
+    <div class="mb-card">
+      <div class="mb-logo">TinyFleet<span>.</span></div>
+      <div class="mb-ic">💻</div>
+      <h2 id="mb-title">Best played on a computer</h2>
+      <p>TinyFleet isn’t playable on phones or tablets yet. It needs a keyboard to drive.</p>
+      <p>Open it in a web browser on a desktop or laptop:</p>
+      <div class="mb-url" id="mb-url"></div>
+      <div><button type="button" class="mb-anyway" id="mb-anyway">I have a keyboard: continue anyway</button></div>
+    </div>
+  </div>
+  <script>
+    // A phone or tablet: a touch screen with no mouse, or a mobile browser (iPads say they're Macs, but have touch points).
+    (function () {
+      var ua = navigator.userAgent || '';
+      var mobileUa = /Android|iPhone|iPad|iPod|Mobile|Silk|Kindle|BlackBerry|Opera Mini|IEMobile/i.test(ua);
+      var iPadOs = /Macintosh/.test(ua) && navigator.maxTouchPoints > 1;
+      var mm = function (q) { return !!(window.matchMedia && window.matchMedia(q).matches); };
+      var touchOnly = mm('(pointer: coarse)') && !mm('(any-pointer: fine)');
+      var anyway = false;
+      try { anyway = sessionStorage.getItem('tinyfleet-mobile-anyway') === '1'; } catch (e) { /* private mode */ }
+      // a word to the developer's page (server/admin.ts /api/visit): served by the online server only, best effort
+      var visit = function (kind) {
+        try {
+          if (!/^https?:$/.test(location.protocol)) return;
+          var body = JSON.stringify({ kind: kind, ua: ua, screen: [screen.width, screen.height], touch: navigator.maxTouchPoints || 0, coarse: mm('(pointer: coarse)'), fine: mm('(any-pointer: fine)'), where: location.host, ref: document.referrer });
+          if (navigator.sendBeacon) navigator.sendBeacon('/api/visit', new Blob([body], { type: 'text/plain' }));
+        } catch (e) { /* nothing lost but the count */ }
+      };
+      if (!(mobileUa || iPadOs || touchOnly)) { visit('page'); return; }
+      if (anyway) return;
+      visit('mobile');
+      document.body.classList.add('mobile-blocked');
+      document.getElementById('mb-url').textContent = location.host + location.pathname.replace(/index\.html$/, '');
+      document.getElementById('mb-anyway').addEventListener('click', function () {
+        try { sessionStorage.setItem('tinyfleet-mobile-anyway', '1'); } catch (e) { /* this visit only */ }
+        visit('anyway');
+        document.body.classList.remove('mobile-blocked');
+        window.dispatchEvent(new Event('resize'));
+      });
+    })();
+  </script>
   <canvas id="game"></canvas>
   <div id="bump"></div>
 
@@ -2004,7 +2062,7 @@
     <div class="stats" id="stats"></div>
     <div id="compass" aria-hidden="true"><div class="ring"><i style="transform:rotate(45deg)"></i><i style="transform:rotate(135deg)"></i><i style="transform:rotate(225deg)"></i><i style="transform:rotate(315deg)"></i><b class="n">N</b><b>E</b><b>S</b><b>W</b></div></div>
   </div>
-  <div id="tr" class="hud chip"><span id="fleetname" hidden></span><span id="cash">$0</span><button id="gems" type="button" tabindex="-1" title="Diamonds · the tech trees">◆ 0</button><span id="clock"></span><span id="fps">— fps</span><button id="hqbtn" type="button" tabindex="-1" title="Your HQ and everything you own (K)">🏢</button><button id="gear" type="button" tabindex="-1" title="Settings (O)">⚙</button></div>
+  <div id="tr" class="hud chip"><span id="fleetname" hidden></span><span id="cash">$0</span><button id="gems" type="button" tabindex="-1" title="Diamonds · the tech trees">◆ 0</button><span id="likes" hidden title="Likes: hearts on your works and thumbs-up on your signs from other players. Kept to spend.">♥ 0</span><span id="clock"></span><span id="fps">— fps</span><button id="hqbtn" type="button" tabindex="-1" title="Your HQ and everything you own (K)">🏢</button><button id="gear" type="button" tabindex="-1" title="Settings (O)">⚙</button></div>
   <div id="town-labels" hidden></div>
   <div id="cargo-tags"></div>
   <div id="notices"><div id="toast" class="notice" role="status" aria-live="polite"></div><div id="earnings"></div></div>
