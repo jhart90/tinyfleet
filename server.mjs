@@ -9401,12 +9401,16 @@ async function openGame(gid) {
 function fbHtml(f) {
   return '<div class="fb"><h4>' + esc(f.subject) + '</h4><div class="meta">' + esc(when(f.at)) + ' · ' + esc(f.fleet || 'no fleet') + ' · ' + esc(f.player || '?') +
     (f.online ? ' · online as ' + esc(f.online) : '') + (f.seed ? ' · ' + esc(f.seed) + ' cell ' + cellTxt(f.cell) : '') + (f.day ? ' · day ' + esc(f.day) : '') +
-    (f.gid ? ' · <a class="link" data-gid="' + esc(f.gid) + '">open game</a>' : '') + '</div><p>' + esc(f.text) + '</p></div>';
+    (f.gid ? ' · <a class="link" data-gid="' + esc(f.gid) + '">open game</a>' : '') +
+    (f.work ? ' · <a class="link" data-work="' + esc(f.work) + '">clear this name</a>' : '') + '</div><p>' + esc(f.text) + '</p></div>';
 }
 function renderFeedback() {
   var list = feedback.filter(function (f) { return matches([f.subject, f.text, f.fleet, f.player, f.online].join(' ')); });
   $('feedback').innerHTML = list.map(fbHtml).join('') || '<div class="mute">No feedback yet.</div>';
   Array.prototype.forEach.call($('feedback').querySelectorAll('a[data-gid]'), function (a) { a.onclick = function () { tab('games'); openGame(a.dataset.gid); }; });
+  Array.prototype.forEach.call($('feedback').querySelectorAll('a[data-work]'), function (a) {
+    a.onclick = async function () { var j = await api('clearname', { k: a.dataset.work }); a.textContent = j.ok ? 'name cleared' : 'already cleared'; a.removeAttribute('data-work'); a.onclick = null; };
+  });
 }
 
 api('games').then(function (j) { if (j.ok) { showApp(true); load(); } else showApp(false); });
@@ -9515,7 +9519,7 @@ function summary(gid, r) {
     gen: r.gen
   };
 }
-async function adminHttp(req, res, path, store2) {
+async function adminHttp(req, res, path, store2, hooks) {
   const ip = ipOf(req);
   if (path === "/api/report" || path === "/api/feedback") {
     if (req.method === "OPTIONS") {
@@ -9660,6 +9664,19 @@ async function adminHttp(req, res, path, store2) {
     json(res, 200, { ok: true, feedback: list.sort((a, b) => b.at - a.at) });
     return true;
   }
+  if (what === "clearname") {
+    if (req.method !== "POST") {
+      json(res, 405, { ok: false });
+      return true;
+    }
+    let m = {};
+    try {
+      m = JSON.parse(await readBody(req, 2e3) ?? "");
+    } catch {
+    }
+    json(res, 200, { ok: !!hooks && await hooks.clearName(str(m.k, 80)) });
+    return true;
+  }
   json(res, 404, { ok: false });
   return true;
 }
@@ -9678,11 +9695,1448 @@ var cellKey = (cx, cz) => `${cx},${cz}`;
 var cellOfKey = (k) => k.split("#")[0].split(",").map(Number);
 var FRIENDS_MAX = 100;
 
-// src/world/tiles.ts
+// shared/marks.ts
+var MARKS = {
+  /** Signs one player may have standing at once; a new one past it takes the oldest down. */
+  signsMax: 12,
+  /** Signs one county may hold. */
+  signsPerCell: 80,
+  /** Up-votes (and three times the down-votes) that carve a sign in stone; it stays then. */
+  carveUp: 8,
+  /** Down-votes, more than its up-votes by this much, that knock a sign over (gone). */
+  fallBy: 4,
+  /** Votes kept per sign, each way. */
+  votesMax: 64,
+  /** A drift shorter than this (tiles slid) isn't a record anywhere. */
+  driftMin: 8,
+  /** Points in a drift's painted line, at most. */
+  driftPts: 48,
+  /** The longest a slide can honestly be in one go, tiles: anything more is refused. */
+  driftMaxTiles: 400,
+  /** Ghost samples a second, and the most a lap may hold (five minutes). */
+  ghostHz: 5,
+  ghostMax: 1500,
+  /** The quickest a lap of any circuit can be, seconds. */
+  lapMin: 12,
+  /** Stamps a guestbook keeps; fleets it remembers as having signed. */
+  guestKeep: 40,
+  guestFleets: 200,
+  /** Tiles from an HQ's ground a visitor counts within; seconds stopped there before the book is signed. */
+  guestReach: 5,
+  guestStay: 3,
+  /** Hand-overs kept per town. */
+  holdersKeep: 12,
+  /** Votes that give an unnamed work the name a player suggested. */
+  suggestVotes: 5,
+  /** Suggestions a work keeps. */
+  suggestMax: 4,
+  /** Real milliseconds in a week of picks. */
+  week: 7 * 864e5
+};
+var STAMPS = ["\u{1F44B}", "\u{1F389}", "\u2764\uFE0F", "\u{1F69A}", "\u2B50", "\u2615"];
+var SIGN_PHRASES = [
+  "{} ahead",
+  "Beware of {}",
+  "Try {}",
+  "Shortcut to {}",
+  "Good spot for {}",
+  "Need {}",
+  "Behold, {}!",
+  "Could this be {}?",
+  "Fast way to {}",
+  "If only I had {}\u2026",
+  "Praise the {}",
+  "No {} here",
+  "{} this way",
+  "Watch for {}",
+  "Nice {}",
+  "Time for {}",
+  "Don\u2019t forget {}",
+  "Visit {}",
+  "Brake for {}",
+  "Floor it for {}"
+];
+var SIGN_WORDS = [
+  ["Places", ["a town", "the port", "the airport", "a dealer", "a shop", "the tavern", "an HQ", "a bridge", "a tunnel", "the circuit", "the ferry", "the coast", "the hills", "a farm"]],
+  ["Road", ["a shortcut", "a dead end", "a sharp bend", "a jump", "a toll", "traffic", "roadworks", "a straight", "a hairpin", "mud", "deep water", "a cliff"]],
+  ["Driving", ["a drift", "nitrous", "the handbrake", "speed", "patience", "caution", "a tow", "a race", "a convoy", "a detour"]],
+  ["Life", ["the police", "rivals", "friends", "cargo", "money", "a view", "the sunset", "coffee", "a nap", "glory", "luck", "trouble"]]
+];
+var SIGN_WORD_LIST = SIGN_WORDS.flatMap(([, ws]) => ws);
+var SIGN_JOINS = ["and then", "but", "therefore", "or", "so"];
+function cleanSign(m) {
+  if (!Array.isArray(m) || m.length !== 2 && m.length !== 5 || !m.every((v) => Number.isInteger(v) && v >= 0)) return null;
+  const [p, w, j, p2, w2] = m;
+  if (p >= SIGN_PHRASES.length || w >= SIGN_WORD_LIST.length) return null;
+  if (m.length === 2) return [p, w];
+  if (j >= SIGN_JOINS.length || p2 >= SIGN_PHRASES.length || w2 >= SIGN_WORD_LIST.length) return null;
+  return [p, w, j, p2, w2];
+}
+function signText(m) {
+  const one = (p, w) => SIGN_PHRASES[p].replace("{}", SIGN_WORD_LIST[w]);
+  const first = one(m[0], m[1]);
+  if (m.length === 2) return first;
+  const second = one(m[3], m[4]);
+  return `${first}, ${SIGN_JOINS[m[2]]} ${second.charAt(0).toLowerCase()}${second.slice(1)}`;
+}
+function signFate(up, dn) {
+  if (up >= MARKS.carveUp && up >= 3 * dn) return "carved";
+  if (dn - up >= MARKS.fallBy) return "fallen";
+  return null;
+}
+var driftPoints = (s) => Math.round(s * 10);
+function decodeGhost(s) {
+  if (!s) return [];
+  let bin;
+  try {
+    bin = atob(s);
+  } catch {
+    return [];
+  }
+  const n = Math.floor(bin.length / 6);
+  const bytes = new Uint8Array(n * 6);
+  for (let k = 0; k < bytes.length; k++) bytes[k] = bin.charCodeAt(k);
+  const a = new Int16Array(bytes.buffer);
+  const out = [];
+  for (let k = 0; k < n; k++) out.push([a[k * 3] / 16, a[k * 3 + 1] / 16, a[k * 3 + 2] / 1e3]);
+  return out;
+}
+var PICK_LABEL = {
+  loved: "Most loved",
+  road: "Longest new road",
+  growth: "Fastest growing",
+  lap: "Lap record",
+  drift: "Drift record",
+  sign: "Best sign",
+  guests: "Most visited HQ"
+};
+var NEWS_KEEP = 40;
+
+// shared/community.ts
+var COMMUNITY = {
+  /** A work with this many hearts is listed: only its builder may bulldoze it. */
+  listedAt: 10,
+  /** Minutes signed in before a fleet's hearts count (a second account can't be made just to give them). */
+  heartAfterMins: 30,
+  /** The most work ids a player's record keeps as hearted. */
+  heartsMax: 2e3,
+  /** Roads shorter than this (in nodes) are not listed anywhere, named or prompted for. */
+  roadMin: 12,
+  /** A bridge at least this long makes the news. */
+  newsBridge: 20,
+  /** Earthworks: lifts a landform needs (a hill, a lake, a canal) before it is a work, with a cairn, a name tag and hearts. */
+  stakeLifts: 40,
+  /** Builders a chunk of earthworks credits. */
+  landByMax: 3,
+  /** A work's name, at most. */
+  nameMax: 24,
+  /** Different fleets counted per work; past this the count stops. */
+  usersMax: 64,
+  /** Crossing milestones that are announced. */
+  usesNews: [100, 1e3, 1e4],
+  /** Each list on the World tab. */
+  worldTop: 50,
+  /** Seconds between path reports from a game, and the most tiles one may carry. */
+  treadEvery: 20,
+  treadMax: 300,
+  /** km/h a land vehicle must be doing to wear the ground. */
+  wearKmh: 8
+};
+var PATH = {
+  faint: 6,
+  worn: 30,
+  wornFleets: 3,
+  beaten: 120,
+  beatenFleets: 5,
+  /** Fleets remembered per chunk. */
+  fleetsMax: 16,
+  /** Tiles a cell may have counted at once; past it, tiles below faint are let go to make room. */
+  cap: 6e3
+};
+function stageOf(passes, fleets) {
+  if (passes >= PATH.beaten && fleets >= PATH.beatenFleets) return 3;
+  if (passes >= PATH.worn && fleets >= PATH.wornFleets) return 2;
+  if (passes >= PATH.faint) return 1;
+  return 0;
+}
 var N = 256;
-var SEA = 2;
 var CHUNK = 16;
 var CHUNKS = N / CHUNK;
+var chunkOfTile = (i) => Math.floor(i % N / CHUNK) + Math.floor(Math.floor(i / N) / CHUNK) * CHUNKS;
+function tileOfChunk(k, t) {
+  const kx = k % CHUNKS, kz = (k - kx) / CHUNKS;
+  return (kz * CHUNK + Math.floor(t / CHUNK)) * N + kx * CHUNK + t % CHUNK;
+}
+var slotOfTile = (i) => Math.floor(i / N) % CHUNK * CHUNK + i % N % CHUNK;
+function encodePasses(p) {
+  const bytes = [];
+  for (let k = 0; k < p.length; ) {
+    if (p[k] === 0) {
+      let n = 0;
+      while (k < p.length && p[k] === 0 && n < 255) {
+        n++;
+        k++;
+      }
+      bytes.push(0, n);
+    } else bytes.push(p[k++]);
+  }
+  let s = "";
+  for (const b of bytes) s += String.fromCharCode(b);
+  return btoa(s);
+}
+function decodePasses(s) {
+  const out = new Uint8Array(CHUNK * CHUNK);
+  if (!s) return out;
+  let bin;
+  try {
+    bin = atob(s);
+  } catch {
+    return out;
+  }
+  let p = 0;
+  for (let b = 0; b < bin.length && p < out.length; b++) {
+    const v = bin.charCodeAt(b);
+    if (v === 0) {
+      p += bin.charCodeAt(++b) || 0;
+      continue;
+    }
+    out[p++] = v;
+  }
+  return out;
+}
+function roadWorkId(nodes) {
+  let h = 2166136261;
+  for (const n of nodes) {
+    let v = n | 0;
+    for (let k = 0; k < 4; k++) {
+      h ^= v & 255;
+      h = Math.imul(h, 16777619);
+      v >>>= 8;
+    }
+  }
+  return `r${(h >>> 0).toString(36)}`;
+}
+var WORK_KEY = /^(-?\d{1,5},-?\d{1,5})#(r[0-9a-z]{1,8}(?:\.\d{1,2})?|F\d{1,5}|W\d{1,3}|b\d{1,7})$/;
+var WORK_LABEL = {
+  road: "Road",
+  bridge: "Bridge",
+  suspension: "Suspension bridge",
+  tunnel: "Tunnel",
+  flyover: "Flyover",
+  viaduct: "Viaduct",
+  path: "Beaten track",
+  hq: "HQ",
+  mountain: "Mountain",
+  hill: "Hill",
+  lake: "Lake",
+  canal: "Canal",
+  valley: "Valley",
+  reclaim: "Reclaimed land",
+  land: "Earthworks"
+};
+function decodeLandChunk(s) {
+  const raw = new Int8Array(CHUNK * CHUNK * 5);
+  if (!s) return raw;
+  let bin;
+  try {
+    bin = atob(s);
+  } catch {
+    return raw;
+  }
+  let p = 0;
+  for (let b = 0; b < bin.length && p < raw.length; b++) {
+    const v = bin.charCodeAt(b);
+    if (v === 0) {
+      p += bin.charCodeAt(++b) || 0;
+      continue;
+    }
+    raw[p++] = v > 127 ? v - 256 : v;
+  }
+  return raw;
+}
+function landFeatures(land) {
+  if (!land) return [];
+  const raise = new Float32Array(N * N), dig = new Float32Array(N * N), wUp = new Float32Array(N * N), wDn = new Float32Array(N * N);
+  const peak = new Int8Array(N * N);
+  const changed = new Uint8Array(N * N);
+  for (const [key, s] of Object.entries(land)) {
+    const k = Number(key);
+    if (!(k >= 0 && k < CHUNKS * CHUNKS)) continue;
+    const raw = decodeLandChunk(s);
+    for (let t = 0; t < CHUNK * CHUNK; t++) {
+      const i = tileOfChunk(k, t);
+      let up = 0, down = 0, top = 0;
+      for (let q = 0; q < 4; q++) {
+        const d = raw[q * 256 + t];
+        if (d > 0) up += d;
+        else down -= d;
+        if (d > top) top = d;
+      }
+      const wt = raw[1024 + t];
+      if (!up && !down && !wt) continue;
+      changed[i] = 1;
+      raise[i] = up / 4;
+      dig[i] = down / 4;
+      peak[i] = top;
+      if (wt > 0) wUp[i] = wt;
+      else wDn[i] = -wt;
+    }
+  }
+  const out = [];
+  const seen = new Uint8Array(N * N);
+  const stack = [];
+  for (let start = 0; start < N * N; start++) {
+    if (!changed[start] || seen[start]) continue;
+    const tiles = [];
+    seen[start] = 1;
+    stack.push(start);
+    while (stack.length) {
+      const i = stack.pop();
+      tiles.push(i);
+      const x = i % N, z = (i - x) / N;
+      for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) {
+        const nx = x + dx, nz = z + dz;
+        if (nx < 0 || nz < 0 || nx >= N || nz >= N) continue;
+        const j = nz * N + nx;
+        if (changed[j] && !seen[j]) {
+          seen[j] = 1;
+          stack.push(j);
+        }
+      }
+    }
+    let up = 0, down = 0, wu = 0, wd = 0, best = tiles[0], x0 = N, x1 = 0, z0 = N, z1 = 0, sx = 0, sz = 0;
+    for (const i of tiles) {
+      up += raise[i];
+      down += dig[i];
+      wu += wUp[i];
+      wd += wDn[i];
+      if (peak[i] > peak[best]) best = i;
+      const x = i % N, z = (i - x) / N;
+      x0 = Math.min(x0, x);
+      x1 = Math.max(x1, x);
+      z0 = Math.min(z0, z);
+      z1 = Math.max(z1, z);
+      sx += x;
+      sz += z;
+    }
+    const w = x1 - x0 + 1, d = z1 - z0 + 1;
+    const long = Math.max(w, d) >= 3 * Math.min(w, d) && Math.min(w, d) <= 5;
+    const mx = sx / tiles.length, mz = sz / tiles.length;
+    const middle = tiles.reduce((b, i) => Math.hypot(i % N - mx, Math.floor(i / N) - mz) < Math.hypot(b % N - mx, Math.floor(b / N) - mz) ? i : b, tiles[0]);
+    let kind;
+    if (wu > 0.5 * Math.max(up, down) && wu >= wd) kind = long ? "canal" : "lake";
+    else if (wd > 0.5 * Math.max(up, down)) kind = "reclaim";
+    else if (up >= 2 * down) kind = peak[best] >= 6 ? "mountain" : "hill";
+    else if (down >= 2 * up) kind = long ? "canal" : "valley";
+    else kind = "land";
+    out.push({
+      tiles,
+      lifts: Math.round(up + down + wu + wd),
+      kind,
+      top: kind === "mountain" || kind === "hill" ? best : middle,
+      chunks: [...new Set(tiles.map(chunkOfTile))]
+    });
+  }
+  return out;
+}
+var sampleTiles = (tiles, n = 24) => tiles.length <= n ? tiles.slice() : Array.from({ length: n }, (_, k) => tiles[Math.floor(k * tiles.length / n)]);
+var spanKind = (flags) => flags & 8 ? "tunnel" : flags & 64 ? "viaduct" : flags & 32 ? flags & 1 ? "suspension" : "bridge" : flags & 4 ? "flyover" : flags & 1 ? "suspension" : "bridge";
+
+// server/community.ts
+var N2 = 256;
+var AWAY_ITEMS = 12;
+var HEART_AFTER = Number(process.env.HEART_AFTER_MINS ?? COMMUNITY.heartAfterMins);
+var blankStats = () => ({ loved: 0, uses: 0, blazed: 0, gave: 0, listed: 0, works: 0 });
+var blankAway = () => ({ hearts: 0, uses: 0, listed: 0, tracks: 0 });
+var clean = (s, max) => s.replace(/[<>&"`\u0000-\u001f]/g, "").trim().slice(0, max);
+var roadIndex = /* @__PURE__ */ new WeakMap();
+function roadWorks(doc) {
+  const had = roadIndex.get(doc);
+  if (had && had.n === doc.edits.length) return had;
+  const works = /* @__PURE__ */ new Map(), at = /* @__PURE__ */ new Map();
+  const put = (w) => {
+    works.set(w.id, w);
+    for (const t of w.tiles) {
+      const a = at.get(t);
+      if (a) a.push(w);
+      else at.set(t, [w]);
+    }
+  };
+  for (const raw of doc.edits) {
+    const e = raw;
+    if (e.k === "raze" && typeof e.x === "number" && typeof e.z === "number") {
+      for (const w of at.get(e.z * N2 + e.x) ?? []) w.tiles.delete(e.z * N2 + e.x);
+      continue;
+    }
+    if (e.k !== "road" || e.g || typeof e.by !== "string" || !Array.isArray(e.n) || !e.n.length) continue;
+    const wide = e.t === 5;
+    const tilesOf = (nodes) => {
+      const s = /* @__PURE__ */ new Set();
+      for (const n of nodes) for (const t of wide ? [n - N2 - 1, n - N2, n - 1, n] : [n]) if (t >= 0 && t < N2 * N2) s.add(t);
+      return s;
+    };
+    const id = roadWorkId(e.n);
+    put({ id, by: e.by, at: e.at ?? 0, kind: "road", len: e.n.length, tiles: tilesOf(e.n) });
+    (e.b ?? []).forEach((b, j) => {
+      const [from, to, , , flags = 0] = b;
+      if (!(to > from)) return;
+      put({ id: `${id}.${j}`, by: e.by, at: e.at ?? 0, kind: spanKind(flags), len: to - from, tiles: tilesOf(e.n.slice(from, to + 1)) });
+    });
+  }
+  const out = { n: doc.edits.length, works, at };
+  roadIndex.set(doc, out);
+  return out;
+}
+var passIndex = /* @__PURE__ */ new WeakMap();
+function passesOf(doc) {
+  let p = passIndex.get(doc);
+  if (p) return p;
+  p = { chunks: /* @__PURE__ */ new Map(), counted: 0 };
+  for (const [k, s] of Object.entries(doc.paths ?? {})) {
+    const a = decodePasses(s);
+    p.chunks.set(Number(k), a);
+    for (const v of a) if (v) p.counted++;
+  }
+  passIndex.set(doc, p);
+  return p;
+}
+var Community = class {
+  constructor(host) {
+    this.host = host;
+  }
+  lists = { epoch: 0, loved: [], busy: [], fresh: [] };
+  listsDirty = false;
+  /** Chunks of each cell whose paths reached a new stage, waiting to be sent; and when each cell last was. */
+  pending = /* @__PURE__ */ new Map();
+  sentAt = /* @__PURE__ */ new Map();
+  /** Tiles and works each player has already been counted for today: one pass a tile, one crossing a work, a day. */
+  trod = /* @__PURE__ */ new Map();
+  /** A heart left or taken back, and a player road kept: for the week's picks (server/marks.ts). */
+  onHeart = () => {
+  };
+  onRoad = () => {
+  };
+  /** News for a player about their works that marks keeps and tells (a name the others voted in). */
+  tell = () => {
+  };
+  async load() {
+    const had = await this.host.store.get("works");
+    this.lists = had && had.epoch === this.host.epoch() ? had : { epoch: this.host.epoch(), loved: [], busy: [], fresh: [] };
+    if (!had || had.epoch !== this.host.epoch()) this.listsDirty = true;
+  }
+  async flush() {
+    if (!this.listsDirty) return;
+    this.listsDirty = false;
+    await this.host.store.set("works", this.lists);
+  }
+  docKey(cell) {
+    return `${this.host.epoch()}:${cell}`;
+  }
+  // ---- who built it ----------------------------------------------------------------------------------
+  /** Who a work is credited to (the trailblazer, for a path), and what it is; null for no such work. */
+  workOf(doc, cell, id) {
+    if (id.startsWith("r")) {
+      const w = roadWorks(doc).works.get(id);
+      return w && w.tiles.size ? { by: w.by, kind: w.kind, len: w.len, at: w.at, t: w.tiles.values().next().value } : null;
+    }
+    if (id.startsWith("F")) {
+      const f = doc.features?.[id];
+      return f ? { by: f.by, kind: f.kind, len: f.lifts, t: f.top } : null;
+    }
+    if (id.startsWith("W")) {
+      const by = doc.pathsBy?.[id.slice(1)];
+      return by?.length && doc.beaten?.includes(Number(id.slice(1))) ? { by: by[0], kind: "path", len: by.length, t: tileOfChunk(Number(id.slice(1)), 136) } : null;
+    }
+    const d = doc.deeds?.[`${cell}#${id}`];
+    return d && d.hq !== void 0 ? { by: d.by, kind: "hq" } : null;
+  }
+  line(doc, cell, id) {
+    const w = this.workOf(doc, cell, id);
+    if (!w) return null;
+    const row = doc.social?.[id];
+    const name = row?.name ?? (w.kind === "hq" ? doc.deeds?.[`${cell}#${id}`]?.name : void 0);
+    return { k: `${cell}#${id}`, kind: w.kind, ...name ? { name } : {}, by: w.by, h: row?.h ?? 0, u: row?.u ?? 0, f: row?.f ?? 0, ...w.len ? { len: w.len } : {}, ...w.at ? { at: w.at } : {}, ...w.t !== void 0 ? { t: w.t } : {} };
+  }
+  /** A work's line on the World tab's lists, put in or brought up to date. `fresh`: it has just been made. */
+  list(l, fresh = false) {
+    if (!l) return;
+    const into = (arr, keep, by, add) => {
+      const k = arr.findIndex((x) => x.k === l.k);
+      if (k >= 0) arr.splice(k, 1);
+      if ((k >= 0 || add) && keep(l)) arr.push(l);
+      arr.sort(by);
+      arr.length = Math.min(arr.length, COMMUNITY.worldTop);
+    };
+    into(this.lists.loved, (x) => x.h > 0, (a, b) => b.h - a.h || b.u - a.u, true);
+    into(this.lists.busy, (x) => x.u > 0, (a, b) => b.u - a.u || b.h - a.h, true);
+    into(this.lists.fresh, () => true, (a, b) => (b.at ?? 0) - (a.at ?? 0), fresh);
+    this.listsDirty = true;
+  }
+  // ---- the player's own numbers ------------------------------------------------------------------------
+  stats(p) {
+    return p.cs = { ...blankStats(), ...p.cs ?? {} };
+  }
+  /** A change to a player's totals: told at once if they are signed in, kept for their next sign-in if not. */
+  async credit(pid, f, nice) {
+    const on = this.host.conn(pid);
+    const p = on?.doc ?? await this.host.players.open(pid).catch(() => null);
+    if (!p || !p.id) return;
+    const s = this.stats(p);
+    if (on) {
+      f(s, null);
+      if (nice) this.host.send(on, nice);
+      this.host.send(on, { t: "cstats", s });
+    } else {
+      p.away = { ...blankAway(), ...p.away ?? {} };
+      f(s, p.away);
+    }
+    this.host.players.touch(pid);
+  }
+  /** What a game is told about community on signing in; the away news is told once. */
+  welcome(p) {
+    const away = p.away && (p.away.hearts || p.away.uses || p.away.listed || p.away.tracks || p.away.wearing) ? p.away : null;
+    delete p.away;
+    return { hearts: p.hearts ?? [], s: this.stats(p), away };
+  }
+  /** A line of news to everyone within chat range of a cell, at most one every two minutes each. */
+  news(cell, text, but) {
+    const now = Date.now();
+    for (const x of this.host.conns()) {
+      if (x.pid === but || this.host.cheb(x.cell, cell) > CHAT_CELLS || now - (x.newsAt ?? 0) < 12e4) continue;
+      x.newsAt = now;
+      this.host.send(x, { t: "chat", kind: "sys", text });
+    }
+  }
+  fleetName(pid) {
+    const w = this.host.whoOf(pid);
+    return w?.brand?.name ?? w?.name ?? "Somebody";
+  }
+  place(line) {
+    return line.name ? `${line.name}` : `${this.fleetName(line.by)}\u2019s ${WORK_LABEL[line.kind].toLowerCase()}`;
+  }
+  // ---- what the game says ------------------------------------------------------------------------------
+  async handle(c, m) {
+    switch (m.t) {
+      case "heart":
+        await this.heart(c, String(m.k ?? ""), !!m.on);
+        return true;
+      case "tread":
+        await this.tread(c, m);
+        return true;
+      case "name":
+        await this.name(c, String(m.k ?? ""), String(m.text ?? ""));
+        return true;
+      case "report":
+        await this.report(c, String(m.k ?? ""));
+        return true;
+      case "works":
+        this.host.send(c, { t: "works", loved: this.lists.loved, busy: this.lists.busy, fresh: this.lists.fresh.slice(0, COMMUNITY.worldTop) });
+        return true;
+      case "suggest":
+        await this.suggest(c, String(m.k ?? ""), String(m.text ?? ""));
+        return true;
+      case "vote":
+        await this.vote(c, String(m.k ?? ""), String(m.by ?? ""), !!m.on);
+        return true;
+      case "accept":
+        await this.accept(c, String(m.k ?? ""), String(m.by ?? ""));
+        return true;
+      default:
+        return false;
+    }
+  }
+  async heart(c, k, on) {
+    const m = WORK_KEY.exec(k);
+    if (!m) return;
+    const [, cell, id] = m;
+    const sys = (text) => this.host.send(c, { t: "chat", kind: "sys", text });
+    if ((c.doc.mins ?? 0) < HEART_AFTER) {
+      sys(`Hearts count once you have played ${HEART_AFTER} minutes online (${Math.floor(c.doc.mins ?? 0)} so far).`);
+      return;
+    }
+    const doc = await this.host.cells.open(this.docKey(cell));
+    const w = this.workOf(doc, cell, id);
+    if (!w) return;
+    if (w.by === c.pid) {
+      sys("That\u2019s your own work: hearts are for other players\u2019.");
+      return;
+    }
+    const list = c.doc.hearts ??= [];
+    const had = list.includes(k);
+    if (had === on) {
+      this.host.send(c, { t: "cstats", s: this.stats(c.doc), hearts: list });
+      return;
+    }
+    if (on) {
+      list.push(k);
+      if (list.length > COMMUNITY.heartsMax) list.shift();
+    } else list.splice(list.indexOf(k), 1);
+    const row = (doc.social ??= {})[id] ??= { h: 0, u: 0, f: 0 };
+    row.h = Math.max(0, row.h + (on ? 1 : -1));
+    const listedNow = on && row.h >= COMMUNITY.listedAt && !row.l;
+    if (listedNow) row.l = 1;
+    this.host.cells.touch(this.docKey(cell));
+    this.host.players.touch(c.pid);
+    if (on) {
+      const gave = c.doc.gaveTo ??= [];
+      if (!gave.includes(w.by)) gave.push(w.by);
+      this.stats(c.doc).gave = gave.length;
+    }
+    this.host.send(c, { t: "cstats", s: this.stats(c.doc), hearts: list });
+    const msg = { t: "social", k, row, from: c.who, on };
+    this.host.toRoom(cell, msg);
+    if (!c.subs.has(cell)) this.host.send(c, msg);
+    const line = this.line(doc, cell, id);
+    this.list(line);
+    this.onHeart(line, on);
+    await this.credit(w.by, (s, away) => {
+      s.loved = Math.max(0, s.loved + (on ? 1 : -1));
+      if (!away) return;
+      const items = away.items ??= [];
+      let it = items.find((x) => x.k === k);
+      if (on) {
+        away.hearts++;
+        if (!it) {
+          it = { k, kind: w.kind, h: 0, from: [] };
+          items.push(it);
+        }
+        if (row.name) it.name = row.name;
+        it.h++;
+        const who = c.who.brand?.name ?? c.who.name;
+        if (!it.from.includes(who) && it.from.length < 3) it.from.push(who);
+        if (items.length > AWAY_ITEMS) items.splice(0, items.length - AWAY_ITEMS);
+      } else if (it && it.h > 0) {
+        it.h--;
+        away.hearts = Math.max(0, away.hearts - 1);
+        if (!it.h) items.splice(items.indexOf(it), 1);
+      }
+    }, on ? { t: "nice", what: "heart", k, from: c.who, name: row.name } : void 0);
+    if (listedNow && line) {
+      await this.credit(w.by, (s, away) => {
+        s.listed++;
+        if (away) away.listed++;
+      }, { t: "nice", what: "listed", k, n: row.h, name: row.name });
+      this.news(cell, `${this.place(line)} is now listed: ${COMMUNITY.listedAt} players have left it a heart.`);
+    }
+  }
+  async name(c, k, text) {
+    const m = WORK_KEY.exec(k);
+    if (!m || m[2].startsWith("b")) return;
+    const [, cell, id] = m;
+    const doc = await this.host.cells.open(this.docKey(cell));
+    const w = this.workOf(doc, cell, id);
+    if (!w || w.by !== c.pid) return;
+    if (w.kind === "road" && (w.len ?? 0) < COMMUNITY.roadMin) return;
+    const row = (doc.social ??= {})[id] ??= { h: 0, u: 0, f: 0 };
+    const name = clean(text, COMMUNITY.nameMax);
+    if (name) row.name = name;
+    else delete row.name;
+    this.host.cells.touch(this.docKey(cell));
+    const msg = { t: "social", k, row };
+    this.host.toRoom(cell, msg);
+    if (!c.subs.has(cell)) this.host.send(c, msg);
+    this.list(this.line(doc, cell, id));
+  }
+  // ---- names suggested by other players (docs/marks.html) ------------------------------------------------
+  /** A work the suggestion is for, and its row, or null. Paths and landforms take names; HQs don't. */
+  async suggestable(k) {
+    const m = WORK_KEY.exec(k);
+    if (!m || m[2].startsWith("b")) return null;
+    const [, cell, id] = m;
+    const doc = await this.host.cells.open(this.docKey(cell));
+    const w = this.workOf(doc, cell, id);
+    if (!w || w.kind === "road" && (w.len ?? 0) < COMMUNITY.roadMin) return null;
+    return { cell, id, doc, w, row: (doc.social ??= {})[id] ??= { h: 0, u: 0, f: 0 } };
+  }
+  changed(c, cell, doc, k, id, row) {
+    this.host.cells.touch(this.docKey(cell));
+    const msg = { t: "social", k, row };
+    this.host.toRoom(cell, msg);
+    if (!c.subs.has(cell)) this.host.send(c, msg);
+    this.list(this.line(doc, cell, id));
+  }
+  /** A name for someone else's work, from another player: theirs replaces any they suggested before. */
+  async suggest(c, k, text) {
+    const s = await this.suggestable(k);
+    if (!s || s.w.by === c.pid) return;
+    const name = clean(text, COMMUNITY.nameMax);
+    const list = s.row.sg ??= [];
+    const mine = list.findIndex((x) => x.by === c.pid);
+    if (mine >= 0) list.splice(mine, 1);
+    if (name) {
+      if (list.length >= MARKS.suggestMax) {
+        list.sort((a, b) => b.v.length - a.v.length);
+        list.pop();
+      }
+      list.push({ text: name, by: c.pid, v: [] });
+    }
+    if (!list.length) delete s.row.sg;
+    this.changed(c, s.cell, s.doc, k, s.id, s.row);
+  }
+  /** A vote for a suggested name (not one's own, nor on one's own work). Enough of them name a work that has no name yet. */
+  async vote(c, k, by, on) {
+    const s = await this.suggestable(k);
+    const sg = s?.row.sg?.find((x) => x.by === by);
+    if (!s || !sg || sg.by === c.pid || s.w.by === c.pid) return;
+    sg.v = sg.v.filter((p) => p !== c.pid);
+    if (on && sg.v.length < 64) sg.v.push(c.pid);
+    if (!s.row.name && sg.v.length >= MARKS.suggestVotes) {
+      s.row.name = sg.text;
+      delete s.row.sg;
+      this.tell(s.w.by, { what: "named", k, name: sg.text, by: sg.by }, sg.by);
+      this.tell(sg.by, { what: "named", k, name: sg.text, by: sg.by });
+    }
+    this.changed(c, s.cell, s.doc, k, s.id, s.row);
+  }
+  /** The builder takes a name somebody suggested. */
+  async accept(c, k, by) {
+    const s = await this.suggestable(k);
+    const sg = s?.row.sg?.find((x) => x.by === by);
+    if (!s || !sg || s.w.by !== c.pid) return;
+    s.row.name = sg.text;
+    delete s.row.sg;
+    this.changed(c, s.cell, s.doc, k, s.id, s.row);
+    this.tell(sg.by, { what: "named", k, name: sg.text, by: sg.by }, c.pid);
+  }
+  /** A name reported: a line on the developer's page, which can clear it. */
+  async report(c, k) {
+    const m = WORK_KEY.exec(k);
+    if (!m) return;
+    const doc = await this.host.cells.open(this.docKey(m[1]));
+    const row = doc.social?.[m[2]];
+    const w = this.workOf(doc, m[1], m[2]);
+    if (!row?.name || !w) return;
+    const now = Date.now();
+    await this.host.store.set(`feedback:${now.toString(36)}-r${Math.floor(Math.random() * 1e6).toString(36)}`, {
+      at: now,
+      subject: `Work name reported: \u201C${row.name}\u201D`,
+      text: `${c.doc.name} reported the name of ${this.fleetName(w.by)}\u2019s ${w.kind} at ${k}.`,
+      gid: null,
+      player: c.doc.name,
+      fleet: null,
+      online: c.doc.name,
+      seed: null,
+      cell: cellOfKey(m[1]),
+      day: null,
+      gen: null,
+      where: "online",
+      work: k
+    });
+    this.host.send(c, { t: "chat", kind: "sys", text: "Reported: thank you. Someone will look at it." });
+  }
+  /** The developer's page: take a work's name off. */
+  async clearName(k) {
+    const m = WORK_KEY.exec(k);
+    if (!m) return false;
+    const doc = await this.host.cells.open(this.docKey(m[1]));
+    const row = doc.social?.[m[2]];
+    if (!row?.name) return false;
+    delete row.name;
+    this.host.cells.touch(this.docKey(m[1]));
+    this.host.toRoom(m[1], { t: "social", k, row });
+    this.list(this.line(doc, m[1], m[2]));
+    return true;
+  }
+  // ---- tyres on the ground, and crossings -----------------------------------------------------------
+  async tread(c, m) {
+    const now = Date.now();
+    if (now - (c.treadAt ?? 0) < (COMMUNITY.treadEvery - 5) * 1e3) return;
+    c.treadAt = now;
+    const day = Math.floor(this.host.hours() / 24);
+    let trod = this.trod.get(c.pid);
+    if (!trod || trod.day !== day) this.trod.set(c.pid, trod = { day, seen: /* @__PURE__ */ new Set() });
+    const seen = trod.seen;
+    if (typeof m.c === "string" && Array.isArray(m.tiles) && c.subs.has(m.c) && this.host.cheb(m.c, c.cell) <= 1) {
+      const doc = this.host.cells.peek(this.docKey(m.c));
+      if (doc) this.wear(c, m.c, doc, m.tiles.slice(0, COMMUNITY.treadMax), seen);
+    }
+    for (const k of (Array.isArray(m.use) ? m.use : []).slice(0, 20)) await this.use(c, String(k), seen);
+  }
+  wear(c, cell, doc, tiles, seen) {
+    const p = passesOf(doc);
+    const touched = /* @__PURE__ */ new Set();
+    const grew = /* @__PURE__ */ new Set();
+    for (const raw of tiles) {
+      const i = Number(raw);
+      if (!Number.isInteger(i) || i < 0 || i >= N2 * N2) continue;
+      const key = `${cell}:${i}`;
+      if (seen.has(key) || seen.size > 4e4) continue;
+      seen.add(key);
+      const k = chunkOfTile(i), slot = slotOfTile(i);
+      let a = p.chunks.get(k);
+      if (!a) p.chunks.set(k, a = new Uint8Array(256));
+      if (!a[slot]) {
+        if (p.counted >= PATH.cap) this.prune(doc, p);
+        if (p.counted >= PATH.cap) continue;
+        p.counted++;
+      }
+      const by = (doc.pathsBy ??= {})[String(k)] ??= [];
+      const fleetsWas = by.length;
+      if (!by.includes(c.pid) && by.length < PATH.fleetsMax) by.push(c.pid);
+      if (by.length !== fleetsWas) grew.add(k);
+      const was = stageOf(a[slot], by.length);
+      if (a[slot] < 255) a[slot]++;
+      touched.add(k);
+      if (stageOf(a[slot], by.length) !== was) grew.add(k);
+    }
+    if (!touched.size) return;
+    for (const k of touched) (doc.paths ??= {})[String(k)] = encodePasses(p.chunks.get(k));
+    this.host.cells.touch(this.docKey(cell));
+    for (const k of grew) {
+      if (!this.stagesIn(p.chunks.get(k), doc.pathsBy?.[String(k)]?.length ?? 0).some((s2) => s2 > 0)) continue;
+      let s = this.pending.get(cell);
+      if (!s) this.pending.set(cell, s = /* @__PURE__ */ new Set());
+      s.add(k);
+      this.wearing(cell, doc, k, p.chunks.get(k));
+      this.beaten(cell, doc, k, p.chunks.get(k));
+    }
+  }
+  stagesIn(a, fleets) {
+    return Array.from(a, (v) => stageOf(v, fleets));
+  }
+  /** A chunk's first beaten track: its trailblazer is told, it is on the lists, and the news goes round. */
+  beaten(cell, doc, k, a) {
+    if (doc.beaten?.includes(k)) return;
+    const by = doc.pathsBy?.[String(k)] ?? [];
+    if (!this.stagesIn(a, by.length).includes(3)) return;
+    (doc.beaten ??= []).push(k);
+    const blazer = by[0];
+    void this.credit(blazer, (s, away) => {
+      s.blazed++;
+      if (away) away.tracks++;
+    }, { t: "nice", what: "track", k: `${cell}#W${k}`, n: by.length });
+    const line = this.line(doc, cell, `W${k}`);
+    this.list(line, true);
+    if (line) this.news(cell, `A beaten track has worn in: the way ${this.fleetName(blazer)} first drove, by ${by.length} fleets.`);
+  }
+  /**
+   * A chunk's first worn path (stage 2): its trailblazer hears that other fleets are following their line,
+   * well before it is beaten in (docs/marks.html, the trailblazer's loop).
+   */
+  wearing(cell, doc, k, a) {
+    if (doc.worn?.includes(k) || doc.beaten?.includes(k)) return;
+    const by = doc.pathsBy?.[String(k)] ?? [];
+    if (!this.stagesIn(a, by.length).includes(2)) return;
+    (doc.worn ??= []).push(k);
+    void this.credit(by[0], (_s, away) => {
+      if (away) away.wearing = (away.wearing ?? 0) + 1;
+    }, { t: "nice", what: "wearing", k: `${cell}#W${k}`, n: by.length });
+  }
+  /** At the cap: let go of tiles that never reached faint, so the paths people really use have room. */
+  prune(doc, p) {
+    let n = 0;
+    for (const [k, a] of p.chunks) {
+      let changed = false;
+      for (let t = 0; t < a.length; t++) {
+        if (a[t] && a[t] < PATH.faint) {
+          a[t] = 0;
+          changed = true;
+        }
+        if (a[t]) n++;
+      }
+      if (changed) (doc.paths ??= {})[String(k)] = encodePasses(a);
+    }
+    p.counted = n;
+  }
+  async use(c, k, seen) {
+    const m = WORK_KEY.exec(k);
+    if (!m || m[2].startsWith("W") || m[2].startsWith("b") || m[2].startsWith("F")) return;
+    const [, cell, id] = m;
+    const once = `u|${k}`;
+    if (seen.has(once)) return;
+    const doc = this.host.cells.peek(this.docKey(cell));
+    if (!doc) return;
+    const w = this.workOf(doc, cell, id);
+    if (!w || w.by === c.pid) return;
+    seen.add(once);
+    const row = (doc.social ??= {})[id] ??= { h: 0, u: 0, f: 0 };
+    row.u++;
+    const users = (doc.usedBy ??= {})[id] ??= [];
+    if (!users.includes(c.pid) && users.length < COMMUNITY.usersMax) users.push(c.pid);
+    row.f = users.length;
+    this.host.cells.touch(this.docKey(cell));
+    this.host.toRoom(cell, { t: "social", k, row });
+    const line = this.line(doc, cell, id);
+    this.list(line);
+    const milestone = COMMUNITY.usesNews.includes(row.u);
+    await this.credit(w.by, (s, away) => {
+      s.uses++;
+      if (away) away.uses++;
+    }, milestone ? { t: "nice", what: "uses", k, n: row.u, name: row.name } : void 0);
+    if (milestone && row.u >= 1e3 && line) this.news(cell, `${this.place(line)} has been crossed ${row.u.toLocaleString("en-US")} times by other fleets.`);
+  }
+  /** Every few seconds: the paths that moved go to everyone holding their cell, no more than once in twenty seconds a cell. */
+  beat() {
+    const now = Date.now();
+    for (const [cell, ks] of this.pending) {
+      if (now - (this.sentAt.get(cell) ?? 0) < COMMUNITY.treadEvery * 1e3) continue;
+      const doc = this.host.cells.peek(this.docKey(cell));
+      this.pending.delete(cell);
+      if (!doc) continue;
+      this.sentAt.set(cell, now);
+      const chunks = {}, by = {};
+      for (const k of ks) {
+        chunks[k] = doc.paths?.[k] ?? "";
+        by[k] = doc.pathsBy?.[k] ?? [];
+      }
+      this.host.toRoom(cell, { t: "paths", c: cell, chunks, by });
+    }
+    const day = Math.floor(this.host.hours() / 24);
+    for (const [pid, t] of this.trod) if (t.day !== day) this.trod.delete(pid);
+    for (const c of this.host.conns()) {
+      const was = Math.floor(c.doc.mins ?? 0);
+      c.doc.mins = (c.doc.mins ?? 0) + 5 / 60;
+      if (Math.floor(c.doc.mins) !== was) this.host.players.touch(c.pid);
+    }
+  }
+  // ---- edits and earthworks --------------------------------------------------------------------------
+  /** A road edit the server has just kept: a big one is news and goes on the newest list. */
+  edited(c, cell, doc, e) {
+    if (e.k !== "road" || e.g || !Array.isArray(e.n)) return;
+    const id = roadWorkId(e.n);
+    const spans = e.b ?? [];
+    if (e.n.length < COMMUNITY.roadMin && !spans.length) return;
+    void this.credit(c.pid, (s) => {
+      s.works++;
+    });
+    if (e.n.length >= COMMUNITY.roadMin) {
+      const line = this.line(doc, cell, id);
+      this.list(line, true);
+      this.onRoad(line);
+    }
+    spans.forEach((b, j) => {
+      const line = this.line(doc, cell, `${id}.${j}`);
+      this.list(line, true);
+      if (line && b[1] - b[0] >= COMMUNITY.newsBridge) this.news(cell, `${this.fleetName(c.pid)} has built a ${b[1] - b[0]}-tile ${line.kind === "suspension" ? "suspension bridge" : line.kind} near here.`, c.pid);
+    });
+  }
+  /**
+   * Earthworks have come in: each chunk's lifts are credited to its digger, and the cell's landforms are
+   * read again. A landform keeps its id (and so its name and hearts) as it grows, by the tiles it was
+   * known by; two that join keep the better loved; one that is big enough for the first time gets an id,
+   * its cairn and a place on the newest list, and its digger a work to their name.
+   */
+  landed(c, cell, doc, was, now) {
+    const rows = {};
+    for (const [k, v] of Object.entries(now)) {
+      const a = decodeLandChunk(was[k]), b = decodeLandChunk(v);
+      let lifts = 0;
+      for (let t = 0; t < a.length; t++) lifts += Math.abs(b[t] - a[t]);
+      if (!lifts) continue;
+      const list = (doc.landBy ??= {})[k] ??= [];
+      const mine = list.find((r) => r[0] === c.pid);
+      if (mine) mine[1] += lifts;
+      else list.push([c.pid, lifts]);
+      list.sort((x, y) => y[1] - x[1]);
+      list.length = Math.min(list.length, 6);
+      rows[k] = list;
+    }
+    if (!Object.keys(rows).length) return;
+    const fresh = this.readFeatures(doc);
+    for (const id of Object.keys(doc.features ?? {})) this.list(this.line(doc, cell, id), fresh.includes(id));
+    for (const id of fresh) void this.credit(doc.features[id].by, (s) => {
+      s.works++;
+    });
+    this.host.toRoom(cell, { t: "landBy", c: cell, rows, features: doc.features ?? {} });
+  }
+  /** The cell's landforms read again and matched to the ids they had. Returns the ids given for the first time. */
+  readFeatures(doc) {
+    const comps = landFeatures(doc.land);
+    const compOf = /* @__PURE__ */ new Map();
+    comps.forEach((f, n) => {
+      for (const t of f.tiles) compOf.set(t, n);
+    });
+    const claims = /* @__PURE__ */ new Map();
+    for (const [id, f] of Object.entries(doc.features ?? {})) {
+      const votes = /* @__PURE__ */ new Map();
+      for (const t of f.s) {
+        const n = compOf.get(t);
+        if (n !== void 0) votes.set(n, (votes.get(n) ?? 0) + 1);
+      }
+      let best = -1, most = 0;
+      for (const [n, v] of votes) if (v > most) {
+        best = n;
+        most = v;
+      }
+      if (best >= 0) (claims.get(best) ?? claims.set(best, []).get(best)).push(id);
+    }
+    const next = {};
+    const fresh = [];
+    comps.forEach((f, n) => {
+      if (f.lifts < COMMUNITY.stakeLifts) return;
+      const ids = (claims.get(n) ?? []).sort((a, b) => (doc.social?.[b]?.h ?? 0) - (doc.social?.[a]?.h ?? 0) || Number(a.slice(1)) - Number(b.slice(1)));
+      let id = ids[0];
+      if (!id) {
+        id = `F${doc.fseq = (doc.fseq ?? 0) + 1}`;
+        fresh.push(id);
+      }
+      const dug = /* @__PURE__ */ new Map();
+      for (const ch of f.chunks) for (const [p, l] of doc.landBy?.[String(ch)] ?? []) dug.set(p, (dug.get(p) ?? 0) + l);
+      const by = [...dug].sort((a, b) => b[1] - a[1])[0]?.[0] ?? doc.features?.[id]?.by;
+      if (!by) return;
+      next[id] = { by, kind: f.kind, lifts: f.lifts, top: f.top, s: sampleTiles(f.tiles) };
+    });
+    if (Object.keys(next).length) doc.features = next;
+    else delete doc.features;
+    return fresh.filter((id) => next[id]);
+  }
+  /** Is a tile part of a listed work that isn't this player's? Then it isn't theirs to bulldoze. */
+  razeBarred(doc, x, z, pid) {
+    for (const w of roadWorks(doc).at.get(z * N2 + x) ?? []) {
+      const parent = w.id.split(".")[0];
+      const listed = doc.social?.[w.id]?.l ? w.id : doc.social?.[parent]?.l ? parent : null;
+      if (w.by === pid || !listed) continue;
+      const name = doc.social[listed].name;
+      return `${name ? `${name} is` : `That ${listed === w.id ? w.kind : "road"} is`} listed: only ${this.fleetName(w.by)} can clear it.`;
+    }
+    return null;
+  }
+  /** A player's line on the board: hearts received and works built. */
+  boardBits(p) {
+    const s = this.stats(p);
+    return { hearts: s.loved, works: s.works };
+  }
+};
+
+// server/marks.ts
+var N3 = 256;
+var LOT = /^(-?\d{1,5},-?\d{1,5})#(b\d{1,7})$/;
+var TOWN = /^(-?\d{1,5},-?\d{1,5})#\d{1,4}$/;
+var CELL = /^-?\d{1,5},-?\d{1,5}$/;
+var WEEK0 = Date.UTC(2026, 0, 5);
+var weekOf = (t) => Math.floor((t - WEEK0) / MARKS.week);
+var blankPicks = (epoch, week) => ({ epoch, week, hearts: {}, road: null, lap: null, drift: null, sign: null, guests: {}, worth0: {}, last: null });
+var spot = (cell, t) => {
+  const [cx, cz] = cellOfKey(cell);
+  return { x: cx * N3 + t % N3 + 0.5, z: cz * N3 + Math.floor(t / N3) + 0.5 };
+};
+var fmtLap = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, "0")}`;
+var Marks = class {
+  constructor(host) {
+    this.host = host;
+    this.picks = blankPicks(0, weekOf(Date.now()));
+  }
+  picks;
+  picksDirty = false;
+  /** Hand-overs a GG may answer: "loser|town" → the winner. Forgotten on a restart, which is fine. */
+  lost = /* @__PURE__ */ new Map();
+  /** The last hand-over told for each town and pair of fleets (real ms), so a town flapping between two isn't told every minute. */
+  toldAt = /* @__PURE__ */ new Map();
+  async load() {
+    const had = await this.host.store.get("picks");
+    const week = weekOf(Date.now());
+    if (had && had.epoch === this.host.epoch()) this.picks = had;
+    else {
+      this.picks = blankPicks(this.host.epoch(), week);
+      this.picks.last = had?.last ?? null;
+      this.picksDirty = true;
+    }
+    this.roll();
+  }
+  async flush() {
+    if (!this.picksDirty) return;
+    this.picksDirty = false;
+    await this.host.store.set("picks", this.picks);
+  }
+  docKey(cell) {
+    return `${this.host.epoch()}:${cell}`;
+  }
+  name(pid) {
+    const w = this.host.whoOf(pid);
+    return w?.brand?.name ?? w?.name ?? "Somebody";
+  }
+  sys(c, text) {
+    this.host.send(c, { t: "chat", kind: "sys", text });
+  }
+  /** Sent to the room, and to the sender too when they aren't holding the cell. */
+  tell(c, cell, m) {
+    this.host.toRoom(cell, m);
+    if (!c.subs.has(cell)) this.host.send(c, m);
+  }
+  // ---- news --------------------------------------------------------------------------------------------
+  /** News about a player's mark: told at once if they're signed in, kept for their next sign-in if not. */
+  async news(pid, n, from) {
+    if (!isPid(pid)) return;
+    const on = this.host.conn(pid);
+    if (on) {
+      this.host.send(on, { t: "mark", n, ...from ? { who: this.host.whoOf(from) ?? void 0 } : {} });
+      return;
+    }
+    const p = await this.host.players.open(pid).catch(() => null);
+    if (!p?.id) return;
+    const list = p.mnews ??= [];
+    if (n.what === "guest") {
+      const k = list.findIndex((x) => x.what === "guest" && x.k === n.k && x.by === n.by);
+      if (k >= 0) list.splice(k, 1);
+    }
+    list.push(n);
+    if (list.length > NEWS_KEEP) list.splice(0, list.length - NEWS_KEEP);
+    this.host.players.touch(pid);
+  }
+  /** What a game is told on signing in: the news kept, who paid rent while away, and its best patrons. Told once. */
+  welcome(p) {
+    const news = p.mnews ?? [];
+    const payers = Object.entries(p.payers ?? {}).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => [k, Math.round(v)]);
+    delete p.mnews;
+    delete p.payers;
+    return { news, payers, patrons: this.patronsOf(p) };
+  }
+  patronsOf(p) {
+    if (p.patronsEpoch !== this.host.epoch()) return [];
+    return Object.entries(p.patrons ?? {}).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => [k, Math.round(v)]);
+  }
+  // ---- what the game says --------------------------------------------------------------------------------
+  async handle(c, m) {
+    switch (m.t) {
+      case "sign":
+        await this.sign(c, String(m.c), Number(m.tile), m.m);
+        return true;
+      case "unsign":
+        await this.unsign(c, String(m.c), String(m.id));
+        return true;
+      case "rate":
+        await this.rate(c, String(m.c), String(m.id), m.v);
+        return true;
+      case "drift":
+        await this.drift(c, String(m.c), Number(m.s), m.p);
+        return true;
+      case "lap":
+        await this.lap(c, m);
+        return true;
+      case "ghost":
+        await this.ghost(c, String(m.c), String(m.k));
+        return true;
+      case "guest":
+        await this.guest(c, String(m.k), Number(m.stamp));
+        return true;
+      case "gg":
+        await this.gg(c, String(m.to), String(m.town), !!m.back);
+        return true;
+      case "picks":
+        this.host.send(c, { t: "picks", picks: this.picksNow() });
+        return true;
+      default:
+        return false;
+    }
+  }
+  // ---- signs -------------------------------------------------------------------------------------------
+  async sign(c, cell, tile, raw) {
+    const msg = cleanSign(raw);
+    if (!CELL.test(cell) || !msg || !Number.isInteger(tile) || tile < 0 || tile >= N3 * N3 || !c.subs.has(cell) || this.host.cheb(cell, c.cell) > 1) return;
+    const now = Date.now();
+    if (now - (c.signAt ?? 0) < 4e3) {
+      this.sys(c, "One sign at a time: give it a moment.");
+      return;
+    }
+    const doc = this.host.cells.peek(this.docKey(cell));
+    if (!doc) return;
+    const signs = doc.signs ??= {};
+    if (Object.values(signs).some((s) => s.t === tile)) {
+      this.sys(c, "There is a sign there already.");
+      return;
+    }
+    if (Object.keys(signs).length >= MARKS.signsPerCell) {
+      this.sys(c, "This county has all the signs it can hold: rate the ones that are here.");
+      return;
+    }
+    c.signAt = now;
+    const mine = c.doc.signs ??= [];
+    while (mine.length >= MARKS.signsMax) await this.takeDown(mine[0], c.pid);
+    const id = `s${doc.sseq = (doc.sseq ?? 0) + 1}`;
+    const row = { by: c.pid, t: tile, m: msg, at: Math.round(this.host.hours() * 10) / 10, up: [], dn: [] };
+    signs[id] = row;
+    mine.push(`${cell}#${id}`);
+    this.host.cells.touch(this.docKey(cell));
+    this.host.players.touch(c.pid);
+    this.tell(c, cell, { t: "signRow", c: cell, id, row });
+  }
+  /** A sign taken down: its owner's own doing, the oldest of theirs making room, or knocked over by votes. */
+  async takeDown(key, owner2) {
+    const [cell, id] = key.split("#");
+    const p = this.host.conn(owner2)?.doc ?? await this.host.players.open(owner2).catch(() => null);
+    if (p?.signs) {
+      const k = p.signs.indexOf(key);
+      if (k >= 0) p.signs.splice(k, 1);
+      this.host.players.touch(owner2);
+    }
+    const doc = await this.host.cells.open(this.docKey(cell)).catch(() => null);
+    if (!doc?.signs?.[id] || doc.signs[id].by !== owner2) return;
+    delete doc.signs[id];
+    this.host.cells.touch(this.docKey(cell));
+    this.host.toRoom(cell, { t: "signRow", c: cell, id, row: null });
+  }
+  async unsign(c, cell, id) {
+    if (!CELL.test(cell) || !/^s\d{1,6}$/.test(id)) return;
+    const doc = await this.host.cells.open(this.docKey(cell));
+    if (doc.signs?.[id]?.by !== c.pid) return;
+    await this.takeDown(`${cell}#${id}`, c.pid);
+    if (!c.subs.has(cell)) this.host.send(c, { t: "signRow", c: cell, id, row: null });
+  }
+  async rate(c, cell, id, v) {
+    if (!CELL.test(cell) || !/^s\d{1,6}$/.test(id) || v !== 1 && v !== 0 && v !== -1) return;
+    const doc = this.host.cells.peek(this.docKey(cell)) ?? await this.host.cells.open(this.docKey(cell));
+    const row = doc.signs?.[id];
+    if (!row || row.by === c.pid) return;
+    const wasUp = row.up.includes(c.pid);
+    row.up = row.up.filter((p) => p !== c.pid);
+    row.dn = row.dn.filter((p) => p !== c.pid);
+    if (v === 1 && row.up.length < MARKS.votesMax) row.up.push(c.pid);
+    if (v === -1 && row.dn.length < MARKS.votesMax) row.dn.push(c.pid);
+    this.host.cells.touch(this.docKey(cell));
+    const key = `${cell}#${id}`;
+    const fate = signFate(row.up.length, row.dn.length);
+    if (fate === "fallen" && !row.carved) {
+      await this.takeDown(key, row.by);
+      if (!c.subs.has(cell)) this.host.send(c, { t: "signRow", c: cell, id, row: null });
+      await this.news(row.by, { what: "signFell", c: cell, k: key });
+      return;
+    }
+    const carvedNow = fate === "carved" && !row.carved;
+    if (carvedNow) row.carved = 1;
+    this.tell(c, cell, { t: "signRow", c: cell, id, row });
+    if (v === 1 && !wasUp) await this.news(row.by, { what: "signUp", c: cell, k: key, by: c.pid, ...carvedNow ? { carved: true } : {} }, c.pid);
+    const best = this.picks.sign;
+    if (row.up.length > (best?.n ?? 0) || best?.k === key) {
+      this.picks.sign = { k: key, by: row.by, title: `\u201C${signText(row.m)}\u201D`, n: row.up.length, ...spot(cell, row.t), at: Date.now() };
+      this.picksDirty = true;
+    }
+  }
+  // ---- records -----------------------------------------------------------------------------------------
+  async drift(c, cell, s, p) {
+    if (!CELL.test(cell) || !c.subs.has(cell) || this.host.cheb(cell, c.cell) > 1) return;
+    if (!(s >= MARKS.driftMin && s <= MARKS.driftMaxTiles) || !Array.isArray(p) || p.length < 4 || p.length > MARKS.driftPts * 2 || p.length % 2) return;
+    if (!p.every((v) => Number.isInteger(v) && v >= 0 && v <= N3 * 4)) return;
+    const now = Date.now();
+    if (now - (c.driftAt ?? 0) < 1500) return;
+    c.driftAt = now;
+    const doc = this.host.cells.peek(this.docKey(cell));
+    if (!doc) return;
+    const mid = Math.floor(p.length / 4) * 2;
+    const tile = Math.min(N3 - 1, Math.floor(p[mid + 1] / 4)) * N3 + Math.min(N3 - 1, Math.floor(p[mid] / 4));
+    const k = String(chunkOfTile(tile));
+    const had = doc.drifts?.[k];
+    const score = Math.round(s * 10) / 10;
+    if (had && had.s >= score) return;
+    const row = { by: c.pid, s: score, at: Math.round(this.host.hours() * 10) / 10, p };
+    (doc.drifts ??= {})[k] = row;
+    this.host.cells.touch(this.docKey(cell));
+    this.tell(c, cell, { t: "driftRow", c: cell, k, row });
+    if (had && had.by !== c.pid) await this.news(had.by, { what: "driftLost", c: cell, k, by: c.pid, s: score, was: had.s }, c.pid);
+    if (score > (this.picks.drift?.n ?? 0)) {
+      this.picks.drift = { by: c.pid, title: `${driftPoints(score)}-point drift`, n: score, ...spot(cell, tile), at: now };
+      this.picksDirty = true;
+    }
+  }
+  async lap(c, m) {
+    const cell = String(m.c), k = String(m.k), s = Number(m.s);
+    if (!CELL.test(cell) || !/^\d{1,7}$/.test(k) || !c.subs.has(cell) || this.host.cheb(cell, c.cell) > 1) return;
+    if (!(s >= MARKS.lapMin && s <= 600) || typeof m.m !== "string" || typeof m.g !== "string" || m.g.length > 13e3) return;
+    const n = decodeGhost(m.g).length;
+    if (n < s * MARKS.ghostHz * 0.6 || n > s * MARKS.ghostHz * 1.4 + 5) return;
+    const doc = this.host.cells.peek(this.docKey(cell));
+    if (!doc) return;
+    const had = doc.laps?.[k];
+    const secs = Math.round(s * 100) / 100;
+    if (had && had.s <= secs) return;
+    const row = { by: c.pid, s: secs, m: m.m.slice(0, 40), at: Math.round(this.host.hours() * 10) / 10, g: m.g };
+    (doc.laps ??= {})[k] = row;
+    this.host.cells.touch(this.docKey(cell));
+    const { g: _g, ...shown } = row;
+    this.tell(c, cell, { t: "lapRow", c: cell, k, row: shown });
+    if (had && had.by !== c.pid) await this.news(had.by, { what: "lapLost", c: cell, k, by: c.pid, s: secs, was: had.s }, c.pid);
+    if (had && had.by !== c.pid) this.near(cell, `${this.name(c.pid)} took the lap record at a circuit near here from ${this.name(had.by)}: ${fmtLap(secs)}.`, c.pid);
+    const at = Number.isInteger(m.at) && m.at >= 0 && m.at < N3 * N3 ? m.at : N3 * 128 + 128;
+    this.picks.lap = { by: c.pid, title: `${fmtLap(secs)} lap`, n: secs, ...spot(cell, at), at: Date.now() };
+    this.picksDirty = true;
+  }
+  async ghost(c, cell, k) {
+    if (!CELL.test(cell) || !/^\d{1,7}$/.test(k)) return;
+    const doc = await this.host.cells.open(this.docKey(cell));
+    const row = doc.laps?.[k];
+    if (row?.g) this.host.send(c, { t: "ghost", c: cell, k, g: row.g, by: row.by, s: row.s });
+  }
+  /** A line to everyone signed in within chat range of a cell. */
+  near(cell, text, but) {
+    for (const x of this.host.conns()) if (x.pid !== but && this.host.cheb(x.cell, cell) <= CHAT_CELLS) this.host.send(x, { t: "chat", kind: "sys", text });
+  }
+  // ---- guestbooks ----------------------------------------------------------------------------------------
+  async guest(c, key, stamp) {
+    const lot = LOT.exec(key);
+    if (!lot || !Number.isInteger(stamp) || stamp < 0 || stamp >= STAMPS.length || this.host.cheb(lot[1], c.cell) > 1) return;
+    const [, cell, id] = lot;
+    const doc = await this.host.cells.open(this.docKey(cell));
+    const deed = doc.deeds?.[key];
+    if (!deed || deed.hq === void 0 || deed.by === c.pid) return;
+    const row = (doc.guests ??= {})[id] ??= { n: 0, by: [], list: [] };
+    const day = Math.floor(this.host.hours() / 24);
+    const last = row.list.findIndex((x) => x[0] === c.pid && Math.floor(x[2] / 24) === day);
+    const fresh = last < 0;
+    if (!fresh) row.list.splice(last, 1);
+    else {
+      row.n++;
+      if (!row.by.includes(c.pid)) {
+        row.by.push(c.pid);
+        if (row.by.length > MARKS.guestFleets) row.by.shift();
+      }
+    }
+    row.list.push([c.pid, stamp, Math.round(this.host.hours() * 10) / 10]);
+    if (row.list.length > MARKS.guestKeep) row.list.splice(0, row.list.length - MARKS.guestKeep);
+    this.host.cells.touch(this.docKey(cell));
+    this.tell(c, cell, { t: "guestRow", c: cell, k: id, row, from: c.pid });
+    await this.news(deed.by, { what: "guest", k: key, by: c.pid, stamp }, c.pid);
+    if (fresh) {
+      const r = deed.rects?.[0];
+      const g = this.picks.guests[key] ??= { k: key, by: deed.by, title: deed.name || "HQ", n: 0, ...r ? spot(cell, (r[1] + (r[3] >> 1)) * N3 + r[0] + (r[2] >> 1)) : {}, at: Date.now() };
+      g.n++;
+      this.picksDirty = true;
+    }
+  }
+  // ---- territory hand-overs ------------------------------------------------------------------------------
+  /** A host's carriage row for a town is about to be kept: if the town's holder changed, it is written down and told. */
+  async carriage(cell, doc, town, next) {
+    if (!TOWN.test(town)) return;
+    const was = doc.carriage?.[town]?.[1] ?? "";
+    const now = String(next[1] ?? "");
+    if (was === now) return;
+    const list = (doc.holders ??= {})[town] ??= [];
+    if (!list.length && !now) return;
+    if (!list.length && was) list.push([was, Math.max(0, Number(doc.carriage?.[town]?.[2] ?? 0) * 24)]);
+    list.push([now, Math.round(this.host.hours() * 10) / 10]);
+    if (list.length > MARKS.holdersKeep) list.splice(0, list.length - MARKS.holdersKeep);
+    this.host.cells.touch(this.docKey(cell));
+    this.host.toRoom(cell, { t: "holderRow", c: cell, town, row: list });
+    const t = Date.now(), pair = `${town}|${[was, now].sort().join("|")}`;
+    if (t - (this.toldAt.get(pair) ?? 0) < 10 * 6e4) return;
+    this.toldAt.set(pair, t);
+    if (isPid(was)) {
+      await this.news(was, { what: "townLost", town, by: now }, isPid(now) ? now : void 0);
+      if (isPid(now)) this.lost.set(`${was}|${town}`, now);
+    }
+    if (isPid(now)) await this.news(now, { what: "townWon", town, from: was }, isPid(was) ? was : void 0);
+  }
+  async gg(c, to, town, back) {
+    const key = `${c.pid}|${town}`;
+    if (this.lost.get(key) !== to) return;
+    this.lost.delete(key);
+    await this.news(to, { what: "gg", town, by: c.pid, ...back ? { back: true } : {} }, c.pid);
+  }
+  // ---- rent ----------------------------------------------------------------------------------------------
+  /** Rent taken at an owner's door from a payer's trade: who paid is kept, and told while they are away. */
+  async rent(payer, owner2, amt, online) {
+    const p = this.host.conn(owner2)?.doc ?? await this.host.players.open(owner2).catch(() => null);
+    if (!p?.id) return;
+    if (p.patronsEpoch !== this.host.epoch()) {
+      p.patrons = {};
+      p.patronsEpoch = this.host.epoch();
+    }
+    const pat = p.patrons ??= {};
+    pat[payer] = (pat[payer] ?? 0) + amt;
+    if (Object.keys(pat).length > 120) p.patrons = Object.fromEntries(Object.entries(pat).sort((a, b) => b[1] - a[1]).slice(0, 100));
+    if (!online) {
+      const pay = p.payers ??= {};
+      pay[payer] = (pay[payer] ?? 0) + amt;
+    }
+    this.host.players.touch(owner2);
+  }
+  /** An owner's best patrons in this world, for their HQ card. */
+  patrons(c) {
+    return this.patronsOf(c.doc);
+  }
+  // ---- picks ---------------------------------------------------------------------------------------------
+  /** A new week: last week's picks are kept as they ended, and the counting starts again. */
+  roll() {
+    const week = weekOf(Date.now());
+    if (week === this.picks.week) return;
+    const last = this.picksOf(false);
+    const worths = this.host.worths();
+    this.picks = { ...blankPicks(this.host.epoch(), week), last: last.items.length ? last : this.picks.last, worth0: { ...worths } };
+    this.picksDirty = true;
+  }
+  /** A heart left (or taken back) on a work this week. */
+  heart(line, on) {
+    if (!line) return;
+    const h = this.picks.hearts[line.k];
+    const [cell] = line.k.split("#");
+    if (!h) {
+      if (!on) return;
+      this.picks.hearts[line.k] = { k: line.k, by: line.by, title: line.name ?? "", n: 1, ...line.t !== void 0 ? spot(cell, line.t) : {}, at: Date.now() };
+    } else {
+      h.n = Math.max(0, h.n + (on ? 1 : -1));
+      if (line.name) h.title = line.name;
+    }
+    if (!this.picks.hearts[line.k].title) this.picks.hearts[line.k].title = `#${line.kind}`;
+    this.picksDirty = true;
+  }
+  /** A player road kept: the week's longest. */
+  road(line) {
+    if (!line || line.kind !== "road" || !line.len) return;
+    if (line.len <= (this.picks.road?.n ?? 0)) return;
+    const [cell] = line.k.split("#");
+    this.picks.road = { k: line.k, by: line.by, title: line.name ?? "#road", n: line.len, ...line.t !== void 0 ? spot(cell, line.t) : {}, at: Date.now() };
+    this.picksDirty = true;
+  }
+  /** A leaderboard line has come in: a player first seen this week starts their growth from here. */
+  worth(pid, worth) {
+    if (this.picks.worth0[pid] === void 0) {
+      this.picks.worth0[pid] = worth;
+      this.picksDirty = true;
+    }
+  }
+  pick(kind, l, detail) {
+    if (!l) return null;
+    const w = this.host.whoOf(l.by);
+    const who = w?.brand?.name ?? w?.name ?? "A fleet";
+    let title = l.title;
+    const wk = l.k ? /^(-?\d+,-?\d+)#(r[0-9a-z.]+|F\d+|W\d+)$/.exec(l.k) : null;
+    const named = wk ? this.host.cells.peek(this.docKey(wk[1]))?.social?.[wk[2]]?.name : void 0;
+    if (named) title = named;
+    else if (title.startsWith("#")) {
+      const k = title.slice(1);
+      title = `${who}\u2019s ${(WORK_LABEL[k] ?? "work").toLowerCase()}`;
+    }
+    return { kind, title, detail, by: l.by, who, colour: w?.brand?.primary ?? 8227474, ...l.k ? { k: l.k } : {}, ...l.x !== void 0 ? { x: l.x, z: l.z } : {} };
+  }
+  picksOf(live) {
+    const p = this.picks;
+    const items = [];
+    const loved = Object.values(p.hearts).filter((h) => h.n > 0).sort((a, b) => b.n - a.n || a.at - b.at)[0] ?? null;
+    items.push(this.pick("loved", loved, loved ? `\u2665 ${loved.n} this week` : ""));
+    items.push(this.pick("road", p.road, p.road ? `${p.road.n} tiles` : ""));
+    const worths = this.host.worths();
+    let best = null;
+    for (const [pid, now] of Object.entries(worths)) {
+      const was = p.worth0[pid];
+      if (was === void 0) continue;
+      const d = now - was;
+      if (d > 0 && (!best || d > best.d)) best = { pid, d };
+    }
+    if (best) items.push(this.pick("growth", { by: best.pid, title: this.name(best.pid), n: best.d, at: 0 }, `+$${Math.round(best.d).toLocaleString("en-US")} this week`));
+    items.push(this.pick("lap", p.lap, p.lap ? "the freshest record" : ""));
+    items.push(this.pick("drift", p.drift, p.drift ? `${p.drift.n} tiles sideways` : ""));
+    items.push(this.pick("sign", p.sign, p.sign ? `\u{1F44D} ${p.sign.n}` : ""));
+    const visited = Object.values(p.guests).sort((a, b) => b.n - a.n)[0] ?? null;
+    items.push(this.pick("guests", visited, visited ? `${visited.n} visit${visited.n === 1 ? "" : "s"} this week` : ""));
+    void PICK_LABEL;
+    return { from: WEEK0 + p.week * MARKS.week, live, items: items.filter((x) => !!x) };
+  }
+  /** The picks to show: this week's once there are a couple, else last week's. */
+  picksNow() {
+    this.roll();
+    const cur = this.picksOf(true);
+    return cur.items.length >= 2 || !this.picks.last ? cur : this.picks.last;
+  }
+  /** Every few seconds. */
+  beat() {
+    this.roll();
+  }
+};
+
+// src/world/tiles.ts
+var N4 = 256;
+var STEP = 0.5;
+var SEA = 2;
+var CHUNK2 = 16;
+var CHUNKS2 = N4 / CHUNK2;
 var REGION_KINDS = [
   "sands",
   "icefield",
@@ -9706,66 +11160,66 @@ var REGION_KINDS = [
   "lavender"
 ];
 var World = class {
-  corners = new Int8Array(N * N * 4);
-  water = new Int8Array(N * N).fill(-1);
+  corners = new Int8Array(N4 * N4 * 4);
+  water = new Int8Array(N4 * N4).fill(-1);
   // water surface height in steps, -1 = none
-  biome = new Uint8Array(N * N);
-  flags = new Uint8Array(N * N);
-  fieldId = new Int16Array(N * N).fill(-1);
-  coastDist = new Uint16Array(N * N);
+  biome = new Uint8Array(N4 * N4);
+  flags = new Uint8Array(N4 * N4);
+  fieldId = new Int16Array(N4 * N4).fill(-1);
+  coastDist = new Uint16Array(N4 * N4);
   // tiles from the ocean (0 = ocean)
-  elev = new Float32Array(N * N);
+  elev = new Float32Array(N4 * N4);
   // continuous elevation used during generation
-  temp = new Float32Array(N * N);
-  edges = new Uint8Array(N * N);
+  temp = new Float32Array(N4 * N4);
+  edges = new Uint8Array(N4 * N4);
   // car-agnostic drivable edge bits (bit d)
-  road = new Uint8Array(N * N);
+  road = new Uint8Array(N4 * N4);
   // widest RoadType covering each tile
-  roadEdges = new Uint8Array(N * N);
+  roadEdges = new Uint8Array(N4 * N4);
   // bit d: a road surface runs across that edge
-  roadCover = new Uint8Array(N * N);
+  roadCover = new Uint8Array(N4 * N4);
   // how many roads cover the tile
-  roadAxis = new Uint8Array(N * N);
+  roadAxis = new Uint8Array(N4 * N4);
   // axes those roads run along (1 = x, 2 = z); both + 2 roads = junction
-  laneSide = new Uint8Array(N * N);
+  laneSide = new Uint8Array(N4 * N4);
   // four-lane tiles: bit 0/1 low/high-z half of an x-running road, bit 2/3 low/high-x half of a z-running one
   roads = [];
   /** Bumped whenever the road tables are rebuilt, so what is worked out from them (the curves) is redone. */
   roadStamp = 0;
-  deckAxis = new Uint8Array(N * N);
+  deckAxis = new Uint8Array(N4 * N4);
   // a bridge deck crosses this tile along x (1) or z (2)
-  deckToll = new Uint8Array(N * N);
+  deckToll = new Uint8Array(N4 * N4);
   // that deck is a toll bridge of the player's
-  deckLo = new Float32Array(N * N);
+  deckLo = new Float32Array(N4 * N4);
   // deck world height at the tile's low-x / low-z edge
-  deckHi = new Float32Array(N * N);
+  deckHi = new Float32Array(N4 * N4);
   // ... and at its high edge
-  deckRoad = new Uint8Array(N * N);
+  deckRoad = new Uint8Array(N4 * N4);
   // the road that deck carries: its surface is painted ROAD_INFO.lift above the deck
-  townId = new Int8Array(N * N).fill(-1);
-  lot = new Uint8Array(N * N);
+  townId = new Int8Array(N4 * N4).fill(-1);
+  lot = new Uint8Array(N4 * N4);
   // Lot finish on town tiles
-  blocked = new Uint8Array(N * N);
+  blocked = new Uint8Array(N4 * N4);
   // a building stands here: nothing drives through
-  cleared = new Uint8Array(N * N);
+  cleared = new Uint8Array(N4 * N4);
   // bulldozed: no trees, rocks or cacti grow here any more
   /** Fences a car has knocked flat, by tile * 4 + edge: which way each fell (+1 or -1 along its local z). Not saved. */
   knocked = /* @__PURE__ */ new Map();
-  feature = new Uint8Array(N * N);
+  feature = new Uint8Array(N4 * N4);
   // Feature: a broad beach, a quarry, a piste, an airfield
-  roof = new Float32Array(N * N);
+  roof = new Float32Array(N4 * N4);
   // world y of the building top on the tile (0 = none)
-  surface = new Uint8Array(N * N);
+  surface = new Uint8Array(N4 * N4);
   // Surface: dune sand, salt, ice, lava, marsh, rock, cave
   /** Which biome reaches this tile: 1 + its index in REGION_KINDS, or 0 for none. */
-  regionK = new Uint8Array(N * N);
+  regionK = new Uint8Array(N4 * N4);
   /** How far into that biome the tile is, 0..255: 255 inside it, fading over a cell at a continent's blob edge. */
-  regionW = new Uint8Array(N * N);
+  regionW = new Uint8Array(N4 * N4);
   /**
    * The height, in steps, above which snow lies all year: 0 for the ordinary line. High country and a
    * continent's lifted heart carry their own, so a tableland at forty steps is not white from edge to edge.
    */
-  snowLine = new Uint8Array(N * N);
+  snowLine = new Uint8Array(N4 * N4);
   /** The highest corner the generator made on this county, in steps. */
   peak = 24;
   /** Named landforms on this cell, for the map, the labels, the props and the tourist board. */
@@ -9778,11 +11232,11 @@ var World = class {
   countryside = [];
   /** The roads generated between towns, and whether each could be built. */
   links = [];
-  portId = new Int8Array(N * N).fill(-1);
+  portId = new Int8Array(N4 * N4).fill(-1);
   /** RailBit per tile: track, crossing, deck overhead, tunnel beneath, station pad, loop, pier, reserved margin. */
-  rail = new Uint8Array(N * N);
+  rail = new Uint8Array(N4 * N4);
   /** At-grade straight track a road may cross at right angles: 1 when the rails run along x, 2 along z. */
-  railAxis = new Uint8Array(N * N);
+  railAxis = new Uint8Array(N4 * N4);
   /** The railway through this cell: every main line, rung end and passing loop, sampled along its centreline. */
   rails = [];
   /** Stations on this cell's railway. */
@@ -9794,7 +11248,7 @@ var World = class {
   works = [];
   /** The trade of the cell's Vehicle Dealer (world/storefronts.ts), null with none. */
   dealerTrade = null;
-  spawn = { x: N / 2 + 0.5, z: N / 2 + 0.5, heading: 0 };
+  spawn = { x: N4 / 2 + 0.5, z: N4 / 2 + 0.5, heading: 0 };
   seed = "";
   // ---- the cell this island occupies on the endless lattice ----
   cx = 0;
@@ -11314,7 +12768,7 @@ function straitAt(seedHash2, cx, cz, d) {
   if (ka === "atoll" || kb === "atoll") return -1;
   if (cell01(seedHash2, ax, az, 300 + axis) >= STRAIT_CHANCE) return -1;
   if (ka === "continent" && !landable(seedHash2, ax, az) || kb === "continent" && !landable(seedHash2, bx, bz)) return -1;
-  return Math.round(N * 0.25 + cell01(seedHash2, ax, az, 400 + axis) * N * 0.5);
+  return Math.round(N4 * 0.25 + cell01(seedHash2, ax, az, 400 + axis) * N4 * 0.5);
 }
 function landable(seedHash2, cx, cz) {
   for (let j = 0; j < 7; j++) {
@@ -11781,6 +13235,7 @@ var KIND_SPEC = {
   theatre: { w: 2, d: 2, floors: 4, zone: "core", lot: 7 /* Plaza */, apart: 8 },
   arena: { w: 4, d: 4, zone: "mid", lot: 2 /* Paved */ },
   concertHall: { w: 3, d: 3, zone: "core", lot: 7 /* Plaza */, waterside: "prefer" },
+  operaHouse: { w: 3, d: 3, zone: "core", lot: 7 /* Plaza */, apart: 30 },
   bowlingAlley: { w: 2, d: 1, zone: "edge", lot: 6 /* Asphalt */ },
   casino: { w: 3, d: 2, floors: 3, zone: "core", lot: 7 /* Plaza */ },
   zoo: { w: 5, d: 5, zone: "edge", lot: 1 /* Lawn */, solid: false, apart: 12 },
@@ -12118,8 +13573,25 @@ var KIND_SPEC = {
   // cyberpunk
   megablock: { w: 3, d: 3, floors: [34, 46], zone: "mid", lot: 2 /* Paved */, apart: 12 },
   holoTower: { w: 2, d: 2, floors: [50, 70], zone: "core", lot: 7 /* Plaza */, apart: 14 },
-  nightMarket: { w: 3, d: 1, zone: "mid", lot: 2 /* Paved */, apart: 6 }
+  nightMarket: { w: 3, d: 1, zone: "mid", lot: 2 /* Paved */, apart: 6 },
+  // Chicago: one of each landmark a town (the Bean is a plaza with the sculpture standing solid in its middle)
+  willisTower: { w: 2, d: 2, floors: 108, zone: "core", lot: 7 /* Plaza */, apart: 60 },
+  hancockCenter: { w: 2, d: 2, floors: 100, zone: "core", lot: 7 /* Plaza */, apart: 60 },
+  marinaCity: { w: 2, d: 2, floors: 65, zone: "core", lot: 2 /* Paved */, waterside: "prefer", apart: 60 },
+  wrigleyBuilding: { w: 2, d: 2, floors: 8, zone: "core", lot: 7 /* Plaza */, waterside: "prefer", apart: 60 },
+  tribuneTower: { w: 2, d: 2, floors: 13, zone: "core", lot: 7 /* Plaza */, apart: 60 },
+  chicagoTheatre: { w: 2, d: 2, floors: 6, zone: "core", lot: 2 /* Paved */, apart: 60 },
+  cloudGate: { w: 3, d: 3, zone: "core", lot: 7 /* Plaza */, apart: 60 },
+  // Amsterdam: the museum and the church on their squares, the station out on the water, the mill, the canal houses
+  rijksmuseum: { w: 3, d: 2, zone: "core", lot: 7 /* Plaza */, waterside: "prefer", apart: 60 },
+  centraalStation: { w: 4, d: 2, zone: "edge", lot: 2 /* Paved */, roadside: true, waterside: "prefer", apart: 60 },
+  westerkerk: { w: 2, d: 3, zone: "core", lot: 7 /* Plaza */, apart: 30 },
+  deGooyer: { w: 1, d: 1, zone: "mid", lot: 2 /* Paved */, waterside: "prefer", apart: 30 },
+  canalHouses: { w: [3, 4], d: 1, floors: [2, 3], zone: "any", lot: 2 /* Paved */ }
 };
+
+// src/world/skiFields.ts
+var FAR_AIR = 0.45 + STEP;
 
 // src/world/railSurface.ts
 var DECK_HALF = {
@@ -12147,7 +13619,7 @@ for (let h = 0; h < HEADINGS; h++) {
   SIN[h] = Math.sin(h * DA);
 }
 var KG = 2;
-var KN = N / KG;
+var KN = N4 / KG;
 var NS = KN * KN * HEADINGS;
 
 // src/world/wonders.ts
@@ -12181,10 +13653,10 @@ var FINISH = {
 var SOURCE_MIN = SEA + 13;
 
 // src/world/generate.ts
-var NN = N * N;
-var GEN_VERSION = 42;
+var NN = N4 * N4;
+var GEN_VERSION = 44;
 var PAD = 40;
-var P = N + 2 * PAD;
+var P = N4 + 2 * PAD;
 var PP = P * P;
 var RIM_DEPTH = SEA - 5;
 
@@ -12302,6 +13774,8 @@ var world;
 var worldDirty = false;
 var players;
 var cells;
+var community;
+var marks;
 var board = { players: {}, cpu: {} };
 var boardDirty = false;
 var conns = /* @__PURE__ */ new Map();
@@ -12324,10 +13798,10 @@ function failPin(key, now) {
   if (pinFails.size > 5e3) for (const k of [...pinFails.keys()]) recentFails(k, now);
 }
 var seedHash = 0;
-var CELL = /^-?\d{1,5},-?\d{1,5}$/;
+var CELL2 = /^-?\d{1,5},-?\d{1,5}$/;
 var NAME = /^[A-Za-z0-9_-]{3,16}$/;
-var LOT = /^(-?\d{1,5},-?\d{1,5})#[bp]\d{1,7}$/;
-var TOWN = /^(-?\d{1,5},-?\d{1,5})#\d{1,4}$/;
+var LOT2 = /^(-?\d{1,5},-?\d{1,5})#[bp]\d{1,7}$/;
+var TOWN2 = /^(-?\d{1,5},-?\d{1,5})#\d{1,4}$/;
 var EDIT_KINDS = /* @__PURE__ */ new Set(["road", "raze", "build", "lift", "wear", "ring", "claim"]);
 var freshCell = () => ({ edits: [] });
 var sha = (s) => createHash2("sha256").update(s).digest("hex");
@@ -12436,6 +13910,14 @@ function toRoom(c, m, but) {
 function peopleIn(doc) {
   const ids = /* @__PURE__ */ new Set();
   for (const d of Object.values(doc.deeds ?? {})) ids.add(d.by);
+  for (const e of doc.edits) if (e.k === "road" && !e.g && typeof e.by === "string") ids.add(e.by);
+  for (const rows of Object.values(doc.landBy ?? {})) if (rows[0]) ids.add(rows[0][0]);
+  for (const by of Object.values(doc.pathsBy ?? {})) if (by[0]) ids.add(by[0]);
+  for (const r of Object.values(doc.signs ?? {})) ids.add(r.by);
+  for (const r of Object.values(doc.drifts ?? {})) ids.add(r.by);
+  for (const r of Object.values(doc.laps ?? {})) ids.add(r.by);
+  for (const r of Object.values(doc.guests ?? {})) for (const x of r.list) ids.add(x[0]);
+  for (const r of Object.values(doc.holders ?? {})) for (const x of r) if (isPid(x[0])) ids.add(x[0]);
   for (const row of Object.values(doc.carriage ?? {})) {
     if (isPid(row[1])) ids.add(row[1]);
     for (const k of Object.keys(row[3] ?? {})) if (isPid(k)) ids.add(k);
@@ -12443,7 +13925,7 @@ function peopleIn(doc) {
   return [...ids].map(whoOf).filter((w) => !!w);
 }
 async function subscribe(c, want) {
-  const next = new Set(want.filter((k) => CELL.test(k)).slice(0, 80));
+  const next = new Set(want.filter((k) => CELL2.test(k)).slice(0, 80));
   for (const k of [...c.subs]) {
     if (next.has(k)) continue;
     c.subs.delete(k);
@@ -12461,7 +13943,9 @@ async function subscribe(c, want) {
     const r = roomOf(k, true);
     r.subs.set(c, Date.now());
     rehost(k);
-    send(c, { t: "cell", c: k, doc, host: (r.host ?? c).pid, people: peopleIn(doc) });
+    const { usedBy: _kept, laps, ...rest } = doc;
+    const shared = laps ? { ...rest, laps: Object.fromEntries(Object.entries(laps).map(([id, { g: _g, ...row }]) => [id, row])) } : rest;
+    send(c, { t: "cell", c: k, doc: shared, host: (r.host ?? c).pid, people: peopleIn(doc) });
   }
 }
 function moved(c, to) {
@@ -12614,7 +14098,9 @@ async function hello(ws, ip, m) {
     home: doc.home,
     token,
     owed,
-    online: [...conns.values()].map((x) => ({ who: x.who, c: x.cell, look: x.look ?? void 0 }))
+    online: [...conns.values()].map((x) => ({ who: x.who, c: x.cell, look: x.look ?? void 0 })),
+    community: community.welcome(doc),
+    marks: marks.welcome(doc)
   });
   for (const x of conns.values()) send(x, { t: "on", who: c.who, c: c.cell });
   conns.set(pid, c);
@@ -12689,15 +14175,21 @@ async function handle(c, m) {
           send(c, { t: "deny", what: "raze", c: k, why: `That belongs to ${whoOf(d.by)?.brand?.name ?? whoOf(d.by)?.name ?? "another fleet"}.` });
           return;
         }
+        const listed = typeof x === "number" && typeof z === "number" ? community.razeBarred(doc, x, z, c.pid) : null;
+        if (listed) {
+          send(c, { t: "deny", what: "raze", c: k, why: listed });
+          return;
+        }
       }
       if (doc.edits.length >= 3e4) {
         send(c, { t: "deny", what: "edit", c: k, why: "This county has been changed as much as it can be." });
         return;
       }
-      const kept = { ...e, by: c.pid };
+      const kept = { ...e, by: c.pid, at: Math.round(world.hours * 10) / 10 };
       doc.edits.push(kept);
       cells.touch(`${world.epoch}:${k}`);
       toRoom(k, { t: "edit", c: k, e: kept }, c);
+      community.edited(c, k, doc, kept);
       return;
     }
     case "land": {
@@ -12705,6 +14197,7 @@ async function handle(c, m) {
       const doc = c.subs.has(k) ? cells.peek(`${world.epoch}:${k}`) : null;
       if (!doc || !m.chunks || typeof m.chunks !== "object") return;
       const out = {};
+      const was = { ...doc.land ?? {} };
       for (const [ck, v] of Object.entries(m.chunks)) {
         const n = Number(ck);
         if (!(n >= 0 && n < 256)) continue;
@@ -12719,6 +14212,7 @@ async function handle(c, m) {
       if (doc.land && !Object.keys(doc.land).length) delete doc.land;
       cells.touch(`${world.epoch}:${k}`);
       toRoom(k, { t: "land", c: k, chunks: out }, c);
+      community.landed(c, k, doc, was, out);
       return;
     }
     case "state": {
@@ -12740,11 +14234,11 @@ async function handle(c, m) {
           (pass.lots ??= {})[key] = v;
         }
       }
-      if (m.carriage) {
-        for (const [key, v] of Object.entries(m.carriage)) if (own(key) && Array.isArray(v) && v.length === 4) {
-          (doc.carriage ??= {})[key] = v;
-          (pass.carriage ??= {})[key] = v;
-        }
+      if (m.carriage) for (const [key, v] of Object.entries(m.carriage)) {
+        if (!own(key) || !Array.isArray(v) || v.length !== 4) continue;
+        await marks.carriage(k, doc, key, v);
+        (doc.carriage ??= {})[key] = v;
+        (pass.carriage ??= {})[key] = v;
       }
       if (m.firms) for (const [id, v] of Object.entries(m.firms)) {
         if (!id.startsWith(`${k}/`) || id.length > 40) continue;
@@ -12757,16 +14251,16 @@ async function handle(c, m) {
       return;
     }
     case "credit": {
-      const t = TOWN.exec(String(m.town));
+      const t = TOWN2.exec(String(m.town));
       const host = t ? rooms.get(t[1])?.host : null;
       const amt = num(m.amt);
       if (!host || host === c || !(amt > 0) || amt > 1e6) return;
-      send(host, { t: "credit", town: m.town, by: c.pid, amt, lot: typeof m.lot === "string" && LOT.test(m.lot) ? m.lot : void 0, lotAmt: num(m.lotAmt) || void 0, dir: m.dir === "out" ? "out" : "in" });
+      send(host, { t: "credit", town: m.town, by: c.pid, amt, lot: typeof m.lot === "string" && LOT2.test(m.lot) ? m.lot : void 0, lotAmt: num(m.lotAmt) || void 0, dir: m.dir === "out" ? "out" : "in" });
       return;
     }
     case "deeds": {
       for (const [key, v] of Object.entries(m.set ?? {})) {
-        const lot = LOT.exec(key);
+        const lot = LOT2.exec(key);
         if (!lot || !v) continue;
         const dk = `${world.epoch}:${lot[1]}`;
         const doc = await cells.open(dk);
@@ -12792,7 +14286,7 @@ async function handle(c, m) {
         }
       }
       for (const key of m.del ?? []) {
-        const lot = LOT.exec(String(key));
+        const lot = LOT2.exec(String(key));
         if (!lot) continue;
         const dk = `${world.epoch}:${lot[1]}`;
         const doc = await cells.open(dk);
@@ -12810,7 +14304,7 @@ async function handle(c, m) {
     case "rent": {
       const day = Math.floor(world.hours / 24);
       for (const [key, v] of Object.entries(m.k ?? {})) {
-        const lot = LOT.exec(key);
+        const lot = LOT2.exec(key);
         if (!lot) continue;
         const doc = cells.peek(`${world.epoch}:${lot[1]}`);
         const row = doc?.deeds?.[key];
@@ -12821,7 +14315,8 @@ async function handle(c, m) {
         if (!(amt > 0)) continue;
         rentToday.set(key, [day, taken + amt]);
         const owner2 = conns.get(row.by);
-        if (owner2) send(owner2, { t: "rent", key, amt });
+        await marks.rent(c.pid, row.by, amt, !!owner2);
+        if (owner2) send(owner2, { t: "rent", key, amt, from: c.pid });
         else {
           const od = await players.open(row.by);
           if (od.id) {
@@ -12850,13 +14345,15 @@ async function handle(c, m) {
           primary: c.doc.brand?.primary ?? 14827823,
           accent: c.doc.brand?.accent ?? 16777215,
           logo: c.doc.brand?.logo ?? "",
-          v: metricValues(me.v)
+          v: metricValues(me.v),
+          ...community.boardBits(c.doc)
         };
         boardDirty = true;
+        marks.worth(c.pid, Math.round(num(me.worth)));
       }
       for (const row of m.board?.cpu ?? []) {
         const home = String(row?.id ?? "").split("/")[0];
-        if (!CELL.test(home) || rooms.get(home)?.host !== c) continue;
+        if (!CELL2.test(home) || rooms.get(home)?.host !== c) continue;
         board.cpu[String(row.id).slice(0, 40)] = {
           id: String(row.id).slice(0, 40),
           name: String(row.name ?? "").slice(0, 40),
@@ -12910,7 +14407,7 @@ async function handle(c, m) {
       send(c, { t: "friends", rows: await friendRows(c) });
       return;
     case "watch":
-      c.watch = typeof m.c === "string" && CELL.test(m.c) ? m.c : null;
+      c.watch = typeof m.c === "string" && CELL2.test(m.c) ? m.c : null;
       return;
     case "board":
       send(c, { t: "board", rows: boardRows() });
@@ -12919,6 +14416,7 @@ async function handle(c, m) {
       c.ws.close();
       return;
     default:
+      if (!await community.handle(c, m)) await marks.handle(c, m);
       return;
   }
 }
@@ -13017,6 +14515,8 @@ function tick() {
   for (const c of conns.values()) at[c.pid] = c.cell;
   const text = JSON.stringify({ t: "tick", hours: world.hours, at });
   for (const c of conns.values()) if (c.ws.readyState === 1) c.ws.send(text);
+  community.beat();
+  marks.beat();
 }
 var flushing = false;
 async function flush(evict = true) {
@@ -13031,6 +14531,8 @@ async function flush(evict = true) {
       boardDirty = false;
       await store.set("board", board);
     }
+    await community.flush();
+    await marks.flush();
     await players.flush(evict);
     await cells.flush(evict);
   } catch (e) {
@@ -13107,7 +14609,7 @@ function http(req, res) {
     return;
   }
   if (path.startsWith("/api/") || path === ADMIN_PATH || path === `${ADMIN_PATH}/`) {
-    adminHttp(req, res, path, store).then((done) => {
+    adminHttp(req, res, path, store, { clearName: (k) => community.clearName(k) }).then((done) => {
       if (!done && !res.headersSent) res.writeHead(404, { "content-type": "text/plain" }).end("Not found");
     }).catch((e) => {
       console.error("admin:", e.message);
@@ -13116,7 +14618,7 @@ function http(req, res) {
     return;
   }
   if (path === "/online.json" || path === "/play/online.json") {
-    res.writeHead(200, { "content-type": "application/json", "access-control-allow-origin": "*", "cache-control": "no-store" }).end(JSON.stringify({ tinyfleet: true, protocol: PROTOCOL, gen: world.gen, seed: world.seed, start: upcomingHome(), players: conns.size, max: MAX_PLAYERS, day: Math.floor(world.hours / 24) + 1 }));
+    res.writeHead(200, { "content-type": "application/json", "access-control-allow-origin": "*", "cache-control": "no-store" }).end(JSON.stringify({ tinyfleet: true, protocol: PROTOCOL, gen: world.gen, seed: world.seed, start: upcomingHome(), picks: marks.picksNow(), players: conns.size, max: MAX_PLAYERS, day: Math.floor(world.hours / 24) + 1 }));
     return;
   }
   if (SITE) {
@@ -13166,6 +14668,38 @@ async function main() {
   seedHash = hashString(world.seed);
   players = new Docs(store, "player:", () => ({}));
   cells = new Docs(store, "cell:", freshCell);
+  community = new Community({
+    hours: () => world.hours,
+    epoch: () => world.epoch,
+    conns: () => conns.values(),
+    conn: (pid) => conns.get(pid),
+    cells,
+    players,
+    store,
+    whoOf,
+    cheb,
+    send: (c, m) => send(c, m),
+    toRoom: (c, m) => toRoom(c, m)
+  });
+  await community.load();
+  marks = new Marks({
+    hours: () => world.hours,
+    epoch: () => world.epoch,
+    conns: () => conns.values(),
+    conn: (pid) => conns.get(pid),
+    cells,
+    players,
+    store,
+    whoOf,
+    cheb,
+    send: (c, m) => send(c, m),
+    toRoom: (c, m) => toRoom(c, m),
+    worths: () => Object.fromEntries(Object.values(board.players).map((r) => [r.id, r.worth]))
+  });
+  community.onHeart = (line, on) => marks.heart(line, on);
+  community.onRoad = (line) => marks.road(line);
+  community.tell = (pid, n, from) => void marks.news(pid, n, from);
+  await marks.load();
   const server = createServer(http);
   const wss = new import_websocket_server.default({ server, maxPayload: 6 * 1024 * 1024 });
   wss.on("connection", (ws, req) => {
