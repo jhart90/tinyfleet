@@ -379,26 +379,26 @@ var require_permessage_deflate = __commonJS({
             value = value[0];
             if (key === "client_max_window_bits") {
               if (value !== true) {
-                const num2 = +value;
-                if (!Number.isInteger(num2) || num2 < 8 || num2 > 15) {
+                const num3 = +value;
+                if (!Number.isInteger(num3) || num3 < 8 || num3 > 15) {
                   throw new TypeError(
                     `Invalid value for parameter "${key}": ${value}`
                   );
                 }
-                value = num2;
+                value = num3;
               } else if (!this._isServer) {
                 throw new TypeError(
                   `Invalid value for parameter "${key}": ${value}`
                 );
               }
             } else if (key === "server_max_window_bits") {
-              const num2 = +value;
-              if (!Number.isInteger(num2) || num2 < 8 || num2 > 15) {
+              const num3 = +value;
+              if (!Number.isInteger(num3) || num3 < 8 || num3 > 15) {
                 throw new TypeError(
                   `Invalid value for parameter "${key}": ${value}`
                 );
               }
-              value = num2;
+              value = num3;
             } else if (key === "client_no_context_takeover" || key === "server_no_context_takeover") {
               if (value !== true) {
                 throw new TypeError(
@@ -1112,8 +1112,8 @@ var require_receiver = __commonJS({
           return;
         }
         const buf = this.consume(8);
-        const num2 = buf.readUInt32BE(0);
-        if (num2 > Math.pow(2, 53 - 32) - 1) {
+        const num3 = buf.readUInt32BE(0);
+        if (num3 > Math.pow(2, 53 - 32) - 1) {
           const error = this.createError(
             RangeError,
             "Unsupported WebSocket frame: payload length > 2^53 - 1",
@@ -1124,7 +1124,7 @@ var require_receiver = __commonJS({
           cb(error);
           return;
         }
-        this._payloadLength = num2 * Math.pow(2, 32) + buf.readUInt32BE(4);
+        this._payloadLength = num3 * Math.pow(2, 32) + buf.readUInt32BE(4);
         this.haveLength(cb);
       }
       /**
@@ -3912,8 +3912,8 @@ var require_postgres_date = __commonJS({
     function bcYearToNegativeYear(year) {
       return -(year - 1);
     }
-    function is0To99(num2) {
-      return num2 >= 0 && num2 < 100;
+    function is0To99(num3) {
+      return num3 >= 0 && num3 < 100;
     }
   }
 });
@@ -3989,9 +3989,9 @@ var require_postgres_interval = __commonJS({
     var NUMBER = "([+-]?\\d+)";
     var YEAR = NUMBER + "\\s+years?";
     var MONTH = NUMBER + "\\s+mons?";
-    var DAY = NUMBER + "\\s+days?";
+    var DAY2 = NUMBER + "\\s+days?";
     var TIME = "([+-])?([\\d]*):(\\d\\d):(\\d\\d)\\.?(\\d{1,6})?";
-    var INTERVAL = new RegExp([YEAR, MONTH, DAY, TIME].map(function(regexString) {
+    var INTERVAL = new RegExp([YEAR, MONTH, DAY2, TIME].map(function(regexString) {
       return "(" + regexString + ")?";
     }).join("\\s*"));
     var positions = {
@@ -4499,11 +4499,11 @@ var require_binaryParsers = __commonJS({
         var array = [];
         var i2;
         if (dimension.length > 1) {
-          var count = dimension.shift();
-          for (i2 = 0; i2 < count; i2++) {
+          var count2 = dimension.shift();
+          for (i2 = 0; i2 < count2; i2++) {
             array[i2] = parse(dimension, elementType2);
           }
-          dimension.unshift(count);
+          dimension.unshift(count2);
         } else {
           for (i2 = 0; i2 < dimension[0]; i2++) {
             array[i2] = parseElement(elementType2);
@@ -6073,18 +6073,18 @@ var require_buffer_writer = __commonJS({
           oldBuffer.copy(this.buffer);
         }
       }
-      addInt32(num2) {
+      addInt32(num3) {
         this.ensure(4);
-        this.buffer[this.offset++] = num2 >>> 24 & 255;
-        this.buffer[this.offset++] = num2 >>> 16 & 255;
-        this.buffer[this.offset++] = num2 >>> 8 & 255;
-        this.buffer[this.offset++] = num2 >>> 0 & 255;
+        this.buffer[this.offset++] = num3 >>> 24 & 255;
+        this.buffer[this.offset++] = num3 >>> 16 & 255;
+        this.buffer[this.offset++] = num3 >>> 8 & 255;
+        this.buffer[this.offset++] = num3 >>> 0 & 255;
         return this;
       }
-      addInt16(num2) {
+      addInt16(num3) {
         this.ensure(2);
-        this.buffer[this.offset++] = num2 >>> 8 & 255;
-        this.buffer[this.offset++] = num2 >>> 0 & 255;
+        this.buffer[this.offset++] = num3 >>> 8 & 255;
+        this.buffer[this.offset++] = num3 >>> 0 & 255;
         return this;
       }
       addCString(string) {
@@ -9160,6 +9160,15 @@ var Docs = class {
       e.idle = 0;
     }
   }
+  /** Put a document in place, new or not: written at the next flush. */
+  set(key, doc) {
+    const e = this.live.get(key);
+    if (e) {
+      e.doc = doc;
+      e.dirty = true;
+      e.idle = 0;
+    } else this.live.set(key, { doc, dirty: true, held: 0, idle: 0 });
+  }
   touch(key) {
     const e = this.live.get(key);
     if (e) e.dirty = true;
@@ -9251,7 +9260,7 @@ a.link{color:var(--acc);cursor:pointer;text-decoration:underline}
 <div id="app" hidden>
   <header>
     <h1>TinyFleet <span>dev</span></h1>
-    <div class="tabs"><button id="t-games" class="on">Games</button><button id="t-fb">Feedback</button></div>
+    <div class="tabs"><button id="t-games" class="on">Games</button><button id="t-fb">Feedback</button><button id="t-pc">Postcards</button></div>
     <div class="grow"></div>
     <input id="search" placeholder="Search fleet, player, seed…">
     <button class="btn" id="reload">Refresh</button>
@@ -9264,6 +9273,7 @@ a.link{color:var(--acc);cursor:pointer;text-decoration:underline}
       <div id="detail"></div>
     </section>
     <section id="feedback" hidden></section>
+    <section id="pictures" hidden></section>
   </main>
 </div>
 <script>
@@ -9310,8 +9320,10 @@ $('reload').onclick = function () { load(); };
 $('search').oninput = function () { renderGames(); renderFeedback(); };
 $('t-games').onclick = function () { tab('games'); };
 $('t-fb').onclick = function () { tab('fb'); };
+$('t-pc').onclick = function () { tab('pc'); loadPictures(); };
 function tab(t) {
-  $('t-games').classList.toggle('on', t === 'games'); $('t-fb').classList.toggle('on', t === 'fb');
+  $('t-games').classList.toggle('on', t === 'games'); $('t-fb').classList.toggle('on', t === 'fb'); $('t-pc').classList.toggle('on', t === 'pc');
+  $('pictures').hidden = t !== 'pc';
   $('games').hidden = t !== 'games'; $('feedback').hidden = t !== 'fb';
 }
 
@@ -9324,6 +9336,13 @@ async function load() {
   $('t-games').textContent = 'Games (' + games.length + ')';
   renderGames(); renderFeedback();
   if (openGid) openGame(openGid);
+}
+
+/** The postcard funnel (docs/postcards.html), summed over the days kept. */
+function funnelTxt() {
+  var k = ['card-link', 'card-read', 'card-drawn', 'card-guest', 'card-looked', 'card-car', 'card-delivered', 'card-stayed', 'card-kept'], t = {};
+  visits.forEach(function (d) { k.concat(['card-drawms']).forEach(function (x) { t[x] = (t[x] || 0) + ((d.n && d.n[x]) || 0); }); });
+  return k.map(function (x) { return x === 'card-drawn' && t[x] ? t[x] + ' (' + (t['card-drawms'] / t[x] / 1000).toFixed(1) + ')' : (t[x] || 0); }).join(' → ');
 }
 
 function matches(text) { var q = $('search').value.trim().toLowerCase(); return !q || text.toLowerCase().indexOf(q) >= 0; }
@@ -9341,7 +9360,8 @@ function renderGames() {
   $('stats').innerHTML = [
     [games.length, 'games'], [Object.keys(tot.players).length, 'player profiles'], [week, 'played this week'], [hrs(tot.play), 'total play'],
     [money(tot.earned), 'earned, all games'], [num(tot.you), 'tiles driven by players'], [num(tot.hired), 'tiles by hired drivers'], [num(tot.done), 'missions completed'], [feedback.length, 'feedback'],
-    [num(vis.page), 'page loads (desktop, 30 days)'], [num(vis.mobile), 'phones/tablets turned away'], [num(vis.anyway), 'phones that went on anyway'],
+    [num(vis.page), 'page loads (desktop, 30 days)'],
+    [funnelTxt(), 'postcards, 30 days: link → read → world drawn (avg s) → guest → looked → car → delivered → 10 min → kept'], [num(vis.mobile), 'phones/tablets turned away'], [num(vis.anyway), 'phones that went on anyway'],
     [perfGames.length ? Math.round(perfGames.reduce(function (s, g) { return s + g.fps; }, 0) / perfGames.length) : '—', 'average FPS (games with perf data)'],
     [neverDrove + ' / ' + perfGames.length, 'never drove a tile (perf-tracked games)']
   ].map(function (s) { return '<div class="stat"><b>' + esc(s[0]) + '</b><span>' + esc(s[1]) + '</span></div>'; }).join('');
@@ -9459,6 +9479,22 @@ function renderFeedback() {
   Array.prototype.forEach.call($('feedback').querySelectorAll('a[data-gid]'), function (a) { a.onclick = function () { tab('games'); openGame(a.dataset.gid); }; });
   Array.prototype.forEach.call($('feedback').querySelectorAll('a[data-work]'), function (a) {
     a.onclick = async function () { var j = await api('clearname', { k: a.dataset.work }); a.textContent = j.ok ? 'name cleared' : 'already cleared'; a.removeAttribute('data-work'); a.onclick = null; };
+  });
+}
+
+/** Postcards' pictures (docs/postcards.html): what each link shows as its preview, reported ones first. */
+async function loadPictures() {
+  var j = await api('pictures');
+  var list = j.pictures || [];
+  $('t-pc').textContent = 'Postcards (' + list.length + ')';
+  $('pictures').innerHTML = list.length ? '<div class="kv" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">' + list.map(function (p) {
+    return '<div class="card" style="margin:0"><img src="/p/' + esc(p.id) + '.jpg?v=' + p.at + '" style="width:100%;border-radius:8px;display:block' + (p.hidden ? ';opacity:.35' : '') + '" onerror="this.style.display=\'none\'">'
+      + '<h4 style="margin:8px 0 2px">' + esc(p.title) + '</h4><div class="mute">' + esc(p.fleet) + ' · ' + new Date(p.at).toLocaleString() + ' · opened ' + p.opens + ' · ' + p.rides + ' took a car</div>'
+      + (p.reports ? '<div><span class="chip failed">reported ' + p.reports + (p.hidden ? ' · hidden' : '') + '</span></div>' : '')
+      + '<div style="margin-top:6px">' + (p.hidden ? '<a class="link" data-show="' + esc(p.id) + '">Put it back</a> · ' : '') + '<a class="link" data-drop="' + esc(p.id) + '">Take the picture down</a> · <a class="link" href="/p/' + esc(p.id) + '" target="_blank">open</a></div></div>';
+  }).join('') + '</div>' : '<div class="mute">No postcard pictures yet.</div>';
+  Array.prototype.forEach.call($('pictures').querySelectorAll('a[data-drop],a[data-show]'), function (a) {
+    a.onclick = async function () { await api('picture', { id: a.dataset.drop || a.dataset.show, show: !!a.dataset.show }); loadPictures(); };
   });
 }
 
@@ -9603,7 +9639,8 @@ async function adminHttp(req, res, path, store2, hooks) {
       return true;
     }
     const kind = str(m.kind, 20);
-    if (kind !== "page" && kind !== "mobile" && kind !== "anyway") {
+    const card = kind === "card-drawn" || kind === "card-looked" || kind === "card-phone";
+    if (kind !== "page" && kind !== "mobile" && kind !== "anyway" && !card) {
       json(res, 400, { ok: false }, OPEN);
       return true;
     }
@@ -9611,6 +9648,12 @@ async function adminHttp(req, res, path, store2, hooks) {
     const day = new Date(now).toISOString().slice(0, 10);
     const doc = await store2.get(`visits:${day}`) ?? { day, n: {}, rows: [] };
     doc.n[kind] = (doc.n[kind] ?? 0) + 1;
+    if (kind === "card-drawn" && typeof m.ms === "number" && m.ms > 0 && m.ms < 6e5) doc.n["card-drawms"] = (doc.n["card-drawms"] ?? 0) + Math.round(m.ms);
+    if (card) {
+      await store2.set(`visits:${day}`, doc);
+      json(res, 200, { ok: true }, OPEN);
+      return true;
+    }
     doc.rows.push({
       t: now,
       kind,
@@ -9775,6 +9818,23 @@ async function adminHttp(req, res, path, store2, hooks) {
     json(res, 200, { ok: true, feedback: list.sort((a, b) => b.at - a.at) });
     return true;
   }
+  if (what === "pictures") {
+    json(res, 200, { ok: true, pictures: hooks?.pictures ? await hooks.pictures() : [] });
+    return true;
+  }
+  if (what === "picture") {
+    if (req.method !== "POST") {
+      json(res, 405, { ok: false });
+      return true;
+    }
+    let m = {};
+    try {
+      m = JSON.parse(await readBody(req, 2e3) ?? "");
+    } catch {
+    }
+    json(res, 200, { ok: !!hooks?.picture && await hooks.picture(str(m.id, 12), m.show === true) });
+    return true;
+  }
   if (what === "clearname") {
     if (req.method !== "POST") {
       json(res, 405, { ok: false });
@@ -9793,7 +9853,7 @@ async function adminHttp(req, res, path, store2, hooks) {
 }
 
 // shared/protocol.ts
-var PROTOCOL = 1;
+var PROTOCOL = 2;
 var CHAT_CELLS = 8;
 var SPAWN_REACH = 64;
 var SPAWN_NEAR = 8;
@@ -9805,6 +9865,16 @@ var isPid = (s) => s.startsWith("p:");
 var cellKey = (cx, cz) => `${cx},${cz}`;
 var cellOfKey = (k) => k.split("#")[0].split(",").map(Number);
 var FRIENDS_MAX = 100;
+var GUEST = {
+  /** Guests at once, beside the players (MAX_GUESTS on the server overrides it), and from one address. */
+  max: 300,
+  perIp: 3,
+  /** Cells a guest may hold. */
+  cells: 25,
+  /** A guest that has said nothing for this long (ms) is let go: a game whose tab is open says `watch` every minute. */
+  idle: 6e5,
+  says: ["sub", "watch", "bye"]
+};
 
 // shared/marks.ts
 var MARKS = {
@@ -9812,11 +9882,9 @@ var MARKS = {
   signsMax: 12,
   /** Signs one county may hold. */
   signsPerCell: 80,
-  /** Up-votes (and three times the down-votes) that carve a sign in stone; it stays then. */
+  /** Hearts that carve a sign in stone; it stays then. */
   carveUp: 8,
-  /** Down-votes, more than its up-votes by this much, that knock a sign over (gone). */
-  fallBy: 4,
-  /** Votes kept per sign, each way. */
+  /** Hearts kept per sign. */
   votesMax: 64,
   /** A drift shorter than this (tiles slid) isn't a record anywhere. */
   driftMin: 8,
@@ -9890,10 +9958,8 @@ function signText(m) {
   const second = one(m[3], m[4]);
   return `${first}, ${SIGN_JOINS[m[2]]} ${second.charAt(0).toLowerCase()}${second.slice(1)}`;
 }
-function signFate(up, dn) {
-  if (up >= MARKS.carveUp && up >= 3 * dn) return "carved";
-  if (dn - up >= MARKS.fallBy) return "fallen";
-  return null;
+function signFate(hearts) {
+  return hearts >= MARKS.carveUp ? "carved" : null;
 }
 var driftPoints = (s) => Math.round(s * 10);
 function decodeGhost(s) {
@@ -9919,7 +9985,8 @@ var PICK_LABEL = {
   lap: "Lap record",
   drift: "Drift record",
   sign: "Best sign",
-  guests: "Most visited HQ"
+  guests: "Most visited HQ",
+  postcard: "Postcard of the week"
 };
 var NEWS_KEEP = 40;
 
@@ -10842,7 +10909,7 @@ var Marks = class {
   lost = /* @__PURE__ */ new Map();
   /** The last hand-over told for each town and pair of fleets (real ms), so a town flapping between two isn't told every minute. */
   toldAt = /* @__PURE__ */ new Map();
-  /** A thumbs-up given or taken back on a player's sign: their likes go up or down (server/community.ts likes). */
+  /** A heart left on (or taken back from) a player's sign: their likes go up or down (server/community.ts likes). */
   onLike = () => {
   };
   async load() {
@@ -10966,7 +11033,7 @@ var Marks = class {
     const mine = c.doc.signs ??= [];
     while (mine.length >= MARKS.signsMax) await this.takeDown(mine[0], c.pid);
     const id = `s${doc.sseq = (doc.sseq ?? 0) + 1}`;
-    const row = { by: c.pid, t: tile, m: msg, at: Math.round(this.host.hours() * 10) / 10, up: [], dn: [] };
+    const row = { by: c.pid, t: tile, m: msg, at: Math.round(this.host.hours() * 10) / 10, up: [] };
     signs[id] = row;
     mine.push(`${cell}#${id}`);
     this.host.cells.touch(this.docKey(cell));
@@ -10995,32 +11062,25 @@ var Marks = class {
     await this.takeDown(`${cell}#${id}`, c.pid);
     if (!c.subs.has(cell)) this.host.send(c, { t: "signRow", c: cell, id, row: null });
   }
+  /** A heart on a sign (v 1), or taken back (0). A thumbs-down (-1, from a game before hearts) counts as taking it back. */
   async rate(c, cell, id, v) {
     if (!CELL.test(cell) || !/^s\d{1,6}$/.test(id) || v !== 1 && v !== 0 && v !== -1) return;
     const doc = this.host.cells.peek(this.docKey(cell)) ?? await this.host.cells.open(this.docKey(cell));
     const row = doc.signs?.[id];
     if (!row || row.by === c.pid) return;
-    const wasUp = row.up.includes(c.pid), wasDown = row.dn.includes(c.pid);
-    row.up = row.up.filter((p) => p !== c.pid);
-    row.dn = row.dn.filter((p) => p !== c.pid);
-    if (v === 1 && row.up.length < MARKS.votesMax) row.up.push(c.pid);
-    if (v === -1 && row.dn.length < MARKS.votesMax) row.dn.push(c.pid);
+    const had = row.up.includes(c.pid);
+    const on = v === 1;
+    if (had === on) return;
+    if (on) {
+      if (row.up.length < MARKS.votesMax) row.up.push(c.pid);
+    } else row.up = row.up.filter((p) => p !== c.pid);
     this.host.cells.touch(this.docKey(cell));
-    const isUp = row.up.includes(c.pid);
-    if (isUp !== wasUp) this.onLike(row.by, isUp ? 1 : -1);
-    void wasDown;
+    this.onLike(row.by, on ? 1 : -1);
     const key = `${cell}#${id}`;
-    const fate = signFate(row.up.length, row.dn.length);
-    if (fate === "fallen" && !row.carved) {
-      await this.takeDown(key, row.by);
-      if (!c.subs.has(cell)) this.host.send(c, { t: "signRow", c: cell, id, row: null });
-      await this.news(row.by, { what: "signFell", c: cell, k: key });
-      return;
-    }
-    const carvedNow = fate === "carved" && !row.carved;
+    const carvedNow = signFate(row.up.length) === "carved" && !row.carved;
     if (carvedNow) row.carved = 1;
     this.tell(c, cell, { t: "signRow", c: cell, id, row });
-    if (v === 1 && !wasUp) await this.news(row.by, { what: "signUp", c: cell, k: key, by: c.pid, ...carvedNow ? { carved: true } : {} }, c.pid);
+    if (on) await this.news(row.by, { what: "signUp", c: cell, k: key, by: c.pid, ...carvedNow ? { carved: true } : {} }, c.pid);
     const best = this.picks.sign;
     if (row.up.length > (best?.n ?? 0) || best?.k === key) {
       this.picks.sign = { k: key, by: row.by, title: `\u201C${signText(row.m)}\u201D`, n: row.up.length, ...spot(cell, row.t), at: Date.now() };
@@ -11193,6 +11253,20 @@ var Marks = class {
     if (!this.picks.hearts[line.k].title) this.picks.hearts[line.k].title = `#${line.kind}`;
     this.picksDirty = true;
   }
+  /** A postcard opened, or a fleet made from it, this week: towards the postcard of the week. */
+  card(id, by, title, x, z, open) {
+    const cards2 = this.picks.cards ??= {};
+    const l = cards2[id] ??= { by, title, n: 0, x, z, at: Date.now(), o: 0, r: 0 };
+    l.title = title;
+    if (open) {
+      l.o = (l.o ?? 0) + 1;
+      l.n += 1;
+    } else {
+      l.r = (l.r ?? 0) + 1;
+      l.n += 10;
+    }
+    this.picksDirty = true;
+  }
   /** A player road kept: the week's longest. */
   road(line) {
     if (!line || line.kind !== "road" || !line.len) return;
@@ -11239,9 +11313,11 @@ var Marks = class {
     if (best) items.push(this.pick("growth", { by: best.pid, title: this.name(best.pid), n: best.d, at: 0 }, `+$${Math.round(best.d).toLocaleString("en-US")} this week`));
     items.push(this.pick("lap", p.lap, p.lap ? "the freshest record" : ""));
     items.push(this.pick("drift", p.drift, p.drift ? `${p.drift.n} tiles sideways` : ""));
-    items.push(this.pick("sign", p.sign, p.sign ? `\u{1F44D} ${p.sign.n}` : ""));
+    items.push(this.pick("sign", p.sign, p.sign ? `\u2665 ${p.sign.n}` : ""));
     const visited = Object.values(p.guests).sort((a, b) => b.n - a.n)[0] ?? null;
     items.push(this.pick("guests", visited, visited ? `${visited.n} visit${visited.n === 1 ? "" : "s"} this week` : ""));
+    const card = Object.values(p.cards ?? {}).sort((a, b) => b.n - a.n || a.at - b.at)[0] ?? null;
+    items.push(this.pick("postcard", card, card ? `opened ${card.o ?? 0} time${card.o === 1 ? "" : "s"}${card.r ? ` \xB7 ${card.r} took a car` : ""} this week` : ""));
     void PICK_LABEL;
     return { from: WEEK0 + p.week * MARKS.week, live, items: items.filter((x) => !!x) };
   }
@@ -11254,6 +11330,329 @@ var Marks = class {
   /** Every few seconds. */
   beat() {
     this.roll();
+  }
+};
+
+// server/postcards.ts
+import { randomInt } from "node:crypto";
+
+// shared/postcards.ts
+var POSTCARD = {
+  /** New postcards a player may make in a day (real time). Updating one is free. */
+  perDay: 20,
+  /** Postcards a player keeps: making one past this lets the oldest go. */
+  keep: 200,
+  titleMax: 80,
+  idLen: 5,
+  /** A take this far (tiles) from the camera session's postcard makes a new one rather than moving it. */
+  apart: 48,
+  /** The postcard's picture (its link preview): the longest side in pixels, the most base64 accepted, and the reports that hide it. */
+  picSide: 960,
+  picMax: 22e4,
+  picReports: 3
+};
+var ID_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789";
+var ID = new RegExp(`^[${ID_ALPHABET}]{${POSTCARD.idLen}}$`);
+var isCardId = (s) => typeof s === "string" && ID.test(s);
+var isJpeg = (b64) => typeof b64 === "string" && b64.length > 100 && b64.length <= POSTCARD.picMax && b64.startsWith("/9j/") && /^[A-Za-z0-9+/=]+$/.test(b64);
+var num = (v, lo, hi) => typeof v === "number" && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : null;
+function cleanPose(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const r = raw;
+  const W = 1 << 22;
+  const x = num(r.x, -W, W), z = num(r.z, -W, W), y = num(r.y, -500, 5e3);
+  const yaw = num(r.yaw, -1e4, 1e4), pitch = num(r.pitch, 0, Math.PI / 2), dist = num(r.dist, 2, 2e3);
+  const look = num(r.look, 0, 2), hour = num(r.hour, 0, 24);
+  if (x === null || z === null || yaw === null || pitch === null || dist === null) return null;
+  const tau = Math.PI * 2;
+  return {
+    x: Math.round(x * 100) / 100,
+    z: Math.round(z * 100) / 100,
+    y: Math.round((y ?? 0) * 100) / 100,
+    yaw: Math.round((yaw % tau + tau) % tau * 1e3) / 1e3,
+    pitch: Math.min(Math.round(pitch * 1e3), Math.floor(Math.PI / 2 * 1e3)) / 1e3,
+    dist: Math.round(dist * 10) / 10,
+    look: Math.round(look ?? 1),
+    hour: Math.round((hour ?? 12) * 100) / 100,
+    ...r.follow === true ? { follow: true } : {}
+  };
+}
+function cleanTitle(raw) {
+  return String(raw ?? "").replace(/[\u0000-\u001f\u007f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, POSTCARD.titleMax);
+}
+function newCardId(rnd) {
+  let s = "";
+  for (let i = 0; i < POSTCARD.idLen; i++) s += ID_ALPHABET[Math.floor(rnd() * ID_ALPHABET.length) % ID_ALPHABET.length];
+  return s;
+}
+
+// server/postcards.ts
+var MILESTONES = [10, 100, 1e3, 1e4];
+var RIDE_LIKES = 5;
+var DAY = 864e5;
+var esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+var Postcards = class {
+  constructor(host) {
+    this.host = host;
+  }
+  /** Opens already counted today: "address|id" → the day. */
+  opened = /* @__PURE__ */ new Map();
+  /** Pictures reported: "address|id", so an address reports one once. */
+  reported = /* @__PURE__ */ new Set();
+  /** A message that is a postcard's: handled, and true. */
+  async handle(c, m) {
+    switch (m.t) {
+      case "postcard": {
+        const ask = Number.isFinite(m.ask) ? Number(m.ask) : 0;
+        const reply = (id2, why) => this.host.send(c, { t: "postcard", ask, id: id2, ...why ? { why } : {} });
+        const pose = m.pose === void 0 ? null : cleanPose(m.pose);
+        if (m.pose !== void 0 && !pose) {
+          reply(null, "That isn\u2019t a place");
+          return true;
+        }
+        if (m.id !== void 0) {
+          if (!isCardId(m.id) || !c.doc.cards?.includes(m.id)) {
+            reply(null, "Not one of yours");
+            return true;
+          }
+          const card2 = await this.host.cards.open(m.id);
+          if (!card2 || card2.gone || card2.by !== c.pid) {
+            reply(null, "Not one of yours");
+            return true;
+          }
+          if (pose) Object.assign(card2, pose, pose.follow ? {} : { follow: void 0 });
+          if (m.title !== void 0) card2.title = cleanTitle(m.title) || card2.title;
+          this.host.cards.touch(m.id);
+          reply(m.id);
+          return true;
+        }
+        if (!pose) {
+          reply(null, "Nowhere to send it");
+          return true;
+        }
+        const now = Date.now();
+        const made = (c.doc.cardsMade ?? []).filter((t) => now - t < DAY);
+        if (made.length >= POSTCARD.perDay) {
+          reply(null, `${POSTCARD.perDay} new postcards a day: this take carries the game\u2019s address instead`);
+          return true;
+        }
+        let id = "";
+        for (let i = 0; i < 12 && !id; i++) {
+          const k = newCardId(() => randomInt(1 << 30) / (1 << 30));
+          if (!await this.host.cards.open(k)) id = k;
+        }
+        if (!id) {
+          reply(null, "Try again in a moment");
+          return true;
+        }
+        const card = { ...pose, id, by: c.pid, title: cleanTitle(m.title) || "A postcard", at: now, epoch: this.host.epoch(), opens: 0, rides: 0 };
+        this.host.cards.set(id, card);
+        c.doc.cardsMade = [...made, now].slice(-POSTCARD.perDay);
+        const mine = [...c.doc.cards ?? [], id];
+        while (mine.length > POSTCARD.keep) await this.drop(mine.shift());
+        c.doc.cards = mine;
+        this.host.touch(c.pid);
+        reply(id);
+        return true;
+      }
+      case "unpost": {
+        if (!isCardId(m.id) || !c.doc.cards?.includes(m.id)) return true;
+        await this.drop(m.id);
+        c.doc.cards = c.doc.cards.filter((k) => k !== m.id);
+        this.host.touch(c.pid);
+        this.host.send(c, { t: "postcards", rows: await this.mine(c) });
+        return true;
+      }
+      case "postcards":
+        this.host.send(c, { t: "postcards", rows: await this.mine(c) });
+        return true;
+      case "postcardPic": {
+        if (!isCardId(m.id) || !c.doc.cards?.includes(m.id) || !isJpeg(m.jpg)) return true;
+        const card = await this.host.cards.open(m.id);
+        if (!card || card.gone || card.by !== c.pid) return true;
+        this.host.pics.set(m.id, { jpg: m.jpg });
+        card.pic = Date.now();
+        card.reports = 0;
+        card.picHidden = false;
+        this.host.cards.touch(m.id);
+        return true;
+      }
+      default:
+        return false;
+    }
+  }
+  async drop(id) {
+    const card = await this.host.cards.open(id);
+    if (card) {
+      card.gone = true;
+      this.host.cards.touch(id);
+    }
+  }
+  async mine(c) {
+    const out = [];
+    for (const k of (c.doc.cards ?? []).slice().reverse()) {
+      const card = await this.host.cards.open(k);
+      if (card && !card.gone) out.push(card);
+    }
+    return out;
+  }
+  /**
+   * A fleet has been made from this postcard (`fleet`, its name): counted, its maker told and given likes, and the
+   * cell it was taken in handed back, for a home near it.
+   */
+  async ride(id, fleet) {
+    const card = isCardId(id) ? await this.host.cards.open(id) : null;
+    if (!card || card.gone || card.epoch !== this.host.epoch()) return null;
+    card.rides++;
+    this.host.cards.touch(id);
+    this.host.news(card.by, { what: "postcard", id, title: card.title, ride: fleet });
+    this.host.likes(card.by, RIDE_LIKES);
+    this.host.week(id, card.by, card.title, card.x, card.z, false);
+    return [Math.floor(card.x / 256), Math.floor(card.z / 256)];
+  }
+  async view(id) {
+    if (!isCardId(id)) return null;
+    const card = await this.host.cards.open(id);
+    if (!card || card.gone) return null;
+    const who = this.host.whoOf(card.by);
+    const { by, x, z, y, yaw, pitch, dist, look, hour, follow, title, epoch, at } = card;
+    return {
+      id,
+      by,
+      x,
+      z,
+      y,
+      yaw,
+      pitch,
+      dist,
+      look,
+      hour,
+      ...follow ? { follow } : {},
+      title,
+      epoch,
+      at,
+      fleet: who?.brand?.name ?? who?.name ?? "A player",
+      colour: who?.brand?.primary ?? 14827823,
+      now: this.host.epoch(),
+      ...card.pic && !card.picHidden ? { pic: true } : {}
+    };
+  }
+  // ---- pictures: served as the link's preview, reported, and looked at by the developer ---------------
+  /** A postcard's picture as served: the JPEG, or null with none (or hidden). */
+  async picOf(id) {
+    const card = isCardId(id) ? await this.host.cards.open(id) : null;
+    if (!card || card.gone || !card.pic || card.picHidden) return null;
+    const p = await this.host.pics.open(id);
+    return p ? Buffer.from(p.jpg, "base64") : null;
+  }
+  /** Every postcard with a picture, most reported first, for the developer's page. */
+  async withPictures(all) {
+    return all.filter((c) => c && c.pic && !c.gone).map((c) => {
+      const w = this.host.whoOf(c.by);
+      return { id: c.id, title: c.title, fleet: w?.brand?.name ?? w?.name ?? c.by, at: c.pic, opens: c.opens, rides: c.rides, reports: c.reports ?? 0, hidden: !!c.picHidden };
+    }).sort((a, b) => b.reports - a.reports || b.at - a.at).slice(0, 200);
+  }
+  /** The developer takes a picture down (or puts a hidden one back). */
+  async setPicture(id, show) {
+    const card = isCardId(id) ? await this.host.cards.open(id) : null;
+    if (!card || !card.pic) return false;
+    if (show) {
+      card.picHidden = false;
+      card.reports = 0;
+    } else {
+      card.pic = void 0;
+      card.picHidden = false;
+      card.reports = 0;
+      this.host.pics.set(id, null);
+    }
+    this.host.cards.touch(id);
+    return true;
+  }
+  /** The http side: true when it answered. `play` is where the game is served ("/play/" or "/"). */
+  async http(req, res, path, ip, play) {
+    let m = /^\/p\/([a-z0-9]{1,12})\.jpg$/.exec(path);
+    if (m) {
+      const jpg = await this.picOf(m[1]);
+      if (!jpg) {
+        res.writeHead(404, { "content-type": "text/plain" }).end("No picture");
+        return true;
+      }
+      res.writeHead(200, { "content-type": "image/jpeg", "content-length": jpg.length, "cache-control": "public, max-age=600" }).end(req.method === "HEAD" ? void 0 : jpg);
+      return true;
+    }
+    m = /^\/api\/postcard\/([a-z0-9]{1,12})\/report$/.exec(path);
+    if (m) {
+      const head = { "content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*" };
+      if (req.method === "OPTIONS") {
+        res.writeHead(204, { ...head, "access-control-allow-methods": "POST, OPTIONS" }).end();
+        return true;
+      }
+      const card2 = isCardId(m[1]) ? await this.host.cards.open(m[1]) : null;
+      if (req.method !== "POST" || !card2 || !card2.pic) {
+        res.writeHead(404, head).end('{"ok":false}');
+        return true;
+      }
+      const k = `${ip}|${m[1]}`;
+      if (!this.reported.has(k)) {
+        if (this.reported.size > 2e4) this.reported.clear();
+        this.reported.add(k);
+        card2.reports = (card2.reports ?? 0) + 1;
+        if (card2.reports >= POSTCARD.picReports) card2.picHidden = true;
+        this.host.cards.touch(m[1]);
+      }
+      res.writeHead(200, head).end('{"ok":true}');
+      return true;
+    }
+    m = /^\/api\/postcard\/([a-z0-9]{1,12})$/.exec(path);
+    if (m) {
+      const v2 = await this.view(m[1]);
+      const head = { "content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*", "cache-control": "no-store" };
+      if (!v2) {
+        res.writeHead(404, head).end(JSON.stringify({ error: "gone" }));
+        return true;
+      }
+      this.countOpen(v2.id, ip);
+      this.host.count("card-read");
+      res.writeHead(200, head).end(JSON.stringify(v2));
+      return true;
+    }
+    m = /^\/p\/([a-z0-9]{1,12})\/?$/.exec(path);
+    if (!m) return false;
+    const v = await this.view(m[1]);
+    this.host.count("card-link");
+    const proto = String(req.headers["x-forwarded-proto"] ?? "").split(",")[0].trim() || "http";
+    const origin = `${proto}://${String(req.headers.host ?? "localhost")}`;
+    const go = `${play}?postcard=${encodeURIComponent(m[1])}`;
+    const title = v ? `${v.title} \xB7 TinyFleet` : "TinyFleet";
+    const card = v ? this.host.cards.peek(v.id) : null;
+    const image = v?.pic && card?.pic ? `${origin}/p/${v.id}.jpg?v=${card.pic}` : `${origin}/media/hero.jpg`;
+    const desc = v ? `A postcard from ${v.fleet}. TinyFleet is a tiny world of towns, roads and fleets: open the link and you\u2019re there, in your browser.` : "A tiny world of towns, roads and fleets, in your browser.";
+    const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(title)}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:type" content="website"><meta property="og:site_name" content="TinyFleet">
+<meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}">
+<meta property="og:url" content="${esc(`${origin}/p/${m[1]}`)}"><meta property="og:image" content="${esc(image)}"><meta name="twitter:image" content="${esc(image)}">
+<meta name="twitter:card" content="summary_large_image">
+<meta http-equiv="refresh" content="0;url=${esc(go)}">
+<script>location.replace(${JSON.stringify(go)})</script>
+</head><body style="font-family:system-ui,sans-serif;background:#f4f7f1;color:#1f2b33;display:grid;place-items:center;min-height:100vh;margin:0">
+<a href="${esc(go)}">Open TinyFleet</a></body></html>`;
+    res.writeHead(200, { "content-type": "text/html; charset=utf-8", "cache-control": "no-cache" }).end(req.method === "HEAD" ? void 0 : html);
+    return true;
+  }
+  /** An open, once an address a day. */
+  countOpen(id, ip) {
+    const day = Math.floor(Date.now() / DAY);
+    const k = `${ip}|${id}`;
+    if (this.opened.get(k) === day) return;
+    if (this.opened.size > 5e4) this.opened.clear();
+    this.opened.set(k, day);
+    const card = this.host.cards.peek(id);
+    if (!card) return;
+    card.opens++;
+    this.host.cards.touch(id);
+    if (MILESTONES.includes(card.opens)) this.host.news(card.by, { what: "postcard", id, title: card.title, opens: card.opens });
+    this.host.week(id, card.by, card.title, card.x, card.z, true);
   }
 };
 
@@ -11350,6 +11749,8 @@ var World = class {
   peak = 24;
   /** Named landforms on this cell, for the map, the labels, the props and the tourist board. */
   landmarks = [];
+  /** Brooks: thin streams drawn over the ground, each a polyline of local tiles x, z, ... (world/brooks.ts). */
+  brooks = [];
   towns = [];
   ports = [];
   /** Every town and harbour building, in the order they were built; a building's `uid` indexes this. */
@@ -13203,6 +13604,16 @@ var TAU = Math.PI * 2;
 // src/world/landformsLocal.ts
 var SWAMP = REGION_KINDS.indexOf("mangrove") + 1;
 
+// src/world/brooks.ts
+var SPRING = {
+  [5 /* Forest */]: 0.75,
+  [4 /* Hills */]: 0.7,
+  [3 /* Plains */]: 0.45,
+  [9 /* Mountain */]: 0.55,
+  [6 /* Farm */]: 0.35,
+  [15 /* Marsh */]: 0.2
+};
+
 // src/world/biomes.ts
 function hex(h) {
   return [(h >> 16 & 255) / 255, (h >> 8 & 255) / 255, (h & 255) / 255];
@@ -13477,7 +13888,8 @@ var KIND_SPEC = {
   ballCourt: { w: [4, 5], d: 3, zone: "mid", lot: 12 /* Gravel */, allow: 3, apart: 20 },
   // the classical world: the amphitheatre out by the edge, the aqueduct striding in from the country,
   // and the forum taking the middle of town
-  colosseum: { w: [6, 7], d: [5, 6], zone: "edge", lot: 12 /* Gravel */, gap: 1, apart: 40 },
+  // (one a town, however big: the apart is wider than any town)
+  colosseum: { w: [6, 7], d: [5, 6], zone: "edge", lot: 12 /* Gravel */, gap: 1, apart: 400 },
   // an open lot: a street runs under the arches, and a solid one nine tiles long can wall a town's
   // road network off from its causeway landing (npm run seams caught exactly that)
   aqueduct: { w: [6, 9], d: 2, zone: "edge", lot: 1 /* Lawn */, along: "wide", apart: 30, frontage: false, solid: false },
@@ -13713,8 +14125,64 @@ var KIND_SPEC = {
   centraalStation: { w: 4, d: 2, zone: "edge", lot: 2 /* Paved */, roadside: true, waterside: "prefer", apart: 60 },
   westerkerk: { w: 2, d: 3, zone: "core", lot: 7 /* Plaza */, apart: 30 },
   deGooyer: { w: 1, d: 1, zone: "mid", lot: 2 /* Paved */, waterside: "prefer", apart: 30 },
-  canalHouses: { w: [3, 4], d: 1, floors: [2, 3], zone: "any", lot: 2 /* Paved */ }
+  canalHouses: { w: [3, 4], d: 1, floors: [2, 3], zone: "any", lot: 2 /* Paved */ },
+  // Rome: one of each a city, however big (apart is wider than any town; world/towns.ts STYLE_CORE puts the big ones down early, before the filler packs the
+  // middle); the chariot course is long and runs its front along a street out at the edge
+  circusMaximus: { w: [9, 11], d: [3, 4], zone: "edge", lot: 12 /* Gravel */, gap: 1, apart: 400 },
+  pantheon: { w: 2, d: 3, zone: "core", lot: 7 /* Plaza */, apart: 400 },
+  stPeters: { w: 4, d: [5, 6], zone: "mid", lot: 7 /* Plaza */, gap: 1, apart: 400 },
+  vittoriano: { w: 4, d: 3, zone: "core", lot: 7 /* Plaza */, apart: 400 },
+  treviFountain: { w: 3, d: 3, zone: "core", lot: 7 /* Plaza */, apart: 400 },
+  spanishSteps: { w: 3, d: 3, zone: "core", lot: 7 /* Plaza */, apart: 400 },
+  // Osaka: one canal stretch, tower, castle and pair of sky towers a town; an arcade every few streets
+  dotonbori: { w: [5, 6], d: 3, zone: "core", lot: 2 /* Paved */, apart: 400 },
+  tsutenkaku: { w: 2, d: 2, zone: "core", lot: 2 /* Paved */, apart: 400 },
+  osakaCastle: { w: 4, d: 4, zone: "core", lot: 3 /* Park */, gap: 1, apart: 400 },
+  shotengai: { w: 3, d: 2, floors: 2, zone: "mid", lot: 2 /* Paved */, apart: 10 },
+  umedaSky: { w: 2, d: 2, floors: 40, zone: "core", lot: 7 /* Plaza */, apart: 400 },
+  // places to eat out and the arcade (world/eateries.ts says which a town gets): small fronts on the shopping streets
+  arcade: { w: 2, d: 1, zone: "mid", lot: 2 /* Paved */, apart: 10 },
+  ramenShop: { w: 1, d: 1, floors: [1, 2], zone: "mid", lot: 2 /* Paved */, apart: 4 },
+  sushiBar: { w: 1, d: 1, floors: [1, 2], zone: "core", lot: 2 /* Paved */, apart: 4 },
+  dumplingHouse: { w: 1, d: 1, floors: [1, 2], zone: "mid", lot: 2 /* Paved */, apart: 4 },
+  noodleBar: { w: 1, d: 1, floors: 1, zone: "mid", lot: 2 /* Paved */, apart: 4 },
+  trattoria: { w: 1, d: 1, floors: [1, 2], zone: "core", lot: 7 /* Plaza */, apart: 4 },
+  curryHouse: { w: 1, d: 1, floors: [1, 2], zone: "mid", lot: 2 /* Paved */, apart: 4 },
+  deli: { w: 1, d: 1, floors: [1, 2], zone: "core", lot: 2 /* Paved */, apart: 4 },
+  taqueria: { w: 1, d: 1, floors: 1, zone: "mid", lot: 2 /* Paved */, apart: 4 },
+  kebabShop: { w: 1, d: 1, floors: [1, 2], zone: "mid", lot: 2 /* Paved */, apart: 4 },
+  chippy: { w: 1, d: 1, floors: [1, 2], zone: "mid", lot: 2 /* Paved */, apart: 4 }
 };
+
+// src/world/eateries.ts
+var FOOD_KINDS = [
+  "ramenShop",
+  "sushiBar",
+  "dumplingHouse",
+  "noodleBar",
+  "trattoria",
+  "curryHouse",
+  "deli",
+  "taqueria",
+  "kebabShop",
+  "chippy"
+];
+var EATERY_KINDS = ["arcade", ...FOOD_KINDS];
+var EATERY_INFO = {
+  arcade: { label: "Arcade", icon: "\u{1F579}\uFE0F", cuisine: "games" },
+  ramenShop: { label: "Ramen shop", icon: "\u{1F35C}", cuisine: "Japanese" },
+  sushiBar: { label: "Sushi bar", icon: "\u{1F363}", cuisine: "Japanese" },
+  dumplingHouse: { label: "Dumpling house", icon: "\u{1F95F}", cuisine: "Chinese" },
+  noodleBar: { label: "Noodle bar", icon: "\u{1F372}", cuisine: "Southeast Asian" },
+  trattoria: { label: "Trattoria", icon: "\u{1F355}", cuisine: "Italian" },
+  curryHouse: { label: "Curry house", icon: "\u{1F35B}", cuisine: "Indian" },
+  deli: { label: "Deli", icon: "\u{1F96A}", cuisine: "sandwiches" },
+  taqueria: { label: "Taqueria", icon: "\u{1F32E}", cuisine: "Mexican" },
+  kebabShop: { label: "Kebab shop", icon: "\u{1F959}", cuisine: "Turkish" },
+  chippy: { label: "Fish & chips", icon: "\u{1F41F}", cuisine: "fish and chips" }
+};
+var EATERY_LABEL = Object.fromEntries(EATERY_KINDS.map((k) => [k, EATERY_INFO[k].label]));
+var EATERY_ICON = Object.fromEntries(EATERY_KINDS.map((k) => [k, EATERY_INFO[k].icon]));
 
 // src/world/skiFields.ts
 var FAR_AIR = 0.45 + STEP;
@@ -13775,12 +14243,19 @@ var FINISH = {
   lavenderAbbey: 5 /* Yard */
 };
 
+// src/world/fences.ts
+var RAIL_KEEP_CLEAR = 1 /* Track */ | 4 /* Deck */ | 16 /* Pad */ | 32 /* Loop */ | 128 /* Reserved */;
+var FENCE_RULES = [null, ...REGION_KINDS.map((k) => {
+  const c = REGIONS[k].clutter;
+  return { lantern: (c.stoneLantern ?? 0) * 12, snowFence: (c.snowFence ?? 0) * 12, drystone: c.drystoneWall !== void 0 };
+})];
+
 // src/world/geology.ts
 var SOURCE_MIN = SEA + 13;
 
 // src/world/generate.ts
 var NN = N4 * N4;
-var GEN_VERSION = 44;
+var GEN_VERSION = 45;
 var PAD = 40;
 var P = N4 + 2 * PAD;
 var PP = P * P;
@@ -13895,6 +14370,26 @@ var MAX_PLAYERS = Number(process.env.MAX_PLAYERS) || 100;
 var HERE = fileURLToPath(new URL(".", import.meta.url));
 var SITE = existsSync(join2(HERE, "play", "index.html")) && !process.env.PUBLIC_DIR ? HERE : null;
 var PUBLIC = SITE ? join2(HERE, "play") : resolve(process.env.PUBLIC_DIR || [join2(HERE, "public"), join2(HERE, "..", "..", "dist"), join2(process.cwd(), "dist")].find((d) => existsSync(join2(d, "index.html"))) || join2(HERE, "public"));
+var guests = /* @__PURE__ */ new Set();
+var MAX_GUESTS = Number(process.env.MAX_GUESTS) || GUEST.max;
+var AUTO_PER_HOUR = 3;
+var AUTO_KEEP_DAYS = 14;
+var autoMade = /* @__PURE__ */ new Map();
+var AUTO_A = ["Amber", "Brisk", "Copper", "Dusty", "Ember", "Fable", "Gale", "Hazel", "Indigo", "Jolly", "Kestrel", "Lucky", "Maple", "Nimble", "Olive", "Plucky", "Quick", "Rusty", "Sunny", "Tidy", "Umber", "Velvet", "Willow", "Zesty"];
+var AUTO_B = ["Heron", "Otter", "Badger", "Finch", "Marten", "Plover", "Stoat", "Wren", "Lark", "Hare", "Vole", "Gull", "Newt", "Crane", "Robin", "Fox", "Tern", "Mole", "Owl", "Pike", "Swift", "Teal", "Yak", "Elk"];
+var funnel = /* @__PURE__ */ new Map();
+function count(kind) {
+  const day = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+  const d = funnel.get(day) ?? {};
+  d[kind] = (d[kind] ?? 0) + 1;
+  funnel.set(day, d);
+}
+function step(doc, kind) {
+  if (!doc.via || doc.viaDone?.includes(kind)) return;
+  (doc.viaDone ??= []).push(kind);
+  players.touch(doc.id);
+  count(kind);
+}
 var store;
 var world;
 var worldDirty = false;
@@ -13902,6 +14397,9 @@ var players;
 var cells;
 var community;
 var marks;
+var postcards;
+var cards;
+var pics;
 var board = { players: {}, cpu: {} };
 var boardDirty = false;
 var conns = /* @__PURE__ */ new Map();
@@ -13976,7 +14474,12 @@ function upcomingHome() {
   if (!nextHome || world.homes[cellKey(nextHome.at[0], nextHome.at[1])] || Date.now() - nextHome.t > 6e5) nextHome = { at: pickHome(), t: Date.now() };
   return nextHome.at;
 }
-function takeHome() {
+function takeHome(near) {
+  if (near) {
+    const open = (cx, cz) => Math.max(Math.abs(cx), Math.abs(cz)) <= SPAWN_REACH && !world.homes[cellKey(cx, cz)] && Math.max(Math.abs(cx - near[0]), Math.abs(cz - near[1])) <= 3;
+    const best = rankSpawns(seedHash, near, 3, Math.random(), open)[0];
+    if (best?.ok) return [best.cx, best.cz];
+  }
   const at = upcomingHome();
   nextHome = null;
   return at;
@@ -14003,7 +14506,7 @@ function pickHomeAnywhere() {
 }
 function roomOf(c, make) {
   let r = rooms.get(c);
-  if (!r && make) rooms.set(c, r = { subs: /* @__PURE__ */ new Map(), host: null });
+  if (!r && make) rooms.set(c, r = { subs: /* @__PURE__ */ new Map(), host: null, watchers: /* @__PURE__ */ new Set() });
   return r ?? null;
 }
 var awake = (x) => Date.now() - x.lastMove < 6e3;
@@ -14011,7 +14514,8 @@ function rehost(c) {
   const r = rooms.get(c);
   if (!r) return;
   if (!r.subs.size) {
-    rooms.delete(c);
+    if (r.watchers.size) r.host = null;
+    else rooms.delete(c);
     return;
   }
   const inside = (x) => x.cell === c;
@@ -14032,6 +14536,12 @@ function toRoom(c, m, but) {
   if (!r) return;
   const text = JSON.stringify(m);
   for (const x of r.subs.keys()) if (x !== but && x.ws.readyState === 1) x.ws.send(text);
+  for (const g of r.watchers) if (g.ws.readyState === 1) g.ws.send(text);
+}
+function toGuests(m) {
+  if (!guests.size) return;
+  const text = JSON.stringify(m);
+  for (const g of guests) if (g.ws.readyState === 1) g.ws.send(text);
 }
 function peopleIn(doc) {
   const ids = /* @__PURE__ */ new Set();
@@ -14074,6 +14584,96 @@ async function subscribe(c, want) {
     send(c, { t: "cell", c: k, doc: shared, host: (r.host ?? c).pid, people: peopleIn(doc) });
   }
 }
+async function guestSubscribe(g, want) {
+  const next = new Set(want.filter((k) => CELL2.test(k)).slice(0, GUEST.cells));
+  for (const k of [...g.subs]) {
+    if (next.has(k)) continue;
+    g.subs.delete(k);
+    const r = rooms.get(k);
+    if (r) {
+      r.watchers.delete(g);
+      if (!r.subs.size && !r.watchers.size) rooms.delete(k);
+    }
+    if (g.held.delete(k)) cells.hold(`${world.epoch}:${k}`, -1);
+  }
+  for (const k of next) {
+    if (g.subs.has(k)) continue;
+    g.subs.add(k);
+    const doc = await cells.open(`${world.epoch}:${k}`);
+    if (!guests.has(g) || !g.subs.has(k) || g.held.has(k)) continue;
+    g.held.add(k);
+    cells.hold(`${world.epoch}:${k}`, 1);
+    const r = roomOf(k, true);
+    r.watchers.add(g);
+    const { usedBy: _kept, laps, ...rest } = doc;
+    const shared = laps ? { ...rest, laps: Object.fromEntries(Object.entries(laps).map(([id, { g: _g, ...row }]) => [id, row])) } : rest;
+    send(g.ws, { t: "cell", c: k, doc: shared, host: r.host?.pid ?? "", people: peopleIn(doc) });
+  }
+}
+function guestHello(ws, ip, m) {
+  if (m.v !== PROTOCOL) {
+    refuse(ws, "version", m.v < PROTOCOL ? "The game has been updated: reload." : "This server is running an older version of the game.");
+    return null;
+  }
+  if (m.gen !== world.gen) {
+    refuse(ws, "gen", m.gen < world.gen ? "The game has been updated: reload." : "This server\u2019s world was made with an older version of the game.");
+    return null;
+  }
+  if (guests.size >= MAX_GUESTS) {
+    refuse(ws, "full", "There are a lot of visitors just now.");
+    return null;
+  }
+  if ([...guests].filter((g2) => g2.ip === ip).length >= GUEST.perIp) {
+    refuse(ws, "full", "This address is already watching in a few windows.");
+    return null;
+  }
+  const now = Date.now();
+  const g = { ws, ip, subs: /* @__PURE__ */ new Set(), held: /* @__PURE__ */ new Set(), at: null, last: now, msgs: 0, msgsAt: now };
+  guests.add(g);
+  count("card-guest");
+  send(ws, {
+    t: "guest",
+    world: { seed: world.seed, gen: world.gen, hours: world.hours },
+    players: conns.size,
+    online: [...conns.values()].map((x) => ({ who: x.who, c: x.cell, look: x.look ?? void 0 }))
+  });
+  return g;
+}
+async function guestHandle(g, m) {
+  g.last = Date.now();
+  switch (m.t) {
+    case "sub":
+      await guestSubscribe(g, Array.isArray(m.cells) ? m.cells.map(String) : []);
+      return;
+    case "watch":
+      g.at = typeof m.c === "string" && CELL2.test(m.c) ? m.c : g.at;
+      return;
+    case "bye":
+      g.ws.close();
+      return;
+    default:
+      return;
+  }
+}
+function dropGuest(g) {
+  if (!guests.delete(g)) return;
+  for (const k of g.subs) {
+    const r = rooms.get(k);
+    if (r) {
+      r.watchers.delete(g);
+      if (!r.subs.size && !r.watchers.size) rooms.delete(k);
+    }
+    if (g.held.delete(k)) cells.hold(`${world.epoch}:${k}`, -1);
+  }
+  g.subs.clear();
+}
+function autoName() {
+  for (let i = 0; i < 60; i++) {
+    const n = `${AUTO_A[Math.floor(Math.random() * AUTO_A.length)]}${AUTO_B[Math.floor(Math.random() * AUTO_B.length)]}${i >= 20 ? Math.floor(Math.random() * 90 + 10) : ""}`;
+    if (!world.names[n.toLowerCase()]) return n;
+  }
+  return `Fleet${randomBytes2(3).toString("hex")}`;
+}
 function moved(c, to) {
   if (to === c.cell) return;
   const was = c.cell;
@@ -14094,7 +14694,17 @@ async function hello(ws, ip, m) {
     refuse(ws, "gen", m.gen < world.gen ? "The game has been updated: reload to play online." : "This server\u2019s world was made with an older version of the game.");
     return null;
   }
-  const name = String(m.name ?? "").trim();
+  const now = Date.now();
+  const auto = !!m.create?.auto;
+  if (auto) {
+    const made = (autoMade.get(ip) ?? []).filter((t) => now - t < 36e5);
+    if (made.length >= AUTO_PER_HOUR) {
+      refuse(ws, "locked", "A few fleets have been made from here this hour: make one with a name and a PIN instead.", false);
+      return null;
+    }
+    autoMade.set(ip, [...made, now]);
+  }
+  const name = auto ? autoName() : String(m.name ?? "").trim();
   if (!NAME.test(name)) {
     refuse(ws, "name", "A name is 3 to 16 letters, digits, - or _.", false);
     return null;
@@ -14102,14 +14712,13 @@ async function hello(ws, ip, m) {
   const lower = name.toLowerCase();
   let pid = world.names[lower];
   let doc = pid ? await players.open(pid) : null;
-  const now = Date.now();
-  if (!doc || !doc.hash) {
+  if (!doc || !doc.hash && !doc.auto) {
     const pin = String(m.pin ?? "");
     if (!m.create) {
       refuse(ws, "new", `Nobody is called ${name} here yet.`, false);
       return null;
     }
-    if (pin.length < 4 || pin.length > 32) {
+    if (!auto && (pin.length < 4 || pin.length > 32)) {
       refuse(ws, "pin", "A PIN is 4 to 32 characters.", false);
       return null;
     }
@@ -14121,21 +14730,29 @@ async function hello(ws, ip, m) {
     signups.set(ip, [...made, now]);
     pid = `p:${world.nextId++}`;
     const salt = randomBytes2(12).toString("hex");
-    const home = takeHome();
+    const via = auto && isCardId(m.create.from) ? m.create.from : void 0;
+    const near = via ? await postcards.ride(via, cleanBrand(m.create.brand)?.name ?? name) : null;
+    const home = takeHome(near ?? void 0);
     doc = await players.open(pid);
     Object.assign(doc, {
       id: pid,
       name,
       salt,
-      hash: await pinHash(pin, salt),
+      hash: auto ? "" : await pinHash(pin, salt),
       brand: cleanBrand(m.create.brand),
       home,
       epoch: world.epoch,
       created: now,
       seen: now,
       owed: 0,
-      record: null
+      record: null,
+      ...auto ? { auto: true } : {},
+      ...via ? { via } : {}
     });
+    if (auto) {
+      (world.autos ??= {})[pid] = now;
+      count("card-car");
+    }
     world.names[lower] = pid;
     world.homes[cellKey(home[0], home[1])] = pid;
     world.people[pid] = { name, brand: doc.brand };
@@ -14144,6 +14761,10 @@ async function hello(ws, ip, m) {
     console.log(`new fleet: ${name} (${pid}) at ${home.join(",")}`);
   } else {
     const byToken = !!m.token && !!doc.token && now - (doc.tokenAt ?? 0) < 90 * 864e5 && sha(m.token) === doc.token;
+    if (!byToken && doc.auto) {
+      refuse(ws, "pin", `${doc.name} has no PIN yet: it can only be played in the browser that made it.`, false);
+      return null;
+    }
     if (!byToken) {
       const mine = `${ip}|${doc.id}`;
       doc.fails = (doc.fails ?? []).filter((t) => now - t < PIN_WINDOW);
@@ -14216,6 +14837,7 @@ async function hello(ws, ip, m) {
   };
   const owed = Math.round(doc.owed || 0);
   doc.owed = 0;
+  if (doc.auto) (world.autos ??= {})[pid] = now;
   send(ws, {
     t: "welcome",
     you: c.who,
@@ -14224,11 +14846,13 @@ async function hello(ws, ip, m) {
     home: doc.home,
     token,
     owed,
+    ...doc.auto ? { auto: true } : {},
     online: [...conns.values()].map((x) => ({ who: x.who, c: x.cell, look: x.look ?? void 0 })),
     community: community.welcome(doc),
     marks: marks.welcome(doc)
   });
   for (const x of conns.values()) send(x, { t: "on", who: c.who, c: c.cell });
+  toGuests({ t: "on", who: c.who, c: c.cell });
   conns.set(pid, c);
   if (board.players[pid]) {
     board.players[pid].online = true;
@@ -14246,12 +14870,17 @@ function drop(c, tell = true) {
   }
   c.subs.clear();
   c.doc.seen = Date.now();
+  if (c.doc.auto && world.autos) world.autos[c.pid] = c.doc.seen;
+  if (c.doc.seen - c.joined >= 6e5) step(c.doc, "card-stayed");
   players.touch(c.pid);
   players.hold(c.pid, -1);
-  if (tell) for (const x of conns.values()) send(x, { t: "off", id: c.pid });
+  if (tell) {
+    for (const x of conns.values()) send(x, { t: "off", id: c.pid });
+    toGuests({ t: "off", id: c.pid });
+  }
   console.log(`- ${c.doc.name} (${conns.size} online)`);
 }
-var num = (v) => typeof v === "number" && Number.isFinite(v) ? v : 0;
+var num2 = (v) => typeof v === "number" && Number.isFinite(v) ? v : 0;
 var poseOf = (p) => Array.isArray(p) && p.length >= 7 && p.every((v) => typeof v === "number" && Number.isFinite(v)) ? p.slice(0, 9) : null;
 async function handle(c, m) {
   switch (m.t) {
@@ -14274,6 +14903,7 @@ async function handle(c, m) {
       if (!m.look || typeof m.look.m !== "string") return;
       c.look = { m: m.look.m.slice(0, 40), p: m.look.p, units: Array.isArray(m.look.units) ? m.look.units.slice(0, 24) : [] };
       for (const x of conns.values()) if (x !== c) send(x, { t: "look", id: c.pid, look: c.look });
+      toGuests({ t: "look", id: c.pid, look: c.look });
       return;
     }
     case "brand": {
@@ -14379,9 +15009,9 @@ async function handle(c, m) {
     case "credit": {
       const t = TOWN2.exec(String(m.town));
       const host = t ? rooms.get(t[1])?.host : null;
-      const amt = num(m.amt);
+      const amt = num2(m.amt);
       if (!host || host === c || !(amt > 0) || amt > 1e6) return;
-      send(host, { t: "credit", town: m.town, by: c.pid, amt, lot: typeof m.lot === "string" && LOT2.test(m.lot) ? m.lot : void 0, lotAmt: num(m.lotAmt) || void 0, dir: m.dir === "out" ? "out" : "in" });
+      send(host, { t: "credit", town: m.town, by: c.pid, amt, lot: typeof m.lot === "string" && LOT2.test(m.lot) ? m.lot : void 0, lotAmt: num2(m.lotAmt) || void 0, dir: m.dir === "out" ? "out" : "in" });
       return;
     }
     case "deeds": {
@@ -14396,8 +15026,8 @@ async function handle(c, m) {
           if (w) send(c, { t: "deedDeny", key, who: w });
           continue;
         }
-        const row = { by: c.pid, name: String(v.name ?? "").replace(/[<>&"`\u0000-\u001f]/g, "").slice(0, 60), ceil: Math.max(0, Math.min(1e7, num(v.ceil))) };
-        if (v.hq !== void 0) row.hq = Math.max(0, Math.min(9, Math.round(num(v.hq))));
+        const row = { by: c.pid, name: String(v.name ?? "").replace(/[<>&"`\u0000-\u001f]/g, "").slice(0, 60), ceil: Math.max(0, Math.min(1e7, num2(v.ceil))) };
+        if (v.hq !== void 0) row.hq = Math.max(0, Math.min(9, Math.round(num2(v.hq))));
         const rects = Array.isArray(v.rects) ? v.rects.filter((r) => Array.isArray(r) && r.length === 4 && r.every((n) => Number.isInteger(n) && n >= 0 && n <= 256) && r[2] <= 64 && r[3] <= 64).slice(0, 24) : have?.rects;
         if (rects?.length) row.rects = rects;
         (doc.deeds ??= {})[key] = row;
@@ -14437,7 +15067,7 @@ async function handle(c, m) {
         if (!row || row.by === c.pid) continue;
         const t = rentToday.get(key);
         const taken = t && t[0] === day ? t[1] : 0;
-        const amt = Math.floor(Math.min(num(v), Math.max(0, row.ceil - taken)));
+        const amt = Math.floor(Math.min(num2(v), Math.max(0, row.ceil - taken)));
         if (!(amt > 0)) continue;
         rentToday.set(key, [day, taken + amt]);
         const owner2 = conns.get(row.by);
@@ -14457,6 +15087,7 @@ async function handle(c, m) {
       if (m.record && typeof m.record === "object") {
         c.doc.record = m.record;
         players.touch(c.pid);
+        if (Number(m.record.delivered) > 0) step(c.doc, "card-delivered");
       }
       const me = m.board?.me;
       if (me) {
@@ -14465,9 +15096,9 @@ async function handle(c, m) {
           name: c.doc.brand?.name ?? c.doc.name,
           by: c.doc.name,
           cpu: false,
-          worth: Math.round(num(me.worth)),
-          units: Math.round(num(me.units)),
-          towns: Math.round(num(me.towns)),
+          worth: Math.round(num2(me.worth)),
+          units: Math.round(num2(me.units)),
+          towns: Math.round(num2(me.towns)),
           primary: c.doc.brand?.primary ?? 14827823,
           accent: c.doc.brand?.accent ?? 16777215,
           logo: c.doc.brand?.logo ?? "",
@@ -14475,7 +15106,7 @@ async function handle(c, m) {
           ...community.boardBits(c.doc)
         };
         boardDirty = true;
-        marks.worth(c.pid, Math.round(num(me.worth)));
+        marks.worth(c.pid, Math.round(num2(me.worth)));
       }
       for (const row of m.board?.cpu ?? []) {
         const home = String(row?.id ?? "").split("/")[0];
@@ -14484,11 +15115,11 @@ async function handle(c, m) {
           id: String(row.id).slice(0, 40),
           name: String(row.name ?? "").slice(0, 40),
           cpu: true,
-          worth: Math.round(num(row.worth)),
-          units: Math.round(num(row.units)),
-          towns: Math.round(num(row.towns)),
-          primary: num(row.primary) & 16777215,
-          accent: num(row.accent) & 16777215,
+          worth: Math.round(num2(row.worth)),
+          units: Math.round(num2(row.units)),
+          towns: Math.round(num2(row.towns)),
+          primary: num2(row.primary) & 16777215,
+          accent: num2(row.accent) & 16777215,
           logo: [...String(row.logo ?? "")].slice(0, 2).join(""),
           v: metricValues(row.v)
         };
@@ -14513,6 +15144,46 @@ async function handle(c, m) {
     case "chat":
       chat(c, String(m.text ?? ""));
       return;
+    case "keep": {
+      const nm = String(m.name ?? "").trim(), pin = String(m.pin ?? "");
+      const no = (why) => send(c, { t: "kept", you: null, why });
+      if (!c.doc.auto) {
+        no("This fleet already has a PIN.");
+        return;
+      }
+      if (!NAME.test(nm)) {
+        no("A name is 3 to 16 letters, digits, - or _.");
+        return;
+      }
+      const lower = nm.toLowerCase();
+      if (world.names[lower] && world.names[lower] !== c.pid) {
+        no(`Somebody is already called ${nm}: pick another.`);
+        return;
+      }
+      if (pin.length < 4 || pin.length > 32) {
+        no("A PIN is 4 to 32 characters.");
+        return;
+      }
+      delete world.names[c.doc.name.toLowerCase()];
+      world.names[lower] = c.pid;
+      c.doc.salt = randomBytes2(12).toString("hex");
+      c.doc.hash = await pinHash(pin, c.doc.salt);
+      c.doc.name = nm;
+      delete c.doc.auto;
+      if (world.autos) delete world.autos[c.pid];
+      c.who = { ...c.who, name: nm };
+      world.people[c.pid] = { name: nm, brand: c.doc.brand };
+      if (board.players[c.pid]) {
+        board.players[c.pid].by = nm;
+        boardDirty = true;
+      }
+      worldDirty = true;
+      players.touch(c.pid);
+      step(c.doc, "card-kept");
+      send(c, { t: "kept", you: c.who });
+      for (const x of conns.values()) if (x !== c) send(x, { t: "on", who: c.who, c: c.cell });
+      return;
+    }
     case "friend": {
       const id = String(m.id ?? "");
       const list = c.doc.friends ??= [];
@@ -14542,7 +15213,11 @@ async function handle(c, m) {
       c.ws.close();
       return;
     default:
-      if (!await community.handle(c, m)) await marks.handle(c, m);
+      if (c.doc.auto && (m.t === "sign" || m.t === "suggest" || m.t === "name")) {
+        send(c, { t: "chat", kind: "sys", text: "Keep your fleet first (pause \u2192 Keep this fleet): then you can put up signs and name things." });
+        return;
+      }
+      if (!await community.handle(c, m) && !await postcards.handle(c, m)) await marks.handle(c, m);
       return;
   }
 }
@@ -14584,6 +15259,10 @@ function chat(c, raw) {
   }
   c.chat.push(now);
   const w = /^\/(?:w|whisper|tell|msg)\s+(\S+)\s+([\s\S]+)$/i.exec(text);
+  if (w && c.doc.auto) {
+    send(c, { t: "chat", kind: "sys", text: "Keep your fleet first (pause \u2192 Keep this fleet): then you can whisper." });
+    return;
+  }
   if (w) {
     const to = [...conns.values()].find((x) => x.doc.name.toLowerCase() === w[1].toLowerCase());
     if (!to) {
@@ -14604,8 +15283,9 @@ function chat(c, raw) {
     return;
   }
   let heard = 0;
+  const reach = c.doc.auto ? 0 : CHAT_CELLS;
   for (const x of conns.values()) {
-    if (cheb(c.cell, x.cell) > CHAT_CELLS) continue;
+    if (cheb(c.cell, x.cell) > reach) continue;
     send(x, { t: "chat", kind: "say", from: c.pid, name: c.doc.name, text });
     if (x !== c) heard++;
   }
@@ -14623,6 +15303,16 @@ function beat() {
     }
     if (a.length) send(to, { t: "mv", a, f });
   }
+  for (const g of guests) {
+    if (!g.at) continue;
+    const a = [], f = [];
+    for (const m of movers) {
+      if (cheb(m.cell, g.at) > SEE_CELLS) continue;
+      a.push([m.pid, ...m.pose]);
+      for (const u of m.fleet) f.push([m.pid, ...u]);
+    }
+    if (a.length) send(g.ws, { t: "mv", a, f });
+  }
   for (const m of movers) m.moved = false;
 }
 var lastClock = Date.now();
@@ -14635,12 +15325,21 @@ function clock() {
   worldDirty = true;
 }
 function tick() {
-  if (!conns.size) return;
+  const now = Date.now();
+  for (const g of [...guests]) if (now - g.last > GUEST.idle) {
+    g.ws.close();
+    dropGuest(g);
+  }
+  if (!conns.size) {
+    if (guests.size) toGuests({ t: "tick", hours: world.hours, at: {} });
+    return;
+  }
   for (const [k, r] of rooms) if (r.host && !awake(r.host)) rehost(k);
   const at = {};
   for (const c of conns.values()) at[c.pid] = c.cell;
   const text = JSON.stringify({ t: "tick", hours: world.hours, at });
   for (const c of conns.values()) if (c.ws.readyState === 1) c.ws.send(text);
+  for (const g of guests) if (g.ws.readyState === 1) g.ws.send(text);
   community.beat();
   marks.beat();
 }
@@ -14649,9 +15348,16 @@ async function flush(evict = true) {
   if (flushing) return;
   flushing = true;
   try {
+    sweepAutos();
     if (worldDirty) {
       worldDirty = false;
       await store.set("world", world);
+    }
+    for (const [day, n] of [...funnel]) {
+      funnel.delete(day);
+      const doc = await store.get(`visits:${day}`) ?? { day, n: {}, rows: [] };
+      for (const [k, v] of Object.entries(n)) doc.n[k] = (doc.n[k] ?? 0) + v;
+      await store.set(`visits:${day}`, doc);
     }
     if (boardDirty) {
       boardDirty = false;
@@ -14659,12 +15365,33 @@ async function flush(evict = true) {
     }
     await community.flush();
     await marks.flush();
+    await cards.flush(evict);
+    await pics.flush(evict);
     await players.flush(evict);
     await cells.flush(evict);
   } catch (e) {
     console.error("flush failed:", e.message);
   } finally {
     flushing = false;
+  }
+}
+var sweptAt = 0;
+function sweepAutos() {
+  const now = Date.now();
+  if (now - sweptAt < 36e5 || !world.autos) return;
+  sweptAt = now;
+  for (const [pid, seen] of Object.entries(world.autos)) {
+    if (conns.has(pid) || now - seen < AUTO_KEEP_DAYS * 864e5) continue;
+    const name = world.people[pid]?.name;
+    if (name && world.names[name.toLowerCase()] === pid) delete world.names[name.toLowerCase()];
+    for (const [k, v] of Object.entries(world.homes)) if (v === pid) delete world.homes[k];
+    delete world.autos[pid];
+    if (board.players[pid]) {
+      delete board.players[pid];
+      boardDirty = true;
+    }
+    worldDirty = true;
+    console.log(`let go: ${name ?? pid}, a one-click fleet never kept`);
   }
 }
 var TYPES = {
@@ -14722,6 +15449,10 @@ function sendFile(req, res, file, head) {
   }
   createReadStream(file).pipe(res);
 }
+function ipOf2(req) {
+  const fwd = String(req.headers["x-forwarded-for"] ?? "").split(",").map((h) => h.trim()).filter(Boolean);
+  return String(req.headers["x-real-ip"] ?? "").trim() || fwd[fwd.length - 1] || String(req.socket.remoteAddress ?? "");
+}
 function http(req, res) {
   let path;
   try {
@@ -14734,8 +15465,22 @@ function http(req, res) {
     res.writeHead(200, { "content-type": "text/plain" }).end("ok");
     return;
   }
+  if (path.startsWith("/p/") || path.startsWith("/api/postcard/")) {
+    postcards.http(req, res, path, ipOf2(req), SITE ? "/play/" : "/").then((done) => {
+      if (!done && !res.headersSent) res.writeHead(404, { "content-type": "text/plain" }).end("Not found");
+    }).catch((e) => {
+      console.error("postcards:", e.message);
+      if (!res.headersSent) res.writeHead(500).end();
+    });
+    return;
+  }
   if (path.startsWith("/api/") || path === ADMIN_PATH || path === `${ADMIN_PATH}/`) {
-    adminHttp(req, res, path, store, { clearName: (k) => community.clearName(k) }).then((done) => {
+    adminHttp(req, res, path, store, {
+      clearName: (k) => community.clearName(k),
+      // postcards' pictures (docs/postcards.html): the list, and taking one down or putting it back
+      pictures: async () => postcards.withPictures((await store.list("postcard:")).map((e) => cards.peek(e.key.slice("postcard:".length)) ?? e.value)),
+      picture: (id, show) => postcards.setPicture(id, show)
+    }).then((done) => {
       if (!done && !res.headersSent) res.writeHead(404, { "content-type": "text/plain" }).end("Not found");
     }).catch((e) => {
       console.error("admin:", e.message);
@@ -14744,7 +15489,7 @@ function http(req, res) {
     return;
   }
   if (path === "/online.json" || path === "/play/online.json") {
-    res.writeHead(200, { "content-type": "application/json", "access-control-allow-origin": "*", "cache-control": "no-store" }).end(JSON.stringify({ tinyfleet: true, protocol: PROTOCOL, gen: world.gen, seed: world.seed, start: upcomingHome(), picks: marks.picksNow(), players: conns.size, max: MAX_PLAYERS, day: Math.floor(world.hours / 24) + 1 }));
+    res.writeHead(200, { "content-type": "application/json", "access-control-allow-origin": "*", "cache-control": "no-store" }).end(JSON.stringify({ tinyfleet: true, protocol: PROTOCOL, gen: world.gen, seed: world.seed, start: upcomingHome(), picks: marks.picksNow(), players: conns.size, max: MAX_PLAYERS, guests: guests.size, day: Math.floor(world.hours / 24) + 1 }));
     return;
   }
   if (SITE) {
@@ -14827,12 +15572,26 @@ async function main() {
   community.tell = (pid, n, from) => void marks.news(pid, n, from);
   marks.onLike = (pid, n) => void community.likes(pid, n);
   await marks.load();
+  cards = new Docs(store, "postcard:", () => null);
+  pics = new Docs(store, "postcardpic:", () => null);
+  postcards = new Postcards({
+    epoch: () => world.epoch,
+    cards,
+    pics,
+    touch: (pid) => players.touch(pid),
+    send: (c, m) => send(c, m),
+    whoOf,
+    count,
+    news: (pid, n) => void marks.news(pid, n),
+    likes: (pid, n) => void community.likes(pid, n),
+    week: (id, by, title, x, z, open) => marks.card(id, by, title, x, z, open)
+  });
   const server = createServer(http);
   const wss = new import_websocket_server.default({ server, maxPayload: 6 * 1024 * 1024 });
   wss.on("connection", (ws, req) => {
-    const fwd = String(req.headers["x-forwarded-for"] ?? "").split(",").map((h) => h.trim()).filter(Boolean);
-    const ip = String(req.headers["x-real-ip"] ?? "").trim() || fwd[fwd.length - 1] || String(req.socket.remoteAddress ?? "");
+    const ip = ipOf2(req);
     let conn = null;
+    let guest = null;
     let busy = Promise.resolve();
     let alive = true;
     ws.on("pong", () => {
@@ -14861,20 +15620,28 @@ async function main() {
         ws.close();
         return;
       }
-      if (conn) {
+      const counted = conn ?? guest;
+      if (counted) {
         const now = Date.now();
-        if (now - conn.msgsAt > 1e3) {
-          conn.msgsAt = now;
-          conn.msgs = 0;
+        if (now - counted.msgsAt > 1e3) {
+          counted.msgsAt = now;
+          counted.msgs = 0;
         }
-        if (++conn.msgs > 400) {
+        if (++counted.msgs > (guest ? 40 : 400)) {
           ws.close();
           return;
         }
       }
       busy = busy.then(async () => {
+        if (guest) {
+          if (guests.has(guest)) await guestHandle(guest, m);
+          return;
+        }
         if (!conn) {
-          if (m.t === "hello") conn = await hello(ws, ip, m);
+          if (m.t === "hello") {
+            if (m.guest) guest = guestHello(ws, ip, m);
+            else conn = await hello(ws, ip, m);
+          }
           return;
         }
         if (conns.get(conn.pid) !== conn) return;
@@ -14884,6 +15651,7 @@ async function main() {
     ws.on("close", () => {
       clearInterval(beatT);
       if (conn) drop(conn);
+      if (guest) dropGuest(guest);
     });
     ws.on("error", () => {
     });
