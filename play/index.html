@@ -304,12 +304,29 @@
     #deed-card.pop .dc-icon { animation: dcbump .5s cubic-bezier(.2,1.6,.4,1); }
     #deed-card.pop::after { content: ""; position: absolute; inset: 0; pointer-events: none;
       background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.75) 48%, transparent 66%); transform: translateX(-120%); animation: dcshine .9s ease-out .1s forwards; }
+    /* a stamp earned: the card, and the stamp pressed onto it once, as it comes down */
+    #stamp-card { display: grid; grid-template-columns: 58px 1fr; gap: 12px; align-items: center; --accent: #c0492f; }
+    #stamp-card:not(.in) { opacity: 0; transform: translateY(-14px) scale(.97); max-height: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; }
+    #stamp-card .sc-art { width: 58px; height: 64px; object-fit: contain; transform: rotate(-6deg); }
+    #stamp-card .sc-body { display: flex; flex-direction: column; min-width: 0; }
+    #stamp-card .sc-body b { font-size: 15px; color: #1f2b33; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #stamp-card .sc-body span { font-size: 12.5px; color: #5d6b73; }
+    #stamp-card.stamping, #deed-card.stamping { animation: stampshake .5s ease-out .3s; }
+    #stamp-card.stamping .sc-art, #deed-card.stamping .dc-icon img { animation: stamppress .55s cubic-bezier(.3, 1.4, .5, 1) both; }
+    #stamp-card.stamping::before, #deed-card.stamping::before { content: ""; position: absolute; left: 18px; top: 50%; width: 70px; height: 70px; margin-top: -35px; border-radius: 50%;
+      border: 3px solid var(--accent, #c0492f); opacity: 0; pointer-events: none; animation: stampink .6s ease-out .3s; }
+    #deed-card .dc-icon img { width: 40px; height: 40px; object-fit: contain; display: block; }
+    @keyframes stamppress { 0% { transform: translateY(-26px) scale(2.5) rotate(-20deg); opacity: 0; } 45% { opacity: .9; } 60% { transform: translateY(0) scale(.86) rotate(-5deg); opacity: 1; } 78% { transform: scale(1.05) rotate(-7deg); } 100% { transform: scale(1) rotate(-6deg); } }
+    @keyframes stampshake { 0%, 100% { translate: 0 0; } 20% { translate: 0 3px; } 45% { translate: 0 -1px; } 70% { translate: 0 1px; } }
+    @keyframes stampink { 0% { opacity: .55; transform: scale(.5); } 100% { opacity: 0; transform: scale(1.45); } }
+    #n-log li .nl-stamp { width: 34px; height: 38px; object-fit: contain; flex: none; transform: rotate(-5deg); }
     @keyframes dcpop { 0% { transform: scale(.2); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
     @keyframes dcbump { 0% { transform: scale(1); } 40% { transform: scale(1.18) rotate(-6deg); } 100% { transform: scale(1) rotate(0); } }
     @keyframes dcshine { to { transform: translateX(120%); } }
     @media (prefers-reduced-motion: reduce) {
       .notice, #deed-card.in, #toast:not(.show), #deed-card:not(.in), .notice.out { transform: none; animation: none; }
       #deed-card.pop::after, #deed-card.pop .dc-chip .pip, #deed-card.pop .dc-icon { animation: none; }
+      #stamp-card.stamping, #stamp-card.stamping .sc-art, #deed-card.stamping, #deed-card.stamping .dc-icon img, #stamp-card.stamping::before, #deed-card.stamping::before { animation: none; }
     }
 
     #vehicles, #cashmenu { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(207,230,245,.5); backdrop-filter: blur(3px); padding: 16px; box-sizing: border-box; }
@@ -1379,7 +1396,7 @@
     #title-menu .tm-panel.deeds { width: 520px; }
     /* the Passport (docs/passport.html): stamps, imports, bookmarks */
     #title-menu .pp-sects { border-bottom: 1px solid #e7edf0; padding-bottom: 8px; }
-    #title-menu .pp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(74px, 1fr)); gap: 8px 6px; }
+    #title-menu .pp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 10px 6px; align-items: start; }
     #title-menu .tm-btn.pp-stamp, #title-menu .pp-stamp { display: flex; flex-direction: column; align-items: center; gap: 3px; width: auto; padding: 4px 2px; border: 0; background: none; box-shadow: none; text-align: center; font-weight: 600; }
     #title-menu .pp-stamp i { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; border: 2px solid var(--ink, #c0492f); font-style: normal; font-size: 20px; transform: rotate(-7deg); background: rgba(255,255,255,.6); }
     #title-menu .pp-stamp:nth-child(3n) i { transform: rotate(5deg); }
@@ -1388,6 +1405,23 @@
     #title-menu .pp-stamp.arch { --ink: #c0492f; } #title-menu .pp-stamp.biome { --ink: #2f7a3e; } #title-menu .pp-stamp.size { --ink: #2f6f9c; }
     #title-menu .pp-stamp.wonder { --ink: #9a6b1f; } #title-menu .pp-stamp.landform { --ink: #6a5a9a; } #title-menu .pp-stamp.kind { --ink: #b0457a; }
     #title-menu .pp-stamp.open i, #title-menu .pp-stamp:focus-visible i { box-shadow: 0 0 0 3px rgba(226,65,47,.35); }
+    #title-menu .pp-art { display: block; width: 66px; height: 74px; object-fit: contain; transition: transform .12s; }
+    #title-menu .pp-stamp:hover .pp-art, #title-menu .pp-stamp.open .pp-art { transform: scale(1.08) rotate(-2deg); }
+    #title-menu .pp-stamp.open .pp-art { filter: drop-shadow(0 0 4px rgba(226,65,47,.55)); }
+    #title-menu .pp-art.pending { border: 2px dashed #e0e6e9; border-radius: 10px; box-sizing: border-box; }
+    #title-menu .pp-modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(20, 28, 34, 0.45); animation: pp-in .14s ease-out; }
+    #title-menu .pp-mcard { display: flex; gap: 22px; align-items: center; max-width: 560px; width: 100%; padding: 22px; border-radius: 18px; background: #fbfaf5; box-shadow: 0 18px 50px rgba(0,0,0,.3); }
+    #title-menu .pp-big { width: 200px; height: 240px; object-fit: contain; flex: none; transform: rotate(-3deg); filter: drop-shadow(0 6px 10px rgba(0,0,0,.18)); }
+    #title-menu .pp-big.pending { border: 2px dashed #e0e6e9; border-radius: 14px; }
+    #title-menu .pp-minfo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    #title-menu .pp-minfo small { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #7d8a92; }
+    #title-menu .pp-minfo h3 { margin: 0; font-size: 22px; color: #1f2b33; }
+    #title-menu .pp-mlines { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; margin: 4px 0; font-size: 13px; }
+    #title-menu .pp-mlines dt { color: #7d8a92; font-weight: 600; }
+    #title-menu .pp-mlines dd { margin: 0; color: #1f2b33; }
+    @media (max-width: 520px) { #title-menu .pp-mcard { flex-direction: column; } #title-menu .pp-big { width: 150px; height: 180px; } }
+    @keyframes pp-in { from { opacity: 0; } to { opacity: 1; } }
+    #title-menu .dd-seal { width: 30px; height: 30px; flex: none; object-fit: contain; }
     #title-menu .pp-stamp.blank i { border: 2px dashed #cfd8dd; color: #b3bec5; transform: none; background: none; font-size: 15px; }
     #title-menu .pp-stamp.blank small { color: #a3afb6; font-weight: 500; }
     #title-menu .pp-detail, #title-menu .pp-home { display: flex; flex-direction: column; gap: 3px; padding: 9px 12px; border-radius: 12px; background: rgba(242,169,59,.12); font-size: 12.5px; color: #4c5a63; }
@@ -1970,7 +2004,12 @@
     .postcards .none { margin: 0; font-size: 12px; color: #7d8a92; line-height: 1.5; }
     .postcards .none kbd { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; border: 1px solid #d5ddd0; border-radius: 4px; padding: 0 4px; }
     #title-menu .tm-picks { margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(31,43,51,.1); max-width: 380px; }
-    #title-menu .tm-picks li { background: rgba(255,255,255,.55); }
+    #title-menu .tm-picks li { background: rgba(255,255,255,.55); grid-template-columns: 44px 1fr auto; min-height: 40px; }
+    #title-menu .tm-picks h3 { margin-bottom: 12px; }
+    .picks .pk-shield, .tm-picks .pk-shield { width: 30px; height: 30px; object-fit: contain; display: block; margin: 0 auto; }
+    .picks .pk-mini, .tm-picks .pk-mini { width: 13px; height: 13px; object-fit: contain; vertical-align: -2px; margin-right: 4px; }
+    .tm-picks .pk-car { display: flex; align-items: center; justify-content: center; }
+    .tm-picks .pk-stage { width: 44px; height: 30px; display: block; }
     [data-pid] { cursor: context-menu; }
     #net-tags .net-tag[data-pid] { pointer-events: auto; }
     #friend-menu { position: fixed; z-index: 40; min-width: 170px; padding: 6px; border-radius: 10px; background: #fff; box-shadow: 0 8px 28px rgba(31,43,51,.25); font-size: 12.5px; color: #1f2b33; }
@@ -2128,7 +2167,7 @@
     #guest-bar.folded button { padding: 7px 12px; font-size: 13px; }
     @media (max-width: 560px) { #guest-bar.folded .gb-tip { display: none; } }
   </style>
-  <script type="module" crossorigin src="./assets/index-r8zsMUFn.js"></script>
+  <script type="module" crossorigin src="./assets/index-XY06GVkw.js"></script>
 </head>
 <body>
   <div id="mobile-block" role="alertdialog" aria-labelledby="mb-title">

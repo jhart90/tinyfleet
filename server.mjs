@@ -10988,7 +10988,7 @@ var Marks = class {
         await this.rate(c, String(m.c), String(m.id), m.v);
         return true;
       case "drift":
-        await this.drift(c, String(m.c), Number(m.s), m.p);
+        await this.drift(c, String(m.c), Number(m.s), m.p, m.m);
         return true;
       case "lap":
         await this.lap(c, m);
@@ -11088,7 +11088,7 @@ var Marks = class {
     }
   }
   // ---- records -----------------------------------------------------------------------------------------
-  async drift(c, cell, s, p) {
+  async drift(c, cell, s, p, model) {
     if (!CELL.test(cell) || !c.subs.has(cell) || this.host.cheb(cell, c.cell) > 1) return;
     if (!(s >= MARKS.driftMin && s <= MARKS.driftMaxTiles) || !Array.isArray(p) || p.length < 4 || p.length > MARKS.driftPts * 2 || p.length % 2) return;
     if (!p.every((v) => Number.isInteger(v) && v >= 0 && v <= N3 * 4)) return;
@@ -11109,7 +11109,7 @@ var Marks = class {
     this.tell(c, cell, { t: "driftRow", c: cell, k, row });
     if (had && had.by !== c.pid) await this.news(had.by, { what: "driftLost", c: cell, k, by: c.pid, s: score, was: had.s }, c.pid);
     if (score > (this.picks.drift?.n ?? 0)) {
-      this.picks.drift = { by: c.pid, title: `${driftPoints(score)}-point drift`, n: score, ...spot(cell, tile), at: now };
+      this.picks.drift = { by: c.pid, title: `${driftPoints(score)}-point drift`, n: score, ...spot(cell, tile), at: now, ...typeof model === "string" && model.length <= 40 ? { m: model } : {} };
       this.picksDirty = true;
     }
   }
@@ -11132,7 +11132,7 @@ var Marks = class {
     if (had && had.by !== c.pid) await this.news(had.by, { what: "lapLost", c: cell, k, by: c.pid, s: secs, was: had.s }, c.pid);
     if (had && had.by !== c.pid) this.near(cell, `${this.name(c.pid)} took the lap record at a circuit near here from ${this.name(had.by)}: ${fmtLap(secs)}.`, c.pid);
     const at = Number.isInteger(m.at) && m.at >= 0 && m.at < N3 * N3 ? m.at : N3 * 128 + 128;
-    this.picks.lap = { by: c.pid, title: `${fmtLap(secs)} lap`, n: secs, ...spot(cell, at), at: Date.now() };
+    this.picks.lap = { by: c.pid, title: `${fmtLap(secs)} lap`, n: secs, ...spot(cell, at), at: Date.now(), m: row.m };
     this.picksDirty = true;
   }
   async ghost(c, cell, k) {
@@ -11294,7 +11294,19 @@ var Marks = class {
       const k = title.slice(1);
       title = `${who}\u2019s ${(WORK_LABEL[k] ?? "work").toLowerCase()}`;
     }
-    return { kind, title, detail, by: l.by, who, colour: w?.brand?.primary ?? 8227474, ...l.k ? { k: l.k } : {}, ...l.x !== void 0 ? { x: l.x, z: l.z } : {} };
+    const b = w?.brand;
+    return {
+      kind,
+      title,
+      detail,
+      by: l.by,
+      who,
+      colour: b?.primary ?? 8227474,
+      ...l.k ? { k: l.k } : {},
+      ...l.x !== void 0 ? { x: l.x, z: l.z } : {},
+      ...b ? { brand: { primary: b.primary, accent: b.accent, logo: b.logo } } : {},
+      ...l.m ? { model: l.m } : {}
+    };
   }
   picksOf(live) {
     const p = this.picks;
