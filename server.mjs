@@ -9353,8 +9353,8 @@ function renderGames() {
   var tot = { play: 0, earned: 0, you: 0, hired: 0, done: 0, players: {} };
   games.forEach(function (g) { tot.play += g.played || 0; tot.earned += g.earned || 0; tot.you += g.youTiles || 0; tot.hired += g.hiredTiles || 0; tot.done += g.done || 0; tot.players[(g.player || '') + '|' + (g.online || '')] = 1; });
   var week = games.filter(function (g) { return Date.now() - g.last < 7 * 86400000; }).length;
-  var vis = { page: 0, mobile: 0, anyway: 0 };
-  visits.forEach(function (d) { vis.page += (d.n && d.n.page) || 0; vis.mobile += (d.n && d.n.mobile) || 0; vis.anyway += (d.n && d.n.anyway) || 0; });
+  var vis = { page: 0, mobile: 0, anyway: 0, soft: 0, none: 0, glon: 0 };
+  visits.forEach(function (d) { var n = d.n || {}; vis.page += n.page || 0; vis.mobile += n.mobile || 0; vis.anyway += n.anyway || 0; vis.soft += n['gl-soft'] || 0; vis.none += n['gl-none'] || 0; vis.glon += (n['gl-anyway'] || 0) + (n['gl-never'] || 0); });
   var perfGames = games.filter(function (g) { return g.fps != null; });
   var neverDrove = perfGames.filter(function (g) { return !g.youTiles; }).length;
   $('stats').innerHTML = [
@@ -9362,6 +9362,7 @@ function renderGames() {
     [money(tot.earned), 'earned, all games'], [num(tot.you), 'tiles driven by players'], [num(tot.hired), 'tiles by hired drivers'], [num(tot.done), 'missions completed'], [feedback.length, 'feedback'],
     [num(vis.page), 'page loads (desktop, 30 days)'],
     [funnelTxt(), 'postcards, 30 days: link → read → world drawn (avg s) → guest → looked → car → delivered → 10 min → kept'], [num(vis.mobile), 'phones/tablets turned away'], [num(vis.anyway), 'phones that went on anyway'],
+    [num(vis.soft) + ' / ' + num(vis.none), 'software graphics / no WebGL (card shown, 30 days)'], [num(vis.glon), 'played on in software graphics'],
     [perfGames.length ? Math.round(perfGames.reduce(function (s, g) { return s + g.fps; }, 0) / perfGames.length) : '—', 'average FPS (games with perf data)'],
     [neverDrove + ' / ' + perfGames.length, 'never drove a tile (perf-tracked games)']
   ].map(function (s) { return '<div class="stat"><b>' + esc(s[0]) + '</b><span>' + esc(s[1]) + '</span></div>'; }).join('');
@@ -9443,7 +9444,7 @@ function perfCard(p) {
   var d = p.device || {}, q = p.quality || {}, f = p.frames || {}, u = p.funnel || {}, s = p.settings || {};
   var h = '<div class="card"><h3>Performance &amp; device <span class="mute" style="font-weight:400">· last report: ' + esc(p.why) + '</span></h3>';
   h += kv([
-    ['Device', (d.mobile ? '<b style="color:var(--acc)">mobile</b>' : 'desktop') + ' · ' + esc(d.platform) + (d.mobileAnyway ? ' · <b>pressed “continue anyway”</b>' : '')],
+    ['Device', (d.mobile ? '<b style="color:var(--acc)">mobile</b>' : 'desktop') + ' · ' + esc(d.platform) + (d.mobileAnyway ? ' · <b>pressed “continue anyway”</b>' : '') + (d.softwareGl ? ' · <b style="color:var(--acc)">software graphics</b>' : '')],
     ['Input', 'touch points ' + esc(d.touchPoints) + ' · ' + (d.fine ? 'mouse/trackpad' : 'no fine pointer') + (u.gamepad ? ' · gamepad' : '')],
     ['GPU', esc(d.gpu) + ' <span class="mute">' + esc(d.gpuVendor) + '</span>'], ['WebGL', (d.webgl2 ? 'WebGL 2' : 'WebGL 1') + ' · max texture ' + esc(d.maxTexture)],
     ['Screen', esc((d.screen || []).join('×')) + ' @' + esc(d.dpr) + 'x · window ' + esc((d.viewport || []).join('×'))], ['CPU / memory', esc(d.cores) + ' cores · ' + (d.memoryGb ? esc(d.memoryGb) + ' GB' : '? GB')],
@@ -9639,7 +9640,7 @@ async function adminHttp(req, res, path, store2, hooks) {
       return true;
     }
     const kind = str(m.kind, 20);
-    const card = kind === "card-drawn" || kind === "card-looked" || kind === "card-phone";
+    const card = kind === "card-drawn" || kind === "card-looked" || kind === "card-phone" || kind.startsWith("gl-");
     if (kind !== "page" && kind !== "mobile" && kind !== "anyway" && !card) {
       json(res, 400, { ok: false }, OPEN);
       return true;
@@ -15023,6 +15024,10 @@ async function handle(c, m) {
       const host = t ? rooms.get(t[1])?.host : null;
       const amt = num2(m.amt);
       if (!host || host === c || !(amt > 0) || amt > 1e6) return;
+      if (m.rent === true) {
+        send(host, { t: "credit", town: m.town, by: c.pid, amt, rent: true });
+        return;
+      }
       send(host, { t: "credit", town: m.town, by: c.pid, amt, lot: typeof m.lot === "string" && LOT2.test(m.lot) ? m.lot : void 0, lotAmt: num2(m.lotAmt) || void 0, dir: m.dir === "out" ? "out" : "in" });
       return;
     }
