@@ -15008,7 +15008,7 @@ function rankSpawns(seedHash2, around, radius, pick, allow = () => true) {
 
 // server/index.ts
 var PORT = Number(process.env.PORT) || 8787;
-var SEED = process.env.WORLD_SEED || "tiny-fleet-online";
+var SEED = process.env.WORLD_SEED || "online";
 var PEPPER = process.env.PIN_PEPPER || "tinyfleet";
 var MAX_PLAYERS = Number(process.env.MAX_PLAYERS) || 100;
 var HERE = fileURLToPath(new URL(".", import.meta.url));
