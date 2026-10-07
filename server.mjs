@@ -12376,7 +12376,7 @@ var World = class {
   straits = [];
   /** True when this island's towns are a megalopolis and its satellites. */
   mega = false;
-  stats = { land: 0, drivable: 0, reachable: 0, genMs: 0, canyons: 0, fields: 0, lakes: 0, maxSlope: 0, passes: 0, riverCrossings: 0, railMs: 0 };
+  stats = { land: 0, drivable: 0, reachable: 0, genMs: 0, canyons: 0, fields: 0, lakes: 0, maxSlope: 0, passes: 0, riverCrossings: 0, railMs: 0, mended: 0 };
   /** Neighbour islands by DIRS index while they are resident; never serialised. */
   nbr = [null, null, null, null];
   /** Bumped whenever tiles change (a road laid, something bulldozed) so caches can notice. */
@@ -12405,6 +12405,16 @@ function hashString(s) {
   h = Math.imul(h ^ h >>> 16, 2246822507);
   h = Math.imul(h ^ h >>> 13, 3266489909);
   return (h ^ h >>> 16) >>> 0;
+}
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = a + 1831565813 >>> 0;
+    let t = a;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
 }
 var WORDS = [
   "plum",
@@ -14814,6 +14824,12 @@ var DECK_HALF = {
   [6 /* Sea */]: 0.29
 };
 
+// src/world/roadside.ts
+var NAVAL_DOCK_CHANCE = 0.7;
+var navalDockRolled = (seedHash2, cx, cz) => mulberry32(hashString(`${seedHash2}|${cx},${cz}|navalDock`))() < NAVAL_DOCK_CHANCE;
+var spacePadRolled = (seedHash2, cx, cz) => mulberry32(hashString(`${seedHash2}|${cx},${cz}|spacePad`))() < SPACEPORT_CHANCE;
+var SPACEPORT_CHANCE = 0.5;
+
 // src/world/ports.ts
 var QUAY = SEA + 1;
 
@@ -14874,7 +14890,7 @@ var SOURCE_MIN = SEA + 13;
 
 // src/world/generate.ts
 var NN = N4 * N4;
-var GEN_VERSION = 46;
+var GEN_VERSION = 48;
 var PAD = 40;
 var P = N4 + 2 * PAD;
 var PP = P * P;
@@ -14956,9 +14972,19 @@ function scoreSpawn(seedHash2, cx, cz, lat = new Lattice(seedHash2)) {
   }
   out.cells = queue.length;
   out.score = score + Math.min(out.cells, 30) * 0.05;
-  out.why = out.cells < SPAWN.cells ? `only ${out.cells} cells reachable by car` : out.dealers < SPAWN.dealers ? `${out.dealers} land dealer${out.dealers === 1 ? "" : "s"} within ${SPAWN.dealerReach} cells` : out.shops < SPAWN.shops ? `${out.shops} shop${out.shops === 1 ? "" : "s"} within ${SPAWN.shopReach} cells` : null;
+  out.why = out.cells < SPAWN.cells ? `only ${out.cells} cells reachable by car` : out.dealers < SPAWN.dealers ? `${out.dealers} land dealer${out.dealers === 1 ? "" : "s"} within ${SPAWN.dealerReach} cells` : out.shops < SPAWN.shops ? `${out.shops} shop${out.shops === 1 ? "" : "s"} within ${SPAWN.shopReach} cells` : !stagesPlanned(seedHash2, cx, cz, lat) ? "no launch pad or naval dock planned next door" : null;
   out.ok = out.why === null;
   return out;
+}
+function stagesPlanned(seedHash2, cx, cz, lat) {
+  let pad = false, dock = false;
+  for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) {
+    const x = cx + dx, z = cz + dz, k = lat.kind(x, z);
+    if (k === "sea") continue;
+    pad ||= spacePadRolled(seedHash2, x, z);
+    dock ||= k !== "continent" || [0, 1, 2, 3].some((d) => lat.kind(x + STEPS[d][0], z + STEPS[d][1]) === "sea") ? navalDockRolled(seedHash2, x, z) : false;
+  }
+  return pad && dock;
 }
 function rankSpawns(seedHash2, around, radius, pick, allow = () => true) {
   const lat = new Lattice(seedHash2);
@@ -15075,7 +15101,10 @@ function landAt(cx, cz, strict) {
 function hqCells() {
   return new Set(Object.values(world.hqs ?? {}));
 }
-function pickHome(skip = /* @__PURE__ */ new Set()) {
+function turnedDown() {
+  return new Set(Object.entries(world.homes).filter(([, v]) => v === "none").map(([k]) => k));
+}
+function pickHome(skip = turnedDown()) {
   const taken = hqCells();
   for (let r = 0; r <= SPAWN_REACH; r++) {
     let best = null;
@@ -15094,13 +15123,14 @@ function pickHome(skip = /* @__PURE__ */ new Set()) {
 }
 var nextHome = null;
 function upcomingHome() {
-  if (!nextHome || hqCells().has(cellKey(nextHome.at[0], nextHome.at[1])) || Date.now() - nextHome.t > 6e5) nextHome = { at: pickHome(), t: Date.now() };
+  const k = nextHome ? cellKey(nextHome.at[0], nextHome.at[1]) : "";
+  if (!nextHome || hqCells().has(k) || world.homes[k] === "none" || Date.now() - nextHome.t > 6e5) nextHome = { at: pickHome(), t: Date.now() };
   return nextHome.at;
 }
 function takeHome(near) {
   if (near) {
-    const taken = hqCells();
-    const open = (cx, cz) => Math.max(Math.abs(cx), Math.abs(cz)) <= SPAWN_REACH && !taken.has(cellKey(cx, cz)) && Math.max(Math.abs(cx - near[0]), Math.abs(cz - near[1])) <= 3;
+    const taken = hqCells(), down = turnedDown();
+    const open = (cx, cz) => Math.max(Math.abs(cx), Math.abs(cz)) <= SPAWN_REACH && !taken.has(cellKey(cx, cz)) && !down.has(cellKey(cx, cz)) && Math.max(Math.abs(cx - near[0]), Math.abs(cz - near[1])) <= 3;
     const best = rankSpawns(seedHash, near, 3, Math.random(), open)[0];
     if (best?.ok) return [best.cx, best.cz];
   }
