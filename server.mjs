@@ -379,26 +379,26 @@ var require_permessage_deflate = __commonJS({
             value = value[0];
             if (key === "client_max_window_bits") {
               if (value !== true) {
-                const num3 = +value;
-                if (!Number.isInteger(num3) || num3 < 8 || num3 > 15) {
+                const num4 = +value;
+                if (!Number.isInteger(num4) || num4 < 8 || num4 > 15) {
                   throw new TypeError(
                     `Invalid value for parameter "${key}": ${value}`
                   );
                 }
-                value = num3;
+                value = num4;
               } else if (!this._isServer) {
                 throw new TypeError(
                   `Invalid value for parameter "${key}": ${value}`
                 );
               }
             } else if (key === "server_max_window_bits") {
-              const num3 = +value;
-              if (!Number.isInteger(num3) || num3 < 8 || num3 > 15) {
+              const num4 = +value;
+              if (!Number.isInteger(num4) || num4 < 8 || num4 > 15) {
                 throw new TypeError(
                   `Invalid value for parameter "${key}": ${value}`
                 );
               }
-              value = num3;
+              value = num4;
             } else if (key === "client_no_context_takeover" || key === "server_no_context_takeover") {
               if (value !== true) {
                 throw new TypeError(
@@ -1112,8 +1112,8 @@ var require_receiver = __commonJS({
           return;
         }
         const buf = this.consume(8);
-        const num3 = buf.readUInt32BE(0);
-        if (num3 > Math.pow(2, 53 - 32) - 1) {
+        const num4 = buf.readUInt32BE(0);
+        if (num4 > Math.pow(2, 53 - 32) - 1) {
           const error = this.createError(
             RangeError,
             "Unsupported WebSocket frame: payload length > 2^53 - 1",
@@ -1124,7 +1124,7 @@ var require_receiver = __commonJS({
           cb(error);
           return;
         }
-        this._payloadLength = num3 * Math.pow(2, 32) + buf.readUInt32BE(4);
+        this._payloadLength = num4 * Math.pow(2, 32) + buf.readUInt32BE(4);
         this.haveLength(cb);
       }
       /**
@@ -2277,7 +2277,7 @@ var require_websocket = __commonJS({
     var http2 = __require("http");
     var net = __require("net");
     var tls = __require("tls");
-    var { randomBytes: randomBytes3, createHash: createHash3 } = __require("crypto");
+    var { randomBytes: randomBytes4, createHash: createHash3 } = __require("crypto");
     var { Duplex, Readable } = __require("stream");
     var { URL: URL2 } = __require("url");
     var PerMessageDeflate2 = require_permessage_deflate();
@@ -2828,7 +2828,7 @@ var require_websocket = __commonJS({
         }
       }
       const defaultPort = isSecure ? 443 : 80;
-      const key = randomBytes3(16).toString("base64");
+      const key = randomBytes4(16).toString("base64");
       const request = isSecure ? https.request : http2.request;
       const protocolSet = /* @__PURE__ */ new Set();
       let perMessageDeflate;
@@ -3912,8 +3912,8 @@ var require_postgres_date = __commonJS({
     function bcYearToNegativeYear(year) {
       return -(year - 1);
     }
-    function is0To99(num3) {
-      return num3 >= 0 && num3 < 100;
+    function is0To99(num4) {
+      return num4 >= 0 && num4 < 100;
     }
   }
 });
@@ -4876,7 +4876,7 @@ var require_utils2 = __commonJS({
     var nodeCrypto = __require("crypto");
     module.exports = {
       postgresMd5PasswordHash,
-      randomBytes: randomBytes3,
+      randomBytes: randomBytes4,
       deriveKey,
       sha256,
       hashByName,
@@ -4886,7 +4886,7 @@ var require_utils2 = __commonJS({
     var webCrypto = nodeCrypto.webcrypto || globalThis.crypto;
     var subtleCrypto = webCrypto.subtle;
     var textEncoder = new TextEncoder();
-    function randomBytes3(length) {
+    function randomBytes4(length) {
       return webCrypto.getRandomValues(Buffer.alloc(length));
     }
     async function md5(string) {
@@ -6073,18 +6073,18 @@ var require_buffer_writer = __commonJS({
           oldBuffer.copy(this.buffer);
         }
       }
-      addInt32(num3) {
+      addInt32(num4) {
         this.ensure(4);
-        this.buffer[this.offset++] = num3 >>> 24 & 255;
-        this.buffer[this.offset++] = num3 >>> 16 & 255;
-        this.buffer[this.offset++] = num3 >>> 8 & 255;
-        this.buffer[this.offset++] = num3 >>> 0 & 255;
+        this.buffer[this.offset++] = num4 >>> 24 & 255;
+        this.buffer[this.offset++] = num4 >>> 16 & 255;
+        this.buffer[this.offset++] = num4 >>> 8 & 255;
+        this.buffer[this.offset++] = num4 >>> 0 & 255;
         return this;
       }
-      addInt16(num3) {
+      addInt16(num4) {
         this.ensure(2);
-        this.buffer[this.offset++] = num3 >>> 8 & 255;
-        this.buffer[this.offset++] = num3 >>> 0 & 255;
+        this.buffer[this.offset++] = num4 >>> 8 & 255;
+        this.buffer[this.offset++] = num4 >>> 0 & 255;
         return this;
       }
       addCString(string) {
@@ -9034,7 +9034,7 @@ var init_esm = __esm({
 // server/index.ts
 import { createServer } from "node:http";
 import { createReadStream, existsSync, statSync } from "node:fs";
-import { createHash as createHash2, randomBytes as randomBytes2, scrypt, timingSafeEqual as timingSafeEqual2 } from "node:crypto";
+import { createHash as createHash2, randomBytes as randomBytes3, scrypt, timingSafeEqual as timingSafeEqual2 } from "node:crypto";
 import { extname, join as join2, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9854,7 +9854,7 @@ async function adminHttp(req, res, path, store2, hooks) {
 }
 
 // shared/protocol.ts
-var PROTOCOL = 2;
+var PROTOCOL = 3;
 var CHAT_CELLS = 8;
 var SPAWN_REACH = 64;
 var SPAWN_NEAR = 8;
@@ -11669,6 +11669,565 @@ var Postcards = class {
   }
 };
 
+// server/fleets.ts
+import { randomBytes as randomBytes2 } from "node:crypto";
+
+// shared/fleets.ts
+var CREW_MAX = 8;
+var INVITE_ALPHABET = "23456789ABCDEFGHJKMNPQRSTUVWXYZ";
+var INVITE_LEN = 8;
+var CODE = new RegExp(`^[${INVITE_ALPHABET}]{${INVITE_LEN}}$`);
+var isInviteCode = (s) => typeof s === "string" && CODE.test(s);
+var STARTER_MODEL = "tomato";
+var CREW_SAVE_FIELDS = ["cash", "fleet", "estate", "brand", "owned", "ride"];
+
+// server/fleets.ts
+var LOT2 = /^(-?\d{1,5},-?\d{1,5})#[bp]\d{1,7}$/;
+var num2 = (v) => typeof v === "number" && Number.isFinite(v) ? v : 0;
+var clone = (v) => JSON.parse(JSON.stringify(v));
+function newCode() {
+  const b = randomBytes2(INVITE_LEN);
+  let s = "";
+  for (let i = 0; i < INVITE_LEN; i++) s += INVITE_ALPHABET[b[i] % INVITE_ALPHABET.length];
+  return s;
+}
+function cleanUnit(raw) {
+  const u = raw;
+  if (!u || typeof u !== "object" || !Number.isInteger(u.uid) || u.uid <= 0 || typeof u.model !== "string" || u.model.length > 40 || typeof u.where !== "string" || !Array.isArray(u.cell) || JSON.stringify(u).length > 6e3) return null;
+  return u;
+}
+function cleanDriver(raw) {
+  const d = raw;
+  if (!d || typeof d !== "object" || !Number.isInteger(d.id) || d.id <= 0 || !Number.isInteger(d.unit) || JSON.stringify(d).length > 2e3) return null;
+  return d;
+}
+var Crews = class {
+  constructor(host) {
+    this.host = host;
+  }
+  // ---- who is in which ------------------------------------------------------------------------------
+  /** The shared fleet a player is in, by id; null for a fleet of their own. */
+  crewOf(pid) {
+    return this.host.index()[pid] ?? null;
+  }
+  /** Do these two players run one fleet (themselves included)? Doors, rent and bulldozing go by this. */
+  same(a, b) {
+    if (a === b) return true;
+    const x = this.crewOf(a);
+    return !!x && x === this.crewOf(b);
+  }
+  /** Keep a session's shared fleet in memory while it is signed in (one hold a session, moved when it changes fleet). */
+  holdFor(c, id) {
+    if (c.crewHeld === id) return;
+    if (c.crewHeld) this.host.docs.hold(c.crewHeld, -1);
+    if (id) this.host.docs.hold(id, 1);
+    c.crewHeld = id ?? void 0;
+  }
+  online(pid) {
+    return !!pid && !!this.host.conn(pid);
+  }
+  async open(id) {
+    const d = await this.host.docs.open(id);
+    return d && d.id ? d : null;
+  }
+  members(crew) {
+    const people = this.host.people();
+    return crew.members.map((id) => ({ id, name: people[id]?.name ?? id, online: this.online(id), seen: crew.seen[id] ?? 0 }));
+  }
+  /** Said to every member signed in, but one. */
+  toMembers(crew, m, but) {
+    for (const id of crew.members) {
+      const c = this.host.conn(id);
+      if (c && c !== but) this.host.send(c, m);
+    }
+  }
+  tellMembers(crew) {
+    this.toMembers(crew, { t: "crew", id: crew.id, creator: crew.creator, brand: crew.brand, members: this.members(crew) });
+  }
+  // ---- signing in -----------------------------------------------------------------------------------
+  /** The livery a member goes by: the fleet's. */
+  brandOf(pid) {
+    const id = this.crewOf(pid);
+    return id ? this.host.docs.peek(id)?.brand : void 0;
+  }
+  /**
+   * A member signing in: their fleet as it stands, with the vehicles nobody is driving (left on the map by
+   * members who signed out, or by a world begun again) handed to their game. Null for a fleet of their own.
+   */
+  async signedIn(c) {
+    const id = c.doc.crew;
+    if (!id) return null;
+    const crew = await this.open(id);
+    if (!crew || !crew.members.includes(c.pid)) {
+      delete c.doc.crew;
+      delete this.host.index()[c.pid];
+      this.host.worldChanged();
+      return null;
+    }
+    this.holdFor(c, id);
+    if (crew.epoch !== this.host.epoch()) {
+      for (const row of Object.values(crew.units)) {
+        row.u.where = "garaged";
+        row.u.driver = 0;
+        row.by = null;
+      }
+      for (const d of Object.values(crew.drivers)) d.unit = 0;
+      crew.estate = {};
+      crew.meta = { ...crew.meta, hq: null };
+      crew.epoch = this.host.epoch();
+    }
+    crew.seen[c.pid] = Date.now();
+    const handed = [];
+    for (const row of Object.values(crew.units)) {
+      if (row.u.where === "garaged" || row.by === c.pid) continue;
+      if (!row.by || !this.online(row.by) && row.u.where !== "ridden") {
+        row.by = c.pid;
+        handed.push(row);
+      }
+    }
+    this.host.docs.touch(id);
+    if (handed.length) this.toMembers(crew, { t: "roster", units: handed }, c);
+    c.who = { ...c.who, brand: crew.brand };
+    this.tellMembers(crew);
+    return this.view(crew);
+  }
+  view(crew) {
+    return {
+      id: crew.id,
+      creator: crew.creator,
+      brand: crew.brand,
+      members: this.members(crew),
+      cash: Math.round(crew.cash * 100) / 100,
+      units: Object.values(crew.units),
+      drivers: Object.values(crew.drivers),
+      estate: crew.estate,
+      meta: crew.meta,
+      code: crew.code
+    };
+  }
+  /** A member signing out: the vehicles their game was driving go to another member's game, or wait for the next one in. */
+  signedOut(c) {
+    const id = this.crewOf(c.pid);
+    const crew = id ? this.host.docs.peek(id) : null;
+    if (!crew) return;
+    crew.seen[c.pid] = Date.now();
+    this.handOver(crew, c.pid, true);
+    this.holdFor(c, null);
+    this.host.docs.touch(crew.id);
+    this.tellMembers(crew);
+  }
+  /**
+   * Every vehicle `pid` was driving goes to another member signed in (the one who signed in most recently), or
+   * to nobody until one does. The one they ride stays theirs while `keepRide` (signing out), and is parked otherwise.
+   */
+  handOver(crew, pid, keepRide) {
+    const next = crew.members.filter((m) => m !== pid && this.online(m)).sort((a, b) => (crew.seen[b] ?? 0) - (crew.seen[a] ?? 0))[0] ?? null;
+    const moved2 = [];
+    for (const row of Object.values(crew.units)) {
+      if (row.by !== pid) continue;
+      if (row.u.where === "ridden") {
+        if (keepRide) continue;
+        row.u.where = "parked";
+      }
+      row.by = row.u.where === "garaged" ? null : next;
+      moved2.push(row);
+    }
+    if (moved2.length) this.toMembers(crew, { t: "roster", units: moved2 });
+  }
+  /** The invite the game signed in with: which fleet, to ask the player about (or why it can't be joined). */
+  async offer(c, code) {
+    if (!isInviteCode(code)) return void 0;
+    const id = this.host.invites()[code];
+    const crew = id ? await this.open(id) : null;
+    if (!crew) return { code, name: "a fleet", brand: null, members: 0, why: "That invite has expired: ask for a new one." };
+    const name = crew.brand?.name ?? "a fleet";
+    const base = { code, name, brand: crew.brand, members: crew.members.length };
+    if (crew.members.includes(c.pid)) return { ...base, why: `You are already in ${name}.` };
+    if (crew.members.length >= CREW_MAX) return { ...base, why: `${name} is full (${CREW_MAX} players).` };
+    const mine = c.doc.crew ? await this.open(c.doc.crew) : null;
+    if (mine && mine.creator === c.pid && mine.members.length > 1) return { ...base, why: `You run ${mine.brand?.name ?? "a shared fleet"}: boot its other players first.` };
+    return base;
+  }
+  /** What an invite's link page and the title ask: the fleet's name and livery. */
+  async peekInvite(code) {
+    if (!isInviteCode(code)) return null;
+    const id = this.host.invites()[code];
+    const crew = id ? await this.open(id) : null;
+    return crew ? { name: crew.brand?.name ?? "A fleet", brand: crew.brand, members: crew.members.length } : null;
+  }
+  // ---- what a member may say ------------------------------------------------------------------------
+  /** A message that is a shared fleet's: handled, and true. `join` and `brand` are the caller's (a new welcome; who may). */
+  async handle(c, m) {
+    switch (m.t) {
+      case "invite": {
+        const crew = c.doc.crew ? await this.open(c.doc.crew) : await this.create(c);
+        if (!crew) {
+          this.host.send(c, { t: "invite", code: null, why: "Drive for a moment first: your fleet is kept as you play." });
+          return true;
+        }
+        this.host.send(c, { t: "invite", code: crew.code });
+        this.tellMembers(crew);
+        return true;
+      }
+      case "purse": {
+        const crew = this.mine(c);
+        if (!crew) return true;
+        const d = Math.max(-1e9, Math.min(1e9, num2(m.d)));
+        crew.cash = Math.round((crew.cash + d) * 100) / 100;
+        this.host.docs.touch(crew.id);
+        this.host.send(c, { t: "purse", cash: crew.cash, s: num2(m.s) });
+        this.toMembers(crew, { t: "purse", cash: crew.cash }, c);
+        return true;
+      }
+      case "roster": {
+        const crew = this.mine(c);
+        if (crew) await this.roster(c, crew, m);
+        return true;
+      }
+      case "boot": {
+        const crew = this.mine(c);
+        if (!crew) return true;
+        const id = String(m.id ?? "");
+        if (crew.creator !== c.pid || id === c.pid || !crew.members.includes(id)) {
+          this.host.send(c, { t: "deny", what: "boot", why: crew.creator !== c.pid ? "Only the fleet\u2019s founder can remove players." : "They aren\u2019t in this fleet." });
+          return true;
+        }
+        await this.part(crew, id, "booted");
+        return true;
+      }
+      case "leaveCrew": {
+        const crew = this.mine(c);
+        if (!crew) return true;
+        if (crew.creator === c.pid) {
+          this.host.send(c, { t: "deny", what: "leave", why: "You founded this fleet: it stays yours. Remove the others to run it alone." });
+          return true;
+        }
+        await this.part(crew, c.pid, "left");
+        return true;
+      }
+      default:
+        return false;
+    }
+  }
+  mine(c) {
+    const id = c.doc.crew;
+    const crew = id ? this.host.docs.peek(id) : null;
+    return crew && crew.members.includes(c.pid) ? crew : null;
+  }
+  /** Is this player allowed to change the livery? The founder of a shared fleet, or anyone with a fleet of their own. */
+  mayBrand(pid) {
+    const id = this.crewOf(pid);
+    const crew = id ? this.host.docs.peek(id) : null;
+    return !crew || crew.creator === pid;
+  }
+  /** The founder's new livery: the fleet's, and every member's tag. */
+  setBrand(pid, b) {
+    const id = this.crewOf(pid);
+    const crew = id ? this.host.docs.peek(id) : null;
+    if (!crew) return;
+    crew.brand = b;
+    this.host.docs.touch(crew.id);
+    const people = this.host.people();
+    for (const m of crew.members) {
+      if (people[m]) people[m] = { ...people[m], brand: b };
+      const c = this.host.conn(m);
+      if (c) c.who = { ...c.who, brand: b };
+      if (m !== pid) this.host.retag(m);
+    }
+    this.host.worldChanged();
+    this.tellMembers(crew);
+  }
+  /** A fleet of one's own becomes a shared fleet of one, from the career as last kept. */
+  async create(c) {
+    const rec = c.doc.record;
+    if (!rec || typeof rec !== "object") return null;
+    const fleet = rec.fleet ?? {};
+    const id = `c${this.host.nextId()}`;
+    let code = newCode();
+    while (this.host.invites()[code]) code = newCode();
+    const units = {};
+    for (const raw of fleet.units ?? []) {
+      const u = cleanUnit(raw);
+      if (u) units[String(u.uid)] = { u, by: u.where === "garaged" ? null : c.pid };
+    }
+    const drivers = {};
+    for (const raw of fleet.drivers ?? []) {
+      const d = cleanDriver(raw);
+      if (d) drivers[String(d.id)] = d;
+    }
+    const crew = {
+      id,
+      creator: c.pid,
+      members: [c.pid],
+      brand: c.doc.brand,
+      cash: num2(rec.cash),
+      units,
+      drivers,
+      estate: rec.estate && typeof rec.estate === "object" ? clone(rec.estate) : {},
+      meta: { hq: fleet.hq ?? null, charter: num2(fleet.charter), hires: fleet.hires, bought: num2(fleet.bought) },
+      code,
+      created: Date.now(),
+      seen: { [c.pid]: Date.now() },
+      epoch: this.host.epoch()
+    };
+    this.host.docs.set(id, crew);
+    this.holdFor(c, id);
+    this.host.invites()[code] = id;
+    this.host.index()[c.pid] = id;
+    this.host.worldChanged();
+    c.doc.crew = id;
+    this.host.players.touch(c.pid);
+    console.log(`shared fleet ${id} made by ${c.doc.name}`);
+    return crew;
+  }
+  /**
+   * Yes to an invite: their own fleet is set aside on their record (money, vehicles, buildings, livery) save the
+   * vehicle they are driving, which joins the shared fleet with them (their game sends it); the buildings they
+   * held alone go back on the market while they are away from it. Where they start: the fleet's HQ, or beside
+   * the member signed in (else the one signed in last). Resolves with that spot, or why not.
+   */
+  async join(c, code) {
+    const o = await this.offer(c, code);
+    if (!o) return { why: "That isn\u2019t an invite code." };
+    if (o.why) return { why: o.why };
+    const crew = await this.open(this.host.invites()[code]);
+    if (c.doc.crew) {
+      const old = await this.open(c.doc.crew);
+      if (old) await this.part(old, c.pid, "moved");
+    }
+    const rec = c.doc.record && typeof c.doc.record === "object" ? c.doc.record : null;
+    const solo = {};
+    for (const f of CREW_SAVE_FIELDS) if (rec && rec[f] !== void 0) solo[f] = clone(rec[f]);
+    solo.brand = c.doc.brand;
+    const fl = solo.fleet;
+    if (fl && Array.isArray(fl.units)) {
+      fl.units = fl.units.filter((u) => u.uid !== fl.ride);
+      const next = fl.units.find((u) => u.where !== "garaged") ?? fl.units[0];
+      if (next) {
+        next.where = "ridden";
+        next.driver = 0;
+        fl.ride = next.uid;
+        solo.ride = next.model;
+      } else {
+        fl.ride = 0;
+        solo.ride = STARTER_MODEL;
+      }
+      solo.owned = [...new Set(fl.units.map((u) => u.model))];
+    } else {
+      solo.ride = STARTER_MODEL;
+      solo.owned = [];
+    }
+    await this.release(c.pid, Object.keys(rec?.estate ?? {}));
+    delete c.doc.hq;
+    c.doc.solo = solo;
+    c.doc.crew = crew.id;
+    crew.members.push(c.pid);
+    crew.seen[c.pid] = Date.now();
+    this.host.index()[c.pid] = crew.id;
+    const people = this.host.people();
+    if (people[c.pid]) people[c.pid] = { ...people[c.pid], brand: crew.brand };
+    c.who = { ...c.who, brand: crew.brand };
+    this.host.worldChanged();
+    this.host.players.touch(c.pid);
+    this.host.docs.touch(crew.id);
+    this.host.retag(c.pid);
+    console.log(`${c.doc.name} joined shared fleet ${crew.id}`);
+    return { spawn: await this.spawnFor(crew, c.pid) };
+  }
+  /** Where a newcomer starts: the HQ's lot, else beside the member signed in, else where the one signed in last stood. */
+  async spawnFor(crew, pid) {
+    const hq = crew.meta.hq;
+    if (hq && [hq.cx, hq.cz, hq.x, hq.z].every((v) => typeof v === "number" && Number.isFinite(v))) return [hq.cx, hq.cz, hq.x, hq.z];
+    const others = crew.members.filter((m) => m !== pid);
+    for (const m of others) {
+      const p = this.host.conn(m)?.pose;
+      if (p) return [p[0], p[1], Math.min(254, p[2] + 2), p[3]];
+    }
+    for (const m of others.sort((a, b) => (crew.seen[b] ?? 0) - (crew.seen[a] ?? 0))) {
+      const doc = this.host.players.peek(m) ?? await this.host.players.open(m);
+      const r = doc?.record;
+      if (r && Array.isArray(r.cell) && typeof r.x === "number" && typeof r.z === "number") return [r.cell[0], r.cell[1], Math.min(254, r.x + 2), r.z];
+    }
+    return null;
+  }
+  /**
+   * A member out of the fleet (booted, left, or moving to another): the vehicles their game drove go to the others,
+   * the one they ride is parked and stays with the fleet, the fleet's doors registered in their name pass to the
+   * founder, and their own fleet comes back onto their record (its buildings re-registered by their game, or
+   * refunded where someone else has bought them since). Signed in, their session ends: the next sign-in is theirs alone.
+   */
+  async part(crew, pid, why) {
+    this.handOver(crew, pid, false);
+    crew.members = crew.members.filter((m) => m !== pid);
+    delete crew.seen[pid];
+    delete this.host.index()[pid];
+    for (const key of Object.keys(crew.estate)) {
+      const lot = LOT2.exec(key);
+      if (!lot) continue;
+      const dk = `${this.host.epoch()}:${lot[1]}`;
+      const doc2 = await this.host.cells.open(dk);
+      const row = doc2.deeds?.[key];
+      if (row && row.by === pid) {
+        row.by = crew.creator;
+        this.host.cells.touch(dk);
+        const people = this.host.people();
+        const w = people[crew.creator];
+        this.host.toRoom(lot[1], { t: "deed", key, row, who: w ? { id: crew.creator, name: w.name, brand: w.brand } : void 0 });
+      }
+    }
+    const c = this.host.conn(pid);
+    const doc = c?.doc ?? await this.host.players.open(pid);
+    if (doc?.id) {
+      const solo = doc.solo ?? {};
+      const rec = doc.record && typeof doc.record === "object" ? doc.record : null;
+      if (rec) {
+        for (const f of CREW_SAVE_FIELDS) {
+          if (solo[f] === void 0) delete rec[f];
+          else rec[f] = solo[f];
+        }
+        rec.cash = num2(solo.cash);
+        rec.ride ??= STARTER_MODEL;
+        rec.owned ??= [];
+      }
+      if (solo.brand !== void 0) doc.brand = solo.brand;
+      if (doc.hq && crew.estate[doc.hq.key] !== void 0) delete doc.hq;
+      delete doc.solo;
+      delete doc.crew;
+      const people = this.host.people();
+      if (people[pid]) people[pid] = { ...people[pid], brand: doc.brand };
+      this.host.players.touch(pid);
+    }
+    this.host.worldChanged();
+    this.host.docs.touch(crew.id);
+    const name = crew.brand?.name ?? "the fleet";
+    if (c) {
+      c.who = { ...c.who, brand: doc?.brand ?? null };
+      this.holdFor(c, null);
+    }
+    if (c && why !== "moved") {
+      c.parted = true;
+      this.host.send(c, { t: "refuse", code: "booted", why: why === "booted" ? `You were removed from ${name}. Sign in again to play your own fleet.` : why === "left" ? `You left ${name}. Sign in again to play your own fleet.` : `You left ${name}.` });
+    }
+    if (why !== "moved") this.host.retag(pid);
+    this.tellMembers(crew);
+    console.log(`${pid} ${why} shared fleet ${crew.id}`);
+  }
+  /** Doors held in `pid`'s own name taken off the server's books (they are back on the market). */
+  async release(pid, keys) {
+    for (const key of keys) {
+      const lot = LOT2.exec(key);
+      if (!lot) continue;
+      const dk = `${this.host.epoch()}:${lot[1]}`;
+      const doc = await this.host.cells.open(dk);
+      if (doc.deeds?.[key]?.by !== pid) continue;
+      delete doc.deeds[key];
+      this.host.cells.touch(dk);
+      this.host.toRoom(lot[1], { t: "deed", key, row: null });
+    }
+  }
+  /** A member's game's changes to the roster, applied where they are its to make, and passed on. */
+  async roster(c, crew, m) {
+    const out = {}, back = {};
+    const theirs = (row) => !!row && !!row.by && row.by !== c.pid && (this.online(row.by) || row.u.where === "ridden");
+    for (const raw of (Array.isArray(m.units) ? m.units : []).slice(0, 64)) {
+      const u = cleanUnit(raw);
+      if (!u) continue;
+      const have = crew.units[String(u.uid)];
+      if (theirs(have)) {
+        (back.units ??= []).push(have);
+        continue;
+      }
+      const row = { u, by: u.where === "garaged" ? null : c.pid };
+      crew.units[String(u.uid)] = row;
+      (out.units ??= []).push(row);
+    }
+    for (const uid of (Array.isArray(m.gone) ? m.gone : []).slice(0, 64)) {
+      const have = crew.units[String(uid)];
+      if (!have) continue;
+      if (theirs(have)) {
+        (back.units ??= []).push(have);
+        continue;
+      }
+      delete crew.units[String(uid)];
+      (out.gone ??= []).push(Number(uid));
+    }
+    for (const raw of (Array.isArray(m.drivers) ? m.drivers : []).slice(0, 64)) {
+      const d = cleanDriver(raw);
+      if (!d) continue;
+      const have = crew.drivers[String(d.id)];
+      if (theirs(crew.units[String(d.unit)]) || have && theirs(crew.units[String(have.unit)])) {
+        if (have) (back.drivers ??= []).push(have);
+        continue;
+      }
+      crew.drivers[String(d.id)] = d;
+      (out.drivers ??= []).push(d);
+    }
+    for (const id of (Array.isArray(m.fired) ? m.fired : []).slice(0, 64)) {
+      const have = crew.drivers[String(id)];
+      if (!have) continue;
+      if (theirs(crew.units[String(have.unit)])) {
+        (back.drivers ??= []).push(have);
+        continue;
+      }
+      delete crew.drivers[String(id)];
+      (out.fired ??= []).push(Number(id));
+    }
+    if (m.estate && typeof m.estate === "object") {
+      for (const [key, v] of Object.entries(m.estate).slice(0, 64)) {
+        if (!LOT2.test(key) || !Array.isArray(v) || JSON.stringify(v).length > 4e3) continue;
+        crew.estate[key] = v;
+        (out.estate ??= {})[key] = v;
+      }
+    }
+    if (Array.isArray(m.sold)) {
+      const gone = [];
+      for (const key of m.sold.slice(0, 64)) {
+        if (typeof key !== "string" || crew.estate[key] === void 0) continue;
+        delete crew.estate[key];
+        gone.push(key);
+      }
+      if (gone.length) {
+        out.sold = gone;
+        for (const pid of crew.members) await this.release(pid, gone);
+      }
+    }
+    if (m.meta && typeof m.meta === "object") {
+      const meta = {};
+      if ("hq" in m.meta && JSON.stringify(m.meta.hq ?? null).length < 2e3) meta.hq = m.meta.hq ?? null;
+      if (m.meta.charter !== void 0) meta.charter = num2(m.meta.charter);
+      if (m.meta.bought !== void 0) meta.bought = num2(m.meta.bought);
+      if (m.meta.hires && typeof m.meta.hires === "object" && Array.isArray(m.meta.hires.taken)) meta.hires = { day: num2(m.meta.hires.day), taken: m.meta.hires.taken.slice(0, 32).map(num2) };
+      if (Object.keys(meta).length) {
+        crew.meta = { ...crew.meta, ...meta };
+        out.meta = meta;
+      }
+    }
+    this.host.docs.touch(crew.id);
+    if (Object.keys(out).length) this.toMembers(crew, { t: "roster", ...out }, c);
+    if (Object.keys(back).length) this.host.send(c, { t: "roster", back: true, ...back });
+  }
+  // ---- links ----------------------------------------------------------------------------------------
+  /**
+   * GET /join/:code: on to the game with the invite in its address, where the title asks the player to sign in
+   * or make a player, and then whether to join. GET /api/invite/:code: the fleet's name, for the title to show.
+   */
+  async http(_req, res, path, play) {
+    const j = /^\/join\/([A-Za-z0-9-]{4,20})\/?$/.exec(path);
+    if (j) {
+      const code = j[1].toUpperCase().replace(/-/g, "");
+      res.writeHead(302, { location: `${play}?join=${encodeURIComponent(code)}`, "cache-control": "no-store" }).end();
+      return true;
+    }
+    const a = /^\/api\/invite\/([A-Za-z0-9]{4,20})$/.exec(path);
+    if (a) {
+      const v = await this.peekInvite(a[1].toUpperCase());
+      res.writeHead(v ? 200 : 404, { "content-type": "application/json", "access-control-allow-origin": "*", "cache-control": "no-store" }).end(JSON.stringify(v ?? { gone: true }));
+      return true;
+    }
+    return false;
+  }
+};
+
 // src/world/tiles.ts
 var N4 = 256;
 var STEP = 0.5;
@@ -11719,6 +12278,11 @@ var World = class {
   // how many roads cover the tile
   roadAxis = new Uint8Array(N4 * N4);
   // axes those roads run along (1 = x, 2 = z); both + 2 roads = junction
+  /**
+   * Tiles strictly inside a 45° diagonal road (world/diagonals.ts): which line runs through the tile and on
+   * which side of its middle (1..4, `lineOf`), 0 for none. Rebuilt with the other road tables.
+   */
+  roadDiag = new Uint8Array(N4 * N4);
   laneSide = new Uint8Array(N4 * N4);
   // four-lane tiles: bit 0/1 low/high-z half of an x-running road, bit 2/3 low/high-x half of a z-running one
   roads = [];
@@ -11788,6 +12352,11 @@ var World = class {
   works = [];
   /** The trade of the cell's Vehicle Dealer (world/storefronts.ts), null with none. */
   dealerTrade = null;
+  /**
+   * The boat and aircraft dealers the cell has besides its car dealer (Oct 2026: every cell with a town has
+   * one car dealer and one Auto Shop; a harbour may bring a boat dealer and an airfield an aircraft dealer).
+   */
+  dealerExtra = [];
   spawn = { x: N4 / 2 + 0.5, z: N4 / 2 + 0.5, heading: 0 };
   seed = "";
   // ---- the cell this island occupies on the endless lattice ----
@@ -13702,6 +14271,19 @@ var C = {
   cliffIceBot: hex(9416898)
 };
 
+// src/world/greatParks.ts
+var TAU2 = Math.PI * 2;
+
+// src/world/diagonals.ts
+var ROAD_HALF = {
+  [1 /* Dirt */]: 0.3,
+  [2 /* Brick */]: 0.32,
+  [3 /* Paved */]: 0.31,
+  [4 /* TwoLane */]: 0.48,
+  [6 /* Gravel */]: 0.29,
+  [7 /* Cobble */]: 0.33
+};
+
 // src/world/roads.ts
 var ROAD_INFO = [
   { name: "No road", width: 0, speed: 1, span: 0, lift: 0 },
@@ -13759,6 +14341,9 @@ var KIND_SPEC = {
   botanicalGarden: { w: [5, 6], d: [5, 6], zone: "mid", lot: 3 /* Park */, solid: true, apart: 12 },
   playground: { w: [2, 3], d: [2, 3], zone: "mid", lot: 13 /* Sand */, ...OPEN2 },
   grove: { w: [3, 4], d: [3, 4], zone: "edge", lot: 3 /* Park */, ...OPEN2 },
+  // a Central Park: never put down by a roster or by growth, only by a big city's layout round its own ring of
+  // streets (towns.ts greatParkSite); listed for its size, and so the Passport has a page for it
+  greatPark: { w: [12, 18], d: [12, 18], zone: "mid", lot: 3 /* Park */, solid: true, apart: 200, frontage: false },
   // ---- civic ----
   courthouse: { w: 3, d: 3, floors: 3, zone: "core", lot: 7 /* Plaza */ },
   postOffice: { w: 2, d: 1, zone: "core", lot: 2 /* Paved */ },
@@ -14112,9 +14697,11 @@ var KIND_SPEC = {
   walledCity: { w: 3, d: 3, floors: [10, 14], zone: "mid", lot: 2 /* Paved */, apart: 16 },
   // Las Vegas
   casinoPyramid: { w: 4, d: 4, zone: "mid", lot: 7 /* Plaza */, apart: 40 },
-  welcomeSign: { w: 1, d: 1, zone: "edge", lot: 1 /* Lawn */, roadside: true, apart: 40 },
+  welcomeSign: { w: 1, d: 1, zone: "edge", lot: 1 /* Lawn */, roadside: true, apart: 80 },
   needleTower: { w: 2, d: 2, zone: "core", lot: 7 /* Plaza */, apart: 60 },
   fountainResort: { w: 5, d: 4, zone: "mid", lot: 7 /* Plaza */, apart: 40 },
+  // the Sphere: a theatre that is one great ball of LEDs on a low podium (on the Strip, towns.ts STRIP_KINDS)
+  sphereTheatre: { w: 4, d: 4, zone: "mid", lot: 7 /* Plaza */, apart: 40 },
   // the Gulf
   supertall: { w: 2, d: 2, floors: [140, 170], zone: "core", lot: 7 /* Plaza */, apart: 80 },
   sailHotel: { w: 3, d: 3, zone: "any", lot: 7 /* Plaza */, waterside: "prefer", apart: 60 },
@@ -14287,7 +14874,7 @@ var SOURCE_MIN = SEA + 13;
 
 // src/world/generate.ts
 var NN = N4 * N4;
-var GEN_VERSION = 45;
+var GEN_VERSION = 46;
 var PAD = 40;
 var P = N4 + 2 * PAD;
 var PP = P * P;
@@ -14392,7 +14979,6 @@ function rankSpawns(seedHash2, around, radius, pick, allow = () => true) {
   const i = Math.min(top - 1, Math.floor(pick * top));
   return [ok[i], ...ok.slice(0, i), ...ok.slice(i + 1)];
 }
-var START_RADIUS = 8;
 
 // server/index.ts
 var PORT = Number(process.env.PORT) || 8787;
@@ -14430,6 +15016,8 @@ var cells;
 var community;
 var marks;
 var postcards;
+var crews;
+var crewDocs;
 var cards;
 var pics;
 var board = { players: {}, cpu: {} };
@@ -14456,7 +15044,7 @@ function failPin(key, now) {
 var seedHash = 0;
 var CELL2 = /^-?\d{1,5},-?\d{1,5}$/;
 var NAME = /^[A-Za-z0-9_-]{3,16}$/;
-var LOT2 = /^(-?\d{1,5},-?\d{1,5})#[bp]\d{1,7}$/;
+var LOT3 = /^(-?\d{1,5},-?\d{1,5})#[bp]\d{1,7}$/;
 var TOWN2 = /^(-?\d{1,5},-?\d{1,5})#\d{1,4}$/;
 var EDIT_KINDS = /* @__PURE__ */ new Set(["road", "raze", "build", "lift", "wear", "ring", "claim"]);
 var freshCell = () => ({ edits: [] });
@@ -14484,31 +15072,35 @@ function landAt(cx, cz, strict) {
   const k = cellKind(seedHash, cx, cz);
   return strict ? k === "full" || k === "continent" : k !== "sea";
 }
-function pickHome() {
-  const open = (cx, cz) => Math.max(Math.abs(cx), Math.abs(cz)) <= SPAWN_REACH && !world.homes[cellKey(cx, cz)];
-  const spots = [...conns.values()].map((c) => cellOfKey(c.cell)).sort(() => Math.random() - 0.5);
-  for (const [ax, az] of spots) {
-    const best2 = rankSpawns(
-      seedHash,
-      [ax, az],
-      SPAWN_NEAR,
-      Math.random(),
-      (cx, cz) => open(cx, cz) && Math.max(Math.abs(cx - ax), Math.abs(cz - az)) <= SPAWN_NEAR
-    )[0];
-    if (best2?.ok) return [best2.cx, best2.cz];
+function hqCells() {
+  return new Set(Object.values(world.hqs ?? {}));
+}
+function pickHome(skip = /* @__PURE__ */ new Set()) {
+  const taken = hqCells();
+  for (let r = 0; r <= SPAWN_REACH; r++) {
+    let best = null;
+    for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) {
+      if (Math.max(Math.abs(dx), Math.abs(dz)) !== r) continue;
+      const key = cellKey(dx, dz);
+      if (taken.has(key) || skip.has(key)) continue;
+      const sc = scoreSpawn(seedHash, dx, dz);
+      if (!sc.ok) continue;
+      const d = Math.hypot(dx, dz);
+      if (!best || d < best.d - 1e-9 || Math.abs(d - best.d) < 1e-9 && sc.score > best.score) best = { cx: dx, cz: dz, d, score: sc.score };
+    }
+    if (best) return [best.cx, best.cz];
   }
-  const best = rankSpawns(seedHash, [0, 0], START_RADIUS, Math.random(), open)[0];
-  if (best?.ok) return [best.cx, best.cz];
   return pickHomeAnywhere();
 }
 var nextHome = null;
 function upcomingHome() {
-  if (!nextHome || world.homes[cellKey(nextHome.at[0], nextHome.at[1])] || Date.now() - nextHome.t > 6e5) nextHome = { at: pickHome(), t: Date.now() };
+  if (!nextHome || hqCells().has(cellKey(nextHome.at[0], nextHome.at[1])) || Date.now() - nextHome.t > 6e5) nextHome = { at: pickHome(), t: Date.now() };
   return nextHome.at;
 }
 function takeHome(near) {
   if (near) {
-    const open = (cx, cz) => Math.max(Math.abs(cx), Math.abs(cz)) <= SPAWN_REACH && !world.homes[cellKey(cx, cz)] && Math.max(Math.abs(cx - near[0]), Math.abs(cz - near[1])) <= 3;
+    const taken = hqCells();
+    const open = (cx, cz) => Math.max(Math.abs(cx), Math.abs(cz)) <= SPAWN_REACH && !taken.has(cellKey(cx, cz)) && Math.max(Math.abs(cx - near[0]), Math.abs(cz - near[1])) <= 3;
     const best = rankSpawns(seedHash, near, 3, Math.random(), open)[0];
     if (best?.ok) return [best.cx, best.cz];
   }
@@ -14517,7 +15109,7 @@ function takeHome(near) {
   return at;
 }
 function pickHomeAnywhere() {
-  const free = (cx, cz, strict) => Math.max(Math.abs(cx), Math.abs(cz)) <= SPAWN_REACH && !world.homes[cellKey(cx, cz)] && landAt(cx, cz, strict);
+  const free = (cx, cz, strict) => Math.max(Math.abs(cx), Math.abs(cz)) <= SPAWN_REACH && !hqCells().has(cellKey(cx, cz)) && landAt(cx, cz, strict);
   const near = (ax, az, r, strict) => {
     const out = [];
     for (let dz = -r; dz <= r; dz++) for (let dx = -r; dx <= r; dx++) if (free(ax + dx, az + dz, strict)) out.push([ax + dx, az + dz]);
@@ -14704,7 +15296,7 @@ function autoName() {
     const n = `${AUTO_A[Math.floor(Math.random() * AUTO_A.length)]}${AUTO_B[Math.floor(Math.random() * AUTO_B.length)]}${i >= 20 ? Math.floor(Math.random() * 90 + 10) : ""}`;
     if (!world.names[n.toLowerCase()]) return n;
   }
-  return `Fleet${randomBytes2(3).toString("hex")}`;
+  return `Fleet${randomBytes3(3).toString("hex")}`;
 }
 function moved(c, to) {
   if (to === c.cell) return;
@@ -14761,7 +15353,7 @@ async function hello(ws, ip, m) {
     }
     signups.set(ip, [...made, now]);
     pid = `p:${world.nextId++}`;
-    const salt = randomBytes2(12).toString("hex");
+    const salt = randomBytes3(12).toString("hex");
     const via = auto && isCardId(m.create.from) ? m.create.from : void 0;
     const near = via ? await postcards.ride(via, cleanBrand(m.create.brand)?.name ?? name) : null;
     const home = takeHome(near ?? void 0);
@@ -14839,7 +15431,7 @@ async function hello(ws, ip, m) {
     refuse(ws, "full", "The world is full just now: try again in a little while.");
     return null;
   }
-  const token = randomBytes2(24).toString("base64url");
+  const token = randomBytes3(24).toString("base64url");
   doc.token = sha(token);
   doc.tokenAt = now;
   doc.seen = now;
@@ -14857,6 +15449,7 @@ async function hello(ws, ip, m) {
     pose: null,
     fleet: [],
     moved: false,
+    poses: [],
     lastMove: now,
     look: null,
     subs: /* @__PURE__ */ new Set(),
@@ -14870,19 +15463,11 @@ async function hello(ws, ip, m) {
   const owed = Math.round(doc.owed || 0);
   doc.owed = 0;
   if (doc.auto) (world.autos ??= {})[pid] = now;
-  send(ws, {
-    t: "welcome",
-    you: c.who,
-    world: { seed: world.seed, gen: world.gen, hours: world.hours },
-    record: doc.record,
-    home: doc.home,
-    token,
-    owed,
-    ...doc.auto ? { auto: true } : {},
-    online: [...conns.values()].map((x) => ({ who: x.who, c: x.cell, look: x.look ?? void 0 })),
-    community: community.welcome(doc),
-    marks: marks.welcome(doc)
-  });
+  c.token = token;
+  c.owedNow = owed;
+  const crew = await crews.signedIn(c);
+  const offer = doc.auto ? void 0 : await crews.offer(c, m.invite);
+  send(ws, { ...welcomeOf(c), ...crew ? { crew } : {}, ...offer ? { offer } : {} });
   for (const x of conns.values()) send(x, { t: "on", who: c.who, c: c.cell });
   toGuests({ t: "on", who: c.who, c: c.cell });
   conns.set(pid, c);
@@ -14892,9 +15477,26 @@ async function hello(ws, ip, m) {
   console.log(`+ ${doc.name} (${conns.size} online)`);
   return c;
 }
+function welcomeOf(c) {
+  const doc = c.doc;
+  return {
+    t: "welcome",
+    you: c.who,
+    world: { seed: world.seed, gen: world.gen, hours: world.hours },
+    record: doc.record,
+    home: doc.home,
+    token: c.token ?? "",
+    owed: c.owedNow ?? 0,
+    ...doc.auto ? { auto: true } : {},
+    online: [...conns.values()].filter((x) => x !== c).map((x) => ({ who: x.who, c: x.cell, look: x.look ?? void 0 })),
+    community: community.welcome(doc),
+    marks: marks.welcome(doc)
+  };
+}
 function drop(c, tell = true) {
   if (conns.get(c.pid) !== c) return;
   conns.delete(c.pid);
+  crews.signedOut(c);
   for (const k of c.subs) {
     rooms.get(k)?.subs.delete(c);
     if (c.held.delete(k)) cells.hold(`${world.epoch}:${k}`, -1);
@@ -14912,14 +15514,18 @@ function drop(c, tell = true) {
   }
   console.log(`- ${c.doc.name} (${conns.size} online)`);
 }
-var num2 = (v) => typeof v === "number" && Number.isFinite(v) ? v : 0;
-var poseOf = (p) => Array.isArray(p) && p.length >= 7 && p.every((v) => typeof v === "number" && Number.isFinite(v)) ? p.slice(0, 9) : null;
+var num3 = (v) => typeof v === "number" && Number.isFinite(v) ? v : 0;
+var poseOf = (p) => Array.isArray(p) && p.length >= 7 && p.every((v) => typeof v === "number" && Number.isFinite(v)) ? p.slice(0, 10) : null;
+var POSES_KEPT = 3;
 async function handle(c, m) {
+  if (c.parted && m.t !== "bye") return;
   switch (m.t) {
     case "m": {
       const p = poseOf(m.p);
       if (!p) return;
       c.pose = p;
+      c.poses.push(p);
+      if (c.poses.length > POSES_KEPT) c.poses.shift();
       c.moved = true;
       const slept = !awake(c);
       c.lastMove = Date.now();
@@ -14941,6 +15547,17 @@ async function handle(c, m) {
     case "brand": {
       const b = cleanBrand(m.brand);
       if (!b) return;
+      if (crews.crewOf(c.pid)) {
+        if (!crews.mayBrand(c.pid)) {
+          send(c, { t: "deny", what: "brand", why: "Only the fleet\u2019s founder can change its name, colours or logo." });
+          return;
+        }
+        crews.setBrand(c.pid, b);
+        c.doc.brand = b;
+        players.touch(c.pid);
+        for (const x of conns.values()) if (x !== c) send(x, { t: "on", who: c.who, c: c.cell, look: c.look ?? void 0 });
+        return;
+      }
       c.doc.brand = b;
       c.who = { ...c.who, brand: b };
       world.people[c.pid] = { name: c.doc.name, brand: b };
@@ -14958,7 +15575,7 @@ async function handle(c, m) {
       if (e.k === "raze") {
         const { x, z } = e;
         const named = typeof m.lot === "string" ? doc.deeds?.[m.lot] : void 0;
-        const d = named && named.by !== c.pid ? named : Object.values(doc.deeds ?? {}).find((row) => row.by !== c.pid && (row.rects ?? []).some(([rx, rz, rw, rd]) => typeof x === "number" && typeof z === "number" && x >= rx && z >= rz && x < rx + rw && z < rz + rd));
+        const d = named && !crews.same(named.by, c.pid) ? named : Object.values(doc.deeds ?? {}).find((row) => !crews.same(row.by, c.pid) && (row.rects ?? []).some(([rx, rz, rw, rd]) => typeof x === "number" && typeof z === "number" && x >= rx && z >= rz && x < rx + rw && z < rz + rd));
         if (d) {
           send(c, { t: "deny", what: "raze", c: k, why: `That belongs to ${whoOf(d.by)?.brand?.name ?? whoOf(d.by)?.name ?? "another fleet"}.` });
           return;
@@ -15041,29 +15658,29 @@ async function handle(c, m) {
     case "credit": {
       const t = TOWN2.exec(String(m.town));
       const host = t ? rooms.get(t[1])?.host : null;
-      const amt = num2(m.amt);
+      const amt = num3(m.amt);
       if (!host || host === c || !(amt > 0) || amt > 1e6) return;
       if (m.rent === true) {
         send(host, { t: "credit", town: m.town, by: c.pid, amt, rent: true });
         return;
       }
-      send(host, { t: "credit", town: m.town, by: c.pid, amt, lot: typeof m.lot === "string" && LOT2.test(m.lot) ? m.lot : void 0, lotAmt: num2(m.lotAmt) || void 0, dir: m.dir === "out" ? "out" : "in" });
+      send(host, { t: "credit", town: m.town, by: c.pid, amt, lot: typeof m.lot === "string" && LOT3.test(m.lot) ? m.lot : void 0, lotAmt: num3(m.lotAmt) || void 0, dir: m.dir === "out" ? "out" : "in" });
       return;
     }
     case "deeds": {
       for (const [key, v] of Object.entries(m.set ?? {})) {
-        const lot = LOT2.exec(key);
+        const lot = LOT3.exec(key);
         if (!lot || !v) continue;
         const dk = `${world.epoch}:${lot[1]}`;
         const doc = await cells.open(dk);
         const have = doc.deeds?.[key];
-        if (have && have.by !== c.pid) {
+        if (have && !crews.same(have.by, c.pid)) {
           const w = whoOf(have.by);
           if (w) send(c, { t: "deedDeny", key, who: w });
           continue;
         }
-        const row = { by: c.pid, name: String(v.name ?? "").replace(/[<>&"`\u0000-\u001f]/g, "").slice(0, 60), ceil: Math.max(0, Math.min(1e7, num2(v.ceil))) };
-        if (v.hq !== void 0) row.hq = Math.max(0, Math.min(9, Math.round(num2(v.hq))));
+        const row = { by: have?.by ?? c.pid, name: String(v.name ?? "").replace(/[<>&"`\u0000-\u001f]/g, "").slice(0, 60), ceil: Math.max(0, Math.min(1e7, num3(v.ceil))) };
+        if (v.hq !== void 0) row.hq = Math.max(0, Math.min(9, Math.round(num3(v.hq))));
         const rects = Array.isArray(v.rects) ? v.rects.filter((r) => Array.isArray(r) && r.length === 4 && r.every((n) => Number.isInteger(n) && n >= 0 && n <= 256) && r[2] <= 64 && r[3] <= 64).slice(0, 24) : have?.rects;
         if (rects?.length) row.rects = rects;
         (doc.deeds ??= {})[key] = row;
@@ -15072,23 +15689,33 @@ async function handle(c, m) {
         if (row.hq !== void 0) {
           c.doc.hq = { key, name: row.name, epoch: world.epoch };
           players.touch(c.pid);
+          (world.hqs ??= {})[c.pid] = lot[1];
+          worldDirty = true;
         } else if (c.doc.hq?.key === key) {
           delete c.doc.hq;
           players.touch(c.pid);
+          if (world.hqs?.[c.pid]) {
+            delete world.hqs[c.pid];
+            worldDirty = true;
+          }
         }
       }
       for (const key of m.del ?? []) {
-        const lot = LOT2.exec(String(key));
+        const lot = LOT3.exec(String(key));
         if (!lot) continue;
         const dk = `${world.epoch}:${lot[1]}`;
         const doc = await cells.open(dk);
-        if (doc.deeds?.[key]?.by !== c.pid) continue;
+        if (!doc.deeds?.[key] || !crews.same(doc.deeds[key].by, c.pid)) continue;
         delete doc.deeds[key];
         cells.touch(dk);
         toRoom(lot[1], { t: "deed", key, row: null }, c);
         if (c.doc.hq?.key === key) {
           delete c.doc.hq;
           players.touch(c.pid);
+          if (world.hqs?.[c.pid]) {
+            delete world.hqs[c.pid];
+            worldDirty = true;
+          }
         }
       }
       return;
@@ -15096,14 +15723,14 @@ async function handle(c, m) {
     case "rent": {
       const day = Math.floor(world.hours / 24);
       for (const [key, v] of Object.entries(m.k ?? {})) {
-        const lot = LOT2.exec(key);
+        const lot = LOT3.exec(key);
         if (!lot) continue;
         const doc = cells.peek(`${world.epoch}:${lot[1]}`);
         const row = doc?.deeds?.[key];
-        if (!row || row.by === c.pid) continue;
+        if (!row || crews.same(row.by, c.pid)) continue;
         const t = rentToday.get(key);
         const taken = t && t[0] === day ? t[1] : 0;
-        const amt = Math.floor(Math.min(num2(v), Math.max(0, row.ceil - taken)));
+        const amt = Math.floor(Math.min(num3(v), Math.max(0, row.ceil - taken)));
         if (!(amt > 0)) continue;
         rentToday.set(key, [day, taken + amt]);
         const owner2 = conns.get(row.by);
@@ -15132,9 +15759,9 @@ async function handle(c, m) {
           name: c.doc.brand?.name ?? c.doc.name,
           by: c.doc.name,
           cpu: false,
-          worth: Math.round(num2(me.worth)),
-          units: Math.round(num2(me.units)),
-          towns: Math.round(num2(me.towns)),
+          worth: Math.round(num3(me.worth)),
+          units: Math.round(num3(me.units)),
+          towns: Math.round(num3(me.towns)),
           primary: c.doc.brand?.primary ?? 14827823,
           accent: c.doc.brand?.accent ?? 16777215,
           logo: c.doc.brand?.logo ?? "",
@@ -15142,7 +15769,7 @@ async function handle(c, m) {
           ...community.boardBits(c.doc)
         };
         boardDirty = true;
-        marks.worth(c.pid, Math.round(num2(me.worth)));
+        marks.worth(c.pid, Math.round(num3(me.worth)));
       }
       for (const row of m.board?.cpu ?? []) {
         const home = String(row?.id ?? "").split("/")[0];
@@ -15151,11 +15778,11 @@ async function handle(c, m) {
           id: String(row.id).slice(0, 40),
           name: String(row.name ?? "").slice(0, 40),
           cpu: true,
-          worth: Math.round(num2(row.worth)),
-          units: Math.round(num2(row.units)),
-          towns: Math.round(num2(row.towns)),
-          primary: num2(row.primary) & 16777215,
-          accent: num2(row.accent) & 16777215,
+          worth: Math.round(num3(row.worth)),
+          units: Math.round(num3(row.units)),
+          towns: Math.round(num3(row.towns)),
+          primary: num3(row.primary) & 16777215,
+          accent: num3(row.accent) & 16777215,
           logo: [...String(row.logo ?? "")].slice(0, 2).join(""),
           v: metricValues(row.v)
         };
@@ -15202,7 +15829,7 @@ async function handle(c, m) {
       }
       delete world.names[c.doc.name.toLowerCase()];
       world.names[lower] = c.pid;
-      c.doc.salt = randomBytes2(12).toString("hex");
+      c.doc.salt = randomBytes3(12).toString("hex");
       c.doc.hash = await pinHash(pin, c.doc.salt);
       c.doc.name = nm;
       delete c.doc.auto;
@@ -15247,6 +15874,27 @@ async function handle(c, m) {
       return;
     case "bye":
       c.ws.close();
+      return;
+    case "join": {
+      if (c.doc.auto) {
+        send(c, { t: "joined", welcome: null, why: "Keep your fleet first (pause \u2192 Keep this fleet): then you can join another." });
+        return;
+      }
+      const r = await crews.join(c, String(m.code ?? ""));
+      if ("why" in r) {
+        send(c, { t: "joined", welcome: null, why: r.why });
+        return;
+      }
+      const crew = await crews.signedIn(c);
+      send(c, { t: "joined", welcome: { ...welcomeOf(c), ...crew ? { crew } : {}, ...r.spawn ? { spawn: r.spawn } : {} } });
+      return;
+    }
+    case "invite":
+    case "purse":
+    case "roster":
+    case "boot":
+    case "leaveCrew":
+      await crews.handle(c, m);
       return;
     default:
       if (c.doc.auto && (m.t === "sign" || m.t === "suggest" || m.t === "name")) {
@@ -15334,7 +15982,7 @@ function beat() {
     const a = [], f = [];
     for (const m of movers) {
       if (m === to || cheb(m.cell, to.cell) > SEE_CELLS && !(to.watch && cheb(m.cell, to.watch) <= SEE_CELLS)) continue;
-      a.push([m.pid, ...m.pose]);
+      for (const p of m.poses.length ? m.poses : [m.pose]) a.push([m.pid, ...p]);
       for (const u of m.fleet) f.push([m.pid, ...u]);
     }
     if (a.length) send(to, { t: "mv", a, f });
@@ -15344,12 +15992,15 @@ function beat() {
     const a = [], f = [];
     for (const m of movers) {
       if (cheb(m.cell, g.at) > SEE_CELLS) continue;
-      a.push([m.pid, ...m.pose]);
+      for (const p of m.poses.length ? m.poses : [m.pose]) a.push([m.pid, ...p]);
       for (const u of m.fleet) f.push([m.pid, ...u]);
     }
     if (a.length) send(g.ws, { t: "mv", a, f });
   }
-  for (const m of movers) m.moved = false;
+  for (const m of movers) {
+    m.moved = false;
+    m.poses = [];
+  }
 }
 var lastClock = Date.now();
 function clock() {
@@ -15401,6 +16052,7 @@ async function flush(evict = true) {
     }
     await community.flush();
     await marks.flush();
+    await crewDocs.flush(evict);
     await cards.flush(evict);
     await pics.flush(evict);
     await players.flush(evict);
@@ -15501,6 +16153,15 @@ function http(req, res) {
     res.writeHead(200, { "content-type": "text/plain" }).end("ok");
     return;
   }
+  if (path.startsWith("/join/") || path.startsWith("/api/invite/")) {
+    crews.http(req, res, path, SITE ? "/play/" : "/").then((done) => {
+      if (!done && !res.headersSent) res.writeHead(404, { "content-type": "text/plain" }).end("Not found");
+    }).catch((e) => {
+      console.error("crews:", e.message);
+      if (!res.headersSent) res.writeHead(500).end();
+    });
+    return;
+  }
   if (path.startsWith("/p/") || path.startsWith("/api/postcard/")) {
     postcards.http(req, res, path, ipOf2(req), SITE ? "/play/" : "/").then((done) => {
       if (!done && !res.headersSent) res.writeHead(404, { "content-type": "text/plain" }).end("Not found");
@@ -15564,7 +16225,7 @@ async function main() {
   world.people ??= {};
   if (world.seed !== SEED || world.gen !== GEN_VERSION) {
     console.log(`the world begins again: ${world.seed} gen ${world.gen} \u2192 ${SEED} gen ${GEN_VERSION}`);
-    world = { ...world, seed: SEED, gen: GEN_VERSION, epoch: world.epoch + 1, homes: {}, hours: 8 };
+    world = { ...world, seed: SEED, gen: GEN_VERSION, epoch: world.epoch + 1, homes: {}, hqs: {}, hours: 8 };
     board = { players: board.players, cpu: {} };
     worldDirty = boardDirty = true;
   }
@@ -15608,6 +16269,34 @@ async function main() {
   community.tell = (pid, n, from) => void marks.news(pid, n, from);
   marks.onLike = (pid, n) => void community.likes(pid, n);
   await marks.load();
+  crewDocs = new Docs(store, "crew:", () => ({}));
+  crews = new Crews({
+    epoch: () => world.epoch,
+    docs: crewDocs,
+    players,
+    cells,
+    conn: (pid) => conns.get(pid),
+    conns: () => conns.values(),
+    send: (c, m) => send(c, m),
+    toRoom: (c, m) => toRoom(c, m),
+    people: () => world.people,
+    index: () => world.crews ??= {},
+    invites: () => world.invites ??= {},
+    nextId: () => {
+      world.nextCrew = (world.nextCrew ?? 0) + 1;
+      worldDirty = true;
+      return world.nextCrew;
+    },
+    worldChanged: () => {
+      worldDirty = true;
+    },
+    retag: (pid) => {
+      const c = conns.get(pid);
+      if (!c) return;
+      for (const x of conns.values()) if (x !== c) send(x, { t: "on", who: c.who, c: c.cell, look: c.look ?? void 0 });
+      toGuests({ t: "on", who: c.who, c: c.cell, look: c.look ?? void 0 });
+    }
+  });
   cards = new Docs(store, "postcard:", () => null);
   pics = new Docs(store, "postcardpic:", () => null);
   postcards = new Postcards({

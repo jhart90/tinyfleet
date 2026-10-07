@@ -246,6 +246,10 @@
     #br .keypad kbd.up { grid-column: 2; grid-row: 1; }
     #br .keypad kbd:not(.up) { grid-row: 2; }
     #br .keypad { line-height: 1.35; }
+    /* a mouse's scroll wheel, drawn: the body with the wheel standing in its slot */
+    #br .ctl-zoom { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    #br .ctl-zoom .wheel { position: relative; display: inline-block; width: 13px; height: 19px; border: 1.5px solid #8a979e; border-radius: 7px; margin-right: 3px; box-sizing: border-box; }
+    #br .ctl-zoom .wheel i { position: absolute; left: 50%; top: 3px; width: 3px; height: 6px; margin-left: -1.5px; border-radius: 2px; background: #4c5a63; }
     /* every notification (a place's card, a deed, a driver's earnings) is one kind of card, stacked at the top middle */
     #notices { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); width: min(380px, calc(100vw - 32px)); display: flex; flex-direction: column; z-index: 15; pointer-events: none; user-select: none; }
     #notices #earnings { display: flex; flex-direction: column; }
@@ -1854,6 +1858,26 @@
     @keyframes racepop { from { transform: translate(-50%, -50%) scale(1.6); opacity: 0; } }
     .race-tag { position: fixed; left: 0; top: 0; z-index: 12; pointer-events: none; font-size: 12px; font-weight: 700; color: #fff; background: rgba(31,43,51,.78); padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
     .race-tag[hidden] { display: none; }
+    /* ---- a tail (src/game/tail): the suspicion meter, the warning, the red edge, the 👀 over the target ---- */
+    .tail-strip { gap: 12px; }
+    .tail-meter { position: relative; width: 120px; height: 10px; border-radius: 999px; background: rgba(125,138,146,.28); overflow: hidden; }
+    .tail-meter i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: #3fa86a; transition: width .15s linear, background .3s; }
+    .tail-meter.warm i { background: #e8a83a; }
+    .tail-meter.hot i { background: #d8342a; }
+    .tail-mood { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #3fa86a; }
+    .tail-mood.warm { color: #c98a1e; }
+    .tail-mood.hot { color: #d8342a; }
+    .tail-pill { font-size: 12px; padding: 1px 8px; border-radius: 999px; background: rgba(31,43,51,.12); }
+    .tail-pill.hot { background: rgba(216,52,42,.18); }
+    .tail-warn { position: fixed; top: 22%; left: 50%; transform: translate(-50%, -50%); z-index: 15; pointer-events: none; font-size: 30px; font-weight: 700; color: #fff; padding: 6px 22px; border-radius: 14px; background: rgba(31,43,51,.7); text-shadow: 0 2px 8px rgba(0,0,0,.4); white-space: nowrap; }
+    .tail-warn[hidden] { display: none; }
+    .tail-warn.hot { background: rgba(200,40,30,.82); animation: tailthrob .6s ease-in-out infinite alternate; }
+    .tail-warn.warm { background: rgba(214,140,30,.82); font-size: 24px; }
+    .tail-warn.far { background: rgba(63,120,192,.82); font-size: 24px; }
+    @keyframes tailthrob { to { transform: translate(-50%, -50%) scale(1.07); } }
+    .tail-edge { position: fixed; inset: 0; z-index: 4; pointer-events: none; opacity: 0; box-shadow: inset 0 0 90px 24px rgba(220,30,20,.75); animation: tailedge 1.2s ease-in-out infinite alternate; }
+    @keyframes tailedge { from { box-shadow: inset 0 0 60px 10px rgba(220,30,20,.5); } to { box-shadow: inset 0 0 120px 34px rgba(220,30,20,.85); } }
+    .tail-tag { font-size: 20px; background: rgba(255,255,255,.85); padding: 0 6px; }
 
     /* ---- online (src/net): the chat, who is signed in and the leaderboard, name tags, the lost-connection card ---- */
     #net-chat { position: fixed; left: 16px; bottom: 100px; width: 360px; max-width: calc(100vw - 32px); z-index: 5; font-size: 13px; color: #1f2b33; pointer-events: none; }
@@ -2095,6 +2119,17 @@
     #title-menu .tm-online-state i { width: 9px; height: 9px; border-radius: 50%; background: #c9ced4; }
     #title-menu .tm-online-state.up i { background: #1e9e4a; box-shadow: 0 0 0 3px rgba(30,158,74,.2); }
     #title-menu .tm-online-state.down i { background: #c2331f; }
+    /* shared fleets (docs/sharedfleets.html): the pause card's Fleet players, and the title's join question */
+    #title-menu .tm-panel.crew, #title-menu .tm-panel.join { width: 420px; }
+    #title-menu .tm-crew { display: flex; flex-direction: column; gap: 6px; }
+    #title-menu .tm-crewrow { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #1f2b33; padding: 6px 10px; border-radius: 12px; background: rgba(255,255,255,.7); }
+    #title-menu .tm-crewrow i { width: 9px; height: 9px; border-radius: 50%; background: #c9ced4; flex: none; }
+    #title-menu .tm-crewrow.on i { background: #1e9e4a; box-shadow: 0 0 0 3px rgba(30,158,74,.2); }
+    #title-menu .tm-crewrow b { flex: 1; font-weight: 600; }
+    #title-menu .tm-crewrow small { color: #7d8a92; font-size: 12px; }
+    #title-menu .tm-invite { font-family: "IBM Plex Mono", monospace; font-size: 13px; }
+    #title-menu .tm-note.invite { color: #1f2b33; background: rgba(242,182,50,.18); border-radius: 12px; padding: 8px 12px; }
+    #title-menu .tm-joinq { font-size: 20px; font-weight: 700; color: #1f2b33; line-height: 1.3; }
     /* the camera mode (game/photoMode.ts, docs/postcards.html): everything but the world and its own bar goes */
     body.photo > *:not(#game):not(#photo-ui):not(script):not(style) { visibility: hidden !important; }
     #photo-ui { position: fixed; inset: 0; z-index: 40; pointer-events: none; font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; color: #f2f5f0; }
@@ -2456,7 +2491,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-MseJwhWF.js"></script>
+  <script type="module" crossorigin src="./assets/index-Da7ZOYQy.js"></script>
 </head>
 <body>
   <div id="mobile-block" role="alertdialog" aria-labelledby="mb-title">
@@ -2568,17 +2603,19 @@
         <span>drive and steer</span>
       </div>
       <div><kbd>Shift</kbd> nitrous · hold <kbd>Space</kbd> handbrake · <kbd>K</kbd> horn, once bought at a Vehicle Shop</div>
+      <div><kbd>N</kbd> headlights off and on <em>(a helicopter's searchlight)</em></div>
     </section>
     <section class="ctl-sec">
       <h4>Cargo, the world and other vehicles</h4>
-      <div>tap <kbd>Space</kbd> or click: load cargo, or go in at a ring</div>
+      <div>tap <kbd>Space</kbd> or click to load cargo, or to enter a shop or tavern</div>
       <div><kbd>Tab</kbd> beside your own vehicle: take its wheel</div>
       <div><kbd>G</kbd> in a Dealer's or Vehicle Shop's striped ring: its counter</div>
       <div>Click a vehicle or building for its card</div>
     </section>
     <section class="ctl-sec">
       <h4>Camera</h4>
-      <div><kbd>Q</kbd><kbd>E</kbd> or right-drag orbit · wheel zoom · <kbd>P</kbd> pitch</div>
+      <div><kbd>Q</kbd><kbd>E</kbd> or right-drag orbit · <kbd>P</kbd> pitch</div>
+      <div class="ctl-zoom"><span class="wheel" aria-label="scroll wheel"><i></i></span><kbd>in</kbd><kbd>out</kbd> scroll wheel or <kbd>+</kbd>/<kbd>&minus;</kbd> to zoom in/out</div>
       <div><kbd>R</kbd> <span id="camlock">lock camera behind car</span> · <kbd>C</kbd> photos and clips</div>
     </section>
     <section class="ctl-sec">
