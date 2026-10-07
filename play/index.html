@@ -171,6 +171,8 @@
     .regionmap header kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 11px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.3); border-radius: 4px; padding: 0 5px; }
     .regionmap header .names { font: inherit; font-size: 11.5px; font-weight: 600; padding: 2px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.1); color: #f4f7f1; cursor: pointer; }
     .regionmap header .names:hover, .regionmap header .names:focus-visible { background: rgba(255,255,255,.2); outline: none; }
+    .regionmap .cargokey { position: absolute; right: 16px; bottom: 16px; display: flex; gap: 10px; font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: #dbe3dd; padding: 4px 12px; border-radius: 999px; background: rgba(18,26,32,.55); pointer-events: none; }
+    .regionmap .cargokey i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; box-shadow: 0 0 0 2px rgba(18,26,32,.95); }
     .regionmap .cap { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: #dbe3dd; white-space: nowrap; padding: 4px 12px; border-radius: 999px; background: rgba(18,26,32,.55); pointer-events: none; }
     .regionmap .rlabels { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
     .rtag { position: absolute; left: 0; top: 0; white-space: nowrap; text-align: center; pointer-events: none; font-size: 11px; line-height: 1.2; color: #f4f7f1; text-shadow: 0 1px 2px rgba(0,0,0,.8), 0 0 6px rgba(0,0,0,.55); }
@@ -233,6 +235,17 @@
     #bl #wind { flex: none; font-size: 12px; color: #2f7fb5; margin-left: 8px; display: inline-flex; align-items: center; gap: 3px; align-self: center; }
     #wind-arrow { width: 18px; height: 18px; transition: transform .15s linear; }
     #br .hint { color: #2f7fb5; }
+    /* the controls card, by what the keys are for (driving, the world, the camera, the menus) */
+    #br .ctl-sec + .ctl-sec { margin-top: 6px; padding-top: 5px; border-top: 1px solid #e6ece4; }
+    #br .ctl-sec h4 { margin: 0 0 1px; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #8a979e; }
+    #br .ctl-drive { display: flex; align-items: center; gap: 8px; margin: 2px 0 3px; }
+    #br .ctl-drive .or { color: #8a979e; font-weight: 600; }
+    /* W over A S D, the way the keys sit on the keyboard (and the arrows the same) */
+    #br .keypad { display: inline-grid; grid-template-columns: repeat(3, auto); gap: 2px; }
+    #br .keypad kbd { margin: 0; min-width: 18px; text-align: center; padding: 0 3px; }
+    #br .keypad kbd.up { grid-column: 2; grid-row: 1; }
+    #br .keypad kbd:not(.up) { grid-row: 2; }
+    #br .keypad { line-height: 1.35; }
     /* every notification (a place's card, a deed, a driver's earnings) is one kind of card, stacked at the top middle */
     #notices { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); width: min(380px, calc(100vw - 32px)); display: flex; flex-direction: column; z-index: 15; pointer-events: none; user-select: none; }
     #notices #earnings { display: flex; flex-direction: column; }
@@ -594,6 +607,8 @@
     #build .sw-paved { background: linear-gradient(90deg, #8fd06c 0 22%, #5b5f64 22% 78%, #8fd06c 78%); }
     #build .sw-two { background: repeating-linear-gradient(#f2c14e 0 5px, transparent 5px 9px) 50% 0 / 2px 100% no-repeat, linear-gradient(90deg, #8fd06c 0 8%, #5b5f64 8% 92%, #8fd06c 92%); }
     #build .sw-four { background: linear-gradient(#77b457, #77b457) 50% 0 / 4px 100% no-repeat, repeating-linear-gradient(#eeeae0 0 4px, transparent 4px 8px) 25% 0 / 1.5px 100% no-repeat, repeating-linear-gradient(#eeeae0 0 4px, transparent 4px 8px) 75% 0 / 1.5px 100% no-repeat, #53575c; }
+    #build .sw-interstate { background: linear-gradient(90deg, #53575c 0 42%, #77b457 42% 58%, #53575c 58%); }
+    #build .sw-ramp { background: linear-gradient(70deg, #8fd06c 0 30%, #5b5f64 30% 62%, #8fd06c 62%); }
     #build .help { margin-top: 10px; line-height: 1.75; }
     #build .count { margin-top: 6px; padding-top: 7px; border-top: 1px solid #e6ecef; font-size: 11.5px; color: #7d8a92; }
     #road-tip, #dozer-tip, #earth-tip, #lobby-tip { top: 0; left: 0; z-index: 5; padding: 7px 11px 8px; border-left: 4px solid #8a93a6; font-size: 12px; color: #4c5a63; max-width: 250px; }
@@ -2018,6 +2033,10 @@
     #dock.lift { z-index: 8; }
     #dock .dk-ic { position: absolute; top: 3px; right: 4px; z-index: 1; font-size: 13px; line-height: 1; pointer-events: none; filter: drop-shadow(0 1px 1px rgba(255,255,255,.9)); }
     #dock .dk-ic:empty { display: none; }
+    /* the driver's first name on a plate across the bottom edge of each square */
+    #dock .dk-name { position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%); z-index: 1; max-width: 62px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      padding: 1px 6px; border-radius: 7px; background: rgba(31,43,51,.86); color: #fff; font-size: 10px; font-weight: 700; line-height: 13px; letter-spacing: .02em; pointer-events: none; box-shadow: 0 1px 3px rgba(31,43,51,.25); }
+    #dock .dk-name:empty { display: none; }
     #dock .dk-tip.dk-unit { pointer-events: auto; cursor: default; }
     #dock .dk-tip.dk-unit::before { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 14px; }
     #dock .dk-unit .dk-ctl { display: flex; align-items: center; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px solid #eef2f4; }
@@ -2409,7 +2428,7 @@
     #hq svg.chart .ax { fill: var(--axis); font-size: 10.5px; font-family: "IBM Plex Sans", sans-serif; }
     #hq svg.chart .hit { fill: transparent; }
     #hq svg.chart rect.hit:hover { fill: rgba(31,43,51,.05); }
-    #hq svg.chart.share rect.hit { fill: unset; }
+    #hq svg.chart.share rect.seg:hover { opacity: .85; }
     #hq svg.chart .ring { stroke: #fcfcfb; stroke-width: 2; }
     #hq .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; font-size: 11.5px; color: #4c5a63; }
     #hq .legend i, #hq .hq-tip i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
@@ -2437,7 +2456,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-DFyXAiwk.js"></script>
+  <script type="module" crossorigin src="./assets/index-MseJwhWF.js"></script>
 </head>
 <body>
   <div id="mobile-block" role="alertdialog" aria-labelledby="mb-title">
@@ -2540,14 +2559,34 @@
       <svg class="shrink" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 12.5h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9.5 3.5 6.5 6.5M6.5 3.5v3h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
       <svg class="grow" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6 9.5h1.5M9.5 9.5H11M13 9.5h1.5M16.5 9.5H18M6 12h1.5M9.5 12H11M13 12h1.5M16.5 12H18M8 14.8h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
     </button>
-    <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> drive</div>
-    <div><kbd>Q</kbd><kbd>E</kbd> or right-drag orbit · wheel zoom</div>
-    <div><kbd>R</kbd> <span id="camlock">lock camera behind car</span> · <kbd>P</kbd> camera pitch · <kbd>M</kbd> island overview</div>
-    <div><kbd>H</kbd> HQ: fleet, garage, drivers, estate, tech, books · <kbd>J</kbd> journal: missions · <kbd>I</kbd> standings · <kbd>F</kbd> beside your own vehicle: take its wheel · <kbd>G</kbd> in a Dealer's or Vehicle Shop's ring: its counter · <kbd>B</kbd> build roads · <kbd>X</kbd> bulldoze · <kbd>T</kbd> terrain</div>
-    <div><kbd>Shift</kbd> nitrous · hold <kbd>Space</kbd> handbrake · <kbd>K</kbd> horn, once bought at a Vehicle Shop (stop in its striped ring, <kbd>Space</kbd>)</div>
-    <div><kbd>O</kbd> settings and music</div>
-    <div>tap <kbd>Space</kbd> or click load cargo</div>
-    <div>Click a vehicle or building for its card</div>
+    <section class="ctl-sec">
+      <h4>Driving</h4>
+      <div class="ctl-drive">
+        <span class="keypad" aria-label="W A S D"><kbd class="up">W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span>
+        <span class="or">/</span>
+        <span class="keypad" aria-label="arrow keys"><kbd class="up">&uarr;</kbd><kbd>&larr;</kbd><kbd>&darr;</kbd><kbd>&rarr;</kbd></span>
+        <span>drive and steer</span>
+      </div>
+      <div><kbd>Shift</kbd> nitrous · hold <kbd>Space</kbd> handbrake · <kbd>K</kbd> horn, once bought at a Vehicle Shop</div>
+    </section>
+    <section class="ctl-sec">
+      <h4>Cargo, the world and other vehicles</h4>
+      <div>tap <kbd>Space</kbd> or click: load cargo, or go in at a ring</div>
+      <div><kbd>Tab</kbd> beside your own vehicle: take its wheel</div>
+      <div><kbd>G</kbd> in a Dealer's or Vehicle Shop's striped ring: its counter</div>
+      <div>Click a vehicle or building for its card</div>
+    </section>
+    <section class="ctl-sec">
+      <h4>Camera</h4>
+      <div><kbd>Q</kbd><kbd>E</kbd> or right-drag orbit · wheel zoom · <kbd>P</kbd> pitch</div>
+      <div><kbd>R</kbd> <span id="camlock">lock camera behind car</span> · <kbd>C</kbd> photos and clips</div>
+    </section>
+    <section class="ctl-sec">
+      <h4>Menus</h4>
+      <div><kbd>H</kbd> HQ · <kbd>F</kbd> fleet · <kbd>J</kbd> journal · <kbd>I</kbd> standings · <kbd>O</kbd> settings</div>
+      <div><kbd>M</kbd> island overview · <kbd>Y</kbd> region map</div>
+      <div><kbd>B</kbd> build roads · <kbd>X</kbd> bulldoze · <kbd>T</kbd> terrain</div>
+    </section>
     <div id="hint" class="hint" hidden></div>
   </div>
   </div>

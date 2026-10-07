@@ -10248,10 +10248,10 @@ function roadWorks(doc) {
       continue;
     }
     if (e.k !== "road" || e.g || typeof e.by !== "string" || !Array.isArray(e.n) || !e.n.length) continue;
-    const wide = e.t === 5;
+    const wide = e.t === 5, tri = e.t === 8;
     const tilesOf = (nodes) => {
       const s = /* @__PURE__ */ new Set();
-      for (const n of nodes) for (const t of wide ? [n - N2 - 1, n - N2, n - 1, n] : [n]) if (t >= 0 && t < N2 * N2) s.add(t);
+      for (const n of nodes) for (const t of tri ? [n - N2 - 1, n - N2, n - N2 + 1, n - 1, n, n + 1, n + N2 - 1, n + N2, n + N2 + 1] : wide ? [n - N2 - 1, n - N2, n - 1, n] : [n]) if (t >= 0 && t < N2 * N2) s.add(t);
       return s;
     };
     const id = roadWorkId(e.n);
@@ -13703,6 +13703,21 @@ var C = {
 };
 
 // src/world/roads.ts
+var ROAD_INFO = [
+  { name: "No road", width: 0, speed: 1, span: 0, lift: 0 },
+  { name: "Dirt lane", width: 0.6, speed: 1.1, span: 6, lift: 0.02 },
+  { name: "Brick lane", width: 0.64, speed: 1.18, span: 7, lift: 0.025 },
+  { name: "Paved lane", width: 0.62, speed: 1.25, span: 8, lift: 0.03 },
+  { name: "Two-lane road", width: 0.96, speed: 1.25, span: 12, lift: 0.04 },
+  { name: "Four-lane highway", width: 1.94, speed: 1.25, span: 14, lift: 0.05 },
+  { name: "Gravel track", width: 0.58, speed: 1.13, span: 6, lift: 0.02 },
+  { name: "Cobbled street", width: 0.66, speed: 1.16, span: 7, lift: 0.028 },
+  // The speeds are all against bare ground (1): a paved road is +25%, and the interstate +50% — a fifth
+  // quicker again than any other paved road. Its width is the whole three tiles, median and all.
+  { name: "Interstate", width: 3, speed: 1.5, span: 16, lift: 0.055 },
+  { name: "On/off ramp", width: 0.5, speed: 1.25, span: 8, lift: 0.03 }
+];
+var PAVED_SPEED = 1.25;
 var ROAD_RANK = {
   [0 /* None */]: 0,
   [1 /* Dirt */]: 1,
@@ -13711,8 +13726,12 @@ var ROAD_RANK = {
   [7 /* Cobble */]: 4,
   [3 /* Paved */]: 5,
   [4 /* TwoLane */]: 6,
-  [5 /* FourLane */]: 7
+  [5 /* FourLane */]: 7,
+  // a ramp gives way to whatever it joins: the road it meets owns the junction tile and draws over it
+  [9 /* Ramp */]: 5.5,
+  [8 /* Interstate */]: 8
 };
+var INTERSTATE_STEP = PAVED_SPEED / ROAD_INFO[8 /* Interstate */].speed;
 
 // src/world/townKinds.ts
 var OPEN2 = { solid: false, apart: 8 };
