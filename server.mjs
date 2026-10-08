@@ -14284,6 +14284,96 @@ var C = {
 // src/world/greatParks.ts
 var TAU2 = Math.PI * 2;
 
+// src/world/factionKinds.ts
+var FACTION_KINDS = [
+  // the Constabulary
+  "highwayPatrol",
+  "impoundYard",
+  // the Family
+  "socialClub",
+  "chopShop",
+  "bossVilla",
+  // the Ministry
+  "embassy",
+  "motorPool",
+  "mint",
+  "hangar18",
+  // the Visitors
+  "crashSite",
+  "landingRing",
+  "cropCircle",
+  // the Brotherhood
+  "unionHall",
+  "buildersYard",
+  "asphaltPlant",
+  // the Post
+  "sortingOffice",
+  "mailDock",
+  "mailboxRow",
+  // the Army
+  "airbase",
+  "armyDepot",
+  "checkpoint",
+  // the Studios
+  "backlot",
+  "studioGate",
+  "premiereTheatre",
+  "starMansion",
+  // the Guild
+  "fishMarket",
+  "netLoft",
+  "lifeboatStation",
+  "guildHall",
+  // the Press
+  "printworks",
+  "broadcastCentre",
+  "newsstand"
+];
+var OPEN2 = { solid: false };
+var FACTION_INFO = {
+  highwayPatrol: { label: "Highway patrol", icon: "\u{1F693}", size: [2, 2], h: 1.09, price: 999, grade: 2, tag: "work" },
+  impoundYard: { label: "Impound yard", icon: "\u{1F6A7}", size: [3, 3], h: 0.83, price: 799, grade: 1, tag: "depot", spec: { w: 3, d: 3, zone: "edge", lot: 6 /* Asphalt */, apart: 20 } },
+  socialClub: { label: "Social club", icon: "\u2615", size: [1, 2], h: 1.3, price: 899, grade: 2, tag: "shop", spec: { w: 1, d: 2, floors: 2, zone: "mid", lot: 2 /* Paved */, apart: 16 } },
+  chopShop: { label: "Chop shop", icon: "\u{1F527}", size: [2, 3], h: 0.95, price: 699, grade: 1, tag: "depot", spec: { w: 2, d: 3, zone: "edge", lot: 6 /* Asphalt */, apart: 24 } },
+  bossVilla: { label: "Villa", icon: "\u{1F3F0}", size: [4, 4], h: 1.6, price: 3999, grade: 5, tag: "home", spec: { w: 4, d: 4, zone: "edge", lot: 1 /* Lawn */, highest: true, apart: 40 } },
+  embassy: { label: "Embassy", icon: "\u{1F3F3}\uFE0F", size: [3, 3], h: 1.57, price: 3499, grade: 5, tag: "work", spec: { w: 3, d: 3, zone: "core", lot: 7 /* Plaza */, apart: 16 } },
+  motorPool: { label: "Motor pool", icon: "\u{1F698}", size: [3, 2], h: 0.98, price: 999, grade: 2, tag: "depot", spec: { w: 3, d: 2, zone: "mid", lot: 6 /* Asphalt */, apart: 20 } },
+  mint: { label: "The Mint", icon: "\u{1FA99}", size: [3, 3], h: 1.51, price: 4999, grade: 6, tag: "work", spec: { w: 3, d: 3, zone: "core", lot: 2 /* Paved */, apart: 40 } },
+  hangar18: { label: "Hangar 18", icon: "\u{1F6EC}", size: [4, 3], h: 1.27, price: 2999, grade: 3, tag: "depot" },
+  crashSite: { label: "Crash site", icon: "\u{1F6F8}", size: [3, 3], h: 0.65, price: 499, grade: 0, tag: "field", open: true },
+  landingRing: { label: "Landing ring", icon: "\u2B55", size: [3, 3], h: 0.6, price: 399, grade: 0, tag: "field", open: true },
+  cropCircle: { label: "Crop circle", icon: "\u{1F33E}", size: [3, 3], h: 0.04, price: 99, grade: 0, tag: "field", open: true },
+  unionHall: { label: "Union hall", icon: "\u{1F477}", size: [2, 2], h: 1.31, price: 1199, grade: 3, tag: "work", spec: { w: 2, d: 2, floors: 2, zone: "mid", lot: 2 /* Paved */, apart: 18 } },
+  buildersYard: { label: "Builders\u2019 yard", icon: "\u{1F9F1}", size: [3, 3], h: 0.9, price: 699, grade: 1, tag: "depot", spec: { w: 3, d: 3, zone: "edge", lot: 12 /* Gravel */, apart: 18 } },
+  asphaltPlant: { label: "Asphalt plant", icon: "\u{1F6E3}\uFE0F", size: [3, 3], h: 1.8, price: 1499, grade: 2, tag: "depot" },
+  sortingOffice: { label: "Sorting office", icon: "\u{1F4EF}", size: [4, 3], h: 1.42, price: 1999, grade: 3, tag: "depot", spec: { w: 4, d: 3, zone: "mid", lot: 6 /* Asphalt */, apart: 30 } },
+  mailDock: { label: "Mail dock", icon: "\u{1F4EC}", size: [2, 1], h: 1.01, price: 499, grade: 1, tag: "dock" },
+  mailboxRow: { label: "Mailboxes", icon: "\u{1F4EB}", size: [1, 1], h: 0.35, price: 49, grade: 0, tag: "home", open: true, spec: { w: 1, d: 1, zone: "edge", lot: 12 /* Gravel */, solid: false, apart: 12 } },
+  airbase: { label: "Airbase", icon: "\u2708\uFE0F", size: [7, 5], h: 1.36, price: 5999, grade: 5, tag: "depot" },
+  armyDepot: { label: "Army depot", icon: "\u{1FA96}", size: [4, 3], h: 1.02, price: 1999, grade: 3, tag: "depot" },
+  checkpoint: { label: "Checkpoint", icon: "\u{1F6A7}", size: [1, 2], h: 0.88, price: 299, grade: 0, tag: "work" },
+  backlot: { label: "Backlot", icon: "\u{1F3AC}", size: [5, 4], h: 1.63, price: 1999, grade: 2, tag: "leisure", spec: { w: 5, d: 4, zone: "edge", lot: 6 /* Asphalt */, apart: 30 } },
+  studioGate: { label: "Studio gate", icon: "\u{1F39E}\uFE0F", size: [2, 1], h: 1.61, price: 799, grade: 1, tag: "work", spec: { w: 2, d: 1, zone: "edge", lot: 2 /* Paved */, apart: 30 } },
+  premiereTheatre: { label: "Premiere theatre", icon: "\u{1F31F}", size: [3, 3], h: 1.8, price: 3499, grade: 5, tag: "leisure", spec: { w: 3, d: 3, zone: "core", lot: 7 /* Plaza */, apart: 30 } },
+  starMansion: { label: "Star\u2019s mansion", icon: "\u{1F576}\uFE0F", size: [3, 3], h: 1.39, price: 2999, grade: 4, tag: "home", spec: { w: 3, d: 3, zone: "edge", lot: 1 /* Lawn */, highest: true, apart: 14 } },
+  fishMarket: { label: "Fish market", icon: "\u{1F41F}", size: [3, 2], h: 1.13, price: 999, grade: 2, tag: "shop", spec: { w: 3, d: 2, zone: "any", lot: 2 /* Paved */, waterside: true, apart: 20 } },
+  netLoft: { label: "Net loft", icon: "\u{1F578}\uFE0F", size: [1, 2], h: 1.17, price: 299, grade: 1, tag: "dock", spec: { w: 1, d: 2, zone: "edge", lot: 12 /* Gravel */, waterside: "prefer", apart: 10 } },
+  lifeboatStation: { label: "Lifeboat station", icon: "\u{1F6DF}", size: [2, 2], h: 1.3, price: 899, grade: 2, tag: "dock", spec: { w: 2, d: 2, zone: "any", lot: 2 /* Paved */, waterside: true, apart: 30 } },
+  guildHall: { label: "Guild hall", icon: "\u2693", size: [2, 2], h: 1.29, price: 1199, grade: 3, tag: "work", spec: { w: 2, d: 2, floors: 2, zone: "mid", lot: 2 /* Paved */, waterside: "prefer", apart: 24 } },
+  printworks: { label: "Printworks", icon: "\u{1F5DE}\uFE0F", size: [3, 3], h: 1.28, price: 1999, grade: 3, tag: "depot", spec: { w: 3, d: 3, zone: "edge", lot: 6 /* Asphalt */, apart: 30 } },
+  broadcastCentre: { label: "Broadcast centre", icon: "\u{1F4FA}", size: [3, 3], h: 2.22, price: 3999, grade: 5, tag: "work", spec: { w: 3, d: 3, floors: 5, zone: "core", lot: 7 /* Plaza */, apart: 30 } },
+  newsstand: { label: "Newsstand", icon: "\u{1F4F0}", size: [1, 1], h: 0.47, price: 99, grade: 0, tag: "shop", open: true, spec: { w: 1, d: 1, zone: "core", lot: 7 /* Plaza */, solid: false, apart: 8 } }
+};
+var pick = (f) => Object.fromEntries(FACTION_KINDS.map((k) => [k, f(FACTION_INFO[k])]).filter(([, v]) => v !== void 0));
+var FACTION_SPEC = pick((i) => i.spec ? { ...i.spec, ...i.open ? OPEN2 : {} } : i.open ? { w: i.size[0], d: i.size[1], ...OPEN2 } : void 0);
+var FACTION_HEIGHT = pick((i) => i.h);
+var FACTION_PRICE = pick((i) => i.price);
+var FACTION_ICON = pick((i) => i.icon);
+var FACTION_LABEL = pick((i) => i.label);
+var FACTION_GRADE = pick((i) => i.grade);
+var FACTION_TAG = pick((i) => i.tag);
+var FACTION_SIZE = pick((i) => i.size);
+
 // src/world/diagonals.ts
 var ROAD_HALF = {
   [1 /* Dirt */]: 0.3,
@@ -14326,31 +14416,33 @@ var ROAD_RANK = {
 var INTERSTATE_STEP = PAVED_SPEED / ROAD_INFO[8 /* Interstate */].speed;
 
 // src/world/townKinds.ts
-var OPEN2 = { solid: false, apart: 8 };
+var OPEN3 = { solid: false, apart: 8 };
 var KIND_SPEC = {
+  // the factions' town buildings (world/factionKinds.ts)
+  ...FACTION_SPEC,
   // ---- parks and plazas ----
-  meadow: { w: [5, 8], d: [5, 7], zone: "edge", lot: 1 /* Lawn */, ...OPEN2, frontage: false },
-  civicSquare: { w: [5, 6], d: [4, 5], zone: "core", lot: 7 /* Plaza */, ...OPEN2 },
-  fountainSquare: { w: 3, d: 3, zone: "core", lot: 7 /* Plaza */, ...OPEN2 },
-  greenway: { w: [6, 10], d: 2, zone: "any", lot: 3 /* Park */, ...OPEN2, waterside: true, frontage: false },
-  picnicGround: { w: 3, d: 3, zone: "edge", lot: 1 /* Lawn */, ...OPEN2 },
-  dogRun: { w: 2, d: 3, zone: "mid", lot: 12 /* Gravel */, ...OPEN2 },
-  plazaSteps: { w: [3, 4], d: 3, zone: "core", lot: 7 /* Plaza */, ...OPEN2, allow: 3 },
-  sculpturePark: { w: 4, d: 4, zone: "mid", lot: 3 /* Park */, ...OPEN2 },
-  bandstandGreen: { w: 4, d: 4, zone: "mid", lot: 3 /* Park */, ...OPEN2 },
-  memorial: { w: [2, 3], d: 2, zone: "core", lot: 12 /* Gravel */, ...OPEN2 },
-  skatePark: { w: 2, d: 3, zone: "mid", lot: 6 /* Asphalt */, ...OPEN2 },
-  promenade: { w: [6, 10], d: 1, zone: "any", lot: 7 /* Plaza */, ...OPEN2, along: "wide" },
+  meadow: { w: [5, 8], d: [5, 7], zone: "edge", lot: 1 /* Lawn */, ...OPEN3, frontage: false },
+  civicSquare: { w: [5, 6], d: [4, 5], zone: "core", lot: 7 /* Plaza */, ...OPEN3 },
+  fountainSquare: { w: 3, d: 3, zone: "core", lot: 7 /* Plaza */, ...OPEN3 },
+  greenway: { w: [6, 10], d: 2, zone: "any", lot: 3 /* Park */, ...OPEN3, waterside: true, frontage: false },
+  picnicGround: { w: 3, d: 3, zone: "edge", lot: 1 /* Lawn */, ...OPEN3 },
+  dogRun: { w: 2, d: 3, zone: "mid", lot: 12 /* Gravel */, ...OPEN3 },
+  plazaSteps: { w: [3, 4], d: 3, zone: "core", lot: 7 /* Plaza */, ...OPEN3, allow: 3 },
+  sculpturePark: { w: 4, d: 4, zone: "mid", lot: 3 /* Park */, ...OPEN3 },
+  bandstandGreen: { w: 4, d: 4, zone: "mid", lot: 3 /* Park */, ...OPEN3 },
+  memorial: { w: [2, 3], d: 2, zone: "core", lot: 12 /* Gravel */, ...OPEN3 },
+  skatePark: { w: 2, d: 3, zone: "mid", lot: 6 /* Asphalt */, ...OPEN3 },
+  promenade: { w: [6, 10], d: 1, zone: "any", lot: 7 /* Plaza */, ...OPEN3, along: "wide" },
   cemetery: { w: [4, 6], d: [4, 5], zone: "edge", lot: 1 /* Lawn */, solid: true, apart: 10 },
-  amphitheatre: { w: 4, d: 4, zone: "edge", lot: 1 /* Lawn */, ...OPEN2, allow: 3 },
-  marketSquare: { w: [4, 5], d: 4, zone: "core", lot: 7 /* Plaza */, ...OPEN2 },
+  amphitheatre: { w: 4, d: 4, zone: "edge", lot: 1 /* Lawn */, ...OPEN3, allow: 3 },
+  marketSquare: { w: [4, 5], d: 4, zone: "core", lot: 7 /* Plaza */, ...OPEN3 },
   lakePark: { w: [7, 9], d: [6, 8], zone: "mid", lot: 3 /* Park */, solid: true, apart: 12, waterside: "prefer", frontage: false },
-  courts: { w: [3, 4], d: 3, zone: "mid", lot: 4 /* Pitch */, ...OPEN2 },
-  formalGarden: { w: [4, 5], d: [4, 5], zone: "core", lot: 12 /* Gravel */, ...OPEN2 },
-  allotments: { w: [3, 4], d: 3, zone: "edge", lot: 5 /* Yard */, ...OPEN2 },
+  courts: { w: [3, 4], d: 3, zone: "mid", lot: 4 /* Pitch */, ...OPEN3 },
+  formalGarden: { w: [4, 5], d: [4, 5], zone: "core", lot: 12 /* Gravel */, ...OPEN3 },
+  allotments: { w: [3, 4], d: 3, zone: "edge", lot: 5 /* Yard */, ...OPEN3 },
   botanicalGarden: { w: [5, 6], d: [5, 6], zone: "mid", lot: 3 /* Park */, solid: true, apart: 12 },
-  playground: { w: [2, 3], d: [2, 3], zone: "mid", lot: 13 /* Sand */, ...OPEN2 },
-  grove: { w: [3, 4], d: [3, 4], zone: "edge", lot: 3 /* Park */, ...OPEN2 },
+  playground: { w: [2, 3], d: [2, 3], zone: "mid", lot: 13 /* Sand */, ...OPEN3 },
+  grove: { w: [3, 4], d: [3, 4], zone: "edge", lot: 3 /* Park */, ...OPEN3 },
   // a Central Park: never put down by a roster or by growth, only by a big city's layout round its own ring of
   // streets (towns.ts greatParkSite); listed for its size, and so the Passport has a page for it
   greatPark: { w: [12, 18], d: [12, 18], zone: "mid", lot: 3 /* Park */, solid: true, apart: 200, frontage: false },
@@ -14440,7 +14532,7 @@ var KIND_SPEC = {
   stables: { w: 2, d: 2, zone: "edge", lot: 5 /* Yard */ },
   // ---- the biomes' own ----
   // the Sands
-  souk: { w: [4, 5], d: 2, zone: "core", lot: 7 /* Plaza */, ...OPEN2, apart: 10 },
+  souk: { w: [4, 5], d: 2, zone: "core", lot: 7 /* Plaza */, ...OPEN3, apart: 10 },
   caravanserai: { w: 3, d: 3, zone: "edge", lot: 13 /* Sand */, roadside: true, apart: 14 },
   windTower: { w: 1, d: 1, zone: "mid", lot: 13 /* Sand */, frontage: false },
   kasbah: { w: 3, d: 3, zone: "core", lot: 13 /* Sand */ },
@@ -14538,7 +14630,7 @@ var KIND_SPEC = {
   glassSpire: { w: 2, d: 2, floors: [34, 58], zone: "core", lot: 7 /* Plaza */, apart: 30 },
   // Tokyo (the tokyo style's swaps; towers are 2x2 so they find room in a packed core)
   shibuyaTower: { w: 2, d: 2, floors: [5, 7], zone: "core", lot: 7 /* Plaza */, apart: 40 },
-  scrambleCrossing: { w: 3, d: 3, zone: "core", lot: 6 /* Asphalt */, ...OPEN2, apart: 40 },
+  scrambleCrossing: { w: 3, d: 3, zone: "core", lot: 6 /* Asphalt */, ...OPEN3, apart: 40 },
   metroGovTower: { w: 4, d: 3, zone: "core", lot: 7 /* Plaza */, gap: 1, apart: 40 },
   cocoonTower: { w: 2, d: 2, floors: [34, 50], zone: "core", lot: 7 /* Plaza */, apart: 30 },
   godzillaTower: { w: 2, d: 2, floors: 30, zone: "core", lot: 2 /* Paved */, apart: 40 },
@@ -14568,7 +14660,7 @@ var KIND_SPEC = {
   radioTower: { w: 2, d: 2, zone: "edge", lot: 12 /* Gravel */, apart: 10 },
   windmillRow: { w: 3, d: 1, zone: "edge", lot: 12 /* Gravel */, highest: true, frontage: false },
   taverna: { w: 2, d: 1, zone: "any", lot: 7 /* Plaza */, waterside: "prefer", apart: 5 },
-  stoneAmphitheatre: { w: 4, d: 4, zone: "edge", lot: 12 /* Gravel */, ...OPEN2, allow: 3 },
+  stoneAmphitheatre: { w: 4, d: 4, zone: "edge", lot: 12 /* Gravel */, ...OPEN3, allow: 3 },
   // ---- houses of worship (the parish church is drawn by the town mesher; these are the rest) ----
   synagogue: { w: [2, 3], d: 3, zone: "mid", lot: 2 /* Paved */, apart: 20 },
   orthodoxChurch: { w: 3, d: [3, 4], zone: "core", lot: 7 /* Plaza */, apart: 20 },
@@ -14890,7 +14982,7 @@ var SOURCE_MIN = SEA + 13;
 
 // src/world/generate.ts
 var NN = N4 * N4;
-var GEN_VERSION = 49;
+var GEN_VERSION = 50;
 var PAD = 40;
 var P = N4 + 2 * PAD;
 var PP = P * P;
@@ -14986,7 +15078,7 @@ function stagesPlanned(seedHash2, cx, cz, lat) {
   }
   return pad && dock;
 }
-function rankSpawns(seedHash2, around, radius, pick, allow = () => true) {
+function rankSpawns(seedHash2, around, radius, pick2, allow = () => true) {
   const lat = new Lattice(seedHash2);
   let all = [];
   for (const r of [radius, radius * 2, radius * 4]) {
@@ -15002,7 +15094,7 @@ function rankSpawns(seedHash2, around, radius, pick, allow = () => true) {
   const ok = all.filter((s) => s.ok).sort((a, b) => b.score - a.score || a.cx - b.cx || a.cz - b.cz);
   if (!ok.length) return all.filter((s) => s.why !== "not a whole island or a county").sort((a, b) => b.score - a.score);
   const top = Math.max(1, Math.ceil(ok.length * SPAWN.top));
-  const i = Math.min(top - 1, Math.floor(pick * top));
+  const i = Math.min(top - 1, Math.floor(pick2 * top));
   return [ok[i], ...ok.slice(0, i), ...ok.slice(i + 1)];
 }
 
