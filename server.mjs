@@ -14828,7 +14828,7 @@ var DECK_HALF = {
 var NAVAL_DOCK_CHANCE = 0.7;
 var navalDockRolled = (seedHash2, cx, cz) => mulberry32(hashString(`${seedHash2}|${cx},${cz}|navalDock`))() < NAVAL_DOCK_CHANCE;
 var spacePadRolled = (seedHash2, cx, cz) => mulberry32(hashString(`${seedHash2}|${cx},${cz}|spacePad`))() < SPACEPORT_CHANCE;
-var SPACEPORT_CHANCE = 0.5;
+var SPACEPORT_CHANCE = 0.14;
 
 // src/world/ports.ts
 var QUAY = SEA + 1;
@@ -14890,7 +14890,7 @@ var SOURCE_MIN = SEA + 13;
 
 // src/world/generate.ts
 var NN = N4 * N4;
-var GEN_VERSION = 48;
+var GEN_VERSION = 49;
 var PAD = 40;
 var P = N4 + 2 * PAD;
 var PP = P * P;
