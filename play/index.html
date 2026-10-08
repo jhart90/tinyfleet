@@ -217,6 +217,8 @@
       backdrop-filter: blur(6px); box-shadow: 0 2px 10px rgba(31,43,51,.12); display: grid; place-items: center; transition: transform .12s ease, box-shadow .12s ease; }
     #dock .dk-sq:hover { transform: translateY(-2px); box-shadow: 0 5px 14px rgba(31,43,51,.18); }
     #dock .dk-sq.me { background: var(--dk-me, rgba(255,255,255,.92)); }
+    /* the square the camera is on: ringed in the fleet's colour and lifted a little */
+    #dock .dk-sq.sel { box-shadow: 0 0 0 2px #fff, 0 0 0 5px var(--dk-sel, #2f7fb5), 0 5px 14px rgba(31,43,51,.25); transform: translateY(-2px); }
     #dock .dk-group[hidden] { display: none; }
     /* the HQ square: the building's picture, framed in gold */
     #dock .dk-sq.hq { position: relative; background: linear-gradient(180deg, rgba(255,250,235,.95), rgba(244,232,200,.95)); box-shadow: 0 2px 10px rgba(31,43,51,.12), inset 0 0 0 2px rgba(217,179,74,.85); }
@@ -412,6 +414,7 @@
     #cashmenu h3 { margin: 18px 0 9px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #7d8a92; }
     #cashmenu .act { all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 14px; background: #f3f6f7; border: 2px solid #e2e8eb; box-sizing: border-box; font-family: inherit; transition: background .12s, border-color .12s, transform .12s; }
     #cashmenu .act:hover { background: #fff; border-color: #9fb0b8; transform: translateY(-2px); }
+    #cashmenu .act:disabled { cursor: not-allowed; opacity: .45; transform: none; background: #f3f6f7; border-color: #e2e8eb; }
     #cashmenu .act b { font-size: 15px; font-weight: 700; color: #1f2b33; }
     #cashmenu .act span { font-size: 12px; color: #7d8a92; }
     #cashmenu .act.danger b { color: #c2372a; }
@@ -1407,7 +1410,7 @@
     #title-menu .tm-panel.deeds > .tm-head h2 { font-size: 22px; }
     #title-menu .tm-panel.deeds > .tm-keys { margin-top: 0; padding: 4px 12px; border-radius: 10px; background: rgba(255,255,255,.8); }
     #title-menu .pb-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: auto 0; }
-    #title-menu .pb-stage { position: relative; perspective: 2400px; padding: 12px 52px 12px 12px; }
+    #title-menu .pb-stage { position: relative; perspective: 2400px; padding: 12px 136px 12px 12px; }
     #title-menu .pb-book { position: relative; height: var(--ph); transform-style: preserve-3d; filter: drop-shadow(0 22px 34px rgba(20,24,30,.38)); }
     #title-menu .pb-book.two { width: calc(var(--pw) * 2); }
     #title-menu .pb-book.one { width: var(--pw); }
@@ -1513,19 +1516,17 @@
     /* the ribbons down the fore-edge */
     #title-menu .pb-ribbons { position: absolute; left: calc(100% + 9px); top: 22px; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; z-index: 1; }
     #title-menu .pb-book.closed .pb-ribbons, #title-menu .pb-book.opening .pb-ribbons { display: none; }
-    #title-menu .tm-btn.pb-ribbon { position: relative; display: flex; align-items: center; gap: 6px; width: 34px; height: 30px; padding: 0 0 0 8px; overflow: hidden; border-radius: 0 8px 8px 0; border: 0; background: color-mix(in srgb, var(--fleet) 70%, #fff); color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.2); font-size: 12px; font-weight: 600; white-space: nowrap; transition: width .14s, background .14s; }
-    #title-menu .tm-btn.pb-ribbon i { font-style: normal; font-size: 14px; }
-    /* the label shows only while the ribbon is pulled out: a clipped first letter read as a glitch */
-    #title-menu .tm-btn.pb-ribbon span { opacity: 0; transition: opacity .1s; }
-    #title-menu .tm-btn.pb-ribbon:hover span, #title-menu .tm-btn.pb-ribbon:focus-visible span { opacity: 1; }
-    #title-menu .tm-btn.pb-ribbon:hover, #title-menu .tm-btn.pb-ribbon:focus-visible { width: 118px; z-index: 3; background: var(--fleet); color: #fff; transform: none; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
-    #title-menu .tm-btn.pb-ribbon.on { background: var(--fleet); width: 40px; box-shadow: 0 2px 6px rgba(0,0,0,.3), inset 3px 0 0 var(--fleet2); }
-    #title-menu .tm-btn.pb-ribbon.on:hover, #title-menu .tm-btn.pb-ribbon.on:focus-visible { width: 118px; box-shadow: 0 2px 8px rgba(0,0,0,.3), inset 3px 0 0 var(--fleet2); }
+    /* every ribbon shows its name all the time (the user, 7 Oct 2026: sliding out was clunky); the open chapter's stands out */
+    #title-menu .tm-btn.pb-ribbon { position: relative; display: flex; align-items: center; gap: 7px; width: 112px; height: 28px; padding: 0 8px; box-sizing: border-box; overflow: hidden; border-radius: 0 8px 8px 0; border: 0; background: color-mix(in srgb, var(--fleet) 45%, #fff); color: #1f2b33; box-shadow: 0 1px 3px rgba(0,0,0,.18); font-size: 12px; font-weight: 600; white-space: nowrap; text-align: left; transition: background .12s, transform .12s; }
+    #title-menu .tm-btn.pb-ribbon i { font-style: normal; font-size: 14px; flex: none; }
+    #title-menu .tm-btn.pb-ribbon span { overflow: hidden; text-overflow: ellipsis; }
+    #title-menu .tm-btn.pb-ribbon:hover, #title-menu .tm-btn.pb-ribbon:focus-visible { background: color-mix(in srgb, var(--fleet) 65%, #fff); color: #1f2b33; transform: translateX(3px); box-shadow: 0 2px 5px rgba(0,0,0,.25); }
+    #title-menu .tm-btn.pb-ribbon.on, #title-menu .tm-btn.pb-ribbon.on:hover, #title-menu .tm-btn.pb-ribbon.on:focus-visible { background: var(--fleet); color: #fff; font-weight: 700; transform: translateX(8px); box-shadow: 0 2px 8px rgba(0,0,0,.35), inset 4px 0 0 var(--fleet2); }
     #title-menu .pb-nav { display: flex; align-items: center; gap: 14px; padding: 4px 12px; border-radius: 999px; background: rgba(255,255,255,.86); box-shadow: 0 4px 16px rgba(31,43,51,.14); font-size: 12.5px; color: #4c5a63; }
     #title-menu .pb-nav .tm-btn.pb-turn { width: auto; padding: 3px 6px; font-size: 13px; }
     #title-menu .pb-nav .tm-btn.pb-turn:disabled { opacity: .35; }
     #title-menu .pb-where { min-width: 120px; text-align: center; font-variant-numeric: tabular-nums; }
-    @media (max-width: 600px) { #title-menu .pb-stage { padding: 10px 30px 10px 10px; } #title-menu .tm-btn.pb-ribbon { width: 28px; padding-left: 6px; } #title-menu .pb-head b { font-size: 13px; } #title-menu .pb-page { padding: 12px 12px 24px; } #title-menu .pb-photo { font-size: 32px; } #title-menu .pb-mrz { font-size: 10px; letter-spacing: .06em; } #title-menu .pb-cv-top { letter-spacing: .2em; } }
+    @media (max-width: 600px) { #title-menu .pb-stage { padding: 10px 36px 10px 10px; } #title-menu .tm-btn.pb-ribbon, #title-menu .tm-btn.pb-ribbon:hover { width: 28px; padding-left: 6px; } #title-menu .tm-btn.pb-ribbon span { display: none; } #title-menu .pb-head b { font-size: 13px; } #title-menu .pb-page { padding: 12px 12px 24px; } #title-menu .pb-photo { font-size: 32px; } #title-menu .pb-mrz { font-size: 10px; letter-spacing: .06em; } #title-menu .pb-cv-top { letter-spacing: .2em; } }
     /* the Passport (docs/passport.html): stamps, imports, bookmarks */
     #title-menu .pp-sects { border-bottom: 1px solid #e7edf0; padding-bottom: 8px; }
     #title-menu .pp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 10px 6px; align-items: start; }
@@ -2656,7 +2657,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-HxB-_inj.js"></script>
+  <script type="module" crossorigin src="./assets/index-Cn8GMXyz.js"></script>
 </head>
 <body>
   <div id="mobile-block" role="alertdialog" aria-labelledby="mb-title">
