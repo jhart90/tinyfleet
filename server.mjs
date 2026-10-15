@@ -14374,6 +14374,90 @@ var FACTION_GRADE = pick((i) => i.grade);
 var FACTION_TAG = pick((i) => i.tag);
 var FACTION_SIZE = pick((i) => i.size);
 
+// src/world/wildKinds.ts
+var WILD_KINDS = [
+  // A: the strange and the lonely
+  "monolith",
+  "phoneBox",
+  "lonelyVending",
+  "doorToNowhere",
+  "fieldPiano",
+  "giantChair",
+  "shoeTree",
+  "signForest",
+  "bigfootStatue",
+  "giantDuck",
+  // B: what was left behind
+  "abandonedBus",
+  "carhenge",
+  "planeBoneyard",
+  "derelictFair",
+  "hauntedHouse",
+  "bottleHouse",
+  "meteorCrater",
+  "whaleBones",
+  "stoneHeads",
+  "giantSundial",
+  // C: somebody is out here
+  "treeHouse",
+  "balloonField",
+  "radioArray",
+  "giantScarecrow",
+  "campsite",
+  "apiary",
+  "prospectorCamp",
+  "hedgeMaze",
+  "giantSnowman",
+  "giantChess"
+];
+var WILD_INFO = {
+  monolith: { label: "Monolith", icon: "\u2B1B", size: [1, 1], h: 1.25, price: 99, grade: 0, where: "edge", chance: 0.1, lot: 0 /* None */ },
+  phoneBox: { label: "Phone box", icon: "\u260E\uFE0F", size: [1, 1], h: 0.5, price: 49, grade: 0, where: "edge", chance: 0.22, lot: 0 /* None */ },
+  lonelyVending: { label: "Vending machine", icon: "\u{1F964}", size: [1, 1], h: 0.42, price: 49, grade: 0, where: "edge", chance: 0.2, lot: 12 /* Gravel */ },
+  doorToNowhere: { label: "Door to nowhere", icon: "\u{1F6AA}", size: [1, 1], h: 0.7, price: 49, grade: 0, where: "high", chance: 0.12, lot: 0 /* None */ },
+  fieldPiano: { label: "Piano in a field", icon: "\u{1F3B9}", size: [1, 1], h: 0.32, price: 199, grade: 0, where: "edge", chance: 0.1, open: true, lot: 0 /* None */ },
+  giantChair: { label: "Giant chair", icon: "\u{1FA91}", size: [1, 1], h: 1.05, price: 99, grade: 0, where: "edge", chance: 0.15, lot: 0 /* None */ },
+  shoeTree: { label: "Shoe tree", icon: "\u{1F45F}", size: [1, 1], h: 1.2, price: 49, grade: 0, where: "edge", chance: 0.18, lot: 0 /* None */ },
+  signForest: { label: "Sign forest", icon: "\u{1FAA7}", size: [2, 2], h: 0.75, price: 99, grade: 0, where: "edge", chance: 0.12, open: true, lot: 12 /* Gravel */, lane: true },
+  bigfootStatue: { label: "Bigfoot statue", icon: "\u{1F9B6}", size: [1, 1], h: 1, price: 149, grade: 0, where: "forest", chance: 0.15, lot: 0 /* None */ },
+  giantDuck: { label: "Giant duck", icon: "\u{1F986}", size: [2, 2], h: 0.8, price: 149, grade: 0, where: "water", chance: 0.1, lot: 13 /* Sand */ },
+  abandonedBus: { label: "Abandoned bus", icon: "\u{1F68C}", size: [2, 1], h: 0.45, price: 99, grade: 0, where: "edge", chance: 0.22, lot: 0 /* None */ },
+  carhenge: { label: "Carhenge", icon: "\u{1F697}", size: [3, 3], h: 0.62, price: 299, grade: 0, where: "edge", chance: 0.08, lot: 0 /* None */, lane: true },
+  planeBoneyard: { label: "Plane boneyard", icon: "\u{1F6E9}\uFE0F", size: [6, 5], h: 0.7, price: 999, grade: 1, where: "edge", chance: 0.07, climate: "warm", lot: 13 /* Sand */, lane: true },
+  derelictFair: { label: "Derelict fair", icon: "\u{1F3A1}", size: [4, 4], h: 1.7, price: 499, grade: 0, where: "edge", chance: 0.09, lot: 12 /* Gravel */, lane: true },
+  hauntedHouse: { label: "Haunted house", icon: "\u{1F3DA}\uFE0F", size: [2, 2], h: 1.35, price: 399, grade: 1, where: "edge", chance: 0.12, lot: 5 /* Yard */, lane: true },
+  bottleHouse: { label: "Bottle house", icon: "\u{1F37E}", size: [2, 2], h: 0.62, price: 299, grade: 1, where: "edge", chance: 0.1, lot: 5 /* Yard */, lane: true },
+  meteorCrater: { label: "Meteor crater", icon: "\u2604\uFE0F", size: [4, 4], h: 0.35, price: 199, grade: 0, where: "edge", chance: 0.07, open: true, lot: 0 /* None */ },
+  whaleBones: { label: "Whale bones", icon: "\u{1F40B}", size: [3, 2], h: 0.55, price: 99, grade: 0, where: "shore", chance: 0.12, open: true, lot: 13 /* Sand */ },
+  stoneHeads: { label: "Stone heads", icon: "\u{1F5FF}", size: [3, 2], h: 1.1, price: 299, grade: 0, where: "high", chance: 0.1, lot: 1 /* Lawn */ },
+  giantSundial: { label: "Giant sundial", icon: "\u{1F570}\uFE0F", size: [3, 3], h: 0.95, price: 299, grade: 0, where: "high", chance: 0.1, open: true, lot: 2 /* Paved */ },
+  treeHouse: { label: "Tree house", icon: "\u{1F333}", size: [2, 2], h: 1.45, price: 299, grade: 1, where: "forest", chance: 0.25, lot: 0 /* None */ },
+  balloonField: { label: "Balloon field", icon: "\u{1F388}", size: [3, 3], h: 1.9, price: 499, grade: 0, where: "field", chance: 0.15, open: true, lot: 1 /* Lawn */, lane: true },
+  radioArray: { label: "Radio telescopes", icon: "\u{1F4E1}", size: [5, 4], h: 1.4, price: 1999, grade: 2, where: "edge", chance: 0.08, lot: 12 /* Gravel */, lane: true },
+  giantScarecrow: { label: "Giant scarecrow", icon: "\u{1F33E}", size: [1, 1], h: 1.3, price: 49, grade: 0, where: "field", chance: 0.2, lot: 0 /* None */ },
+  campsite: { label: "Campsite", icon: "\u26FA", size: [3, 2], h: 0.4, price: 199, grade: 0, where: "forest", chance: 0.3, open: true, lot: 1 /* Lawn */, lane: true },
+  apiary: { label: "Apiary", icon: "\u{1F41D}", size: [2, 2], h: 0.3, price: 149, grade: 0, where: "field", chance: 0.2, open: true, lot: 1 /* Lawn */ },
+  prospectorCamp: { label: "Prospector\u2019s camp", icon: "\u{1FA99}", size: [3, 2], h: 0.55, price: 199, grade: 0, where: "water", chance: 0.15, lot: 12 /* Gravel */ },
+  hedgeMaze: { label: "Hedge maze", icon: "\u{1F33F}", size: [4, 4], h: 0.3, price: 399, grade: 0, where: "edge", chance: 0.1, open: true, lot: 1 /* Lawn */, lane: true },
+  giantSnowman: { label: "Giant snowman", icon: "\u2603\uFE0F", size: [1, 1], h: 1, price: 49, grade: 0, where: "edge", chance: 0.8, climate: "cold", lot: 0 /* None */ },
+  giantChess: { label: "Giant chess", icon: "\u265F\uFE0F", size: [2, 2], h: 0.3, price: 199, grade: 0, where: "edge", chance: 0.1, open: true, lot: 2 /* Paved */ }
+};
+var pick2 = (f) => Object.fromEntries(WILD_KINDS.map((k) => [k, f(WILD_INFO[k])]));
+var WILD_SPEC = pick2((i) => ({
+  w: i.size[0],
+  d: i.size[1],
+  zone: "edge",
+  lot: i.lot ?? 0 /* None */,
+  apart: 40,
+  ...i.open ? { solid: false } : {}
+}));
+var WILD_HEIGHT = pick2((i) => i.h);
+var WILD_PRICE = pick2((i) => i.price);
+var WILD_ICON = pick2((i) => i.icon);
+var WILD_LABEL = pick2((i) => i.label);
+var WILD_GRADE = pick2((i) => i.grade);
+var WILD_SIZE = pick2((i) => i.size);
+
 // src/world/diagonals.ts
 var ROAD_HALF = {
   [1 /* Dirt */]: 0.3,
@@ -14420,6 +14504,7 @@ var OPEN3 = { solid: false, apart: 8 };
 var KIND_SPEC = {
   // the factions' town buildings (world/factionKinds.ts)
   ...FACTION_SPEC,
+  ...WILD_SPEC,
   // ---- parks and plazas ----
   meadow: { w: [5, 8], d: [5, 7], zone: "edge", lot: 1 /* Lawn */, ...OPEN3, frontage: false },
   civicSquare: { w: [5, 6], d: [4, 5], zone: "core", lot: 7 /* Plaza */, ...OPEN3 },
@@ -14917,6 +15002,69 @@ var DECK_HALF = {
 };
 
 // src/world/roadside.ts
+var ROWS = [
+  { kind: "truckStop", count: [0, 2], w: 5, d: 3, where: "road", lane: true },
+  { kind: "roadsideGiant", count: [0, 2], w: 1, d: 1, where: "road" },
+  { kind: "driveIn", count: [0, 1], w: 6, d: 5, where: "road", lane: true },
+  { kind: "lumberYard", count: [0, 1], w: 5, d: 4, where: "forest", lane: true },
+  { kind: "grainElevator", count: [0, 1], w: 4, d: 3, where: "field", lane: true },
+  { kind: "waterMill", count: [0, 1], w: 2, d: 2, where: "water", lane: true },
+  { kind: "oilRig", count: [0, 1], w: 3, d: 3, where: "shore", lane: true },
+  { kind: "coolingTowers", count: [0, 1], w: 6, d: 5, where: "water", lane: true },
+  { kind: "stoneCircle", count: [0, 1], w: 3, d: 3, where: "high" },
+  { kind: "greatWall", count: [0, 3], w: 6, d: 2, where: "ridge" },
+  // ---- things to find: rare, and out of the way ----
+  { kind: "ghostTown", count: [1, 1], w: 6, d: 5, where: "remote", lane: true, chance: 0.18 },
+  { kind: "abandonedMine", count: [1, 1], w: 3, d: 3, where: "high", lane: true, chance: 0.2 },
+  { kind: "shipwreck", count: [1, 1], w: 3, d: 2, where: "shore", chance: 0.2 },
+  { kind: "planeWreck", count: [1, 1], w: 3, d: 3, where: "forest", chance: 0.15 },
+  { kind: "ruinedAbbey", count: [1, 1], w: 4, d: 5, where: "remote", lane: true, chance: 0.18 },
+  { kind: "bunker", count: [1, 1], w: 2, d: 2, where: "remote", chance: 0.18 },
+  { kind: "crashedSatellite", count: [1, 1], w: 2, d: 2, where: "remote", chance: 0.08 },
+  { kind: "capeLight", count: [1, 1], w: 2, d: 2, where: "shore", lane: true, chance: 0.25 },
+  { kind: "hermitCabin", count: [0, 1], w: 1, d: 1, where: "forest" },
+  // ---- heavy industry and energy that stands out of town ----
+  { kind: "refinery", count: [1, 1], w: 6, d: 5, where: "shore", lane: true, chance: 0.12 },
+  { kind: "cementPlant", count: [1, 1], w: 5, d: 4, where: "any", lane: true, chance: 0.12 },
+  { kind: "paperMill", count: [1, 1], w: 5, d: 4, where: "forest", lane: true, chance: 0.15 },
+  { kind: "solarFarm", count: [1, 1], w: 6, d: 5, where: "any", lane: true, chance: 0.25, climate: "warm" },
+  { kind: "offshoreWind", count: [1, 3], w: 3, d: 3, where: "shore", chance: 0.2 },
+  { kind: "tidalBarrage", count: [1, 1], w: 8, d: 2, where: "shore", lane: true, chance: 0.1 },
+  { kind: "pumpedHydro", count: [1, 1], w: 5, d: 4, where: "high", lane: true, chance: 0.12 },
+  { kind: "fishFarm", count: [1, 1], w: 3, d: 3, where: "shore", chance: 0.15, climate: "cold" },
+  { kind: "seaplaneBase", count: [1, 1], w: 3, d: 2, where: "water", lane: true, chance: 0.12 },
+  // ---- the driver's destinations ----
+  { kind: "summitCafe", count: [1, 1], w: 2, d: 2, where: "high", lane: true, chance: 0.3 },
+  { kind: "scenicOverlook", count: [0, 1], w: 2, d: 2, where: "ridge", lane: true },
+  { kind: "hillClimb", count: [1, 1], w: 3, d: 2, where: "road", chance: 0.2 },
+  { kind: "rallyStage", count: [1, 1], w: 4, d: 3, where: "forest", lane: true, chance: 0.2 },
+  { kind: "dragStrip", count: [1, 1], w: 3, d: 14, where: "any", lane: true, chance: 0.12 },
+  { kind: "provingGround", count: [1, 1], w: 10, d: 8, where: "any", lane: true, chance: 0.08 },
+  { kind: "iceRoadCheckpoint", count: [1, 1], w: 2, d: 2, where: "water", lane: true, chance: 0.5, climate: "cold" },
+  { kind: "motorwayServices", count: [1, 1], w: 6, d: 4, where: "road", lane: true, chance: 0.2 },
+  // ---- institutions ----
+  { kind: "militaryBase", count: [1, 1], w: 8, d: 6, where: "remote", lane: true, chance: 0.1 },
+  { kind: "borderFort", count: [1, 1], w: 4, d: 4, where: "ridge", lane: true, chance: 0.12 },
+  { kind: "cableCarStation", count: [1, 1], w: 2, d: 2, where: "high", lane: true, chance: 0.15 },
+  { kind: "researchDome", count: [1, 1], w: 3, d: 3, where: "remote", lane: true, chance: 0.12 },
+  { kind: "festivalGrounds", count: [1, 1], w: 6, d: 6, where: "field", lane: true, chance: 0.2 },
+  // ---- the factions' (docs/factions.html): last, so nothing placed before them moves ----
+  { kind: "highwayPatrol", count: [1, 1], w: 2, d: 2, where: "road", lane: true, chance: 0.35 },
+  { kind: "checkpoint", count: [1, 1], w: 1, d: 2, where: "road", chance: 0.2 },
+  { kind: "asphaltPlant", count: [1, 1], w: 3, d: 3, where: "any", lane: true, chance: 0.15 },
+  { kind: "armyDepot", count: [1, 1], w: 4, d: 3, where: "remote", lane: true, chance: 0.15 },
+  { kind: "airbase", count: [1, 1], w: 7, d: 5, where: "remote", lane: true, chance: 0.06 },
+  { kind: "hangar18", count: [1, 1], w: 4, d: 3, where: "remote", lane: true, chance: 0.07 },
+  { kind: "crashSite", count: [1, 1], w: 3, d: 3, where: "remote", lane: true, chance: 0.14 },
+  { kind: "landingRing", count: [1, 1], w: 3, d: 3, where: "high", chance: 0.3 },
+  { kind: "cropCircle", count: [1, 1], w: 3, d: 3, where: "any", chance: 0.3 },
+  { kind: "mailDock", count: [1, 1], w: 2, d: 1, where: "shore", lane: true, chance: 0.2 },
+  // ---- out in the middle of nowhere (world/wildKinds.ts, GEN 51): last again, so nothing before them moves ----
+  ...WILD_KINDS.map((kind) => {
+    const i = WILD_INFO[kind];
+    return { kind, count: [1, 1], w: i.size[0], d: i.size[1], where: i.where, chance: i.chance, ...i.climate ? { climate: i.climate } : {}, ...i.lane ? { lane: true } : {} };
+  })
+];
 var NAVAL_DOCK_CHANCE = 0.7;
 var navalDockRolled = (seedHash2, cx, cz) => mulberry32(hashString(`${seedHash2}|${cx},${cz}|navalDock`))() < NAVAL_DOCK_CHANCE;
 var spacePadRolled = (seedHash2, cx, cz) => mulberry32(hashString(`${seedHash2}|${cx},${cz}|spacePad`))() < SPACEPORT_CHANCE;
@@ -14982,7 +15130,7 @@ var SOURCE_MIN = SEA + 13;
 
 // src/world/generate.ts
 var NN = N4 * N4;
-var GEN_VERSION = 50;
+var GEN_VERSION = 51;
 var PAD = 40;
 var P = N4 + 2 * PAD;
 var PP = P * P;
@@ -15078,7 +15226,7 @@ function stagesPlanned(seedHash2, cx, cz, lat) {
   }
   return pad && dock;
 }
-function rankSpawns(seedHash2, around, radius, pick2, allow = () => true) {
+function rankSpawns(seedHash2, around, radius, pick3, allow = () => true) {
   const lat = new Lattice(seedHash2);
   let all = [];
   for (const r of [radius, radius * 2, radius * 4]) {
@@ -15094,7 +15242,7 @@ function rankSpawns(seedHash2, around, radius, pick2, allow = () => true) {
   const ok = all.filter((s) => s.ok).sort((a, b) => b.score - a.score || a.cx - b.cx || a.cz - b.cz);
   if (!ok.length) return all.filter((s) => s.why !== "not a whole island or a county").sort((a, b) => b.score - a.score);
   const top = Math.max(1, Math.ceil(ok.length * SPAWN.top));
-  const i = Math.min(top - 1, Math.floor(pick2 * top));
+  const i = Math.min(top - 1, Math.floor(pick3 * top));
   return [ok[i], ...ok.slice(0, i), ...ok.slice(i + 1)];
 }
 

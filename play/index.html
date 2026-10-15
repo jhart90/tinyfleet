@@ -2331,6 +2331,17 @@
     /* the fleet dock's controls (game/fleetDock.ts, game/fleetPanel.ts): the bubble's buttons, the corner icons, the YOUR FLEET tray */
     #dock .dk-sq { position: relative; }
     #dock.lift { z-index: 8; }
+    /* a driver's pay for a delivery, rising off their square and fading (game/fleetDock.ts earn) */
+    #dock .dk-earn { position: absolute; left: 50%; bottom: calc(100% + 4px + var(--dk-earn-lift, 0px)); z-index: 3; pointer-events: none; white-space: nowrap;
+      color: #1e9e4a; font-weight: 800; font-size: 15px; letter-spacing: .01em; text-shadow: 0 1px 0 #fff, 0 0 3px rgba(255,255,255,.95), 0 0 6px rgba(255,255,255,.8);
+      animation: dk-earn 1.9s ease-out forwards; }
+    @keyframes dk-earn {
+      0% { opacity: 0; transform: translate(-50%, 8px) scale(.85); }
+      12% { opacity: 1; transform: translate(-50%, 0) scale(1.08); }
+      22% { transform: translate(-50%, -4px) scale(1); }
+      70% { opacity: 1; }
+      100% { opacity: 0; transform: translate(-50%, -38px) scale(1); }
+    }
     #dock .dk-ic { position: absolute; top: 3px; right: 4px; z-index: 1; font-size: 13px; line-height: 1; pointer-events: none; filter: drop-shadow(0 1px 1px rgba(255,255,255,.9)); }
     #dock .dk-ic:empty { display: none; }
     /* the driver's first name on a plate across the bottom edge of each square */
@@ -2869,7 +2880,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-CcKutoi1.js"></script>
+  <script type="module" crossorigin src="./assets/index-DFLXDpXH.js"></script>
 </head>
 <body>
   <div id="mobile-block" role="alertdialog" aria-labelledby="mb-title">
