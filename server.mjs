@@ -14458,6 +14458,27 @@ var WILD_LABEL = pick2((i) => i.label);
 var WILD_GRADE = pick2((i) => i.grade);
 var WILD_SIZE = pick2((i) => i.size);
 
+// src/world/land.ts
+var LAND = {
+  /** Dollars a lift, in ordinary ground. */
+  lift: 2,
+  /** Multipliers by what the ground is made of. */
+  soft: 1,
+  ice: 2,
+  rock: 3,
+  /** A tile under water before or after the step: dredging and reclaiming. The larger of this and the ground's applies. */
+  wet: 2.5,
+  /** Dollars a tile a step of water level, for the water tool. */
+  water: 3,
+  /** Highest and lowest a corner may go, in steps. The floor is the sea bed every cell's rim is forced to. */
+  ceiling: 26,
+  floor: SEA - 5,
+  /** Most tiles one smooth step may ripple through before it is refused rather than bankrupting anyone. */
+  ripple: 600,
+  /** Strokes Z can take back. */
+  undo: 32
+};
+
 // src/world/diagonals.ts
 var ROAD_HALF = {
   [1 /* Dirt */]: 0.3,
