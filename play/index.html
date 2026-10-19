@@ -2642,7 +2642,36 @@
     #hq .hq-board .hq-zone.no { opacity: 1; }
     #hq .hq-board [data-drop].ok.hover { box-shadow: 0 0 0 3px #1e9e4a; }
     #hq .hq-seat.ok { background: #dff3e3; }
-    .hq-ghost { position: fixed; z-index: 50; pointer-events: none; opacity: .9; transform: rotate(-2deg); box-shadow: 0 10px 30px rgba(31,43,51,.25); border-radius: 12px; background: #fff; }
+    /* a vehicle dropped on another's card swaps with it, a driver on a full seat swaps with them: amber */
+    #hq .hq-board .hq-unit[data-drop].ok { background: var(--pastel, #fff); box-shadow: 0 0 0 2px #e8a81c; }
+    #hq .hq-board .hq-unit.shed[data-drop].ok { background: #fff; }
+    #hq .hq-board .hq-unit[data-drop].ok.hover { box-shadow: 0 0 0 3px #e8a81c, 0 8px 20px rgba(232,168,28,.35); }
+    #hq .hq-seat.ok.swap { background: #fff1cc; }
+    #hq .hq-board [data-drop].ok.swap.hover { box-shadow: 0 0 0 3px #e8a81c; }
+    #hq .hq-board :is(.hq-seat, .hq-free, .hq-unit).ok.hover { transform: scale(1.04); transition: transform .12s, box-shadow .12s; }
+    #hq .hq-seat.ok.swap.hover .hq-drv { animation: hqshuffle .35s ease-in-out infinite alternate; }
+    @keyframes hqshuffle { from { transform: translateY(0) rotate(0); } to { transform: translateY(-4px) rotate(-8deg); } }
+    /* what was picked up leaves a dashed space behind */
+    #hq .hq-unit.lifted, #hq .hq-drv.lifted { opacity: .3; outline: 2px dashed #9fb0b8; outline-offset: 2px; transform: none; }
+    /* what is held rides under the pointer; the pill under it says what letting go here would do */
+    .hq-ghost { position: fixed; left: 0; top: 0; z-index: 50; pointer-events: none; will-change: transform; }
+    /* the pick-up pop is on what it holds: on the ghost itself, `scale` would scale its position too */
+    #hq .hq-ghost.tok > i, #hq .hq-ghost.card > .hq-card { animation: hqlift .14s ease-out; }
+    @keyframes hqlift { from { scale: .8; opacity: .4; } }
+    #hq .hq-ghost.card { border-radius: 12px; background: #fff; box-shadow: 0 18px 38px rgba(31,43,51,.3), 0 0 0 2px #1f2b33; }
+    #hq .hq-ghost.tok { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    #hq .hq-ghost.tok i { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: #fff; font-style: normal; font-weight: 700; font-size: 20px; box-shadow: 0 0 0 3px #fff, 0 14px 28px rgba(31,43,51,.38); }
+    #hq .hq-ghost.tok b { font-size: 12.5px; color: #1f2b33; background: #fff; padding: 1px 9px; border-radius: 999px; box-shadow: 0 2px 8px rgba(31,43,51,.2); white-space: nowrap; }
+    #hq .hq-ghost.tok small { font-size: 10.5px; color: #4c5a63; background: rgba(255,255,255,.85); padding: 0 6px; border-radius: 999px; white-space: nowrap; }
+    #hq .hq-ghost .hint { position: absolute; left: 50%; top: 100%; margin-top: 6px; transform: translateX(-50%); white-space: nowrap; max-width: 360px; overflow: hidden; text-overflow: ellipsis; font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: #1f2b33; color: #fff; box-shadow: 0 4px 12px rgba(31,43,51,.25); }
+    #hq .hq-ghost .hint:empty { display: none; }
+    #hq .hq-ghost.ok .hint { background: #1e9e4a; }
+    #hq .hq-ghost.no .hint { background: #b2453c; }
+    #hq .hq-ghost.no { filter: saturate(.6); }
+    body.hq-grabbing, body.hq-grabbing * { cursor: grabbing !important; }
+    /* where it landed (and who it swapped with) gives a little bounce */
+    #hq .hq-board .landed { animation: hqland .42s cubic-bezier(.2,1.6,.4,1); }
+    @keyframes hqland { 0% { scale: .82; } 60% { scale: 1.08; } 100% { scale: 1; } }
 
     /* Home */
     #hq .hq-home { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 18px; align-items: start; }
@@ -2880,7 +2909,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-2e7leePq.js"></script>
+  <script type="module" crossorigin src="./assets/index-2A8XFmMu.js"></script>
 </head>
 <body>
   <div id="mobile-block" role="alertdialog" aria-labelledby="mb-title">
