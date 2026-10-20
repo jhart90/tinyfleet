@@ -101,6 +101,8 @@
     .tool-btn.on kbd { background: transparent; border-color: rgba(255,255,255,.35); color: rgba(255,255,255,.8); }
     #tool-btns i { width: 1px; margin: 9px 1px; background: #e2e8e4; }
     #br { bottom: 16px; right: 16px; font-size: 12.5px; color: #4c5a63; line-height: 1.7; padding-right: 42px; z-index: 6; background: rgba(255,255,255,.96); }
+    /* open on a short window, it scrolls rather than push the build tools stacked above it up over the top bar */
+    #br:not(.collapsed) { max-height: calc(100vh - 170px); overflow-y: auto; }
     #br-toggle { pointer-events: auto; position: absolute; top: 8px; right: 8px; width: 26px; height: 26px; padding: 0; display: grid; place-items: center; border-radius: 8px; border: 1px solid #d5ddd0; border-bottom-width: 2px; background: #fff; color: #4c5a63; cursor: pointer; }
     #br-toggle:hover { border-color: #8a979e; color: #1f2b33; }
     #br-toggle:focus-visible { outline: 2px solid #2f7fb5; outline-offset: 2px; }
@@ -300,6 +302,8 @@
     #br .ctl-zoom .wheel i { position: absolute; left: 50%; top: 3px; width: 3px; height: 6px; margin-left: -1.5px; border-radius: 2px; background: #4c5a63; }
     /* every notification (a place's card, a deed, a driver's earnings) is one kind of card, stacked at the top middle */
     #notices { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); width: min(380px, calc(100vw - 32px)); display: flex; flex-direction: column; z-index: 15; pointer-events: none; user-select: none; }
+    /* too narrow for the cards between the place panel and the money: they come down under the top bar instead */
+    @media (max-width: 1180px) { #notices { top: max(calc(var(--tr-below, 72px) + 6px), 90px); width: max(240px, min(380px, calc(100vw - 640px))); } }
     #notices #earnings { display: flex; flex-direction: column; }
     /* the pill every notification folds into once its card has gone, and the log it opens (game/notifyLog.ts) */
     #n-pill { pointer-events: auto; align-self: center; display: inline-flex; align-items: center; gap: 6px; max-width: 260px; margin-bottom: 8px; padding: 4px 11px 4px 8px;
@@ -2368,6 +2372,8 @@
     #dock .dk-earn { position: absolute; left: 50%; bottom: calc(100% + 4px + var(--dk-earn-lift, 0px)); z-index: 3; pointer-events: none; white-space: nowrap;
       color: #1e9e4a; font-weight: 800; font-size: 15px; letter-spacing: .01em; text-shadow: 0 1px 0 #fff, 0 0 3px rgba(255,255,255,.95), 0 0 6px rgba(255,255,255,.8);
       animation: dk-earn 1.9s ease-out forwards; }
+    /* a faction's standing a driver's delivery earned, in the faction's colour, after the pay */
+    #dock .dk-earn.rep { color: var(--dk-rep, #2a4f8f); font-size: 13.5px; }
     @keyframes dk-earn {
       0% { opacity: 0; transform: translate(-50%, 8px) scale(.85); }
       12% { opacity: 1; transform: translate(-50%, 0) scale(1.08); }
@@ -2942,7 +2948,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-Dnq9rtHr.js"></script>
+  <script type="module" crossorigin src="./assets/index-CKTVqT5J.js"></script>
 </head>
 <body>
   <div id="mobile-block" role="alertdialog" aria-labelledby="mb-title">
