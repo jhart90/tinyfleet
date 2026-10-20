@@ -16,11 +16,11 @@
      * picture inside it — a 3D thumbnail, a canvas, an image — turned back again so it shows as drawn.
      * The world's own canvas is left alone.
      */
-    body.dark-ui > :not(#game):not(script) { filter: invert(1) hue-rotate(180deg); }
+    body.dark-ui > :not(#game):not(#loading):not(script) { filter: invert(1) hue-rotate(180deg); }
     /* a full-screen card's veil blurs the world behind it: the veil is darkened, and only the card inside is turned */
-    body.dark-ui > :is(.worldmap, #loading, #vehicles, #cashmenu, #settings, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq) { filter: none !important; background: rgba(8,12,16,.55) !important; }
-    body.dark-ui > :is(.worldmap, #loading, #vehicles, #cashmenu, #settings, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq) > * { filter: invert(1) hue-rotate(180deg); }
-    body.dark-ui > :not(#game) :is(img, canvas, video, .dk-canvas, .sw, .rb-sw, .terr-legend .tl-row i) { filter: invert(1) hue-rotate(180deg); }
+    body.dark-ui > :is(.worldmap, #vehicles, #cashmenu, #settings, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq) { filter: none !important; background: rgba(8,12,16,.55) !important; }
+    body.dark-ui > :is(.worldmap, #vehicles, #cashmenu, #settings, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq) > * { filter: invert(1) hue-rotate(180deg); }
+    body.dark-ui > :not(#game):not(#loading) :is(img, canvas, video, .dk-canvas, .sw, .rb-sw, .terr-legend .tl-row i) { filter: invert(1) hue-rotate(180deg); }
     /* the fleets' names over the overview are their own colours, with halos picked for them */
     body.dark-ui > #terr-labels { filter: none !important; }
     /* phones and tablets: the game needs a keyboard, so a full-screen card says so (the inline script after <body>) */
@@ -199,11 +199,46 @@
     .acode.intl span { color: #c4e2fb; }
     #bump { position: fixed; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 0 rgba(226,65,47,0); transition: box-shadow .12s; }
     #bump.on { box-shadow: inset 0 0 80px 0 rgba(226,65,47,.28); }
-    #loading { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(207,230,245,.9); z-index: 10; }
-    #loading .card { background: #fff; border-radius: 18px; padding: 26px 34px; text-align: center; box-shadow: 0 10px 40px rgba(31,43,51,.15); }
-    #loading .card h2 { margin: 0 0 6px; font-size: 26px; }
-    #loading .card p { margin: 0; font-family: "IBM Plex Mono", monospace; font-size: 13px; color: #4c5a63; }
-    #loading .car { width: 70px; height: 50px; margin: 0 auto 10px; animation: bounce .7s infinite ease-in-out; }
+    /* the loading screen (render/loadingShow.ts): a showpiece turning on a platform over the percentage; light or dark with the UI */
+    #loading { --ld-bg: #f6f8f5; --ld-bg2: #e6ece8; --ld-ink: #1f2b33; --ld-sub: #4c5a63; --ld-ray: rgba(31,43,51,.045); --ld-track: rgba(31,43,51,.1); --ld-streak: rgba(31,43,51,.28);
+      position: fixed; inset: 0; z-index: 100000; overflow: hidden; color: var(--ld-ink); background: radial-gradient(ellipse 80% 70% at 50% 58%, var(--ld-bg) 0%, var(--ld-bg) 35%, var(--ld-bg2) 100%); transition: opacity .4s ease; }
+    body.dark-ui #loading { --ld-bg: #2a2d32; --ld-bg2: #111316; --ld-ink: #fff; --ld-sub: rgba(255,255,255,.68); --ld-ray: rgba(255,255,255,.04); --ld-track: rgba(255,255,255,.12); --ld-streak: rgba(255,255,255,.3); }
+    #loading.ld-out { opacity: 0; pointer-events: none; }
+    #loading .ld-rays { position: absolute; left: 50%; top: 56%; width: 220vmax; height: 220vmax; margin: -110vmax 0 0 -110vmax; pointer-events: none;
+      background: repeating-conic-gradient(from 0deg, var(--ld-ray) 0deg 7deg, transparent 7deg 18deg);
+      -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 34%); mask-image: radial-gradient(circle, #000 0%, transparent 34%); animation: ld-spin 40s linear infinite; }
+    @keyframes ld-spin { to { transform: rotate(360deg); } }
+    #loading .ld-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    #loading .ld-streaks { position: absolute; left: 0; right: 0; top: 22%; height: 52%; pointer-events: none; opacity: 0;
+      background: repeating-linear-gradient(180deg, transparent 0 13px, var(--ld-streak) 13px 15px, transparent 15px 31px, rgba(226,65,47,.35) 31px 32px, transparent 32px 47px);
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent); mask-image: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent); }
+    #loading .ld-flash { position: absolute; inset: 0; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at 50% 55%, rgba(255,255,255,.55), transparent 60%); }
+    #loading.zap .ld-streaks { animation: ld-streak .55s ease-out; }
+    #loading.zap .ld-flash { animation: ld-flash .7s ease-out .32s; }
+    @keyframes ld-streak { 0% { opacity: 0; transform: translateX(30%) scaleX(.4); } 25% { opacity: .9; } 100% { opacity: 0; transform: translateX(-40%) scaleX(1.6); } }
+    @keyframes ld-flash { 0% { opacity: 0; } 15% { opacity: 1; } 100% { opacity: 0; } }
+    #loading .ld-top { position: absolute; top: max(22px, 4vh); left: 16px; right: 16px; text-align: center; }
+    /* the wordmark as the title has it: ink (white in dark) with the red full stop */
+    #loading .ld-logo { font-weight: 700; font-size: clamp(34px, 5.4vw, 60px); letter-spacing: -.03em; line-height: 1; color: var(--ld-ink); }
+    #loading .ld-logo span { color: #e2412f; }
+    #loading #loading-seed { margin: 10px 0 0; font-size: 15px; font-weight: 600; color: var(--ld-sub); display: flex; align-items: center; justify-content: center; min-height: 22px; }
+    #loading #loading-seed .fleet-badge { margin-right: 8px; }
+    #loading .ld-cap { position: absolute; left: 0; right: 0; bottom: calc(max(24px, 4vh) + 92px); text-align: center; pointer-events: none; opacity: 0; }
+    #loading .ld-cap.in { animation: ld-cap-in .5s cubic-bezier(.2,1.4,.4,1) forwards; }
+    #loading .ld-cap.out { animation: ld-cap-out .26s ease-in forwards; }
+    @keyframes ld-cap-in { from { opacity: 0; transform: translateX(80px) skewX(-12deg); } to { opacity: 1; transform: none; } }
+    @keyframes ld-cap-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateX(-90px) skewX(12deg); } }
+    #loading .ld-tag { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #fff; background: #e2412f; padding: 3px 10px; border-radius: 99px; }
+    #loading .ld-name { display: block; margin-top: 6px; font-size: clamp(24px, 3.6vw, 38px); font-weight: 700; color: var(--ld-ink); }
+    #loading .ld-bottom { position: absolute; left: 50%; bottom: max(24px, 4vh); width: min(560px, calc(100% - 32px)); transform: translateX(-50%); }
+    #loading .ld-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+    #loading .ld-label { font-family: "IBM Plex Mono", monospace; font-size: 13px; color: var(--ld-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #loading .ld-pct { font-size: 34px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; color: var(--ld-ink); }
+    #loading .ld-bar { position: relative; height: 12px; border-radius: 99px; background: var(--ld-track); overflow: hidden; }
+    #loading .ld-bar i { position: absolute; inset: 0; transform-origin: 0 50%; transform: scaleX(0); border-radius: inherit; background: linear-gradient(90deg, #f0705f, #e2412f); }
+    #loading .ld-bar::after { content: ""; position: absolute; top: 0; bottom: 0; width: 30%; left: -30%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent); animation: ld-shine 1.6s ease-in-out infinite; }
+    @keyframes ld-shine { to { left: 100%; } }
+    @media (prefers-reduced-motion: reduce) { #loading .ld-rays, #loading .ld-bar::after { animation: none; } #loading.zap .ld-streaks, #loading.zap .ld-flash { animation: none; } }
     @keyframes bounce { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-5px) } }
     /* the fleet dock beside the speedo (game/fleetDock.ts): YOU, then a square per fleet slot */
     #dock { z-index: 2; bottom: 16px; display: flex; gap: 10px; align-items: flex-end; }
@@ -1785,8 +1820,6 @@
     #title-menu .tm-fleettag { display: flex; align-items: center; gap: 6px; }
     #title-menu .tm-seedline.tm-fleettag { font-family: inherit; font-size: 14px; font-weight: 700; color: #1f2b33; }
     #title-menu .tm-slotfleet { font-size: 11px; font-weight: 600; color: #4c5a63; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #loading .card p .fleet-badge { margin-right: 6px; }
-    #loading .card p.fleet { font-family: inherit; font-weight: 700; font-size: 15px; color: #1f2b33; }
     #title-menu .tm-mini-sub { font-size: 12px; color: #7d8a92; margin-top: 1px; }
     #title-menu .tm-thumb { width: 96px; height: 96px; flex: none; border-radius: 9px; background: #0a0d11; image-rendering: pixelated; }
     #title-menu .tm-thumb.small { width: 44px; height: 44px; border-radius: 7px; }
@@ -2909,7 +2942,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-2A8XFmMu.js"></script>
+  <script type="module" crossorigin src="./assets/index-Dnq9rtHr.js"></script>
 </head>
 <body>
   <div id="mobile-block" role="alertdialog" aria-labelledby="mb-title">
@@ -3063,20 +3096,23 @@
   <div id="fleet-prompt" class="hud chip" hidden></div>
   <div id="tr-stack" class="hud"><div id="inventory" class="trk-sec" hidden></div></div>
 
-  <div id="loading" hidden>
-    <div class="card">
-      <svg class="car" viewBox="0 0 168 120" aria-hidden="true">
-        <rect x="30" y="44" width="108" height="40" rx="12" fill="#e2412f"/>
-        <rect x="52" y="24" width="60" height="30" rx="10" fill="#e2412f"/>
-        <rect x="58" y="30" width="20" height="18" rx="4" fill="#d9ebf6"/>
-        <rect x="86" y="30" width="20" height="18" rx="4" fill="#d9ebf6"/>
-        <circle cx="50" cy="86" r="20" fill="#1f2b33"/><circle cx="118" cy="86" r="20" fill="#1f2b33"/>
-        <circle cx="50" cy="86" r="8" fill="#7d8a92"/><circle cx="118" cy="86" r="8" fill="#7d8a92"/>
-      </svg>
-      <h2>Building a world…</h2>
+  <!-- the remembered UI theme (game/theme.ts) before the loading screen first paints, so a dark one doesn't flash white -->
+  <script>try { if (localStorage.getItem('tinyfleet-theme') === 'dark') document.body.classList.add('dark-ui'); } catch { /* light */ }</script>
+  <div id="loading">
+    <div class="ld-rays"></div>
+    <canvas class="ld-canvas" aria-hidden="true"></canvas>
+    <div class="ld-streaks"></div>
+    <div class="ld-flash"></div>
+    <div class="ld-top">
+      <div class="ld-logo">TinyFleet<span>.</span></div>
       <p id="loading-seed"></p>
     </div>
+    <div class="ld-cap"><span class="ld-tag"></span><span class="ld-name"></span></div>
+    <div class="ld-bottom" role="progressbar" aria-label="Loading">
+      <div class="ld-row"><span class="ld-label">Unpacking the toy box</span><span class="ld-pct">0%</span></div>
+      <div class="ld-bar"><i></i></div>
+    </div>
   </div>
-
+
 </body>
 </html>
