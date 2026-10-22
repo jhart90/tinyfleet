@@ -174,6 +174,18 @@
     .regionmap header .names { font: inherit; font-size: 11.5px; font-weight: 600; padding: 2px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.1); color: #f4f7f1; cursor: pointer; }
     .regionmap header .names:hover, .regionmap header .names:focus-visible { background: rgba(255,255,255,.2); outline: none; }
     .regionmap .cargokey { position: absolute; right: 16px; bottom: 16px; display: flex; gap: 10px; font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: #dbe3dd; padding: 4px 12px; border-radius: 999px; background: rgba(18,26,32,.55); pointer-events: none; }
+    /* the four views, one lit */
+    .regionmap header .views { display: inline-flex; gap: 4px; }
+    .regionmap header .views .names.on { background: rgba(255,255,255,.22); box-shadow: inset 0 0 0 1.5px #ffc83d; }
+    /* the Economy view's key: the ramp from black to the busiest building's green */
+    .regionmap .ecokey { position: absolute; right: 16px; bottom: 16px; display: flex; align-items: center; gap: 8px; font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: #dbe3dd; padding: 4px 12px; border-radius: 999px; background: rgba(18,26,32,.55); pointer-events: none; }
+    .regionmap .ecokey i { display: inline-block; width: 90px; height: 9px; border-radius: 999px; background: linear-gradient(90deg, #07090b, #2bff6a); box-shadow: 0 0 0 1px rgba(255,255,255,.25); }
+    .regionmap .ecokey .top { color: #2bff6a; font-weight: 700; }
+    /* the Fleet view: the player and the fleet's vehicles in the fleet's colour */
+    .regionmap[data-view="fleet"] .rmark.mine { background: var(--fleet, #e2412f); }
+    /* the Fleet view draws the player's own vehicle: their marker is a ring round it, not a dot over it */
+    .regionmap[data-view="fleet"] .rmark.you { width: 40px; height: 40px; background: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--fleet, #e2412f), 0 2px 10px rgba(0,0,0,.5); }
+    .rmark.fleet { width: 9px; height: 9px; background: var(--fleet, #e2412f); box-shadow: 0 0 0 2px #fff, 0 0 8px var(--fleet, #e2412f); }
     .regionmap .cargokey i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; box-shadow: 0 0 0 2px rgba(18,26,32,.95); }
     .regionmap .cap { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: #dbe3dd; white-space: nowrap; padding: 4px 12px; border-radius: 999px; background: rgba(18,26,32,.55); pointer-events: none; }
     .regionmap .rlabels { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
@@ -185,6 +197,16 @@
     .rtag.town.big b { font-size: 14.5px; letter-spacing: -.005em; }
     .rtag.town:hover b { color: #ffc83d; }
     .rtag.wonder b { color: #ffd76a; font-size: 12.5px; }
+    .rtag.home b { font-size: 12.5px; color: #fff; padding: 1px 7px; border-radius: 999px; background: var(--fleet, #e2412f); text-shadow: none; box-shadow: 0 0 0 2px #fff, 0 2px 6px rgba(0,0,0,.5); }
+    .rtag.home span { margin-top: 3px; }
+    .rtag.county span { text-transform: none; letter-spacing: 0; font-weight: 600; color: rgba(244,247,241,.75); }
+    #standings .xchips, #standings .xmodels { flex-wrap: wrap; }
+    #standings .xmodels { max-height: 64px; overflow-y: auto; }
+    #standings .xmodels button.dim { opacity: .6; }
+    #standings .xrungs { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 6px; }
+    #standings .xrungs .chip { font-size: 10.5px; padding: 1px 7px; border-radius: 999px; background: #eef2f4; color: #7d8a92; }
+    #standings .xrungs .chip.go { background: #dcefd2; color: #2f7a3e; }
+    #standings .xfront { margin: 8px 0 0; padding-top: 6px; border-top: 1px solid #dfe6ea; font-size: 11.5px; color: #4c5a63; }
     .rtag.landform b { font-style: italic; font-weight: 600; color: #f1dcc0; }
     .rtag.port b, .rtag.airport b { font-size: 11px; font-weight: 600; color: #cfe6f5; }
     .rtag.county { font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: rgba(244,247,241,.62); }
@@ -345,6 +367,9 @@
     #toast.openable .n-icon { background: #f1e9d2; }
     #n-log li.nl-open { cursor: pointer; border-left-color: #2a2010; }
     #n-log li.nl-open:hover { background: rgba(42,32,16,.07); }
+    /* an achievement: opens its page of the Passport */
+    #n-log li.nl-link { cursor: pointer; }
+    #n-log li.nl-link:hover { background: rgba(31,43,51,.07); }
     /* the annual newspaper (docs/newspaper.html, game/press): newsprint on a dimmed world */
     #paper { position: fixed; inset: 0; z-index: 21; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 18px 16px 14px; box-sizing: border-box;
       background: rgba(20,24,28,.62); backdrop-filter: blur(3px); }
@@ -591,9 +616,13 @@
     #mayor { position: fixed; inset: 0; z-index: 22; display: grid; place-items: center; background: rgba(207,230,245,.5); backdrop-filter: blur(3px); padding: 16px; box-sizing: border-box; }
     #mayor[hidden] { display: none; }
     #mayor .panel { position: relative; background: #fffdf6; border-radius: 22px; box-shadow: 0 18px 60px rgba(31,43,51,.22); width: min(440px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 20px 24px 22px; box-sizing: border-box; border: 1px solid #efe6cf; }
-    #mayor header { padding-right: 84px; }
-    #mayor header small { display: block; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: #9a8f74; }
-    #mayor header b { display: block; font-size: 24px; font-weight: 700; margin-top: 4px; letter-spacing: -.01em; }
+    /* the letterhead: the town's seal beside its name, ruled off from the letter */
+    #mayor header.town { display: grid; grid-template-columns: 64px 1fr; column-gap: 14px; align-items: center; padding: 0 84px 12px 0; margin-bottom: 10px; border-bottom: 2px solid #e6dcc3; box-shadow: 0 3px 0 -1px #f2ecdc; }
+    #mayor header.town .seal { width: 64px; height: 64px; display: block; }
+    #mayor header.town .name small { display: block; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: #9a8f74; }
+    #mayor header.town .name b { display: block; font-size: 26px; font-weight: 800; line-height: 1.05; margin: 2px 0 3px; letter-spacing: -.015em; color: #1f2b33; }
+    #mayor .who { margin: 0 0 2px; font-size: 13px; font-weight: 600; color: #6b7880; }
+    #mayor .ask-title { margin: 6px 0 0; font-size: 21px; font-weight: 700; letter-spacing: -.01em; color: #1f2b33; }
     #mayor .rate { position: absolute; top: 20px; right: 22px; font-weight: 700; font-size: 13px; color: #c2372a; border: 2px solid #e8a79f; border-radius: 8px; padding: 2px 8px; transform: rotate(4deg); }
     #mayor .letter { margin: 12px 0 16px; font-size: 15px; line-height: 1.45; color: #3a4650; }
     #mayor .letter p { margin: 0 0 8px; }
@@ -726,6 +755,13 @@
     #build .rb-tab.on kbd { background: #33424c; border-color: #33424c; color: #fff; }
     #build .rb-side[hidden] { display: none; }
     #build .rb-towns { display: flex; flex-direction: column; gap: 6px; }
+    #build .rb-scenery { display: flex; flex-direction: column; gap: 6px; }
+    #build .rb-chips { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+    #build .rb-chip { all: unset; cursor: pointer; font-size: 11.5px; font-weight: 600; padding: 2px 10px; border-radius: 999px; border: 1px solid #d5ddd0; background: #fff; color: #7d8a92; }
+    #build .rb-chip.on { background: #eaf1f6; border-color: #2f7fb5; color: #1f2b33; }
+    #build .rb-shelp { font-size: 11px; color: #9aa6ad; margin-left: 6px; }
+    #build .rb-ssq .rb-img { object-fit: contain; background: #eef4f6; }
+    #build .rb-take { display: grid; place-items: center; font-size: 26px; font-weight: 700; color: #d2564f; background: #fbe3df; }
     #build .rb-town { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
     #build .rb-town > b { font-size: 13px; color: #1f2b33; }
     #build .rb-town > span { font-size: 11px; color: #7d8a92; }
@@ -974,6 +1010,12 @@
     .rivals li .pay small { color: #9aa6ad; }
     .rivals .more { grid-column: 1 / -1; background: #f5f8f6; border-radius: 8px; padding: 6px 9px; }
     .rivals .more p { margin: 3px 0; line-height: 1.45; }
+    /* another player's fleet opened up: its numbers in a grid */
+    .rivals .more .pnums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 10px; margin: 6px 0; }
+    .rivals .more .pnums span { display: flex; flex-direction: column; min-width: 0; }
+    .rivals .more .pnums small { font-size: 10px; color: #8a969d; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rivals .more .pnums b { font-size: 12.5px; color: #1f2b33; }
+    .rivals li .what small i.on { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1e9e4a; vertical-align: middle; }
     .rivals .more p b { color: #1f2b33; margin-right: 4px; }
     .rivals .more .stars { color: #d9a514; letter-spacing: 1px; font-size: 10.5px; }
     .rivals .more i { font-style: normal; color: #9aa6ad; }
@@ -1558,6 +1600,15 @@
     /* title menus (src/title/menu.ts): chips over the reel */
     #title-menu { position: fixed; inset: 0; z-index: 18; pointer-events: none; font-family: "Fredoka", "Segoe UI", sans-serif; color: #1f2b33; }
     #title-menu.dim { pointer-events: auto; background: rgba(31,43,51,.16); }
+    /* playing online only, the title is the sign-in card, up from the first moment over the loading screen (menu.ts
+       showEarly): the card stands above it, which keeps its showpiece and bar to the right and lends it the wordmark */
+    body:has(#loading:not([hidden])) #title-menu:not([hidden]):not(.dim) { z-index: 100001; }
+    body:has(#title-menu:not([hidden]):not(.dim)) #loading .ld-top { display: none; }
+    @media (min-width: 720px) {
+      body:has(#title-menu:not([hidden]):not(.dim)) #loading :is(.ld-canvas, .ld-cap, .ld-streaks) { left: 408px; width: calc(100% - 408px); }
+      body:has(#title-menu:not([hidden]):not(.dim)) #loading .ld-rays { left: calc(50% + 204px); }
+      body:has(#title-menu:not([hidden]):not(.dim)) #loading .ld-bottom { left: calc(50% + 204px); width: min(520px, calc(100% - 456px)); }
+    }
     #title-menu .tm-panel { pointer-events: auto; position: absolute; left: 24px; top: 24px; bottom: 24px; width: 360px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; padding: 26px 26px 18px; overflow: auto; overscroll-behavior: contain; background: rgba(255,255,255,.78); backdrop-filter: blur(10px); border-radius: 22px; box-shadow: 0 18px 60px rgba(31,43,51,.2); animation: tm-in .28s ease-out; scrollbar-width: thin; }
     #title-menu .tm-panel.title .tm-brand { margin-top: auto; }
     #title-menu .tm-panel.new { width: 420px; }
@@ -1629,6 +1680,9 @@
     /* the visas: a deed's seal pressed beside its line */
     #title-menu .tm-btn.pb-visa { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 8px; background: transparent; box-shadow: none; border: 1px dashed rgba(120,95,60,.25); text-align: left; font-weight: 500; font-size: 12.5px; color: #2b2a26; }
     #title-menu .tm-btn.pb-visa:hover, #title-menu .tm-btn.pb-visa:focus-visible { background: rgba(255,255,255,.55); }
+    /* the achievement a notification opened the book at: picked out */
+    #title-menu .tm-btn.pb-visa.picked { border: 1.5px solid #c9a24a; background: rgba(255,236,170,.45); animation: pb-picked 1.2s ease-out 2; }
+    @keyframes pb-picked { 0% { box-shadow: 0 0 0 0 rgba(201,162,74,.6); } 100% { box-shadow: 0 0 0 10px rgba(201,162,74,0); } }
     #title-menu .pb-vseal { width: 40px; height: 40px; flex: none; object-fit: contain; transform: rotate(var(--tilt, 0)); mix-blend-mode: multiply; }
     #title-menu .pb-visa.none .pb-vseal { opacity: .35; filter: grayscale(1); }
     #title-menu .pb-vtext { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
@@ -1749,10 +1803,10 @@
     #title-menu .pp-full { color: #c0392b; }
     #town .cu { display: inline-block; padding: 0 7px; border-radius: 999px; background: rgba(127,127,127,.18); font-size: 12px; font-weight: 600; white-space: nowrap; }
     #town .cu.r2 { background: rgba(224,180,58,.3); } #town .cu.r3 { background: rgba(226,65,47,.3); }
-    #town .tc-star, #inspect .insp-star button { border: 0; background: none; color: inherit; font: inherit; cursor: pointer; padding: 0 6px; opacity: .8; }
-    #town .tc-star.on, #inspect .insp-star button.on { color: #f2b632; opacity: 1; }
-    #town .tc-star:hover, #inspect .insp-star button:hover { opacity: 1; }
-    #inspect .insp-star { margin: 6px 0 0; font-size: 12.5px; }
+    #town .tc-star, #inspect .insp-star { border: 0; background: none; color: inherit; font: inherit; cursor: pointer; padding: 0 6px; opacity: .8; }
+    #town .tc-star.on, #inspect .insp-star.on { color: #f2b632; opacity: 1; }
+    #town .tc-star:hover, #inspect .insp-star:hover { opacity: 1; }
+    #inspect .insp-route { margin: 8px 0 0; }
     #title-menu .dd-who { display: flex; align-items: center; gap: 6px; font-size: 13.5px; color: #4c5a63; }
     #title-menu .dd-who b { color: #1f2b33; }
     #title-menu .dd-near { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 10px; border-radius: 12px; background: rgba(242,169,59,.12); }
@@ -1791,6 +1845,8 @@
     #title-menu .tm-logo { margin: 0; font-size: 80px; line-height: .86; font-weight: 700; letter-spacing: -.03em; }
     #title-menu .tm-logo span, #title-menu h2 span { color: #e2412f; }
     #title-menu .tm-seedline { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: #4c5a63; margin: 14px 0 18px 3px; overflow-wrap: anywhere; }
+    #title-menu .tm-seedline.tm-tagline { font-family: inherit; font-size: 14px; line-height: 1.35; font-weight: 500; color: #4c5a63; max-width: 300px; min-height: 2.7em; overflow-wrap: normal; text-wrap: balance; transition: opacity .45s ease; }
+    #title-menu .tm-seedline.tm-tagline.out { opacity: 0; }
     #title-menu .tm-menu { display: flex; flex-direction: column; gap: 8px; }
     #title-menu h2 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -.01em; }
     #title-menu h3 { margin: 8px 0 -2px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #7d8a92; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
@@ -1915,6 +1971,7 @@
       #title-menu .tm-logo { font-size: 36px; line-height: 1; }
       #title-menu .tm-logo br { display: none; }
       #title-menu .tm-seedline { margin: 2px 0 6px 2px; font-size: 11px; }
+      #title-menu .tm-seedline.tm-tagline { font-size: 12px; max-width: none; min-height: 0; }
       #title-menu .tm-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
       #title-menu .tm-menu .continue, #title-menu .tm-menu .wide { grid-column: 1 / -1; }
       #title-menu .tm-menu .tm-mini { display: none; }
@@ -2229,7 +2286,7 @@
     #standings { top: 104px; left: 16px; width: 380px; max-width: calc(100vw - 32px); max-height: calc(100vh - 264px); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 6; }
     #standings[hidden] { display: none; }
     /* Friends (net/friends.ts): the tab's rows, and the menu a right-click on a player's name opens */
-    #standings .friends .acts { display: flex; gap: 8px; white-space: nowrap; }
+    #standings .friends .acts, #standings .people .acts { display: flex; gap: 8px; white-space: nowrap; }
     #standings .friends i.on { display: inline-block; width: 6px; height: 6px; margin-right: 4px; border-radius: 50%; background: #1e9e4a; vertical-align: middle; }
     #standings .friends .none { margin: 8px 0 0; color: #7d8a92; }
     /* Community (net/community.ts, docs/community.html): a work's card, the hearts prompt, the overview's pins, the World tab */
@@ -2419,6 +2476,9 @@
     #standings .tabs button.on { background: #1f2b33; border-color: #1f2b33; color: #fff; }
     #standings ul, #standings ol { list-style: none; margin: 0; padding: 0; }
     #standings li { display: flex; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #eef2f4; }
+    /* the Rivals tab's rows keep their own grid, so a fleet opened up spans the row under its name */
+    #standings .rivals li { display: grid; grid-template-columns: 1fr auto; }
+    #standings .rivals li.grp, #standings .rivals .more .log li { display: block; }
     #standings li .what { flex: 1; min-width: 0; }
     #standings li .what b { font-size: 13px; color: #1f2b33; }
     #standings li .what small { display: block; font-size: 11px; color: #7d8a92; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2593,6 +2653,11 @@
     #hq .hq-sec h5 { margin: 0 0 4px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #7d8a92; }
     #hq .hq-sec .gacts { margin-top: 4px; padding-top: 0; border-top: 0; }
     #hq .hq-pane .gsub.more { margin-top: 6px; }
+    /* where it is sold this year: the line that matters once it is unlocked, with the dealer as a link */
+    #hq .hq-pane .gsub.sold { margin-top: 8px; font-size: 13.5px; font-weight: 600; color: #1f2b33; }
+    #hq .hq-pane .gsub.sold small { display: block; font-size: 11.5px; font-weight: 500; color: #6b777e; margin-top: 1px; }
+    #hq .hq-pane .gsub.sold button.dealer { all: unset; cursor: pointer; font-weight: 800; color: #1b8fb0; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+    #hq .hq-pane .gsub.sold button.dealer:hover { color: #0f6f8a; }
     #hq .hq-pane .hq-pbody button.link { all: unset; cursor: pointer; color: #2f7fb5; font-weight: 600; text-decoration: underline; }
     #hq .hq-pane .find { margin-left: auto; }
     #hq .hq-parts { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
@@ -2948,7 +3013,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-CKTVqT5J.js"></script>
+  <script type="module" crossorigin src="./assets/index-ZJin1ALB.js"></script>
 </head>
 <body>
   <div id="mobile-block" role="alertdialog" aria-labelledby="mb-title">
@@ -3119,6 +3184,6 @@
       <div class="ld-bar"><i></i></div>
     </div>
   </div>
-
+
 </body>
 </html>
