@@ -3,10 +3,10 @@
   "date": "2026-10-22",
   "windows": {
     "file": "downloads/TinyFleet-Windows.zip",
-    "bytes": 1978674
+    "bytes": 1978344
   },
   "mac": {
     "file": "downloads/TinyFleet-Mac.zip",
-    "bytes": 1972002
+    "bytes": 1971672
   }
 }
