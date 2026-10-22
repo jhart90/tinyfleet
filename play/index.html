@@ -603,9 +603,6 @@
     #cashmenu .act span { font-size: 12px; color: #7d8a92; }
     #cashmenu .act.danger b { color: #c2372a; }
     /* the HQ button: the HQ window (H, docs/hqwindow.html) on its Home tab */
-    #hqbtn { all: unset; pointer-events: auto; cursor: pointer; font-size: 14px; line-height: 1; padding: 0 2px; filter: grayscale(.35); transition: transform .15s, filter .15s; }
-    #hqbtn:hover { transform: scale(1.15); filter: none; }
-    body.title-mode #hqbtn { display: none; }
     #photobtn { all: unset; pointer-events: auto; cursor: pointer; font-size: 14px; line-height: 1; padding: 0 2px; filter: grayscale(.35); transition: transform .15s, filter .15s; }
     #photobtn:hover { transform: scale(1.15); filter: none; }
     body.title-mode #photobtn { display: none; }
@@ -864,6 +861,10 @@
     #cash { font-family: "Fredoka", "Segoe UI", sans-serif; font-size: 15px; font-weight: 700; color: #1e9e4a; font-variant-numeric: tabular-nums; display: inline-block; }
     #fleetname { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13.5px; color: #1f2b33; max-width: 200px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     #fleetname[hidden] { display: none; }
+    /* the top bar's clickable figures (main.ts openHqAt): the badge and name, the cash, the diamonds, the hearts */
+    #tr #fleetname, #tr #cash, #tr #gems, #tr #likes { pointer-events: auto; cursor: pointer; border-radius: 8px; transition: background .15s; }
+    #tr #fleetname:hover, #tr #cash:hover, #tr #gems:hover, #tr #likes:hover { background: rgba(31,43,51,.07); }
+    body.dark-ui #tr #fleetname:hover, body.dark-ui #tr #cash:hover, body.dark-ui #tr #gems:hover, body.dark-ui #tr #likes:hover { background: rgba(255,255,255,.1); }
     .fleet-badge { display: inline-grid; place-items: center; flex: none; border-radius: 50%; line-height: 1; font-weight: 700; font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "Segoe UI", sans-serif; }
     #cash.bump { animation: cashbump .5s ease-out; }
     @keyframes cashbump { 0% { transform: scale(1) } 30% { transform: scale(1.3); color: #2fcf62 } 100% { transform: scale(1) } }
@@ -1847,6 +1848,9 @@
     #title-menu .tm-seedline { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: #4c5a63; margin: 14px 0 18px 3px; overflow-wrap: anywhere; }
     #title-menu .tm-seedline.tm-tagline { font-family: inherit; font-size: 14px; line-height: 1.35; font-weight: 500; color: #4c5a63; max-width: 330px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: opacity .45s ease; }
     #title-menu .tm-seedline.tm-tagline.out { opacity: 0; }
+    #title-menu .tm-form { position: relative; }
+    #title-menu .tm-pinshow { all: unset; cursor: pointer; justify-self: end; margin-top: -2px; font-size: 11.5px; font-weight: 600; color: #7d8a92; text-decoration: underline; }
+    #title-menu .tm-pinshow:hover { color: #e2412f; }
     #title-menu .tm-menu { display: flex; flex-direction: column; gap: 8px; }
     #title-menu h2 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -.01em; }
     #title-menu h3 { margin: 8px 0 -2px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #7d8a92; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
@@ -2591,6 +2595,26 @@
     #guest-bar.folded button { padding: 7px 12px; font-size: 13px; }
     @media (max-width: 560px) { #guest-bar.folded .gb-tip { display: none; } }
     /* the diamonds chip in the top bar (was injected by the tech window) */
+    /* the HQ's Diamonds and Hearts tabs (game/purseTabs.ts) */
+    #hq .hq-acct { padding: 4px 2px 12px; }
+    #hq .hq-acct h3 { margin: 18px 0 6px; font-size: 14px; color: #1f2b33; }
+    #hq .hq-acct h3 small { font-weight: 500; color: #7d8a92; font-size: 12px; }
+    #hq .pt-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+    #hq .pt-card { background: #f4f7f8; border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+    #hq .pt-card b { font-family: "Fredoka", "Segoe UI", sans-serif; font-size: 20px; color: #1f2b33; }
+    #hq .pt-card span { font-size: 12px; color: #4c5a63; font-weight: 600; }
+    #hq .pt-card small { font-size: 11.5px; color: #7d8a92; }
+    #hq .pt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    #hq .pt-table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #7d8a92; font-weight: 600; padding: 4px 8px; border-bottom: 1px solid #e2e8eb; }
+    #hq .pt-table td { padding: 5px 8px; border-bottom: 1px solid #eef2f4; color: #1f2b33; }
+    #hq .pt-table .n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 700; }
+    #hq .pt-table .good { color: #1f7f9c; } #hq .pt-table .bad { color: #d2342a; } #hq .pt-table .hrt { color: #e0457b; }
+    #hq .pt-when { white-space: nowrap; color: #7d8a92; font-size: 12px; }
+    #hq .pt-sub { color: #7d8a92; font-size: 12px; }
+    #hq .pt-none { color: #7d8a92; font-size: 13px; margin: 6px 0; }
+    #hq .pt-chip { font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: #eef2f4; color: #4c5a63; }
+    #hq .pt-chip.good { background: #dcefd2; color: #2f7a3e; } #hq .pt-chip.bad { background: #fbe3df; color: #d2342a; }
+    #hq .pt-link { all: unset; cursor: pointer; color: #e2412f; text-decoration: underline; font-size: 11.5px; font-weight: 600; }
     #gems { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; font-family: "Fredoka", "Segoe UI", sans-serif; font-size: 15px; font-weight: 700; color: #1f7f9c; font-variant-numeric: tabular-nums; }
     #gems .gem-ico { display: block; width: 20px; height: 24px; transform: translateY(-2px); }
     #facgoal { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-family: "Fredoka", "Segoe UI", sans-serif; font-size: 13px; font-weight: 600; color: #1f2b33; }
@@ -3013,7 +3037,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-D66VjVFI.js"></script>
+  <script type="module" crossorigin src="./assets/index-Bj_wR8Ur.js"></script>
 </head>
 <body>
   <div id="mobile-block" role="alertdialog" aria-labelledby="mb-title">
@@ -3078,7 +3102,7 @@
     <div class="stats" id="stats"></div>
     <div id="compass" aria-hidden="true"><div class="ring"><i style="transform:rotate(45deg)"></i><i style="transform:rotate(135deg)"></i><i style="transform:rotate(225deg)"></i><i style="transform:rotate(315deg)"></i><b class="n">N</b><b>E</b><b>S</b><b>W</b></div></div>
   </div>
-  <div id="tr" class="hud chip"><span id="fleetname" hidden></span><span id="cash">$0</span><button id="gems" type="button" tabindex="-1" title="Diamonds · the tech trees (H → Tech)">◆ 0</button><button id="facgoal" type="button" tabindex="-1" hidden></button><span id="likes" hidden title="Likes: hearts on your works and thumbs-up on your signs from other players. Kept to spend.">♥ 0</span><span id="clock"></span><span id="fps">— fps</span><button id="photobtn" type="button" tabindex="-1" title="Camera: stills and clips to share (C)">📷</button><button id="hqbtn" type="button" tabindex="-1" title="Your HQ: fleet, garage, drivers, estate, tech and books (H)">🏢</button><button id="gear" type="button" tabindex="-1" title="Settings (O)">⚙</button></div>
+  <div id="tr" class="hud chip"><span id="fleetname" hidden title="Your HQ: fleet, garage, drivers, estate, tech and books (H)"></span><span id="cash" title="Your money · click for the Books">$0</span><button id="gems" type="button" tabindex="-1" title="Diamonds · the tech trees (H → Tech)">◆ 0</button><button id="facgoal" type="button" tabindex="-1" hidden></button><span id="likes" hidden title="Likes: hearts on your works and thumbs-up on your signs from other players · click for where they came from">♥ 0</span><span id="clock"></span><span id="fps">— fps</span><button id="photobtn" type="button" tabindex="-1" title="Camera: stills and clips to share (C)">📷</button><button id="gear" type="button" tabindex="-1" title="Settings (O)">⚙</button></div>
   <div id="town-labels" hidden></div>
   <div id="cargo-tags"></div>
   <div id="notices"><div id="toast" class="notice" role="status" aria-live="polite"></div><div id="earnings"></div></div>
