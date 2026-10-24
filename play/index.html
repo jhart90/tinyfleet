@@ -2949,7 +2949,7 @@
     #hq .hq-tlines path.on { stroke: #7fc796; }
     #hq .hq-tlines path.lit { stroke: #2aa7c9; stroke-width: 3; }
     #hq .hq-tgrid { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 8px 10px 12px; width: max-content; }
-    #hq .hq-tlane { display: grid; grid-template-columns: 76px repeat(var(--cols), 104px); column-gap: 16px; align-items: center; padding: 8px 0; border-top: 1px solid #e3e9ec; }
+    #hq .hq-tlane { display: grid; grid-template-columns: 76px repeat(var(--cols), 104px) repeat(var(--own, 0), 216px); column-gap: 16px; align-items: center; padding: 8px 0; border-top: 1px solid #e3e9ec; }
     #hq .hq-tlane.head { border-top: 0; padding: 0; position: sticky; top: 0; z-index: 1; background: #f6f9fb; }
     #hq .hq-tlane .th { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: #7d8a92; }
     #hq .hq-tlane .th b { display: block; color: #1f7f9c; font-family: "Fredoka", sans-serif; font-size: 13px; letter-spacing: 0; }
@@ -2970,6 +2970,12 @@
     #hq .hq-tlane .node.locked img { filter: grayscale(1) brightness(.3) opacity(.5); }
     #hq .hq-tlane .node.locked .st { color: #9aa5ab; font-weight: 500; }
     #hq .hq-tlane .node.sel { box-shadow: 0 0 0 3px #2aa7c9; }
+    /* the factions' own models: two to a row at the end of each lane, earned with standing (game/tech.ts) */
+    #hq .hq-tlane .col.own { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-left: 12px; border-left: 2px dashed #d3dbe0; align-self: stretch; align-content: center; }
+    #hq .hq-tlane .th.own { padding-left: 14px; }
+    #hq .hq-tlane .th.own b { color: #8a6d1f; }
+    #hq .hq-tlane .node.own { border-top: 4px solid var(--fc, #e2e8eb); }
+    #hq .hq-tlane .node.own.locked .st { color: #8a7a52; }
     #hq .hq-pane .hq-pbody button.unlock { all: unset; cursor: pointer; display: inline-block; margin: 8px 0 2px; padding: 8px 16px; border-radius: 12px; background: #2aa7c9; color: #fff; font-weight: 700; font-size: 13px; box-shadow: 0 2px 0 #1f7f9c; }
     #hq .hq-pane .hq-pbody button.unlock:hover { background: #36b6d8; }
     #hq .hq-pane .hq-pbody button.unlock[disabled] { background: #dfe6ea; color: #7d8a92; box-shadow: none; cursor: default; }
@@ -3124,7 +3130,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-C7DHRilc.js"></script>
+  <script type="module" crossorigin src="./assets/index-DtmIWjcE.js"></script>
 </head>
 <body>
   <div id="mobile-block" role="alertdialog" aria-labelledby="mb-title">
