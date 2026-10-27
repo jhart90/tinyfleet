@@ -4,6 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TinyFleet</title>
+  <script>
+    // a downloaded copy's settings and sign-in, brought along by its launch page (public/launch.html) the first
+    // time it opens the game here: taken in before anything reads them, never over what this browser already has
+    try {
+      var tfm = /^#tfmove=(.+)$/.exec(location.hash);
+      if (tfm) {
+        var tfo = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(tfm[1])))));
+        for (var tfk in tfo) if (/^(tinyfleet-|pocket-roads-|tf-|pocketRoads\.)/.test(tfk) && localStorage.getItem(tfk) === null) localStorage.setItem(tfk, String(tfo[tfk]));
+        history.replaceState(null, '', location.pathname + location.search);
+      }
+    } catch (e) { /* nothing carried */ }
+  </script>
   <!-- link previews (Reddit, Discord, X…): the card is site/media/og-card-after-dark.jpg -->
   <meta name="description" content="A tiny tilt-shift driving and logistics game in an endless online world. Haul cargo, hire drivers, grow a fleet. Free in your browser.">
   <meta property="og:type" content="website">
@@ -20,8 +32,7 @@
   <meta name="twitter:description" content="A tiny tilt-shift driving and logistics game in an endless online world. Haul cargo, hire drivers, grow a fleet. Free in your browser.">
   <meta name="twitter:image" content="https://tinyfleet.up.railway.app/media/og-card-after-dark.jpg">
   <meta name="twitter:image:alt" content="TinyFleet after dark: a neon Strip, a city of lit towers, a red suspension bridge and a lamplit country road">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=UnifrakturMaguntia&family=Playfair+Display:wght@700;900&display=swap">
+  <!-- the typefaces come with the game (src/fonts.ts), not from a third party -->
   <style>
     html, body { margin: 0; height: 100%; overflow: hidden; background: #cfe6f5; font-family: "Fredoka", "Segoe UI", sans-serif; color: #1f2b33; }
     canvas#game { display: block; width: 100vw; height: 100vh; }
@@ -45,6 +56,15 @@
     body.mobile-blocked > :not(#mobile-block):not(script) { display: none !important; }
     body.dark-ui > #mobile-block { filter: none !important; }
     #mobile-block .mb-card { max-width: 420px; }
+    /* something went wrong: a load that threw or never finished, or the graphics context lost (the inline script before main.ts) */
+    #trouble { position: fixed; inset: 0; z-index: 2147483646; display: none; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; background: rgba(15, 22, 28, .55); font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; }
+    #trouble.on { display: flex; }
+    #trouble .tb-card { max-width: 440px; background: #f4f7f1; color: #1f2b33; border-radius: 16px; padding: 24px 26px; box-shadow: 0 18px 50px rgba(0,0,0,.35); }
+    #trouble h2 { font-family: "Fredoka", "Segoe UI", sans-serif; font-size: 22px; margin: 0 0 8px; }
+    #trouble p { margin: 0 0 16px; line-height: 1.45; }
+    #trouble .tb-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    #trouble button { font: 600 15px "IBM Plex Sans", "Segoe UI", sans-serif; border: 0; border-radius: 10px; padding: 9px 16px; cursor: pointer; background: #dfe6e2; color: #1f2b33; }
+    #trouble button.go { background: #e2412f; color: #fff; }
     #mobile-block .mb-logo { font-family: "Fredoka", "Segoe UI", sans-serif; font-weight: 700; font-size: 44px; line-height: 1; margin: 0 0 18px; }
     #mobile-block .mb-logo span { color: #e2412f; }
     #mobile-block .mb-ic { font-size: 44px; margin-bottom: 10px; }
@@ -3130,7 +3150,9 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-DtmIWjcE.js"></script>
+  <script type="module" crossorigin src="./assets/index-DQ0tUkf4.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/three-0Gt-nJKi.js">
+  <link rel="stylesheet" crossorigin href="./assets/index-BV6iPe3q.css">
 </head>
 <body>
   <div id="mobile-block" role="alertdialog" aria-labelledby="mb-title">
@@ -3243,6 +3265,7 @@
       </div>
       <div><kbd>Shift</kbd> nitrous · hold <kbd>Space</kbd> handbrake · <kbd>K</kbd> horn, once bought at a Vehicle Shop</div>
       <div><kbd>N</kbd> headlights off and on <em>(a helicopter's searchlight)</em></div>
+      <div id="ctl-banner" hidden>Barnstormer: fit a <b>Banner</b> in the workshop to tow your fleet's name <em>(its tier: name, “Visit” the town, lit)</em></div>
     </section>
     <section class="ctl-sec">
       <h4>Cargo, the world and other vehicles</h4>
@@ -3302,5 +3325,37 @@
     </div>
   </div>
 
+  <!-- something went wrong: said plainly, with a way out, instead of a loading screen that never ends or a frozen picture -->
+  <div id="trouble" role="alertdialog" aria-labelledby="tb-title">
+    <div class="tb-card">
+      <h2 id="tb-title"></h2>
+      <p id="tb-text"></p>
+      <div class="tb-row"><button type="button" class="go" id="tb-reload">Reload</button><button type="button" id="tb-wait">Keep waiting</button></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var card = document.getElementById('trouble'), title = document.getElementById('tb-title'), text = document.getElementById('tb-text');
+      var wait = document.getElementById('tb-wait');
+      var loading = function () { var l = document.getElementById('loading'); return !!l && !l.hidden; };
+      var show = function (t, body, canWait) { title.textContent = t; text.textContent = body; wait.hidden = !canWait; card.classList.add('on'); };
+      var hide = function () { card.classList.remove('on'); };
+      document.getElementById('tb-reload').addEventListener('click', function () { location.reload(); });
+      wait.addEventListener('click', function () { hide(); later(); });
+      // an error while the world is being made: it will not finish now
+      var broke = function () { if (loading()) show('Something went wrong', 'TinyFleet hit a problem while loading. Reloading the page usually fixes it.', false); };
+      window.addEventListener('error', function (e) { if (e && (e.error || e.message)) broke(); });
+      window.addEventListener('unhandledrejection', broke);
+      // a load that is still going after a minute and a half: say so, and let the player choose
+      var later = function () { setTimeout(function () { if (loading() && !card.classList.contains('on')) show('Still loading…', 'This is taking longer than it should. You can keep waiting, or reload to try again.', true); }, 90000); };
+      later();
+      // the browser or the graphics driver took the GPU back (a driver reset, a sleeping laptop): the picture stops
+      var game = document.getElementById('game');
+      if (game) {
+        game.addEventListener('webglcontextlost', function () { show('The graphics stopped', 'Your browser reset its graphics (a driver update, a laptop waking from sleep or a busy graphics card). Reload to carry on: your fleet is saved.', false); });
+        game.addEventListener('webglcontextrestored', function () { setTimeout(hide, 1000); });
+      }
+    })();
+  </script>
 </body>
 </html>

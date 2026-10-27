@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TinyFleet</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #161d22; color: #b7c2bb; font: 15px "Segoe UI", system-ui, sans-serif; }
+  body { display: flex; align-items: center; justify-content: center; }
+</style>
+</head>
+<body>
+<p id="msg">Starting TinyFleet…</p>
+<script>
+// Where the launchers open a downloaded copy (launcher/PocketRoads.cs, launcher/mac/TinyFleet): the game itself
+// is played from the online server, so a download is always the newest version. This copy's own settings and
+// sign-in go along the first time (in the address's #fragment, which never leaves the browser; the game takes
+// them in before anything reads them: index.html). With no server in reach, the copy beside this page plays.
+(function () {
+  var SERVER = 'https://tinyfleet.up.railway.app';
+  if (SERVER.indexOf('__') === 0) SERVER = 'https://tinyfleet.up.railway.app';
+  var MOVED = 'tinyfleet-moved';
+  var local = function () { location.replace('./index.html' + location.search); };
+  // what goes along: this game's own keys, but not saved worlds (they are big, and kept online) or caches
+  var payload = function () {
+    var out = {}, size = 0;
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (!/^(tinyfleet-|pocket-roads-|tf-|pocketRoads\.)/.test(k) || /save|slot|^tf-missiontext$|^tf-taglines$/.test(k) || k === MOVED) continue;
+      var v = localStorage.getItem(k);
+      if (v == null || v.length > 16384 || size + v.length > 200000) continue;
+      out[k] = v; size += v.length;
+    }
+    return out;
+  };
+  var ctl = typeof AbortController === 'function' ? new AbortController() : null;
+  var timer = setTimeout(function () { if (ctl) ctl.abort(); local(); }, 5000);
+  fetch(SERVER + '/online.json', { cache: 'no-store', signal: ctl ? ctl.signal : undefined })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (j) {
+      clearTimeout(timer);
+      if (!j || !j.tinyfleet) return local();
+      var hash = '';
+      try {
+        if (!localStorage.getItem(MOVED)) {
+          var p = payload();
+          if (Object.keys(p).length) hash = '#tfmove=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(p)))));
+          localStorage.setItem(MOVED, String(Date.now()));
+        }
+      } catch (e) { /* storage blocked: nothing to carry */ }
+      location.replace(SERVER + '/play/' + location.search + hash);
+    })
+    .catch(function () { clearTimeout(timer); local(); });
+})();
+</script>
+</body>
+</html>
