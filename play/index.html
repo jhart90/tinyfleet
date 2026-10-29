@@ -409,6 +409,9 @@
     #n-log li.in-grp { margin-left: 10px; }
     /* a notification that opens something (the newspaper): its card and its log row take a click */
     #toast.openable { pointer-events: auto; cursor: pointer; --accent: #2a2010; }
+    /* every other card up there takes a click too: it opens the log (the user, 28 Oct 2026); one folding away lets clicks by */
+    #notices .notice { pointer-events: auto; cursor: pointer; }
+    #toast:not(.show), #deed-card:not(.in), #notices .notice.out { pointer-events: none; }
     #toast.openable:hover { box-shadow: 0 1px 0 rgba(255,255,255,.9) inset, 0 12px 34px rgba(31,43,51,.26), 0 2px 6px rgba(31,43,51,.1); }
     #toast.openable .n-icon { background: #f1e9d2; }
     #n-log li.nl-open { cursor: pointer; border-left-color: #2a2010; }
@@ -828,6 +831,14 @@
     #build .rb-pill.tog.on { background: #fff; border-color: #e2412f; color: #1f2b33; }
     #build .rb-pill.tog.on .dot { background: #e2412f; }
     #build .rb-pill.act { color: #2f7fb5; }
+    #build .rb-pill.rb-note { cursor: default; color: #7d8a92; font-weight: 500; }
+    #build .rb-rcount { margin-left: auto; font-size: 11px; color: #7d8a92; }
+    #build .rb-rails .rb-row { align-items: stretch; }
+    #build .rb-rails .rb-sq.rb-bsq .rb-ic { height: 58px; }
+    #build .sw-rail-steam { background: repeating-linear-gradient(#5b4332 0 3px, transparent 3px 7px) 50% 0 / 60% 100% no-repeat, linear-gradient(90deg, #8fd06c 0 18%, #857a6e 18% 82%, #8fd06c 82%); }
+    #build .sw-rail-streamline { background: repeating-linear-gradient(#66513e 0 3px, transparent 3px 7px) 50% 0 / 60% 100% no-repeat, linear-gradient(90deg, #8fd06c 0 18%, #8f8980 18% 82%, #8fd06c 82%); }
+    #build .sw-rail-modern { background: repeating-linear-gradient(#b9b5ac 0 3px, transparent 3px 7px) 50% 0 / 60% 100% no-repeat, linear-gradient(90deg, #8fd06c 0 18%, #9c9890 18% 82%, #8fd06c 82%); }
+
     /* the height a road is raised to (+ and −): a pill with a step button either side */
     #build .rb-pill.rb-lift { cursor: default; padding: 1px 3px; gap: 4px; }
     #build .rb-pill.rb-lift.on { background: #fff; border-color: #e2412f; color: #1f2b33; }
@@ -1031,6 +1042,12 @@
     #standings ul.ranking .nm i { display: inline-block; width: 18px; font-style: normal; font-weight: 700; color: #9aa6ad; }
     #standings ul.ranking .nm b { font-size: 12px; color: #1f2b33; font-weight: 600; }
     #standings ul.ranking .nm small { font-size: 10px; font-weight: 700; color: #1e9e4a; text-transform: uppercase; letter-spacing: .04em; }
+    /* the Gilded Fleet (game/treats.ts): a gold name and a Gilded title on the Standings, on name tags and in the top bar */
+    #standings ul.ranking .nm b.gilded { color: #a8801f; font-weight: 800; background: linear-gradient(180deg, #f3d77a, #b8891f); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    #standings ul.ranking .nm small.gilded-title { color: #8a6a12; background: #fbf0c8; border: 1px solid #e2c25a; border-radius: 6px; padding: 0 4px; }
+    .net-tag.gilded { color: #ffe08a; background: rgba(60,44,8,.82); box-shadow: 0 0 0 1.5px #d4af37; }
+    #fleetname.gilded { color: #a8801f; text-shadow: 0 1px 0 rgba(255,236,170,.9); }
+    body.dark-ui #fleetname.gilded { color: #f0cd62; text-shadow: none; }
     #standings ul.ranking em { font-style: normal; font-weight: 700; color: #4c5a63; font-variant-numeric: tabular-nums; }
     #standings ul.ranking em.neg { color: #d2342a; }
     #standings ul.ranking .bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: #eef2f4; overflow: hidden; }
@@ -1721,6 +1738,10 @@
     #title-menu .pb-head b { flex: 1; font-size: 15px; letter-spacing: .08em; text-transform: uppercase; color: #5a4630; font-weight: 700; }
     #title-menu .pb-head em { font-style: normal; font-size: 12px; color: #8a7558; font-variant-numeric: tabular-nums; }
     #title-menu .pb-sub { font-size: 11px; color: #7a6a52; line-height: 1.3; }
+    /* a page's seal (game/passportRewards.ts): gold when every stamp is in */
+    #title-menu .pb-seal { margin-left: 6px; font-size: 13px; color: #b8a888; cursor: help; opacity: .7; }
+    #title-menu .pb-seal.on { opacity: 1; filter: drop-shadow(0 0 3px #e9c45a) sepia(1) saturate(3) hue-rotate(-12deg); }
+    #title-menu .pb-seal.open { opacity: .9; filter: grayscale(.4); }
     #title-menu .pb-body { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
     #title-menu .pb-body.scroll { overflow: auto; scrollbar-width: thin; padding-right: 4px; }
     #title-menu .pb-body.scroll .pp-strand, #title-menu .pb-body.scroll .pp-mark, #title-menu .pb-body.scroll .pp-crate, #title-menu .pb-body.scroll .pp-home { background: rgba(255,255,255,.55); }
@@ -2350,6 +2371,13 @@
     #net-chat .line span { color: #7d8a92; font-style: italic; }
     #net-chat .line.w, #net-chat .line.wto { color: #7a3aa6; }
     #net-chat .line.sys em { font-style: normal; color: #7d8a92; }
+    /* long-haul work (game/cargo.ts): gold in the cargo list and the goods' card */
+    #inventory .lh { color: #c47a00; font-weight: 700; }
+    #cargo-tip .claim.longhaul { color: #c47a00; font-weight: 700; }
+    /* Ultra-Bulk work (game/cargo.ts): hazard lime on black in the cargo list and the goods' card */
+    #inventory .ub, #cargo-tip .claim.ultra { color: #b4f20a; background: #101408; font-weight: 800; padding: 0 4px; border-radius: 3px; letter-spacing: 0.02em; }
+    /* the server to everyone: a restart coming (server/handover.ts) */
+    #net-chat .line.alert strong { color: #e2412f; font-weight: 800; }
     #net-chat .form { display: none; margin-top: 6px; pointer-events: auto; }
     #net-chat.typing .form { display: block; }
     #net-chat input { width: 100%; box-sizing: border-box; font: inherit; color: #1f2b33; padding: 8px 12px; border-radius: 12px; border: 1px solid #dfe6ea; background: rgba(255,255,255,.95); outline: none; }
@@ -2359,6 +2387,16 @@
     #net-chat kbd, #standings kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
     #net-chip { margin-top: 5px; font-size: 12px; font-weight: 600; color: #1e9e4a; display: flex; align-items: center; gap: 6px; }
     #net-chip[hidden] { display: none; }
+    /* the camera sent somewhere far, while that county is built and drawn (game/travelLoading.ts) */
+    #travel-load { left: 50%; top: 42%; transform: translate(-50%, -50%); min-width: 240px; z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; padding: 12px 18px 14px; }
+    #travel-load[hidden] { display: none; }
+    #travel-load b { font-size: 15px; font-weight: 700; color: #1f2b33; }
+    #travel-load span { font-size: 12px; color: #7d8a92; }
+    #travel-load .bar { width: 220px; height: 6px; margin-top: 6px; border-radius: 3px; background: #e6ece4; overflow: hidden; }
+    #travel-load .bar i { display: block; height: 100%; width: 0; border-radius: 3px; background: #e2412f; transition: width .25s linear; }
+    /* the name opens the Esc menu, the online line the Players tab (the user, 28 Oct 2026) */
+    #tl h1, #net-chip { pointer-events: auto; cursor: pointer; }
+    #net-chip:hover { text-decoration: underline; }
     #net-chip i { width: 8px; height: 8px; border-radius: 50%; background: #1e9e4a; box-shadow: 0 0 0 3px rgba(30,158,74,.2); }
     #net-tags { position: fixed; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; }
     body.title-mode #net-tags { display: none; }
@@ -2604,7 +2642,7 @@
     #standings header { display: flex; justify-content: space-between; align-items: baseline; }
     #standings header b { font-size: 18px; font-weight: 700; color: #1f2b33; }
     #standings header b span { color: #e2412f; }
-    #standings .tabs { display: flex; gap: 6px; margin: 6px 0 4px; }
+    #standings .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; }
     #standings .tabs button { all: unset; cursor: pointer; font-size: 12.5px; font-weight: 600; padding: 3px 11px; border-radius: 999px; background: #fff; border: 1.5px solid #dfe6ea; color: #4c5a63; }
     #standings .tabs button.on { background: #1f2b33; border-color: #1f2b33; color: #fff; }
     #standings ul, #standings ol { list-style: none; margin: 0; padding: 0; }
@@ -2953,6 +2991,36 @@
     #hq .hq-tile b { font-size: 16px; color: #1f2b33; line-height: 1.25; }
     #hq .hq-tile span { font-size: 11.5px; color: #5d6b73; }
 
+    /* Treats (game/treatsTab.ts): every Passport seal and its treat */
+    #hq .hq-treats { max-width: 980px; }
+    #hq .tr-lead { font-size: 13px; color: #4c5a63; padding: 8px 12px; border-radius: 11px; background: #fbf6e6; border: 1px solid #efe3bd; }
+    #hq .tr-lead b { color: #8a6a12; }
+    #hq .tr-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 8px; }
+    #hq .tr-list li { display: flex; gap: 10px; padding: 9px 12px; border-radius: 12px; background: #f6f8fa; box-shadow: inset 0 0 0 1px #e3e9ec; opacity: .82; }
+    #hq .tr-list li.got { background: #fffaf0; box-shadow: inset 0 0 0 1.5px #e2c25a; opacity: 1; }
+    #hq .tr-icon { font-size: 24px; line-height: 1; width: 30px; text-align: center; padding-top: 2px; }
+    #hq .tr-body { flex: 1; min-width: 0; }
+    #hq .tr-top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    #hq .tr-top b { font-size: 14px; color: #1f2b33; }
+    #hq .tr-top small { font-size: 11px; color: #7d8a92; }
+    #hq .tr-top em { margin-left: auto; font-style: normal; font-size: 11px; font-weight: 700; color: #9aa6ad; }
+    #hq .tr-list li.got .tr-top em { color: #a8801f; }
+    #hq .tr-body p { margin: 3px 0 6px; font-size: 12px; color: #5d6b73; line-height: 1.35; }
+    #hq .tr-bar { display: block; height: 5px; border-radius: 3px; background: #e6ecef; overflow: hidden; }
+    #hq .tr-bar i { display: block; height: 100%; background: #c9a43a; }
+    #hq .tr-ctl { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #4c5a63; }
+    #hq .tr-ctl select { font: inherit; padding: 3px 6px; border-radius: 8px; border: 1px solid #cdd6db; background: #fff; }
+    #hq .tr-dim { font-weight: 400; color: #8a969d; }
+    #hq .tr-seg { flex-wrap: wrap; }
+    #hq .tr-seg button { font: inherit; font-size: 12px; font-weight: 600; padding: 4px 11px; border-radius: 999px; border: 1px solid #cdd6db; background: #fff; color: #1f2b33; cursor: pointer; }
+    #hq .tr-seg button.on { background: #a8801f; color: #fff; border-color: #a8801f; }
+    #hq .tr-foot { font-size: 12px; color: #7d8a92; margin: 10px 2px 0; }
+    body.dark-ui #hq .tr-list li { background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+    body.dark-ui #hq .tr-list li.got { background: rgba(212,175,55,.1); box-shadow: inset 0 0 0 1.5px rgba(226,194,90,.6); }
+    body.dark-ui #hq .tr-top b { color: #eef2f4; }
+    body.dark-ui #hq .tr-body p, body.dark-ui #hq .tr-lead { color: #b9c4ca; }
+    body.dark-ui #hq .tr-lead { background: rgba(212,175,55,.08); border-color: rgba(226,194,90,.3); }
+
     /* Estate */
     #hq .hq-estate { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 14px; height: 100%; }
     #hq .hq-eleft { display: flex; flex-direction: column; min-height: 0; overflow: auto; }
@@ -3176,8 +3244,8 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-Cf1DGEZF.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/three-BBFNIHTg.js">
+  <script type="module" crossorigin src="./assets/index-zCoO3Pn-.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/three-BEaCcWWp.js">
   <link rel="stylesheet" crossorigin href="./assets/index-BV6iPe3q.css">
 </head>
 <body>
