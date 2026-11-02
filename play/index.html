@@ -45,8 +45,8 @@
      */
     body.dark-ui > :not(#game):not(#loading):not(script) { filter: invert(1) hue-rotate(180deg); }
     /* a full-screen card's veil blurs the world behind it: the veil is darkened, and only the card inside is turned */
-    body.dark-ui > :is(.worldmap, #vehicles, #cashmenu, #settings, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq) { filter: none !important; background: rgba(8,12,16,.55) !important; }
-    body.dark-ui > :is(.worldmap, #vehicles, #cashmenu, #settings, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq) > * { filter: invert(1) hue-rotate(180deg); }
+    body.dark-ui > :is(.worldmap, #vehicles, #cashmenu, #settings, #music, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq) { filter: none !important; background: rgba(8,12,16,.55) !important; }
+    body.dark-ui > :is(.worldmap, #vehicles, #cashmenu, #settings, #music, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq) > * { filter: invert(1) hue-rotate(180deg); }
     body.dark-ui > :not(#game):not(#loading) :is(img, canvas, video, .dk-canvas, .sw, .rb-sw, .terr-legend .tl-row i) { filter: invert(1) hue-rotate(180deg); }
     /* the fleets' names over the overview are their own colours, with halos picked for them */
     body.dark-ui > #terr-labels { filter: none !important; }
@@ -600,8 +600,8 @@
 
     #vehicles, #cashmenu { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(207,230,245,.5); backdrop-filter: blur(3px); padding: 16px; box-sizing: border-box; }
     /* the big windows open below the top-right bar (#tr), so their titles, tabs and keys are never under it */
-    body :is(#vehicles, #cashmenu, #settings, #mayor, #requests, #hq) { padding-top: 76px; }
-    body :is(#vehicles, #cashmenu, #settings, #mayor, #requests, #hq) .panel { max-height: calc(100vh - 92px); }
+    body :is(#vehicles, #cashmenu, #settings, #music, #mayor, #requests, #hq) { padding-top: 76px; }
+    body :is(#vehicles, #cashmenu, #settings, #music, #mayor, #requests, #hq) .panel { max-height: calc(100vh - 92px); }
     #vehicles .panel, #cashmenu .panel { background: #fff; border-radius: 22px; box-shadow: 0 18px 60px rgba(31,43,51,.22); width: min(1060px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 20px 22px 22px; box-sizing: border-box; }
     #cashmenu .panel { width: min(420px, 100%); }
     #vehicles header, #cashmenu header { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 16px; flex-wrap: wrap; }
@@ -657,8 +657,8 @@
     body.title-mode #photobtn { display: none; }
     #gear { all: unset; pointer-events: auto; cursor: pointer; font-size: 15px; line-height: 1; color: #4c5a63; padding: 0 2px; transition: transform .2s; }
     #gear:hover { transform: rotate(45deg); color: #1f2b33; }
-    #settings { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(207,230,245,.5); backdrop-filter: blur(3px); padding: 16px; box-sizing: border-box; }
-    #settings[hidden] { display: none; }
+    :is(#settings, #music) { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(207,230,245,.5); backdrop-filter: blur(3px); padding: 16px; box-sizing: border-box; }
+    :is(#settings, #music)[hidden] { display: none; }
     #mayor { position: fixed; inset: 0; z-index: 22; display: grid; place-items: center; background: rgba(207,230,245,.5); backdrop-filter: blur(3px); padding: 16px; box-sizing: border-box; }
     #mayor[hidden] { display: none; }
     #mayor .panel { position: relative; background: #fffdf6; border-radius: 22px; box-shadow: 0 18px 60px rgba(31,43,51,.22); width: min(440px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 20px 24px 22px; box-sizing: border-box; border: 1px solid #efe6cf; }
@@ -728,40 +728,69 @@
     #requests .hist { margin-top: 12px; display: flex; flex-direction: column; gap: 2px; }
     #requests .hist span { font-size: 11px; color: #9aa6ad; }
     @media (max-width: 760px) { #requests .cols { grid-template-columns: 1fr; } }
-    #settings .panel { background: #fff; border-radius: 22px; box-shadow: 0 18px 60px rgba(31,43,51,.22); width: min(440px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 20px 22px 22px; box-sizing: border-box; }
-    #settings header { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
-    #settings h2 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -.01em; }
-    #settings h2 span { color: #e2412f; }
-    #settings .keys { font-size: 12.5px; color: #7d8a92; }
-    #settings kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 11px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; color: #4c5a63; }
-    #settings h3 { margin: 16px 0 10px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #7d8a92; display: flex; gap: 10px; align-items: center; }
-    #settings h3::after { content: ""; flex: 1; height: 1px; background: #e6ecef; }
-    #settings .nowplaying { background: #1f2b33; color: #fff; border-radius: 16px; padding: 14px 16px; }
-    #settings .np-label { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: #9fb0b8; }
-    #settings .np-title { font-size: 22px; font-weight: 700; margin-top: 4px; line-height: 1.15; }
-    #settings .np-artist { font-size: 14px; color: #f2a93b; font-weight: 600; margin-top: 2px; }
-    #settings .np-count { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: #9fb0b8; margin-top: 6px; }
-    #settings .time { display: grid; grid-template-columns: 38px 1fr 38px; align-items: center; gap: 10px; margin: 14px 2px 4px; font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: #7d8a92; font-variant-numeric: tabular-nums; }
-    #settings .time span:last-child { text-align: right; }
-    #settings .bar { height: 8px; border-radius: 4px; background: #e6ecef; cursor: pointer; position: relative; overflow: hidden; }
-    #settings .bar i { position: absolute; inset: 0 auto 0 0; background: #e2412f; border-radius: 4px; }
-    #settings .controls { display: flex; justify-content: center; align-items: center; gap: 14px; margin: 8px 0 4px; }
-    #settings .ctl { all: unset; cursor: pointer; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: #f3f6f7; font-size: 17px; color: #1f2b33; transition: background .12s, transform .12s; }
-    #settings .ctl:hover { background: #e6ecef; transform: scale(1.06); }
-    #settings .ctl.big { width: 54px; height: 54px; background: #e2412f; color: #fff; font-size: 21px; }
-    #settings .ctl.big:hover { background: #cc3524; }
-    #settings .volume { display: grid; grid-template-columns: 42px 1fr 52px; align-items: center; gap: 10px; margin: 10px 0 4px; }
-    #settings .vol { width: 100%; accent-color: #e2412f; }
-    #settings .vol-n { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: #7d8a92; text-align: right; }
-    #settings .ctl.mode { position: relative; width: 36px; height: 36px; background: transparent; color: #9fb0b8; }
-    #settings .ctl.mode:hover { background: #f3f6f7; color: #4c5a63; }
-    #settings .ctl.mode.on { color: #e2412f; }
-    #settings .ctl.mode.on::after { content: ""; position: absolute; bottom: 3px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; }
-    #settings .ctl.mode em { display: none; position: absolute; top: 3px; right: 1px; min-width: 13px; height: 13px; border-radius: 7px; background: #e2412f; color: #fff; font: 700 9px/13px "IBM Plex Mono", monospace; text-align: center; }
-    #settings .ctl.mode[data-loop="one"] em { display: block; }
-    #settings .credit { margin: 12px 0 0; font-size: 12px; color: #7d8a92; }
-    #settings .credit a { color: #e2412f; font-weight: 600; text-decoration: none; }
-    #settings .credit a:hover { text-decoration: underline; }
+    :is(#settings, #music) .panel { background: #fff; border-radius: 22px; box-shadow: 0 18px 60px rgba(31,43,51,.22); width: min(440px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 20px 22px 22px; box-sizing: border-box; }
+    :is(#settings, #music) header { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+    :is(#settings, #music) h2 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -.01em; }
+    :is(#settings, #music) h2 span { color: #e2412f; }
+    :is(#settings, #music) .keys { font-size: 12.5px; color: #7d8a92; }
+    :is(#settings, #music) kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 11px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; color: #4c5a63; }
+    :is(#settings, #music) h3 { margin: 16px 0 10px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #7d8a92; display: flex; gap: 10px; align-items: center; }
+    :is(#settings, #music) h3::after { content: ""; flex: 1; height: 1px; background: #e6ecef; }
+    :is(#settings, #music) .nowplaying { background: #1f2b33; color: #fff; border-radius: 16px; padding: 14px 16px; }
+    :is(#settings, #music) .np-label { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: #9fb0b8; }
+    :is(#settings, #music) .np-title { font-size: 22px; font-weight: 700; margin-top: 4px; line-height: 1.15; }
+    :is(#settings, #music) .np-artist { font-size: 14px; color: #f2a93b; font-weight: 600; margin-top: 2px; }
+    :is(#settings, #music) .np-count { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: #9fb0b8; margin-top: 6px; }
+    :is(#settings, #music) .time { display: grid; grid-template-columns: 38px 1fr 38px; align-items: center; gap: 10px; margin: 14px 2px 4px; font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: #7d8a92; font-variant-numeric: tabular-nums; }
+    :is(#settings, #music) .time span:last-child { text-align: right; }
+    :is(#settings, #music) .bar { height: 8px; border-radius: 4px; background: #e6ecef; cursor: pointer; position: relative; overflow: hidden; }
+    :is(#settings, #music) .bar i { position: absolute; inset: 0 auto 0 0; background: #e2412f; border-radius: 4px; }
+    :is(#settings, #music) .controls { display: flex; justify-content: center; align-items: center; gap: 14px; margin: 8px 0 4px; }
+    :is(#settings, #music) .ctl { all: unset; cursor: pointer; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: #f3f6f7; font-size: 17px; color: #1f2b33; transition: background .12s, transform .12s; }
+    :is(#settings, #music) .ctl:hover { background: #e6ecef; transform: scale(1.06); }
+    :is(#settings, #music) .ctl.big { width: 54px; height: 54px; background: #e2412f; color: #fff; font-size: 21px; }
+    :is(#settings, #music) .ctl.big:hover { background: #cc3524; }
+    :is(#settings, #music) .volume { display: grid; grid-template-columns: 42px 1fr 52px; align-items: center; gap: 10px; margin: 10px 0 4px; }
+    :is(#settings, #music) .vol { width: 100%; accent-color: #e2412f; }
+    :is(#settings, #music) .vol-n { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: #7d8a92; text-align: right; }
+    :is(#settings, #music) .ctl.mode { position: relative; width: 36px; height: 36px; background: transparent; color: #9fb0b8; }
+    :is(#settings, #music) .ctl.mode:hover { background: #f3f6f7; color: #4c5a63; }
+    :is(#settings, #music) .ctl.mode.on { color: #e2412f; }
+    :is(#settings, #music) .ctl.mode.on::after { content: ""; position: absolute; bottom: 3px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: currentColor; }
+    :is(#settings, #music) .ctl.mode em { display: none; position: absolute; top: 3px; right: 1px; min-width: 13px; height: 13px; border-radius: 7px; background: #e2412f; color: #fff; font: 700 9px/13px "IBM Plex Mono", monospace; text-align: center; }
+    :is(#settings, #music) .ctl.mode[data-loop="one"] em { display: block; }
+    :is(#settings, #music) .credit { margin: 12px 0 0; font-size: 12px; color: #7d8a92; }
+    :is(#settings, #music) .credit a { color: #e2412f; font-weight: 600; text-decoration: none; }
+    :is(#settings, #music) .credit a:hover { text-decoration: underline; }
+    /* the music window (game/musicMenu.ts): the playlist under the player, and the soundwave that moves while it plays */
+    .wave { display: inline-flex; align-items: center; gap: 2px; height: 1em; vertical-align: middle; }
+    .wave i { display: block; width: 3px; height: 100%; border-radius: 2px; background: currentColor; transform-origin: center; transform: scaleY(.3); animation: wave-bar .9s ease-in-out infinite; }
+    .wave i:nth-child(2) { animation-delay: -.45s; animation-duration: .75s; }
+    .wave i:nth-child(3) { animation-delay: -.2s; animation-duration: 1.05s; }
+    .wave i:nth-child(4) { animation-delay: -.6s; animation-duration: .85s; }
+    .wave i:nth-child(5) { animation-delay: -.3s; animation-duration: .95s; }
+    @keyframes wave-bar { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
+    @media (prefers-reduced-motion: reduce) { .wave i { animation: none; transform: scaleY(.6); } }
+    #musicbtn { all: unset; pointer-events: auto; cursor: pointer; display: inline-grid; place-items: center; height: 15px; padding: 0 3px; color: #7d8a92; font-size: 13px; transition: transform .15s, color .15s; }
+    #musicbtn:hover { transform: scale(1.15); color: #1f2b33; }
+    #musicbtn.on { color: #e2412f; }
+    #musicbtn:not(.on) .wave i, #music .nowplaying:not(.on) .wave i, #music .trk:not(.on) .wave i { animation-play-state: paused; }
+    #music .np-label { display: flex; align-items: center; gap: 8px; }
+    #music .np-label .wave { color: #f2a93b; font-size: 12px; }
+    #music .tracks { display: flex; flex-direction: column; gap: 2px; }
+    #music .trk { all: unset; cursor: pointer; display: grid; grid-template-columns: 34px 1fr auto; align-items: baseline; gap: 8px; padding: 7px 10px; border-radius: 10px; font-size: 14px; color: #1f2b33; transition: background .12s; }
+    #music .trk:hover { background: #f3f6f7; }
+    #music .trk.cur { background: #fdecea; }
+    #music .trk.cur b { color: #e2412f; }
+    #music .trk b { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #music .trk-n { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: #9fb0b8; display: flex; align-items: center; }
+    #music .trk-n .wave { display: none; color: #e2412f; font-size: 12px; }
+    #music .trk.cur .trk-n { font-size: 0; }
+    #music .trk.cur .trk-n .wave { display: inline-flex; }
+    #music .trk-a { font-size: 12px; color: #7d8a92; }
+    /* a new track's card: the soundtrack's red, with the soundwave for its icon */
+    #toast[data-kind="tune"] { --accent: #e2412f; }
+    #toast[data-kind="tune"] .n-icon .wave { color: #e2412f; font-size: 18px; gap: 3px; }
     .vcard { all: unset; box-sizing: border-box; cursor: pointer; display: flex; flex-direction: column; position: relative; border-radius: 16px; background: #f4f7f9; border: 2px solid transparent; padding: 7px 7px 10px; transition: transform .12s, box-shadow .12s, border-color .12s, background .12s; font-family: inherit; color: inherit; }
     .vcard.focus { border-color: #e2412f; background: #fff; box-shadow: 0 6px 18px rgba(31,43,51,.13); transform: translateY(-2px); }
     .vcard .thumb { aspect-ratio: 3 / 2; border-radius: 11px; overflow: hidden; }
@@ -2200,6 +2229,9 @@
     .mc-objs + .mc-sub { padding-top: 11px; border-top: 1px dashed #d8dccf; }
     .mc-sub { margin: 4px 0 -3px; font-size: 11px; line-height: 1; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; color: #8a969d; }
     #mission .mc-why { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    /* the one card allowed to run long (the first drive's helping hand, missions/text.ts LONG_TPLS): wider, its why unclamped */
+    #mission .mc.long { width: min(680px, 100%); }
+    #mission .mc.long .mc-why { display: block; -webkit-line-clamp: unset; font-size: 14.5px; }
     .mc-more-t { all: unset; cursor: pointer; align-self: flex-start; margin-top: -4px; font-size: 12.5px; font-weight: 700; color: #3f7fb8; }
     .mc-more-t:hover { text-decoration: underline; }
     .mc-more-t i { display: inline-block; font-style: normal; transition: transform .15s; }
@@ -2307,6 +2339,8 @@
     .race-strip b.ahead { color: #1e9e4a; }
     .race-strip b.behind { color: #c2372a; }
     .race-strip .clock { font-family: "IBM Plex Mono", monospace; color: #7d8a92; }
+    /* a delivery's medal clock: a small note in the corner, not a race */
+    .race-strip.quiet { font-size: 12px; font-weight: 500; gap: 8px; padding: 5px 11px; opacity: .88; }
     .race-count { position: fixed; top: 34%; left: 50%; transform: translate(-50%, -50%); z-index: 16; font-size: 140px; font-weight: 700; color: #fff; text-shadow: 0 6px 30px rgba(31,43,51,.45), 0 0 2px #1f2b33; pointer-events: none; }
     .race-count[hidden] { display: none; }
     .race-count.pop { animation: racepop .5s cubic-bezier(.2,.9,.3,1.4); }
@@ -2882,6 +2916,23 @@
     #hq .hq-coach.right::before, #hq .hq-coach.below::before { content: ""; position: absolute; width: 10px; height: 10px; background: #1f2b33; transform: rotate(45deg); }
     #hq .hq-coach.right::before { left: -5px; top: 18px; }
     #hq .hq-coach.below::before { top: -5px; left: 22px; }
+    /* the first drive's tour of the Fleet tab (game/fleetBoard.ts tour): one bubble at a time, over the HQ window */
+    .hq-tour { position: fixed; z-index: 21; width: 260px; box-sizing: border-box; padding: 11px 13px 11px; border-radius: 13px; background: #1f2b33; color: #e9efe8; font-size: 13px; line-height: 1.45; box-shadow: 0 12px 32px rgba(31,43,51,.35), 0 0 0 3px #ffd36b; opacity: 0; transform: translateY(6px); transition: opacity .25s, transform .25s cubic-bezier(.2,.9,.3,1.3), left .25s, top .25s; }
+    .hq-tour.on { opacity: 1; transform: none; }
+    .hq-tour .n { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #9fb0b8; margin-bottom: 2px; }
+    .hq-tour b { display: block; color: #ffd36b; font-size: 14px; margin-bottom: 3px; }
+    .hq-tour em { font-style: normal; font-weight: 700; color: #fff; }
+    .hq-tour .acts { display: flex; justify-content: flex-end; gap: 6px; margin-top: 9px; }
+    .hq-tour button { all: unset; cursor: pointer; padding: 4px 14px; border-radius: 999px; background: #ffd36b; color: #1f2b33; font-weight: 700; font-size: 12.5px; }
+    .hq-tour button.skip { background: transparent; color: #9fb0b8; padding: 4px 8px; }
+    .hq-tour.right::before, .hq-tour.left::before, .hq-tour.below::before { content: ""; position: absolute; width: 12px; height: 12px; background: #1f2b33; transform: rotate(45deg); }
+    .hq-tour.right::before { left: -6px; top: 20px; }
+    .hq-tour.left::before { right: -6px; top: 20px; }
+    .hq-tour.below::before { top: -6px; left: 24px; }
+    #hq .tour-glow { box-shadow: 0 0 0 3px #ffd36b, 0 0 22px 4px rgba(255,211,107,.55) !important; border-radius: 12px; }
+    #hq .gmodes { margin-top: 12px; }
+    #hq .gmodes .chips { display: flex; gap: 6px; }
+    #tut-callout.up::after { right: auto; left: 18px; }
     @keyframes hqcoach { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
     #hq .hq-zone { border-radius: 14px; padding: 10px 12px 12px; background: #f4f7f9; border: 2px solid transparent; transition: border-color .12s, background .12s; }
     #hq .hq-zone[data-zone="garage"] { background: #f1f3f4; }
@@ -3244,7 +3295,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-zCoO3Pn-.js"></script>
+  <script type="module" crossorigin src="./assets/index-BtYaaKhn.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-BEaCcWWp.js">
   <link rel="stylesheet" crossorigin href="./assets/index-BV6iPe3q.css">
 </head>
@@ -3311,7 +3362,7 @@
     <div class="stats" id="stats"></div>
     <div id="compass" aria-hidden="true"><div class="ring"><i style="transform:rotate(45deg)"></i><i style="transform:rotate(135deg)"></i><i style="transform:rotate(225deg)"></i><i style="transform:rotate(315deg)"></i><b class="n">N</b><b>E</b><b>S</b><b>W</b></div></div>
   </div>
-  <div id="tr" class="hud chip"><span id="fleetname" hidden title="Your HQ: fleet, garage, drivers, estate, tech and books (H)"></span><span id="cash" title="Your money · click for the Books">$0</span><button id="gems" type="button" tabindex="-1" title="Diamonds · the tech trees (H → Tech)">◆ 0</button><button id="facgoal" type="button" tabindex="-1" hidden></button><span id="likes" hidden title="Likes: hearts on your works and thumbs-up on your signs from other players · click for where they came from">♥ 0</span><span id="clock"></span><span id="fps">— fps</span><button id="photobtn" type="button" tabindex="-1" title="Camera: stills and clips to share (C)">📷</button><button id="gear" type="button" tabindex="-1" title="Settings (O)">⚙</button></div>
+  <div id="tr" class="hud chip"><span id="fleetname" hidden title="Your HQ: fleet, garage, drivers, estate, tech and books (H)"></span><span id="cash" title="Your money · click for the Books">$0</span><button id="gems" type="button" tabindex="-1" title="Diamonds · the tech trees (H → Tech)">◆ 0</button><button id="facgoal" type="button" tabindex="-1" hidden></button><span id="likes" hidden title="Likes: hearts on your works and thumbs-up on your signs from other players · click for where they came from">♥ 0</span><span id="clock"></span><span id="fps">— fps</span><button id="photobtn" type="button" tabindex="-1" title="Camera: stills and clips to share (C)">📷</button><button id="musicbtn" type="button" tabindex="-1" title="Music" aria-label="Music player"></button><button id="gear" type="button" tabindex="-1" title="Settings (O)">⚙</button></div>
   <div id="town-labels" hidden></div>
   <div id="cargo-tags"></div>
   <div id="notices"><div id="toast" class="notice" role="status" aria-live="polite"></div><div id="earnings"></div></div>
@@ -3394,6 +3445,7 @@
   <div id="vehicles" hidden></div>
   <div id="cashmenu" hidden></div>
   <div id="settings" hidden></div>
+  <div id="music" hidden></div>
   <div id="mayor" hidden></div>
   <div id="requests" hidden></div>
   <div id="cargo-tip" class="hud chip" hidden></div>
