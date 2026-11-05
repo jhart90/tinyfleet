@@ -45,8 +45,8 @@
      */
     body.dark-ui > :not(#game):not(#loading):not(script) { filter: invert(1) hue-rotate(180deg); }
     /* a full-screen card's veil blurs the world behind it: the veil is darkened, and only the card inside is turned */
-    body.dark-ui > :is(.worldmap, #vehicles, #cashmenu, #settings, #music, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq) { filter: none !important; background: rgba(8,12,16,.55) !important; }
-    body.dark-ui > :is(.worldmap, #vehicles, #cashmenu, #settings, #music, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq) > * { filter: invert(1) hue-rotate(180deg); }
+    body.dark-ui > :is(.worldmap, #vehicles, #cashmenu, #settings, #music, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq, #social) { filter: none !important; background: rgba(8,12,16,.55) !important; }
+    body.dark-ui > :is(.worldmap, #vehicles, #cashmenu, #settings, #music, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq, #social) > * { filter: invert(1) hue-rotate(180deg); }
     body.dark-ui > :not(#game):not(#loading) :is(img, canvas, video, .dk-canvas, .sw, .rb-sw, .terr-legend .tl-row i) { filter: invert(1) hue-rotate(180deg); }
     /* the fleets' names over the overview are their own colours, with halos picked for them */
     body.dark-ui > #terr-labels { filter: none !important; }
@@ -98,7 +98,7 @@
     #bl { bottom: 16px; left: 16px; display: flex; align-items: baseline; gap: 10px; width: 490px; box-sizing: border-box; }
     #bl #speed { font-size: 44px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; min-width: 3ch; text-align: right; flex: none; }
     #bl .unit { font-size: 13px; color: #7d8a92; flex: none; }
-    #bl #grade { font-size: 13.5px; line-height: 1.2; color: #4c5a63; margin-left: 4px; flex: 1 1 0; min-width: 0; align-self: center;
+    #bl #grade { font-size: 13.5px; line-height: 1.2; color: #4c5a63; margin-left: 4px; flex: 1 1 0; min-width: 0; align-self: center; white-space: pre-line;
       display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
     #bl #speed.nos { color: #2f7fd8; text-shadow: 0 0 10px rgba(47,127,216,.45); }
     #bl .nos { flex: none; display: inline-flex; align-items: center; gap: 4px; align-self: center; margin-left: 10px; padding-left: 10px; border-left: 1px solid #dfe6ea; font-size: 12px; font-weight: 600; color: #7d8a92; font-variant-numeric: tabular-nums; }
@@ -224,6 +224,19 @@
     .regionmap .ecokey { position: absolute; right: 16px; bottom: 16px; display: flex; align-items: center; gap: 8px; font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: #dbe3dd; padding: 4px 12px; border-radius: 999px; background: rgba(18,26,32,.55); pointer-events: none; }
     .regionmap .ecokey i { display: inline-block; width: 90px; height: 9px; border-radius: 999px; background: linear-gradient(90deg, #07090b, #2bff6a); box-shadow: 0 0 0 1px rgba(255,255,255,.25); }
     .regionmap .ecokey .top { color: #2bff6a; font-weight: 700; }
+    .regionmap .viewkey { flex-wrap: wrap; max-width: calc(100vw - 32px); }
+    @media (max-width: 1200px) { .regionmap .viewkey { bottom: 44px; } }
+    .regionmap .viewkey { pointer-events: auto; }
+    .regionmap .viewkey em { font-style: normal; opacity: .65; }
+    .regionmap .viewkey .note { opacity: .7; }
+    .regionmap .viewkey .sw { gap: 0; border-radius: 999px; overflow: hidden; box-shadow: 0 0 0 1px rgba(255,255,255,.25); }
+    .regionmap .viewkey .sw button { font: inherit; color: #dbe3dd; background: transparent; border: 0; padding: 2px 10px; cursor: pointer; }
+    .regionmap .viewkey .sw button.on { background: #e83d6b; color: #fff; font-weight: 700; }
+    .rtag span.cul { font-size: 10.5px; font-weight: 700; color: #e6ece8; }
+    .rtag span.cul em { font-style: normal; font-weight: 800; }
+    .rtag span.cul i { font-style: normal; font-weight: 600; color: #ffd76a; }
+    .regionmap .viewkey span { display: inline-flex; align-items: center; gap: 6px; }
+    .regionmap .viewkey b.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(18,26,32,.95), 0 0 0 3px rgba(255,255,255,.25); }
     /* the Fleet view: the player and the fleet's vehicles in the fleet's colour */
     .regionmap[data-view="fleet"] .rmark.mine { background: var(--fleet, #e2412f); }
     /* the Fleet view draws the player's own vehicle: their marker is a ring round it, not a dot over it */
@@ -246,13 +259,13 @@
     .rtag.home b { font-size: 12.5px; color: #fff; padding: 1px 7px; border-radius: 999px; background: var(--fleet, #e2412f); text-shadow: none; box-shadow: 0 0 0 2px #fff, 0 2px 6px rgba(0,0,0,.5); }
     .rtag.home span { margin-top: 3px; }
     .rtag.county span { text-transform: none; letter-spacing: 0; font-weight: 600; color: rgba(244,247,241,.75); }
-    #standings .xchips, #standings .xmodels { flex-wrap: wrap; }
-    #standings .xmodels { max-height: 64px; overflow-y: auto; }
-    #standings .xmodels button.dim { opacity: .6; }
-    #standings .xrungs { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 6px; }
-    #standings .xrungs .chip { font-size: 10.5px; padding: 1px 7px; border-radius: 999px; background: #eef2f4; color: #7d8a92; }
-    #standings .xrungs .chip.go { background: #dcefd2; color: #2f7a3e; }
-    #standings .xfront { margin: 8px 0 0; padding-top: 6px; border-top: 1px solid #dfe6ea; font-size: 11.5px; color: #4c5a63; }
+    #social .xchips, #social .xmodels { flex-wrap: wrap; }
+    #social .xmodels { max-height: 64px; overflow-y: auto; }
+    #social .xmodels button.dim { opacity: .6; }
+    #social .xrungs { display: flex; flex-wrap: wrap; gap: 4px; margin: 0 0 6px; }
+    #social .xrungs .chip { font-size: 10.5px; padding: 1px 7px; border-radius: 999px; background: #eef2f4; color: #7d8a92; }
+    #social .xrungs .chip.go { background: #dcefd2; color: #2f7a3e; }
+    #social .xfront { margin: 8px 0 0; padding-top: 6px; border-top: 1px solid #dfe6ea; font-size: 11.5px; color: #4c5a63; }
     .rtag.landform b { font-style: italic; font-weight: 600; color: #f1dcc0; }
     .rtag.port b, .rtag.airport b { font-size: 11px; font-weight: 600; color: #cfe6f5; }
     .rtag.county { font-size: 12px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: rgba(244,247,241,.62); }
@@ -369,6 +382,40 @@
     #br .ctl-zoom .wheel { position: relative; display: inline-block; width: 13px; height: 19px; border: 1.5px solid #8a979e; border-radius: 7px; margin-right: 3px; box-sizing: border-box; }
     #br .ctl-zoom .wheel i { position: absolute; left: 50%; top: 3px; width: 3px; height: 6px; margin-left: -1.5px; border-radius: 2px; background: #4c5a63; }
     /* every notification (a place's card, a deed, a driver's earnings) is one kind of card, stacked at the top middle */
+    /* entering a place (game/hud.ts zone): centred white words over the world, as a new zone's name is in WoW */
+    #zone-title { position: fixed; left: 50%; top: 30%; transform: translate(-50%, 6px); z-index: 14; display: flex; flex-direction: column; align-items: center; gap: 2px; width: min(900px, calc(100vw - 32px)); text-align: center; color: #fff; pointer-events: none; user-select: none; opacity: 0; transition: opacity 1.1s ease, transform 1.1s ease; text-shadow: 0 2px 3px rgba(0,0,0,.55), 0 0 18px rgba(0,0,0,.35); }
+    #zone-title.on { opacity: 1; transform: translate(-50%, 0); transition: opacity .7s ease, transform .7s ease; }
+    #zone-title .zt-pre { font-size: 15px; font-weight: 600; letter-spacing: .32em; text-transform: uppercase; opacity: .9; }
+    #zone-title .zt-name { font-size: clamp(30px, 5vw, 52px); font-weight: 700; line-height: 1.05; letter-spacing: .01em; overflow-wrap: anywhere; }
+    #zone-title .zt-kind { font-size: 16px; font-weight: 600; letter-spacing: .08em; opacity: .92; }
+    #zone-title .zt-kind::before, #zone-title .zt-kind::after { content: ""; display: inline-block; width: 34px; height: 2px; margin: 0 10px; vertical-align: middle; background: rgba(255,255,255,.75); box-shadow: 0 1px 2px rgba(0,0,0,.4); }
+    /* a camera change (game/hud.ts caption): the place title's quieter sibling, small under the car */
+    #cam-caption { position: fixed; left: 50%; top: 64%; transform: translate(-50%, 4px); z-index: 14; display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; color: #fff; pointer-events: none; user-select: none; opacity: 0; transition: opacity .6s ease, transform .6s ease; text-shadow: 0 1px 2px rgba(0,0,0,.5), 0 0 10px rgba(0,0,0,.3); }
+    #cam-caption.on { opacity: .82; transform: translate(-50%, 0); transition: opacity .25s ease, transform .25s ease; }
+    #cam-caption .cc-name { font-size: 13px; font-weight: 600; letter-spacing: .26em; text-transform: uppercase; }
+    #cam-caption .cc-detail { font-size: 11.5px; font-weight: 500; letter-spacing: .04em; opacity: .8; }
+    #cam-caption .cc-pips { display: flex; gap: 5px; margin-top: 3px; }
+    #cam-caption .cc-pips i { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.35); box-shadow: 0 1px 2px rgba(0,0,0,.35); }
+    #cam-caption .cc-pips i.on { background: #fff; }
+    body.title-mode #cam-caption { display: none; }
+    /* a fee asked before it is paid (game/feeCard.ts): a garage bring-out far from where it went in; over the HQ window */
+    #fee-card { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; padding: 16px; box-sizing: border-box; background: rgba(20,28,34,.28); backdrop-filter: blur(2px); animation: fc-in .14s ease-out; }
+    #fee-card[hidden] { display: none; }
+    @keyframes fc-in { from { opacity: 0; } }
+    #fee-card .fc-card { width: min(400px, 100%); padding: 18px 20px 16px; border-radius: 18px; background: #fff; box-shadow: 0 18px 60px rgba(31,43,51,.28); color: #1f2b33; font-family: "IBM Plex Sans", "Segoe UI", sans-serif; font-size: 13.5px; line-height: 1.5; }
+    #fee-card h3 { margin: 0 0 6px; font: 700 18px/1.2 "Fredoka", "Segoe UI", sans-serif; }
+    #fee-card p { margin: 0 0 12px; color: #4c5a63; }
+    #fee-card .fc-fee { display: flex; justify-content: space-between; align-items: baseline; padding: 9px 12px; margin-bottom: 14px; border-radius: 10px; background: #fbe3df; color: #9b2a1d; }
+    #fee-card .fc-fee span { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    #fee-card .fc-fee b { font: 700 20px/1 "Fredoka", "Segoe UI", sans-serif; font-variant-numeric: tabular-nums; }
+    #fee-card .fc-row { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+    #fee-card button { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 12px; border: 0; border-radius: 10px; font: 600 13px/1 inherit; cursor: pointer; background: #eef2ea; color: #1f2b33; }
+    #fee-card button:hover { background: #e2e9dc; }
+    #fee-card button.go { background: #e2412f; color: #fff; }
+    #fee-card button.go:hover { background: #cc3424; }
+    #fee-card button:focus-visible { outline: 2px solid #2f7fb5; outline-offset: 2px; }
+    #fee-card kbd { font: 600 10.5px/1 "IBM Plex Mono", monospace; padding: 2px 5px; border-radius: 4px; border: 1px solid rgba(31,43,51,.18); border-bottom-width: 2px; background: rgba(255,255,255,.7); color: #7d8a92; }
+    #fee-card button.go kbd { background: transparent; border-color: rgba(255,255,255,.4); color: rgba(255,255,255,.85); }
     #notices { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); width: min(380px, calc(100vw - 32px)); display: flex; flex-direction: column; z-index: 15; pointer-events: none; user-select: none; }
     /* too narrow for the cards between the place panel and the money: they come down under the top bar instead */
     @media (max-width: 1180px) { #notices { top: max(calc(var(--tr-below, 72px) + 6px), 90px); width: max(240px, min(380px, calc(100vw - 640px))); } }
@@ -600,8 +647,8 @@
 
     #vehicles, #cashmenu { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(207,230,245,.5); backdrop-filter: blur(3px); padding: 16px; box-sizing: border-box; }
     /* the big windows open below the top-right bar (#tr), so their titles, tabs and keys are never under it */
-    body :is(#vehicles, #cashmenu, #settings, #music, #mayor, #requests, #hq) { padding-top: 76px; }
-    body :is(#vehicles, #cashmenu, #settings, #music, #mayor, #requests, #hq) .panel { max-height: calc(100vh - 92px); }
+    body :is(#vehicles, #cashmenu, #settings, #music, #mayor, #requests, #hq, #social) { padding-top: 76px; }
+    body :is(#vehicles, #cashmenu, #settings, #music, #mayor, #requests, #hq, #social) .panel { max-height: calc(100vh - 92px); }
     #vehicles .panel, #cashmenu .panel { background: #fff; border-radius: 22px; box-shadow: 0 18px 60px rgba(31,43,51,.22); width: min(1060px, 100%); max-height: calc(100vh - 32px); overflow: auto; padding: 20px 22px 22px; box-sizing: border-box; }
     #cashmenu .panel { width: min(420px, 100%); }
     #vehicles header, #cashmenu header { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 16px; flex-wrap: wrap; }
@@ -652,11 +699,9 @@
     #cashmenu .act span { font-size: 12px; color: #7d8a92; }
     #cashmenu .act.danger b { color: #c2372a; }
     /* the HQ button: the HQ window (H, docs/hqwindow.html) on its Home tab */
-    #photobtn { all: unset; pointer-events: auto; cursor: pointer; font-size: 14px; line-height: 1; padding: 0 2px; filter: grayscale(.35); transition: transform .15s, filter .15s; }
-    #photobtn:hover { transform: scale(1.15); filter: none; }
-    body.title-mode #photobtn { display: none; }
-    #gear { all: unset; pointer-events: auto; cursor: pointer; font-size: 15px; line-height: 1; color: #4c5a63; padding: 0 2px; transition: transform .2s; }
-    #gear:hover { transform: rotate(45deg); color: #1f2b33; }
+    /* settings, a tool button in the bottom-right bar (4 Nov 2026): its gear turns a little on hover */
+    #gear svg { transition: transform .25s, color .12s; }
+    #gear:hover svg { transform: rotate(45deg); }
     :is(#settings, #music) { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(207,230,245,.5); backdrop-filter: blur(3px); padding: 16px; box-sizing: border-box; }
     :is(#settings, #music)[hidden] { display: none; }
     #mayor { position: fixed; inset: 0; z-index: 22; display: grid; place-items: center; background: rgba(207,230,245,.5); backdrop-filter: blur(3px); padding: 16px; box-sizing: border-box; }
@@ -771,9 +816,17 @@
     .wave i:nth-child(5) { animation-delay: -.3s; animation-duration: .95s; }
     @keyframes wave-bar { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
     @media (prefers-reduced-motion: reduce) { .wave i { animation: none; transform: scaleY(.6); } }
-    #musicbtn { all: unset; pointer-events: auto; cursor: pointer; display: inline-grid; place-items: center; height: 15px; padding: 0 3px; color: #7d8a92; font-size: 13px; transition: transform .15s, color .15s; }
-    #musicbtn:hover { transform: scale(1.15); color: #1f2b33; }
-    #musicbtn.on { color: #e2412f; }
+    /* music, a tool button in the bottom-right bar (4 Nov 2026): the wave is its icon, red and moving while it plays */
+    #musicbtn .wave { width: 20px; height: 16px; justify-content: center; flex: none; color: #4c5a63; transition: color .12s; }
+    /* (the wave is a span and its bars are i's: not the bar's sliding labels, nor its dividers) */
+    #tool-btns #musicbtn span.wave { max-width: none; opacity: 1; overflow: visible; margin-left: 0; }
+    #tool-btns #musicbtn .wave i { width: 3px; height: 100%; margin: 0; background: currentColor; }
+    #musicbtn:hover .wave { color: #1f2b33; }
+    /* playing: the wave moves, in the same grey as the other tools' icons, not the bar's dark "on" (the user, 4 Nov 2026) */
+    #tool-btns #musicbtn.on { background: transparent; color: #1f2b33; }
+    #tool-btns #musicbtn.on:hover { background: #eef2ea; }
+    #musicbtn.on .wave { color: #4c5a63; }
+    #musicbtn.on:hover .wave { color: #1f2b33; }
     #musicbtn:not(.on) .wave i, #music .nowplaying:not(.on) .wave i, #music .trk:not(.on) .wave i { animation-play-state: paused; }
     #music .np-label { display: flex; align-items: center; gap: 8px; }
     #music .np-label .wave { color: #f2a93b; font-size: 12px; }
@@ -852,6 +905,18 @@
     #build .rb-bsq.off { cursor: default; opacity: .5; filter: grayscale(1); }
     #build .rb-bsq.off:hover { background: #f4f7f9; border-color: transparent; transform: none; }
     #build .rb-bsq.off .pr { color: #9aa6ad; font-weight: 500; }
+    /* the Buildings side's blueprints (docs/blueprints.html): a kind with several variants wears a caret, and its bubble sits over the row */
+    #build .rb-bsq .rb-more { font-size: 9.5px; font-weight: 700; color: #2f7fb5; }
+    /* the culture gate (docs/culturegate.html): a variant in a style no town of the county is Influenced by is dimmed, with a chip */
+    #build .rb-bsq.rb-dim { opacity: .55; }
+    #build .rb-bsq.rb-dim .rb-ic { filter: grayscale(.8); }
+    #build .rb-bsq .rb-cu { display: block; font-size: 9px; font-weight: 700; line-height: 1.1; color: #c0392b; }
+    #build .rb-bubble { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 8px 10px 10px; margin: 2px 0 8px; border-radius: 12px; background: #fff; border: 1.5px solid #2f7fb5; box-shadow: 0 6px 18px rgba(31,43,51,.12); --caret: 40px; }
+    #build .rb-bubble::after { content: ''; position: absolute; left: var(--caret); bottom: -9px; width: 14px; height: 14px; margin-left: -7px; background: #fff; border-right: 1.5px solid #2f7fb5; border-bottom: 1.5px solid #2f7fb5; transform: rotate(45deg); }
+    #build .rb-bubble .rb-bbl { width: 100%; font-size: 11.5px; font-weight: 700; color: #1f2b33; }
+    #build .rb-bubble .rb-vsq { width: 118px; }
+    #build .rb-bubble .rb-vsq .nm { white-space: normal; line-height: 1.2; }
+    #build .rb-bubble .rb-clear { margin-left: auto; font-size: 11px; }
     #build .rb-pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
     #build .rb-pill { all: unset; box-sizing: border-box; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 99px; background: #f4f7f9; border: 1.5px solid #e1e8ec; font-size: 11.5px; font-weight: 600; color: #4c5a63; white-space: nowrap; transition: background .12s, border-color .12s; }
     #build .rb-pill:hover { background: #fff; border-color: #c9d3d9; }
@@ -907,12 +972,12 @@
     #build .sw-ramp { background: linear-gradient(70deg, #8fd06c 0 30%, #5b5f64 30% 62%, #8fd06c 62%); }
     #build .help { margin-top: 10px; line-height: 1.75; }
     #build .count { margin-top: 6px; padding-top: 7px; border-top: 1px solid #e6ecef; font-size: 11.5px; color: #7d8a92; }
-    #road-tip, #dozer-tip, #earth-tip, #lobby-tip { top: 0; left: 0; z-index: 5; padding: 7px 11px 8px; border-left: 4px solid #8a93a6; font-size: 12px; color: #4c5a63; max-width: 250px; }
-    #road-tip b, #dozer-tip b, #earth-tip b, #lobby-tip b { display: block; font-size: 15px; font-weight: 700; color: #1f2b33; }
-    #road-tip span, #dozer-tip span, #earth-tip span, #lobby-tip span { white-space: pre-line; line-height: 1.45; }
-    #road-tip.ok, #dozer-tip.ok, #earth-tip.ok, #lobby-tip.ok { border-left-color: #4cc47e; }
-    #road-tip.bad, #dozer-tip.bad, #earth-tip.bad, #lobby-tip.bad { border-left-color: #d2564f; }
-    #bulldoze, #earth, #lobby { top: var(--tr-below, 72px); right: 16px; max-height: calc(100vh - var(--tr-below, 72px) - 16px); overflow: auto; z-index: 5; width: 300px; max-width: calc(100vw - 32px); box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; }
+    #road-tip, #dozer-tip, #earth-tip { top: 0; left: 0; z-index: 5; padding: 7px 11px 8px; border-left: 4px solid #8a93a6; font-size: 12px; color: #4c5a63; max-width: 250px; }
+    #road-tip b, #dozer-tip b, #earth-tip b { display: block; font-size: 15px; font-weight: 700; color: #1f2b33; }
+    #road-tip span, #dozer-tip span, #earth-tip span { white-space: pre-line; line-height: 1.45; }
+    #road-tip.ok, #dozer-tip.ok, #earth-tip.ok { border-left-color: #4cc47e; }
+    #road-tip.bad, #dozer-tip.bad, #earth-tip.bad { border-left-color: #d2564f; }
+    #bulldoze, #earth { top: var(--tr-below, 72px); right: 16px; max-height: calc(100vh - var(--tr-below, 72px) - 16px); overflow: auto; z-index: 5; width: 300px; max-width: calc(100vw - 32px); box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; }
     #bulldoze header, #earth header { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
     #bulldoze header b, #earth header b { font-size: 18px; font-weight: 700; color: #1f2b33; letter-spacing: -.01em; }
     #bulldoze header b span, #earth header b span { color: #e2412f; }
@@ -1010,6 +1075,15 @@
     #settings .quality button.q { font: inherit; font-size: 13px; font-weight: 600; padding: 5px 12px; border-radius: 10px; border: 1px solid #d5ddd0; background: #fff; color: #4c5a63; cursor: pointer; }
     #settings .quality button.q.on { background: #1f2b33; color: #fff; border-color: #1f2b33; }
     #settings .q-note { margin: 2px 0 14px; font-size: 12px; color: #7d8a92; line-height: 1.45; }
+    /* the frame rate a minute a bar (game/settingsMenu.ts drawFps), under Frame rate */
+    #settings .fps-chart { margin: -6px 0 0; }
+    #settings .fps-chart svg { display: block; max-width: 100%; height: auto; overflow: visible; }
+    #settings .fps-chart rect { fill: #3f78c0; }
+    #settings .fps-chart .live rect { fill: #9dbbe0; }
+    #settings .fps-chart text { text-anchor: middle; font-family: "IBM Plex Mono", monospace; }
+    #settings .fps-chart .v { font-size: 10.5px; font-weight: 600; fill: #1f2b33; }
+    #settings .fps-chart .t { font-size: 9.5px; fill: #7d8a92; }
+    #settings .fps-chart .q-note { margin-top: 2px; }
     /* the fleet window (F): the cargo hold's chip, a driver a row */
     #dock .dk-unit li { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #eef2f4; }
     #dock .dk-unit li .ic { font-size: 20px; }
@@ -1053,37 +1127,37 @@
     #dock .dk-unit .towed { color: #d2342a; font-weight: 700; }
     #dock .dk-unit button.over { margin-top: 4px; font: inherit; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; border: 1px solid #e2412f; background: #fff; color: #c5331f; cursor: pointer; }
     #dock .dk-unit button.over:hover { background: #fdeeec; }
-    #standings table.metrics { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 8px; }
-    #standings table.metrics th { text-align: left; font-size: 10.5px; font-weight: 600; color: #9aa6ad; padding: 2px 4px; }
-    #standings table.metrics td { padding: 3px 4px; border-top: 1px solid #eef2f4; color: #4c5a63; white-space: nowrap; }
-    #standings table.metrics .n { text-align: right; font-variant-numeric: tabular-nums; }
-    #standings table.metrics .p { text-align: center; font-weight: 700; color: #7d8a92; }
-    #standings table.metrics tbody tr { cursor: pointer; }
-    #standings table.metrics tbody tr:hover td { background: #f5f8f6; }
-    #standings table.metrics tr.on td { background: #eaf1f6; color: #1f2b33; font-weight: 600; }
-    #standings table.metrics tr.top .p { color: #1e9e4a; }
-    #standings table.metrics td.best { color: #7d8a92; }
-    #standings .rankhead { padding: 5px 0 3px; border-top: 1px solid #dfe6ea; }
-    #standings .rankhead b { font-size: 13px; color: #1f2b33; margin-right: 6px; }
-    #standings .rankhead small { display: block; color: #9aa6ad; font-size: 10.5px; }
-    #standings ul.ranking li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 5px 0; }
-    #standings ul.ranking .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    #standings ul.ranking .nm i { display: inline-block; width: 18px; font-style: normal; font-weight: 700; color: #9aa6ad; }
-    #standings ul.ranking .nm b { font-size: 12px; color: #1f2b33; font-weight: 600; }
-    #standings ul.ranking .nm small { font-size: 10px; font-weight: 700; color: #1e9e4a; text-transform: uppercase; letter-spacing: .04em; }
+    #social table.metrics { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 8px; }
+    #social table.metrics th { text-align: left; font-size: 10.5px; font-weight: 600; color: #9aa6ad; padding: 2px 4px; }
+    #social table.metrics td { padding: 3px 4px; border-top: 1px solid #eef2f4; color: #4c5a63; white-space: nowrap; }
+    #social table.metrics .n { text-align: right; font-variant-numeric: tabular-nums; }
+    #social table.metrics .p { text-align: center; font-weight: 700; color: #7d8a92; }
+    #social table.metrics tbody tr { cursor: pointer; }
+    #social table.metrics tbody tr:hover td { background: #f5f8f6; }
+    #social table.metrics tr.on td { background: #eaf1f6; color: #1f2b33; font-weight: 600; }
+    #social table.metrics tr.top .p { color: #1e9e4a; }
+    #social table.metrics td.best { color: #7d8a92; }
+    #social .rankhead { padding: 5px 0 3px; border-top: 1px solid #dfe6ea; }
+    #social .rankhead b { font-size: 13px; color: #1f2b33; margin-right: 6px; }
+    #social .rankhead small { display: block; color: #9aa6ad; font-size: 10.5px; }
+    #social ul.ranking li { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 5px 0; }
+    #social ul.ranking .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #social ul.ranking .nm i { display: inline-block; width: 18px; font-style: normal; font-weight: 700; color: #9aa6ad; }
+    #social ul.ranking .nm b { font-size: 12px; color: #1f2b33; font-weight: 600; }
+    #social ul.ranking .nm small { font-size: 10px; font-weight: 700; color: #1e9e4a; text-transform: uppercase; letter-spacing: .04em; }
     /* the Gilded Fleet (game/treats.ts): a gold name and a Gilded title on the Standings, on name tags and in the top bar */
-    #standings ul.ranking .nm b.gilded { color: #a8801f; font-weight: 800; background: linear-gradient(180deg, #f3d77a, #b8891f); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-    #standings ul.ranking .nm small.gilded-title { color: #8a6a12; background: #fbf0c8; border: 1px solid #e2c25a; border-radius: 6px; padding: 0 4px; }
+    #social ul.ranking .nm b.gilded { color: #a8801f; font-weight: 800; background: linear-gradient(180deg, #f3d77a, #b8891f); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    #social ul.ranking .nm small.gilded-title { color: #8a6a12; background: #fbf0c8; border: 1px solid #e2c25a; border-radius: 6px; padding: 0 4px; }
     .net-tag.gilded { color: #ffe08a; background: rgba(60,44,8,.82); box-shadow: 0 0 0 1.5px #d4af37; }
     #fleetname.gilded { color: #a8801f; text-shadow: 0 1px 0 rgba(255,236,170,.9); }
     body.dark-ui #fleetname.gilded { color: #f0cd62; text-shadow: none; }
-    #standings ul.ranking em { font-style: normal; font-weight: 700; color: #4c5a63; font-variant-numeric: tabular-nums; }
-    #standings ul.ranking em.neg { color: #d2342a; }
-    #standings ul.ranking .bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: #eef2f4; overflow: hidden; }
-    #standings ul.ranking .bar i { display: block; height: 100%; border-radius: 3px; }
-    #standings ul.ranking .note { grid-column: 1 / -1; font-size: 10.5px; color: #9aa6ad; font-family: "IBM Plex Mono", monospace; letter-spacing: 1px; }
-    #standings ul.ranking li.you { background: #f5f8f6; border-radius: 6px; padding-left: 4px; padding-right: 4px; }
-    #standings ul.ranking li.gone { opacity: .5; }
+    #social ul.ranking em { font-style: normal; font-weight: 700; color: #4c5a63; font-variant-numeric: tabular-nums; }
+    #social ul.ranking em.neg { color: #d2342a; }
+    #social ul.ranking .bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: #eef2f4; overflow: hidden; }
+    #social ul.ranking .bar i { display: block; height: 100%; border-radius: 3px; }
+    #social ul.ranking .note { grid-column: 1 / -1; font-size: 10.5px; color: #9aa6ad; font-family: "IBM Plex Mono", monospace; letter-spacing: 1px; }
+    #social ul.ranking li.you { background: #f5f8f6; border-radius: 6px; padding-left: 4px; padding-right: 4px; }
+    #social ul.ranking li.gone { opacity: .5; }
 
     /* property (docs/property.html): the K window, the deed footer on a building's card, rent floats and cards */
     /* the rivals window (L), docs/rivals.html */
@@ -1118,8 +1192,8 @@
     .rivals .more .log li { display: block; border: 0; padding: 1px 0; color: #4c5a63; }
     .rivals .more .log li span { color: #9aa6ad; margin-right: 6px; }
     .rivals button.link { all: unset; cursor: pointer; color: #2f6f9c; text-decoration: underline; }
-    #standings button.allranks { all: unset; cursor: pointer; display: block; margin: 6px 0 2px; font-size: 11.5px; font-weight: 600; color: #2f7fb5; }
-    #standings button.allranks:hover { text-decoration: underline; }
+    #social button.allranks { all: unset; cursor: pointer; display: block; margin: 6px 0 2px; font-size: 11.5px; font-weight: 600; color: #2f7fb5; }
+    #social button.allranks:hover { text-decoration: underline; }
     .rivals .town { margin-top: 8px; padding-top: 7px; border-top: 2px solid #e6ecef; }
     .rivals .town > b { color: #1f2b33; font-size: 13px; }
     .rivals .town small { display: block; color: #7d8a92; line-height: 1.45; margin-top: 3px; }
@@ -1221,6 +1295,11 @@
     #cargo-tip { top: 0; left: 0; z-index: 6; width: 262px; box-sizing: border-box; padding: 9px 12px 10px; font-size: 12px; color: #4c5a63; }
     #cargo-tip header { display: flex; align-items: center; gap: 7px; }
     #cargo-tip header .ic { font-size: 18px; }
+    /* a train under the pointer (game/trains.ts cardAt) */
+    #cargo-tip .tt-what { margin-top: 2px; color: #7d8a92; font-size: 11.5px; }
+    #cargo-tip .tt-to { margin-top: 5px; color: #1f2b33; font-size: 13px; font-weight: 600; }
+    #cargo-tip .tt-doing { margin-top: 2px; color: #2f7fb5; font-size: 12px; }
+    #cargo-tip .tt-more { margin-top: 6px; padding-top: 5px; border-top: 1px solid #e6ecef; color: #9aa6ad; font-size: 10.5px; }
     #cargo-tip header b { font-size: 15px; font-weight: 700; color: #1f2b33; flex: 1; }
     #cargo-tip header em { font-style: normal; font-weight: 700; font-size: 15px; color: #1e9e4a; }
     #cargo-tip p { margin: 3px 0 6px; color: #7d8a92; font-size: 11.5px; }
@@ -1552,10 +1631,7 @@
     #inspect .follow.on { background: #1f2b33; color: #fff; border-color: #1f2b33; }
     /* the town card (src/game/townCard.ts, docs/towns.html) */
     /* lobbying (docs/lobbying.html): the say row, the menu of what to ask for, the placing panel */
-    #lobby header { display: flex; justify-content: space-between; align-items: baseline; }
-    #lobby header b { font-size: 16px; color: #1f2b33; }
-    #lobby header b span { color: #e2412f; }
-    #lobby .help { margin-top: 8px; line-height: 1.6; }
+
     #town .say { display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
     #town .say .ghost { color: #1f2b33; font-weight: 600; }
     #town .say .red { color: #c2372a; font-weight: 600; }
@@ -1673,6 +1749,9 @@
     .trk-sec { display: flex; flex-direction: column; gap: 6px; }
     .trk-sec[hidden] { display: none; }
     .trk-h { font-size: 10.5px; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: #6b787f; text-shadow: 0 0 3px #fff, 0 0 7px rgba(255,255,255,.9); padding-left: 2px; }
+    /* the Missions header opens the journal (game/missions/tracker.ts) */
+    .trk-h.link { cursor: pointer; pointer-events: auto; align-self: flex-start; }
+    .trk-h.link:hover { color: #1f2b33; text-decoration: underline; text-underline-offset: 2px; }
     .trk { display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 10px; box-shadow: inset 4px 0 0 var(--c, #e2412f), 0 2px 10px rgba(31,43,51,.12); }
     .trk .mt-arrow { width: 26px; height: 26px; flex: none; border-radius: 50%; background: var(--c, #e2412f); color: #fff; display: grid; place-items: center; font-size: 11px; }
     .trk .mt-txt { font-size: 12.5px; color: #4c5a63; line-height: 1.3; min-width: 0; flex: 1; }
@@ -1961,6 +2040,8 @@
     #title-menu .tm-form { position: relative; }
     #title-menu .tm-pinshow { all: unset; cursor: pointer; justify-self: end; margin-top: -2px; font-size: 11.5px; font-weight: 600; color: #7d8a92; text-decoration: underline; }
     #title-menu .tm-pinshow:hover { color: #e2412f; }
+    /* in the button row, at its right end, level with Sign in (4 Nov 2026) */
+    #title-menu .tm-row .tm-pinshow { margin: 0 2px 0 auto; }
     #title-menu .tm-menu { display: flex; flex-direction: column; gap: 8px; }
     #title-menu h2 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -.01em; }
     #title-menu h3 { margin: 8px 0 -2px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #7d8a92; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
@@ -2407,6 +2488,13 @@
     #net-chat .line.sys em { font-style: normal; color: #7d8a92; }
     /* long-haul work (game/cargo.ts): gold in the cargo list and the goods' card */
     #inventory .lh { color: #c47a00; font-weight: 700; }
+    /* from a train (game/railWay.ts): which way along the line, and how many stops */
+    #inventory .rw { font-weight: 700; }
+    #inventory .rw.ahead { color: #1e8a45; }
+    #inventory .rw.behind { color: #c2372a; }
+    #inventory .rw.off { color: #7d8a92; }
+    .trk .mt-arrow.off { background: #9aa6ad; font-size: 12px; }
+    #inventory li.trk[data-k]:not([data-k="night"]) { cursor: pointer; }
     #cargo-tip .claim.longhaul { color: #c47a00; font-weight: 700; }
     /* Ultra-Bulk work (game/cargo.ts): hazard lime on black in the cargo list and the goods' card */
     #inventory .ub, #cargo-tip .claim.ultra { color: #b4f20a; background: #101408; font-weight: 800; padding: 0 4px; border-radius: 3px; letter-spacing: 0.02em; }
@@ -2418,7 +2506,7 @@
     #net-chat input:focus { border-color: #e2412f; box-shadow: 0 0 0 3px rgba(226,65,47,.25); }
     #net-chat .hint { margin-top: 5px; font-size: 11.5px; color: #4c5a63; background: rgba(255,255,255,.7); border-radius: 999px; padding: 2px 9px; display: inline-block; pointer-events: auto; cursor: text; }
     #net-chat.typing .hint { display: none; }
-    #net-chat kbd, #standings kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
+    #net-chat kbd, #social kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
     #net-chip { margin-top: 5px; font-size: 12px; font-weight: 600; color: #1e9e4a; display: flex; align-items: center; gap: 6px; }
     #net-chip[hidden] { display: none; }
     /* the camera sent somewhere far, while that county is built and drawn (game/travelLoading.ts) */
@@ -2438,12 +2526,204 @@
     .net-tag { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 12px; font-weight: 700; color: #fff; background: rgba(31,43,51,.72); padding: 1px 8px 1px 6px; border-radius: 999px; display: flex; align-items: center; gap: 5px; will-change: transform; }
     .net-tag[hidden] { display: none; }
     .net-tag i { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 0 1.5px rgba(255,255,255,.85); }
-    #standings { top: 104px; left: 16px; width: 380px; max-width: calc(100vw - 32px); max-height: calc(100vh - 264px); overflow-x: hidden; overflow-y: auto; scrollbar-width: none; box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 6; }
-    #standings[hidden] { display: none; }
+    /* the social window (game/socialWindow.ts, docs/social.html): the HQ window's frame, two columns, the tabs' lists and the fleet card */
+    #social {
+      position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(207,230,245,.5); backdrop-filter: blur(3px); padding: 16px; box-sizing: border-box;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif; font-size: 13px; color: #4c5a63;
+      --c1: #2a78d6; --c2: #eb6834; --c3: #1baf7a; --c4: #eda100; --c5: #e87ba4; --c6: #008300; --c7: #4a3aa7; --c8: #e34948; --c9: #9aa5ab;
+      --grid: #e6ecef; --axis: #7d8a92; --base: #c3ccd1;
+    }
+    #social[hidden] { display: none; }
+    #social .panel { background: #fff; border-radius: 22px; box-shadow: 0 18px 60px rgba(31,43,51,.22); width: min(1180px, 100%); height: calc(100vh - 92px); display: flex; flex-direction: column; padding: 16px 20px 14px; box-sizing: border-box; color: #1f2b33; overflow: hidden; }
+    #social header { display: flex; align-items: center; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; flex: none; }
+    #social .sw-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    #social .sw-head .shield { width: 40px; height: 47px; flex: none; }
+    #social .sw-head h2 { margin: 0; font-family: "Fredoka", "Segoe UI", sans-serif; font-size: 26px; font-weight: 700; line-height: 1.1; letter-spacing: -.01em; }
+    #social .sw-head h2 span { color: #e2412f; }
+    #social .sw-head h2 small { font-size: 14px; font-weight: 500; color: #6b777e; margin-left: 8px; font-family: "IBM Plex Sans", "Segoe UI", sans-serif; }
+    #social .sw-find { display: flex; align-items: center; gap: 7px; background: #f0f4f6; border-radius: 999px; padding: 5px 14px; font-size: 13px; color: #7d8a92; }
+    #social .sw-find input { all: unset; width: 220px; font: inherit; color: #1f2b33; }
+    #social .sw-find input::placeholder { color: #9aa6ad; }
+    #social .sw-tabs { display: flex; gap: 6px; margin: 12px 0 0; flex: none; flex-wrap: wrap; }
+    #social .sw-tabs button { all: unset; cursor: pointer; font-size: 14px; font-weight: 600; padding: 5px 14px 5px 8px; border-radius: 999px; background: #f0f4f6; color: #4c5a63; }
+    #social .sw-tabs button kbd { margin-right: 4px; font-size: 10px; padding: 0 4px; }
+    #social .sw-tabs button:hover { background: #e4ebef; }
+    #social .sw-tabs button.on { background: #1f2b33; color: #fff; }
+    #social .sw-tabs button.on kbd { background: transparent; color: #cfd8dc; border-color: #4c5a63; }
+    #social .sw-tabs button[hidden] { display: none; }
+    #social .sw-note { margin: 8px 0 8px; min-height: 17px; font-size: 12.5px; color: #4c5a63; flex: none; }
+    #social .sw-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 18px; }
+    #social .sw-col { min-height: 0; overflow: auto; scrollbar-width: thin; padding-right: 6px; }
+    #social .sw-right { border-left: 1px solid #e6ecef; padding-left: 18px; }
+    @media (max-width: 900px) { #social .sw-body { grid-template-columns: 1fr; overflow: auto; } #social .sw-col { overflow: visible; } #social .sw-right { border-left: 0; padding-left: 0; } }
+    #social kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 11px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; color: #4c5a63; }
+    #social .none { color: #7d8a92; margin: 6px 0; }
+    #social li.none { border: 0; }
+    #social i.on, #social .fc-who i.on { display: inline-block; width: 7px; height: 7px; margin-left: 3px; border-radius: 50%; background: #1e9e4a; vertical-align: middle; }
+    #social button.pick { all: unset; cursor: pointer; display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; padding: 2px 6px; border-radius: 8px; }
+    #social button.pick:hover { background: #f5f8f6; }
+    #social li.on > button.pick, #social li.on { background: #eaf1f6; border-radius: 8px; }
+    #social ul.fleets li, #social ul.wpicks li, #social ul.people.crew li { padding: 4px 4px; border-top: 1px solid #eef2f4; }
+    #social ul.fleets li.me b { color: #2f6f9c; }
+    #social ul.fleets li.grp { display: block; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #7d8a92; padding: 10px 6px 4px; }
+    #social li .what .motto { font-style: italic; color: #4c5a63; white-space: normal; }
+    #social li .pay small { display: block; font-weight: 500; font-size: 10.5px; color: #9aa6ad; text-align: right; }
+    #social .fchips { flex-wrap: wrap; margin-bottom: 8px; }
+    #social .fchips small { font-weight: 500; opacity: .75; margin-left: 2px; }
+    #social .scope button { font-size: 12.5px; padding: 3px 11px; }
+    #social .wgroup h4 { margin: 12px 0 2px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #7d8a92; }
+    #social .wgroup:first-child h4 { margin-top: 0; }
+    #social ul.wpicks li .what small { white-space: normal; }
+    #social .lead { font-size: 12.5px; }
+    #social .sw-chart { margin: 6px 0 10px; }
+    #social .worldtab > .scope { display: none; }
+    #social .rankhead b { font-size: 15px; }
+    #social table.metrics { font-size: 12.5px; }
+    #social table.metrics th { font-size: 11px; }
+    /* the fleet card (net/fleetCard.ts) */
+    #social .fcard .fc-head { display: flex; gap: 12px; align-items: flex-start; }
+    #social .fcard .fc-head .shield { width: 46px; height: 54px; flex: none; }
+    #social .fcard .fc-head .fleet-badge { margin-top: 4px; }
+    #social .fcard h3 { margin: 0; font-family: "Fredoka", "Segoe UI", sans-serif; font-size: 22px; font-weight: 700; color: #1f2b33; line-height: 1.1; }
+    #social .fcard h3.gilded { color: #a8801f; background: linear-gradient(180deg, #f3d77a, #b8891f); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    #social .fcard h3 small.gilded-title { font-size: 11px; font-family: "IBM Plex Sans", sans-serif; color: #8a6a12; background: #fbf0c8; border: 1px solid #e2c25a; border-radius: 6px; padding: 0 4px; vertical-align: middle; -webkit-text-fill-color: #8a6a12; }
+    #social .fc-who { font-size: 12.5px; color: #6b777e; margin-top: 3px; }
+    #social .fc-who b { color: #1f2b33; }
+    #social .fc-who b[data-pid] { cursor: pointer; }
+    #social .fc-who .you { color: #2f6f9c; }
+    #social .fc-motto { display: block; margin-top: 4px; font-style: italic; color: #4c5a63; }
+    #social .fc-motto.none { color: #9aa6ad; font-style: normal; }
+    #social .fc-pron { color: #9aa6ad; }
+    #social .fc-acts { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+    #social .fc-btn { font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 12px; border-radius: 999px; border: 1px solid #cdd6db; background: #fff; color: #1f2b33; cursor: pointer; }
+    #social .fc-btn:hover { background: #f5f8f6; }
+    #social .fc-btn.on { background: #1f2b33; color: #fff; border-color: #1f2b33; }
+    #social .fc-btn:disabled { opacity: .5; cursor: default; }
+    #social .fc-stages { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    #social .fc-stage { margin: 0; min-width: 0; }
+    #social .fc-stage img, #social .fc-plate { display: block; width: 100%; aspect-ratio: 7 / 5; object-fit: contain; border-radius: 14px; background: radial-gradient(ellipse at 50% 72%, #fff6de 0%, #e2c688 85%); box-sizing: border-box; }
+    #social .fc-stage img[data-still]:not([src]) { background: radial-gradient(ellipse at 50% 72%, #f6f1e4 0%, #e9e2cf 85%); }
+    #social .fc-plate { display: grid; place-items: center; text-align: center; color: #6b5a3a; font-size: 13px; padding: 12px; }
+    #social .fc-plate small { display: block; font-size: 11.5px; color: #8a7a5a; margin-top: 2px; }
+    #social .fc-stage figcaption { margin-top: 4px; font-size: 12px; color: #6b777e; text-align: center; }
+    #social .fc-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; margin: 12px 0; }
+    #social .fc-tile { background: #f5f8f6; border-radius: 10px; padding: 8px 10px; min-width: 0; }
+    #social .fc-tile small { display: block; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: #7d8a92; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #social .fc-tile b { display: block; font-family: "Fredoka", "Segoe UI", sans-serif; font-size: 18px; color: #1f2b33; font-variant-numeric: tabular-nums; line-height: 1.2; }
+    #social .fc-tile span { display: block; font-size: 11px; color: #9aa6ad; }
+    #social .fc-tile.pin { background: #fbf1cf; }
+    #social .fc-spark { font-style: normal; font-family: "IBM Plex Mono", monospace; letter-spacing: 1px; color: #9aa6ad; }
+    #social .fc-sec { margin-top: 12px; padding-top: 10px; border-top: 1px solid #e3e9ec; }
+    #social .fc-sec h4 { margin: 0 0 6px; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: #7d8a92; }
+    #social .fc-sec h4 small { text-transform: none; letter-spacing: 0; margin-left: 4px; font-weight: 500; }
+    #social .fc-list, #social .fc-goods { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 4px 10px; }
+    #social .fc-list li, #social .fc-goods li { display: grid; grid-template-columns: 22px 1fr auto; align-items: center; gap: 6px; padding: 4px 7px; border-radius: 8px; background: rgba(31,43,51,.045); border: 0; }
+    #social .fc-list li .ic, #social .fc-goods li .ic { font-size: 15px; text-align: center; }
+    #social .fc-goods li { grid-template-columns: 22px 1fr 64px; }
+    #social .fc-goods .bar { height: 6px; border-radius: 3px; background: #e3e9ec; overflow: hidden; }
+    #social .fc-goods .bar i { display: block; height: 100%; background: #2f7fb5; border-radius: 3px; }
+    #social .fc-foot { margin-top: 12px; font-size: 11.5px; color: #9aa6ad; }
+    #social .fc-edit label { display: block; margin: 8px 0; font-weight: 600; color: #1f2b33; }
+    #social .fc-edit label small { display: block; font-weight: 400; color: #7d8a92; font-size: 11.5px; }
+    #social .fc-edit input[type=text], #social .fc-edit select, #social .cr-block input { display: block; width: 100%; box-sizing: border-box; margin-top: 4px; font: inherit; font-size: 13px; padding: 7px 10px; border-radius: 10px; border: 1px solid #dfe6ea; background: #fff; color: #1f2b33; outline: none; }
+    #social .fc-edit input[type=text]:focus, #social .cr-block input:focus { border-color: #2f7fb5; box-shadow: 0 0 0 3px rgba(47,127,181,.18); }
+    #social .fc-pins { display: flex; gap: 6px; }
+    #social .fc-pins select { flex: 1; min-width: 0; }
+    #social .fc-checks { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 8px 0; }
+    #social .fc-check { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; cursor: pointer; }
+    #social .fc-check input { width: 15px; height: 15px; margin: 0; accent-color: #1f2b33; }
+    #social .fcard.firm .rivals, #social .fcard.firm .more { font-size: 12.5px; }
+    /* the Shared Fleet tab (net/crewTab.ts) */
+    #social .cr-block { margin-bottom: 16px; padding: 12px 14px; border-radius: 12px; background: #f5f8f6; }
+    #social .cr-block h4 { margin: 0 0 6px; font-size: 14px; color: #1f2b33; }
+    #social .cr-block p { margin: 4px 0 8px; }
+    #social .cr-block label { display: block; margin: 6px 0; font-weight: 600; color: #1f2b33; font-size: 12px; }
+    #social .cr-block input.code { font-family: "IBM Plex Mono", monospace; letter-spacing: .12em; }
+    #social .cr-block .err { color: #c2331f; font-weight: 600; }
+    #social .cr-block .foot.ok { color: #1e9e4a; }
+    #social .cr-pips { display: flex; gap: 4px; align-items: center; margin: 6px 0 8px; }
+    #social .cr-pips i { width: 12px; height: 12px; border-radius: 50%; background: #dfe6ea; }
+    #social .cr-pips i.on { background: #1e9e4a; }
+    #social .cr-pips small { margin-left: 6px; color: #7d8a92; }
+    #social button.link.warn { color: #c2331f; }
+    #social ul.people.crew li .acts { display: flex; gap: 8px; }
+    /* Neighbours (net/neighbours.ts): the ranking's bars, the paired bars both ways, the head to head */
+    #social ul.neighbours .what small { white-space: normal; }
+    #social .nbar { display: block; height: 5px; margin-top: 4px; border-radius: 3px; background: #eef2f4; overflow: hidden; }
+    #social .nbar i { display: block; height: 100%; border-radius: 3px; }
+    #social .pairbars { display: flex; flex-direction: column; gap: 5px; }
+    #social .pairbars .ph, #social .pairbars .pr { display: grid; grid-template-columns: 1fr 128px 1fr; align-items: center; gap: 8px; }
+    #social .pairbars .ph { font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; color: #9aa6ad; }
+    #social .pairbars .ph span:first-child { text-align: right; }
+    #social .pairbars .pr b { text-align: center; font-size: 12px; font-weight: 600; color: #1f2b33; }
+    #social .pairbars .pr .l, #social .pairbars .pr .r { display: flex; align-items: center; gap: 6px; height: 16px; }
+    #social .pairbars .pr .l { justify-content: flex-end; }
+    #social .pairbars .pr i { display: block; height: 10px; border-radius: 3px; min-width: 2px; }
+    #social .pairbars .pr em { font-style: normal; font-size: 12px; font-weight: 700; color: #4c5a63; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    #social .h2h { display: flex; flex-wrap: wrap; gap: 4px; }
+    #social .h2h span { font-size: 11.5px; padding: 2px 8px; border-radius: 999px; background: #f0f4f6; color: #7d8a92; }
+    #social .h2h span.win { background: #dcefd2; color: #2f7a3e; }
+    #social .h2h span.lose { background: #fbe3df; color: #b3372a; }
+    #social .fc-top b[data-pid] { cursor: pointer; color: #2f6f9c; }
+    #social .fc-top b.you { color: #e2412f; }
+    #social .bscope { margin-bottom: 8px; }
+    /* the Inbox (net/inbox.ts) and the tabs' badges */
+    #social .sw-tabs .sw-badge { font-style: normal; display: inline-block; min-width: 16px; padding: 0 5px; margin-left: 4px; border-radius: 999px; background: #e2412f; color: #fff; font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; }
+    #social ul.inbox li.unread b { color: #1f2b33; font-weight: 700; }
+    #social ul.inbox .ib-n { font-style: normal; min-width: 18px; padding: 0 5px; border-radius: 999px; background: #e2412f; color: #fff; font-size: 11px; font-weight: 700; text-align: center; }
+    #social .ib-lines { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+    #social .ib-line { max-width: 78%; align-self: flex-start; }
+    #social .ib-line.mine { align-self: flex-end; text-align: right; }
+    #social .ib-line .ib-b { display: inline-block; text-align: left; padding: 7px 11px; border-radius: 12px 12px 12px 4px; background: #f0f4f6; color: #1f2b33; line-height: 1.4; }
+    #social .ib-line.mine .ib-b { border-radius: 12px 12px 4px 12px; background: #1f2b33; color: #fff; }
+    #social .ib-line small { display: block; margin-top: 2px; font-size: 10.5px; color: #9aa6ad; }
+    #social .ib-x { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    #social .ib-x small { display: inline; margin: 0; }
+    #social .ib-done { font-style: italic; color: #7d8a92; }
+    #social .ib-reply { display: flex; gap: 8px; margin-top: 8px; }
+    #social .ib-reply input { flex: 1; min-width: 0; font: inherit; font-size: 13px; padding: 7px 10px; border-radius: 10px; border: 1px solid #dfe6ea; outline: none; }
+    #social .ib-reply input:focus { border-color: #2f7fb5; box-shadow: 0 0 0 3px rgba(47,127,181,.18); }
+    #social .ib-muted { margin-top: 12px; padding-top: 8px; border-top: 1px solid #e3e9ec; }
+    #social .ib-muted h4 { margin: 0 0 4px; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: #7d8a92; }
+    #social .ib-muted p { margin: 2px 0; }
+    #social .fc-btn.warn { border-color: #c2331f; color: #c2331f; }
+    #social ul.people.asks li { display: flex; align-items: center; gap: 8px; }
+    #social .cr-byname { margin-top: 10px; }
+    /* phase 4 (docs/social.html): titles on tags, cards and rows; the fleet heart; the card's backdrops; the titles and cargo boards */
+    .net-tag .tag-titles, #social .tag-titles { margin-left: 2px; letter-spacing: 1px; }
+    #social .fc-titles { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+    #social .fc-title { font-size: 11.5px; font-weight: 700; padding: 1px 8px; border-radius: 999px; background: #fbf1cf; color: #8a6a12; border: 1px solid #e2c25a; }
+    #social .fc-title.lead { background: #fff; color: #7d8a92; border-color: #dfe6ea; font-weight: 600; }
+    #social .fc-btn.hearted { background: #fde3ec; border-color: #e0457b; color: #c2185b; }
+    #social .fc-stages.bd-dusk .fc-stage img, #social .fc-stages.bd-dusk .fc-plate { background: radial-gradient(ellipse at 50% 75%, #ffd9a8 0%, #e88a6a 55%, #6b4a7a 100%); }
+    #social .fc-stages.bd-night .fc-stage img, #social .fc-stages.bd-night .fc-plate { background: radial-gradient(ellipse at 50% 72%, #ffe9a8 0%, #3a4a6b 45%, #141c2b 100%); color: #e9efe8; }
+    #social .fc-stages.bd-harbour .fc-stage img, #social .fc-stages.bd-harbour .fc-plate { background: radial-gradient(ellipse at 50% 72%, #e6f4fb 0%, #9fd0ea 55%, #3f8fbf 100%); }
+    #social .fc-stages.bd-high .fc-stage img, #social .fc-stages.bd-high .fc-plate { background: radial-gradient(ellipse at 50% 72%, #ffffff 0%, #dfe9ee 50%, #93a8b3 100%); }
+    #social .fc-stages.bd-plain .fc-stage img, #social .fc-stages.bd-plain .fc-plate { background: #f0f4f6; }
+    #social ul.titles { list-style: none; margin: 0; padding: 0; }
+    #social ul.titles li.title-row { display: grid; grid-template-columns: 28px minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: center; padding: 7px 4px; border-top: 1px solid #eef2f4; }
+    #social ul.titles .ti, #social .goods .ti { font-size: 18px; text-align: center; }
+    #social ul.titles .held small, #social ul.titles .lead small { display: block; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: #9aa6ad; }
+    #social ul.titles .held b, #social ul.titles .lead b { font-size: 12.5px; color: #1f2b33; }
+    #social ul.titles .held b[data-pid], #social ul.titles .lead b[data-pid] { cursor: pointer; }
+    #social ul.titles b.you { color: #e2412f; }
+    #social ul.titles .held small:not(:first-child), #social ul.titles .lead small:not(:first-child) { display: inline; text-transform: none; letter-spacing: 0; font-size: 11px; color: #7d8a92; }
+    #social ul.lifetime .sub span { margin-right: 3px; }
+    #social ul.lifetime .sub sub { font-size: 9px; }
+    #social .gk-head, #social ul.goods li.gk-row > button.pick { display: grid; grid-template-columns: 28px minmax(0, 1.2fr) minmax(0, 1fr) 90px; gap: 10px; align-items: center; }
+    #social .gk-head { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: #9aa6ad; padding: 0 10px 4px; }
+    #social ul.goods li.gk-row > button.pick { width: 100%; box-sizing: border-box; }
+    #social ul.goods .lead-by b { font-size: 12.5px; color: #1f2b33; }
+    #social ul.goods .lead-by small, #social ul.goods .yours small { color: #7d8a92; }
+    #social ul.goods li.you .lead-by b { color: #e2412f; }
+    #social ul.goods .yours { text-align: right; }
+    #social .gk-h { margin: 6px 0 4px; font-size: 16px; }
+    #social .gk-h small { font-weight: 500; color: #7d8a92; font-size: 12px; }
+    #social .bscope small { font-weight: 500; opacity: .75; }
     /* Friends (net/friends.ts): the tab's rows, and the menu a right-click on a player's name opens */
-    #standings .friends .acts, #standings .people .acts { display: flex; gap: 8px; white-space: nowrap; }
-    #standings .friends i.on { display: inline-block; width: 6px; height: 6px; margin-right: 4px; border-radius: 50%; background: #1e9e4a; vertical-align: middle; }
-    #standings .friends .none { margin: 8px 0 0; color: #7d8a92; }
+    #social .friends .acts, #social .people .acts { display: flex; gap: 8px; white-space: nowrap; }
+    #social .friends i.on { display: inline-block; width: 6px; height: 6px; margin-right: 4px; border-radius: 50%; background: #1e9e4a; vertical-align: middle; }
+    #social .friends .none { margin: 8px 0 0; color: #7d8a92; }
     /* Community (net/community.ts, docs/community.html): a work's card, the hearts prompt, the overview's pins, the World tab */
     .hrt { color: #e0457b; font-weight: 700; }
     #work-card { top: 104px; left: 16px; width: 300px; max-width: calc(100vw - 32px); box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 5; padding: 11px 14px 12px; }
@@ -2482,10 +2762,10 @@
     #community-pins .cpin { position: absolute; left: 0; top: 0; pointer-events: auto; cursor: pointer; display: flex; flex-direction: column; align-items: center; padding: 2px 8px; border-radius: 10px; background: rgba(255,255,255,.92); box-shadow: 0 2px 8px rgba(31,43,51,.2); font-size: 11px; color: #4c5a63; white-space: nowrap; }
     #community-pins .cpin b { color: #e0457b; font-size: 12.5px; }
     #community-pins .cpin span { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
-    #standings .worldtab .scope { flex-wrap: wrap; }
-    #standings .hrt, #standings li .pay.hrt, #standings .lead b.hrt { color: #e0457b; }
-    #standings .worldtab .none { margin: 8px 0 0; color: #7d8a92; }
-    #standings .worldtab li .what b { font-size: 12.5px; }
+    #social .worldtab .scope { flex-wrap: wrap; }
+    #social .hrt, #social li .pay.hrt, #social .lead b.hrt { color: #e0457b; }
+    #social .worldtab .none { margin: 8px 0 0; color: #7d8a92; }
+    #social .worldtab li .what b { font-size: 12.5px; }
     /* marks (docs/marks.html): the sign/drift/GG card, the prompt, the lap chip, guestbooks, holders, suggestions and picks */
     #mark-card { position: fixed; top: 104px; left: 16px; width: 300px; max-width: calc(100vw - 32px); box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 5; padding: 11px 14px 12px; }
     #mark-card[hidden] { display: none; }
@@ -2617,16 +2897,15 @@
     #friend-menu button { all: unset; display: block; box-sizing: border-box; width: 100%; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
     #friend-menu button:hover { background: #eef3f6; }
     /* the Standings window (I, game/standings.ts): scope switch, lead line, and the board's lines under a name */
-    #standings::-webkit-scrollbar { display: none; }
-    #standings .scope { display: flex; gap: 4px; margin: 2px 0 6px; }
-    #standings .scope button { all: unset; cursor: pointer; font-size: 11.5px; font-weight: 600; padding: 2px 10px; border-radius: 999px; border: 1px solid #d5ddd0; background: #fff; color: #7d8a92; }
-    #standings .scope button.on { background: #eaf1f6; border-color: #2f7fb5; color: #1f2b33; }
-    #standings .lead { margin: 2px 0 6px; color: #7d8a92; font-size: 11.5px; }
-    #standings .lead b { color: #1f2b33; }
-    #standings ul.ranking { list-style: none; margin: 0; padding: 0; }
-    #standings ul.ranking li { align-items: baseline; border-top: 1px solid #eef2f4; }
-    #standings ul.ranking .nm .sub { display: block; margin-left: 18px; font-size: 10.5px; color: #9aa6ad; }
-    #standings ul.ranking .nm .sub i.on { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1e9e4a; vertical-align: middle; }
+    #social .scope { display: flex; gap: 4px; margin: 2px 0 6px; }
+    #social .scope button { all: unset; cursor: pointer; font-size: 11.5px; font-weight: 600; padding: 2px 10px; border-radius: 999px; border: 1px solid #d5ddd0; background: #fff; color: #7d8a92; }
+    #social .scope button.on { background: #eaf1f6; border-color: #2f7fb5; color: #1f2b33; }
+    #social .lead { margin: 2px 0 6px; color: #7d8a92; font-size: 11.5px; }
+    #social .lead b { color: #1f2b33; }
+    #social ul.ranking { list-style: none; margin: 0; padding: 0; }
+    #social ul.ranking li { align-items: baseline; border-top: 1px solid #eef2f4; }
+    #social ul.ranking .nm .sub { display: block; margin-left: 18px; font-size: 10.5px; color: #9aa6ad; }
+    #social ul.ranking .nm .sub i.on { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1e9e4a; vertical-align: middle; }
     /* the fleet dock's controls (game/fleetDock.ts, game/fleetPanel.ts): the bubble's buttons, the corner icons, the YOUR FLEET tray */
     #dock .dk-sq { position: relative; }
     #dock.lift { z-index: 8; }
@@ -2653,6 +2932,8 @@
     #dock .dk-tip.dk-unit::before { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: 14px; }
     #dock .dk-unit .dk-ctl { display: flex; align-items: center; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px solid #eef2f4; }
     #dock .dk-unit .dk-ctl button.over { margin-top: 0; }
+    #dock .dk-unit .dk-ctl button.details { margin-left: auto; font: inherit; font-size: 11.5px; font-weight: 700; padding: 4px 11px; border-radius: 999px; border: 1px solid #d5dde2; background: #fff; color: #1f2b33; cursor: pointer; white-space: nowrap; }
+    #dock .dk-unit .dk-ctl button.details:hover { background: #f2f6f8; border-color: #b8c4cb; }
     #dock .dk-head.fleet { pointer-events: auto; cursor: pointer; position: relative; align-self: flex-start; }
     #dock .dk-head.fleet::after { content: ' ▴'; opacity: 0; transition: opacity .12s; }
     #dock .dk-head.fleet:hover::after, #dock .dk-head.fleet.open::after { opacity: 1; }
@@ -2673,29 +2954,23 @@
     #dock .dk-tray button.standing span { font-weight: 600; color: #7d8a92; }
     #dock .dk-tray button.standing b { color: #1f2b33; }
     #dock .dk-tray button.standing kbd { margin-left: auto; }
-    #standings header { display: flex; justify-content: space-between; align-items: baseline; }
-    #standings header b { font-size: 18px; font-weight: 700; color: #1f2b33; }
-    #standings header b span { color: #e2412f; }
-    #standings .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; }
-    #standings .tabs button { all: unset; cursor: pointer; font-size: 12.5px; font-weight: 600; padding: 3px 11px; border-radius: 999px; background: #fff; border: 1.5px solid #dfe6ea; color: #4c5a63; }
-    #standings .tabs button.on { background: #1f2b33; border-color: #1f2b33; color: #fff; }
-    #standings ul, #standings ol { list-style: none; margin: 0; padding: 0; }
-    #standings li { display: flex; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #eef2f4; }
+    #social ul, #social ol { list-style: none; margin: 0; padding: 0; }
+    #social li { display: flex; gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #eef2f4; }
     /* the Rivals tab's rows keep their own grid, so a fleet opened up spans the row under its name */
-    #standings .rivals li { display: grid; grid-template-columns: 1fr auto; }
-    #standings .rivals li.grp, #standings .rivals .more .log li { display: block; }
-    #standings li .what { flex: 1; min-width: 0; }
-    #standings li .what b { font-size: 13px; color: #1f2b33; }
-    #standings li .what small { display: block; font-size: 11px; color: #7d8a92; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #standings li .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
-    #standings li .rank { width: 18px; text-align: right; font-weight: 700; color: #9aa6ad; font-variant-numeric: tabular-nums; }
-    #standings li .badge { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
-    #standings li .pay { font-size: 13.5px; font-weight: 700; color: #1f2b33; font-variant-numeric: tabular-nums; white-space: nowrap; }
-    #standings li em { font-style: normal; font-weight: 700; font-size: 10px; letter-spacing: .06em; color: #9aa6ad; }
-    #standings li em.pl { color: #2f6f9c; letter-spacing: 0; font-size: 11px; }
-    #standings li em.pl.on::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1e9e4a; margin-right: 4px; vertical-align: middle; }
-    #standings button.link { all: unset; cursor: pointer; color: #2f6f9c; text-decoration: underline; font-size: 12px; }
-    #standings .foot { margin: 8px 0 0; font-size: 11px; color: #9aa6ad; line-height: 1.45; }
+    #social .rivals li { display: grid; grid-template-columns: 1fr auto; }
+    #social .rivals li.grp, #social .rivals .more .log li { display: block; }
+    #social li .what { flex: 1; min-width: 0; }
+    #social li .what b { font-size: 13px; color: #1f2b33; }
+    #social li .what small { display: block; font-size: 11px; color: #7d8a92; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #social li .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+    #social li .rank { width: 18px; text-align: right; font-weight: 700; color: #9aa6ad; font-variant-numeric: tabular-nums; }
+    #social li .badge { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; }
+    #social li .pay { font-size: 13.5px; font-weight: 700; color: #1f2b33; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    #social li em { font-style: normal; font-weight: 700; font-size: 10px; letter-spacing: .06em; color: #9aa6ad; }
+    #social li em.pl { color: #2f6f9c; letter-spacing: 0; font-size: 11px; }
+    #social li em.pl.on::before { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #1e9e4a; margin-right: 4px; vertical-align: middle; }
+    #social button.link { all: unset; cursor: pointer; color: #2f6f9c; text-decoration: underline; font-size: 12px; }
+    #social .foot { margin: 8px 0 0; font-size: 11px; color: #9aa6ad; line-height: 1.45; }
     #net-lost { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: rgba(31,43,51,.35); backdrop-filter: blur(3px); font-family: "Fredoka", "Segoe UI", sans-serif; color: #1f2b33; }
     #net-lost[hidden] { display: none; }
     #net-lost .card { background: rgba(255,255,255,.94); border-radius: 22px; padding: 26px 34px; box-shadow: 0 18px 60px rgba(31,43,51,.25); text-align: center; max-width: 340px; }
@@ -2903,6 +3178,16 @@
     /* Fleet: the depot board and its pane */
     #hq .hq-fleet { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 14px; overflow: hidden; }
     #hq .hq-fleet > * { overflow: auto; min-height: 0; }
+    /* solo: one vehicle's details on their own (the dock's Open details, a double-click on its square) */
+    #hq .hq-solo-back { display: none; }
+    #hq.solo .hq-solo-back { display: inline-flex; align-items: center; font: inherit; font-size: 12.5px; font-weight: 700; padding: 6px 13px; border-radius: 999px; border: 1px solid #d5dde2; background: #fff; color: #1f2b33; cursor: pointer; }
+    #hq.solo .hq-solo-back:hover { background: #f2f6f8; border-color: #b8c4cb; }
+    #hq.solo .panel { width: min(420px, 100%); height: min(860px, calc(100vh - 92px)); padding: 14px 14px 12px; }
+    #hq.solo .hq-tabs, #hq.solo .hq-note, #hq.solo .hq-purse { display: none; }
+    #hq.solo .hq-head h2 { font-size: 20px; }
+    #hq.solo .hq-head .shield { width: 30px; height: 35px; }
+    #hq.solo .hq-fleet { grid-template-columns: minmax(0, 1fr); margin-top: 10px; }
+    #hq.solo .hq-fleet > :first-child { display: none; }
     #hq .hq-board { position: relative; display: flex; flex-direction: column; gap: 12px; padding: 2px 2px 8px; }
     /* a vehicle just bought glows in the garage for a few seconds */
     #hq .hq-unit.fresh { animation: hqfresh 1.2s ease-in-out 5; box-shadow: 0 0 0 3px #e8a81c; }
@@ -2932,7 +3217,7 @@
     #hq .tour-glow { box-shadow: 0 0 0 3px #ffd36b, 0 0 22px 4px rgba(255,211,107,.55) !important; border-radius: 12px; }
     #hq .gmodes { margin-top: 12px; }
     #hq .gmodes .chips { display: flex; gap: 6px; }
-    #tut-callout.up::after { right: auto; left: 18px; }
+    #tut-callout.up::after { right: auto; margin-right: 0; left: var(--al, 18px); }
     @keyframes hqcoach { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
     #hq .hq-zone { border-radius: 14px; padding: 10px 12px 12px; background: #f4f7f9; border: 2px solid transparent; transition: border-color .12s, background .12s; }
     #hq .hq-zone[data-zone="garage"] { background: #f1f3f4; }
@@ -3066,6 +3351,13 @@
     #hq .tr-seg button { font: inherit; font-size: 12px; font-weight: 600; padding: 4px 11px; border-radius: 999px; border: 1px solid #cdd6db; background: #fff; color: #1f2b33; cursor: pointer; }
     #hq .tr-seg button.on { background: #a8801f; color: #fff; border-color: #a8801f; }
     #hq .tr-foot { font-size: 12px; color: #7d8a92; margin: 10px 2px 0; }
+    #hq .tp-fam { margin: 16px 2px 0; font-size: 14px; color: #1f2b33; }
+    #hq .tp-fam small { font-weight: 400; color: #7d8a92; margin-left: 6px; }
+    #hq .tp-dress { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 10px 0 0; padding: 8px 12px; border-radius: 11px; background: #f6f8fa; box-shadow: inset 0 0 0 1px #e3e9ec; font-size: 13px; }
+    #hq .tp-dress b { color: #1f2b33; }
+    #hq .tp-dress small { color: #7d8a92; font-size: 11.5px; }
+    body.dark-ui #hq .tp-fam { color: #e9efe8; }
+    body.dark-ui #hq .tp-dress { background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
     body.dark-ui #hq .tr-list li { background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
     body.dark-ui #hq .tr-list li.got { background: rgba(212,175,55,.1); box-shadow: inset 0 0 0 1.5px rgba(226,194,90,.6); }
     body.dark-ui #hq .tr-top b { color: #eef2f4; }
@@ -3173,18 +3465,18 @@
     #hq .hq-fig figcaption b { font-size: 14px; color: #1f2b33; }
     #hq .hq-fig figcaption span { font-size: 12px; color: #7d8a92; }
     #hq .hq-fig .tbl { all: unset; cursor: pointer; margin-left: auto; font-size: 11.5px; font-weight: 600; color: #2f7fb5; }
-    #hq svg.chart { display: block; width: 100%; height: auto; overflow: visible; }
-    #hq svg.chart.share { height: 18px; border-radius: 4px; }
-    #hq svg.chart .gl { stroke: var(--grid); stroke-width: 1; }
-    #hq svg.chart .base { stroke: var(--base); stroke-width: 1; }
-    #hq svg.chart .ax { fill: var(--axis); font-size: 10.5px; font-family: "IBM Plex Sans", sans-serif; }
-    #hq svg.chart .hit { fill: transparent; }
-    #hq svg.chart rect.hit:hover { fill: rgba(31,43,51,.05); }
-    #hq svg.chart.share rect.seg:hover { opacity: .85; }
-    #hq svg.chart .ring { stroke: #fcfcfb; stroke-width: 2; }
-    #hq .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; font-size: 11.5px; color: #4c5a63; }
-    #hq .legend i, #hq .hq-tip i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
-    #hq .legend small { color: #7d8a92; }
+    #hq svg.chart , #social svg.chart { display: block; width: 100%; height: auto; overflow: visible; }
+    #hq svg.chart.share , #social svg.chart.share { height: 18px; border-radius: 4px; }
+    #hq svg.chart .gl , #social svg.chart .gl { stroke: var(--grid); stroke-width: 1; }
+    #hq svg.chart .base , #social svg.chart .base { stroke: var(--base); stroke-width: 1; }
+    #hq svg.chart .ax , #social svg.chart .ax { fill: var(--axis); font-size: 10.5px; font-family: "IBM Plex Sans", sans-serif; }
+    #hq svg.chart .hit , #social svg.chart .hit { fill: transparent; }
+    #hq svg.chart rect.hit:hover , #social svg.chart rect.hit:hover { fill: rgba(31,43,51,.05); }
+    #hq svg.chart.share rect.seg:hover , #social svg.chart.share rect.seg:hover { opacity: .85; }
+    #hq svg.chart .ring , #social svg.chart .ring { stroke: #fcfcfb; stroke-width: 2; }
+    #hq .legend , #social .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; font-size: 11.5px; color: #4c5a63; }
+    #hq .legend i, #social .legend i, #hq .hq-tip i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+    #hq .legend small , #social .legend small { color: #7d8a92; }
     #hq .hq-tip { position: absolute; z-index: 3; pointer-events: none; min-width: 170px; background: #fff; border-radius: 10px; padding: 8px 10px; box-shadow: 0 10px 30px rgba(31,43,51,.2), 0 0 0 1px rgba(31,43,51,.06); font-size: 12px; color: #4c5a63; }
     #hq .hq-tip[hidden] { display: none; }
     #hq .hq-tip b { display: block; color: #1f2b33; margin-bottom: 3px; }
@@ -3285,7 +3577,7 @@
     body.dark-ui #hq :is(.fac-bar .fac-fill, .fac-crest) { filter: invert(1) hue-rotate(180deg); }
     @media (max-width: 900px) { #hq .hq-fac { grid-template-columns: 1fr; height: auto; } #hq .hq-frow { grid-template-columns: 30px 1fr 80px; } #hq .hq-frow .fac-bar { grid-column: 1 / -1; } }
     body.dark-ui #hq :is(svg.chart, .legend i, .hq-tip i, .hq-parts .sw, .hq-seat i, .hq-drv i) { filter: invert(1) hue-rotate(180deg); }
-    body.dark-ui #hq { --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181; --c6: #008300; --c7: #9085e9; --c8: #e66767; --c9: #6f7a80; --grid: #2c3338; --axis: #9aa5ab; --base: #4c5a63; }
+    body.dark-ui #social, body.dark-ui #hq { --c1: #3987e5; --c2: #d95926; --c3: #199e70; --c4: #c98500; --c5: #d55181; --c6: #008300; --c7: #9085e9; --c8: #e66767; --c9: #6f7a80; --grid: #2c3338; --axis: #9aa5ab; --base: #4c5a63; }
     body.dark-ui #hq svg.chart .ring { stroke: #1a1a19; }
 
     @media (max-width: 900px) {
@@ -3295,8 +3587,8 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-BamfjWXo.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/three-BEaCcWWp.js">
+  <script type="module" crossorigin src="./assets/index-CLQnkMXr.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/three-D1efkFBx.js">
   <link rel="stylesheet" crossorigin href="./assets/index-BV6iPe3q.css">
 </head>
 <body>
@@ -3362,7 +3654,7 @@
     <div class="stats" id="stats"></div>
     <div id="compass" aria-hidden="true"><div class="ring"><i style="transform:rotate(45deg)"></i><i style="transform:rotate(135deg)"></i><i style="transform:rotate(225deg)"></i><i style="transform:rotate(315deg)"></i><b class="n">N</b><b>E</b><b>S</b><b>W</b></div></div>
   </div>
-  <div id="tr" class="hud chip"><span id="fleetname" hidden title="Your HQ: fleet, garage, drivers, estate, tech and books (H)"></span><span id="cash" title="Your money · click for the Books">$0</span><button id="gems" type="button" tabindex="-1" title="Diamonds · the tech trees (H → Tech)">◆ 0</button><button id="facgoal" type="button" tabindex="-1" hidden></button><span id="likes" hidden title="Likes: hearts on your works and thumbs-up on your signs from other players · click for where they came from">♥ 0</span><span id="clock"></span><span id="fps">— fps</span><button id="photobtn" type="button" tabindex="-1" title="Camera: stills and clips to share (C)">📷</button><button id="musicbtn" type="button" tabindex="-1" title="Music" aria-label="Music player"></button><button id="gear" type="button" tabindex="-1" title="Settings (O)">⚙</button></div>
+  <div id="tr" class="hud chip"><span id="fleetname" hidden title="Your HQ: fleet, garage, drivers, estate, tech and books (H)"></span><span id="cash" title="Your money · click for the Books">$0</span><button id="gems" type="button" tabindex="-1" title="Diamonds · the tech trees (H → Tech)">◆ 0</button><button id="facgoal" type="button" tabindex="-1" hidden></button><span id="likes" hidden title="Likes: hearts on your works and thumbs-up on your signs from other players · click for where they came from">♥ 0</span><span id="clock"></span></div>
   <div id="town-labels" hidden></div>
   <div id="cargo-tags"></div>
   <div id="notices"><div id="toast" class="notice" role="status" aria-live="polite"></div><div id="earnings"></div></div>
@@ -3393,6 +3685,22 @@
     <button id="tb-camera" type="button" class="tool-btn" tabindex="-1" title="Camera: stills and clips to share (C)">
       <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2 2 0 0 1 5 6.5h2.2l1.5-2.2h6.6l1.5 2.2H19a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><circle cx="12" cy="13" r="3.6"/></svg>
       <span>Camera</span><kbd>C</kbd>
+    </button>
+    <i aria-hidden="true"></i>
+    <!-- the journal, as J (the user, 4 Nov 2026) -->
+    <button id="tb-journal" type="button" class="tool-btn" tabindex="-1" title="Journal: every mission (J)">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5Z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3"/><path d="M9 7.5h6M9 11h4"/></svg>
+      <span>Journal</span><kbd>J</kbd>
+    </button>
+    <i aria-hidden="true"></i>
+    <!-- the music and settings buttons, moved down from the top bar (the user, 4 Nov 2026); the wave is music's icon (game/musicMenu.ts) -->
+    <button id="musicbtn" type="button" class="tool-btn" tabindex="-1" title="Music" aria-label="Music player">
+      <span>Music</span>
+    </button>
+    <i aria-hidden="true"></i>
+    <button id="gear" type="button" class="tool-btn" tabindex="-1" title="Settings (O)">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+      <span>Settings</span><kbd>O</kbd>
     </button>
   </div>
   <div id="br" class="hud chip">
@@ -3440,8 +3748,7 @@
   <div id="dozer-tip" class="hud chip" hidden></div>
   <div id="earth" class="hud chip" hidden></div>
   <div id="earth-tip" class="hud chip" hidden></div>
-  <div id="lobby" class="hud chip" hidden></div>
-  <div id="lobby-tip" class="hud chip" hidden></div>
+
   <div id="vehicles" hidden></div>
   <div id="cashmenu" hidden></div>
   <div id="settings" hidden></div>
