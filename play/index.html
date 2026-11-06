@@ -1835,6 +1835,11 @@
     /* an ambulance dash's clock on its chip (missions/workTemplates.ts), red for the last ten seconds */
     .trk .mt-clock { font-family: "IBM Plex Mono", monospace; font-size: 13px; font-weight: 700; color: #1f2b33; white-space: nowrap; }
     .trk .mt-clock.hot, .race-strip .clock.hot { color: #c2372a; }
+    /* the guest's tile (main.ts guestTile): red-bordered, over the missions, opens Save your fleet */
+    #guest-tile { --c: #e2412f; cursor: pointer; pointer-events: auto; border: 2px solid #e2412f; }
+    #guest-tile[hidden] { display: none; }
+    #guest-tile .mt-txt b { color: #c22f1f; }
+    #guest-tile:hover { background: #fff4f2; }
     .trk-list { display: flex; flex-direction: column; gap: 6px; pointer-events: auto; }
     .trk-list .trk { cursor: pointer; }
     .trk-list .trk:not(.on) { opacity: .82; }
@@ -3772,8 +3777,8 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-DmU5Xk0G.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/three-D1efkFBx.js">
+  <script type="module" crossorigin src="./assets/index-DWpm8wD7.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/three-B97_EtTR.js">
   <link rel="stylesheet" crossorigin href="./assets/index-BV6iPe3q.css">
 </head>
 <body>
