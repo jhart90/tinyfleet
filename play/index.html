@@ -1382,9 +1382,35 @@
     :is(#vehicles, #hq) .gstat { margin: 3px 0 0; font-weight: 600; color: #1f2b33; }
     :is(#vehicles, #hq) .gsub { margin: 3px 0 0; font-size: 12px; color: #6b777e; line-height: 1.45; }
     :is(#vehicles, #hq) .gdriver { margin-top: 12px; padding: 9px 11px; border-radius: 12px; background: #fff; border: 1px solid #e3e9ec; }
-    :is(#vehicles, #hq) .gdriver b { font-size: 14.5px; color: #1f2b33; }
-    :is(#vehicles, #hq) .gdriver span { font-size: 12px; color: #5d6b73; }
-    :is(#vehicles, #hq) .gdriver small { display: block; font-size: 11.5px; color: #6b777e; margin-top: 2px; }
+    /* the crew card (game/crewCard.ts): portrait, then who they are, what they are (pills), and their life with you */
+    .ccard { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+    .ccard .cc-face { width: 48px; height: 48px; border-radius: 12px; background: linear-gradient(#eaf2f6, #d8e6ee); overflow: hidden; display: grid; place-items: end center; }
+    .ccard.compact .cc-face { width: 38px; height: 38px; border-radius: 10px; }
+    .ccard .crew-face { display: block; }
+    .ccard .cc-main { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+    .ccard .cc-r1 { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+    .ccard .cc-r1 b { font-size: 14.5px; color: #1f2b33; margin-right: 2px; }
+    .ccard.compact .cc-r1 b { font-size: 13.5px; }
+    .ccard .cc-pill { display: inline-flex; align-items: center; gap: 3px; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; line-height: 18px; background: #f0f4f6; color: #4c5a63; white-space: nowrap; }
+    .ccard .cc-rank.r-rookie { background: #eef6e9; color: #3f7a2c; }
+    .ccard .cc-rank.r-regular { background: #fff4d6; color: #8a6a12; }
+    .ccard .cc-rank.r-veteran { background: #e7eefb; color: #2c5aa0; }
+    .ccard .cc-rank.r-ace { background: linear-gradient(90deg, #f6d36b, #e9b53a); color: #4a3505; box-shadow: 0 0 0 1px #d4a42b; }
+    .ccard .cc-mood { font-size: 11.5px; font-weight: 600; color: #6b777e; }
+    .ccard .cc-mood.m-content { color: #2c7a48; } .ccard .cc-mood.m-restless { color: #c27a14; } .ccard .cc-mood.m-leaving { color: #c2361f; }
+    .ccard .cc-r2 { display: flex; flex-wrap: wrap; gap: 4px; }
+    .ccard .cc-temper.t-careful { background: #e6f4f1; color: #1f6f60; }
+    .ccard .cc-temper.t-quick { background: #fdecea; color: #b2321f; }
+    .ccard .cc-nose { background: #f3eefb; color: #6b3fa0; }
+    .ccard .cc-r3 { display: flex; flex-wrap: wrap; gap: 3px 12px; font-size: 11.5px; color: #6b777e; }
+    .ccard .cc-r3 b { color: #1f2b33; font-weight: 700; }
+    .ccard .cc-next { color: #9aa6ad; }
+    .ccard .cc-note { font-size: 11.5px; color: #4c5a63; }
+    .ccard .cc-act { align-self: center; }
+    .ccard.compact .cc-r2 .cc-pill { font-size: 10.5px; padding: 0 7px; }
+    /* a candidate's card: its Hire button on a row of its own, so the name keeps the width */
+    :is(.dcard, .ghire) .ccard { grid-template-columns: auto minmax(0, 1fr); }
+    :is(.dcard, .ghire) .ccard .cc-act { grid-column: 2; align-self: start; }
     :is(#vehicles, #hq) .mood { font-style: normal; font-weight: 600; }
     :is(#vehicles, #hq) .m-content { color: #2c7a48; }
     :is(#vehicles, #hq) .m-fine { color: #4c5a63; }
@@ -1395,7 +1421,19 @@
     :is(#vehicles, #hq) .gcut b { text-transform: none; letter-spacing: 0; font-size: 13px; color: #1f2b33; }
     :is(#vehicles, #hq) .gcut input { width: 100%; accent-color: #e2412f; }
     :is(#vehicles, #hq) .gmode { margin: 0; font-size: 11.5px; color: #6b777e; }
-    :is(#vehicles, #hq) .gorders { margin-top: 12px; }
+    /* the Orders card (game/unitPane.ts orderHtml): the presets on top set every line in the panel under them */
+    :is(#vehicles, #hq) .gorders { margin-top: 12px; border: 1px solid #e3e9ec; border-radius: 14px; background: #fff; overflow: hidden; }
+    :is(#vehicles, #hq) .go-top { padding: 10px 12px 9px; background: #f6f8fa; border-bottom: 1px solid #e3e9ec; }
+    :is(#vehicles, #hq) .go-top .glbl { margin-bottom: 7px; }
+    :is(#vehicles, #hq) .go-sep { width: 1px; align-self: stretch; margin: 2px 3px; background: #d5dde2; }
+    :is(#vehicles, #hq) .go-cap { margin: 8px 0 0; font-size: 11.5px; color: #6b777e; display: flex; align-items: center; gap: 6px; }
+    :is(#vehicles, #hq) .go-cap::before { content: '↓'; font-weight: 700; color: #9aa6ad; }
+    :is(#vehicles, #hq) .go-rows { padding: 4px 12px 8px; font-size: 12px; }
+    :is(#vehicles, #hq) .go-rows .grow2 { padding: 6px 0; margin: 0; border-bottom: 1px solid #eef2f4; }
+    :is(#vehicles, #hq) .go-rows .grow2:last-child { border-bottom: 0; }
+    :is(#vehicles, #hq) .go-rows select { width: 100%; padding: 4px 8px; border-radius: 8px; border-color: #d5dde2; background: #fbfcfd; cursor: pointer; }
+    :is(#vehicles, #hq) .go-rows select:hover { border-color: #9aa6ad; }
+    :is(#vehicles, #hq) .go-sum { margin: 0; padding: 7px 12px 9px; background: #fbfcfd; border-top: 1px solid #eef2f4; }
     :is(#vehicles, #hq) .glbl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #7d8a92; margin-bottom: 5px; }
     :is(#vehicles, #hq) .chips { display: flex; flex-wrap: wrap; gap: 5px; }
     :is(#vehicles, #hq) .chip { all: unset; cursor: pointer; font: inherit; font-size: 12.5px; font-weight: 600; padding: 3px 11px; border-radius: 999px; background: #fff; border: 1.5px solid #dfe6ea; color: #4c5a63; }
@@ -1403,8 +1441,6 @@
     :is(#vehicles, #hq) .chip.on { background: #1f2b33; border-color: #1f2b33; color: #fff; }
     :is(#vehicles, #hq) .chip.wait.on { background: #b98a12; border-color: #b98a12; }
     :is(#vehicles, #hq) .chip.small { font-size: 11px; font-weight: 500; padding: 1px 8px; }
-    :is(#vehicles, #hq) .gedit { margin-top: 8px; font-size: 12px; }
-    :is(#vehicles, #hq) .gedit summary { cursor: pointer; color: #2f7fb5; font-weight: 600; }
     :is(#vehicles, #hq) .grow2 { display: grid; grid-template-columns: 86px 1fr; gap: 8px; align-items: center; margin-top: 6px; }
     :is(#vehicles, #hq) .grow2 > span:first-child { font-weight: 600; color: #5d6b73; }
     :is(#vehicles, #hq) .grow2 select { font: inherit; font-size: 12px; padding: 2px 4px; border-radius: 7px; border: 1px solid #cdd6db; background: #fff; max-width: 100%; }
@@ -1414,10 +1450,7 @@
     :is(#vehicles, #hq) .ghire > b { display: block; font-size: 14px; color: #1f2b33; }
     :is(#vehicles, #hq) .ghire small { display: block; font-size: 11.5px; color: #7d8a92; margin-top: 2px; }
     :is(#vehicles, #hq) .ghire ul { list-style: none; margin: 6px 0 0; padding: 0; }
-    :is(#vehicles, #hq) .ghire li { display: grid; grid-template-columns: 1fr auto; column-gap: 8px; align-items: center; padding: 6px 0; border-top: 1px solid #e8edf0; }
-    :is(#vehicles, #hq) .ghire li b { font-size: 13.5px; color: #1f2b33; }
-    :is(#vehicles, #hq) .ghire li span { grid-column: 1; font-size: 11.5px; color: #6b777e; }
-    :is(#vehicles, #hq) .ghire li button { grid-row: 1 / span 2; grid-column: 2; }
+    :is(#vehicles, #hq) .ghire li { padding: 8px 0; border-top: 1px solid #e8edf0; }
     :is(#vehicles, #hq) .gnone { margin-top: 12px; color: #7d8a92; }
     :is(:is(#vehicles, #hq) .gpane, #hq .hq-pane) button:not(.chip), :is(:is(#vehicles, #hq) .drivers, #hq .hq-pane) button { font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 12px; border-radius: 999px; border: 1.5px solid #cdd6db; background: #fff; color: #1f2b33; cursor: pointer; white-space: nowrap; }
     :is(:is(#vehicles, #hq) .gpane, #hq .hq-pane) button:not(.chip):hover:not(:disabled), :is(:is(#vehicles, #hq) .drivers, #hq .hq-pane) button:hover:not(:disabled) { border-color: #8a979e; }
@@ -1526,8 +1559,8 @@
     :is(:is(#vehicles, #hq) .drivers, #hq .hq-pane) { margin-top: 4px; }
     :is(#vehicles, #hq) .dgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
     :is(#vehicles, #hq) .dcard { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border-radius: 14px; background: #f4f7f9; font-size: 12px; color: #5d6b73; }
-    :is(#vehicles, #hq) .dcard b { font-size: 15px; color: #1f2b33; }
-    :is(#vehicles, #hq) .dcard small { color: #6b777e; }
+    :is(#vehicles, #hq) .dcard > b { font-size: 15px; color: #1f2b33; }
+    :is(#vehicles, #hq) .dcard > small { color: #6b777e; }
     :is(#vehicles, #hq) .dcard small.in { color: #2c7a48; font-weight: 600; }
     :is(#vehicles, #hq) .dcard > button { align-self: flex-start; margin-top: 5px; }
     :is(#vehicles, #hq) .dput { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; align-items: center; }
@@ -1573,6 +1606,7 @@
     #inspect .buildbar .ph s { position: absolute; inset: 0 auto 0 0; background: #f0a63a; border-radius: 5px; }
     #inspect .buildbar .ph.done s { background: #e08a1e; }
     #inspect .buildbar .phnow { display: flex; justify-content: space-between; gap: 8px; margin-top: 5px; font-size: 11.5px; color: #6b777e; }
+    #inspect .buildbar .phnow span:last-child { white-space: nowrap; }
     #inspect .own-h { margin: 10px 0 2px; padding-top: 9px; border-top: 1px solid #e6ecef; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: #7d8a92; }
     #inspect .perf .row { display: flex; justify-content: space-between; align-items: baseline; }
     #inspect .perf .row b { font-size: 15px; font-weight: 700; }
@@ -1877,6 +1911,8 @@
     }
     #title-menu .tm-panel { pointer-events: auto; position: absolute; left: 24px; top: 24px; bottom: 24px; width: 360px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; padding: 26px 26px 18px; overflow: auto; overscroll-behavior: contain; background: rgba(255,255,255,.78); backdrop-filter: blur(10px); border-radius: 22px; box-shadow: 0 18px 60px rgba(31,43,51,.2); animation: tm-in .28s ease-out; scrollbar-width: thin; }
     #title-menu .tm-panel.title .tm-brand { margin-top: auto; }
+    /* Save your fleet (title/menu.ts buildKeep): a card in the middle of the screen, only as tall as the form (the user, 6 Nov 2026) */
+    #title-menu .tm-panel.keep { left: 0; right: 0; top: 0; bottom: 0; margin: auto; width: min(400px, calc(100vw - 32px)); height: fit-content; max-height: calc(100vh - 48px); }
     #title-menu .tm-panel.new { width: 420px; }
     #title-menu .tm-panel.fleet { width: 440px; }
     #title-menu .tm-panel.saved { width: 470px; }
@@ -2456,10 +2492,37 @@
     .pp-none { font-size: 13px; color: #9aa6ad; }
     @media (max-width: 820px) { .jr-cols { grid-template-columns: 1fr; } .jr-list { max-height: 30vh; border-right: 0; border-bottom: 1px solid #e2e6dc; } .jr-det { grid-template-columns: 1fr; } .jr-det .jr-hero { min-height: 180px; } }
     /* the tracker chip, under the cash */
-    #tut-tip { position: fixed; left: 50%; top: 40%; z-index: 12; pointer-events: none; transform: translate(-50%, calc(-100% - 38px)); max-width: min(420px, calc(100vw - 32px)); box-sizing: border-box; padding: 9px 16px 10px; border-radius: 14px; background: rgba(31,43,51,.88); color: #fff; font-size: 15.5px; font-weight: 600; line-height: 1.35; text-align: center; box-shadow: 0 8px 24px rgba(31,43,51,.28); opacity: 0; transition: opacity .3s; }
+    /* the first drive's one line: a fixed place above the car (the camera keeps the car there), swapped in place, no fade or pop (the user, 7 Nov 2026) */
+    #tut-tip { position: fixed; left: 50%; top: 40%; z-index: 12; pointer-events: none; transform: translate(-50%, calc(-100% - 38px)); max-width: min(420px, calc(100vw - 32px)); box-sizing: border-box; padding: 9px 16px 10px; border-radius: 14px; background: rgba(31,43,51,.88); color: #fff; font-size: 15.5px; font-weight: 600; line-height: 1.35; text-align: center; box-shadow: 0 8px 24px rgba(31,43,51,.28); opacity: 0; }
     #tut-tip::after { content: ""; position: absolute; left: 50%; bottom: -7px; margin-left: -7px; border: 7px solid transparent; border-bottom: 0; border-top-color: rgba(31,43,51,.88); }
-    #tut-tip.on { opacity: 1; animation: tutin .35s cubic-bezier(.2,.9,.3,1.3); }
-    @keyframes tutin { from { transform: translate(-50%, calc(-100% - 26px)) scale(.94); } }
+    #tut-tip.on { opacity: 1; }
+    /* the welcome card's driving keys (game/tutorial.ts showWelcome): W A S D or the arrows, each going down as it is held */
+    #welcome .wk-pads { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 2px 0; }
+    #welcome .wk-pad { display: grid; grid-template-columns: repeat(3, 38px); gap: 5px; }
+    #welcome .wk-pad kbd { grid-row: 2; display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 36px; margin: 0; padding: 0; box-sizing: border-box; font-family: "IBM Plex Mono", monospace; font-size: 15px; font-weight: 600; line-height: 1; vertical-align: 0; background: #eef1ea; color: #1f2b33; border: 0; border-bottom: 3px solid #b9c3c8; border-radius: 8px; transition: transform .06s, background .06s; }
+    #welcome .wk-pad kbd.up { grid-column: 2; grid-row: 1; background: #ffd24a; border-bottom-color: #c9a030; }
+    #welcome .wk-pad kbd.down { transform: translateY(2px); background: #ffd24a; border-bottom-color: transparent; box-shadow: inset 0 2px 3px rgba(31,43,51,.3); }
+    #welcome .wk-or { color: #7d8a92; font-weight: 700; font-size: 14px; }
+    #welcome .wk-legend { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 14.5px; color: #3f4b52; }
+    #welcome .wk-legend b { color: #1f2b33; font-family: "IBM Plex Mono", monospace; font-size: 13.5px; }
+    #welcome .mc-objs kbd.dark, #welcome .mc-why kbd { background: #eef1ea; border-color: #c9d1c4; color: #1f2b33; font-size: 11.5px; }
+    /* the camera card: docked at the right with the world still running and clickable (game/tutorial.ts showCamera) */
+    #welcome.dock { background: none; backdrop-filter: none; pointer-events: none; place-items: center end; padding: 16px 20px; }
+    #welcome.dock .mc { pointer-events: auto; width: min(380px, 100%); grid-template-columns: 1fr; }
+    #welcome .cam-rows { display: grid; grid-template-columns: 108px 1fr; gap: 9px 12px; align-items: center; font-size: 14.5px; color: #3f4b52; }
+    #welcome .cam-rows .k { display: flex; align-items: center; gap: 4px; }
+    #welcome .cam-rows .d b { color: #1f2b33; }
+    #welcome .cam-rows kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; margin: 0; padding: 0 6px; box-sizing: border-box; font-size: 13px; font-weight: 600; line-height: 1; vertical-align: 0; background: #eef1ea; color: #1f2b33; border: 0; border-bottom: 3px solid #b9c3c8; border-radius: 6px; transition: transform .06s, background .06s; }
+    #welcome .cam-rows .d kbd { min-width: 22px; height: 22px; font-size: 11.5px; }
+    #welcome .cam-rows kbd.down { transform: translateY(2px); background: #ffd24a; border-bottom-color: transparent; }
+    #welcome .cam-rows kbd.ok:not(.down) { background: #8fdca4; border-bottom-color: #5bb97a; }
+    #welcome .cam-rows i { display: inline-block; position: relative; width: 18px; height: 26px; border: 2px solid #4c5a63; border-radius: 9px; box-sizing: border-box; }
+    #welcome .cam-rows i.mouse { margin-left: 3px; }
+    #welcome .cam-rows i.mouse::after { content: ""; position: absolute; right: 2px; top: 2px; width: 4px; height: 8px; background: #4c5a63; border-radius: 2px; }
+    #welcome .cam-rows i.wheel::after { content: ""; position: absolute; left: 6px; top: 4px; width: 2px; height: 8px; background: #4c5a63; border-radius: 1px; }
+    #welcome .cam-rows i.wheel.ok { border-color: #3f9b4a; background: #dff5e5; }
+    #welcome .cam-foot { margin: 0; display: flex; align-items: center; gap: 9px; font-size: 13px; color: #7d8a92; }
+    #welcome .cam-foot i { flex: none; width: 30px; height: 22px; border-radius: 6px; border: 2px solid #f2a93b; background: #fff8e6; box-shadow: 0 0 0 3px rgba(255,210,74,.45); }
     #tut-tip b { color: #ffd24a; }
     #tut-tip kbd { display: inline-block; min-width: 14px; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; line-height: 1.3; background: #fff; color: #1f2b33; border-radius: 5px; border-bottom: 2px solid #b9c3c8; padding: 0 6px; margin: 0 2px; transition: transform .06s, background .06s, box-shadow .06s; }
     /* a key the player is holding: pushed down into the bubble, lit yellow (game/tutorial.ts pressKeys) */
@@ -2855,7 +2918,8 @@
     #social .ib-x { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
     #social .ib-x small { display: inline; margin: 0; }
     #social .ib-done { font-style: italic; color: #7d8a92; }
-    #social .ib-reply { display: flex; gap: 8px; margin-top: 8px; }
+    /* glued to the bottom of the column while the thread scrolls above it (the user, 7 Nov 2026) */
+    #social .ib-reply { display: flex; gap: 8px; margin-top: 8px; position: sticky; bottom: 0; z-index: 2; padding: 8px 0 2px; background: #fff; box-shadow: 0 -10px 10px -8px rgba(31,43,51,.12); }
     #social .ib-reply input { flex: 1; min-width: 0; font: inherit; font-size: 13px; padding: 7px 10px; border-radius: 10px; border: 1px solid #dfe6ea; outline: none; }
     #social .ib-reply input:focus { border-color: #2f7fb5; box-shadow: 0 0 0 3px rgba(47,127,181,.18); }
     #social .ib-muted { margin-top: 12px; padding-top: 8px; border-top: 1px solid #e3e9ec; }
@@ -3266,6 +3330,28 @@
     #hq .pt-chip { font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: #eef2f4; color: #4c5a63; }
     #hq .pt-chip.good { background: #dcefd2; color: #2f7a3e; } #hq .pt-chip.bad { background: #fbe3df; color: #d2342a; }
     #hq .pt-link { all: unset; cursor: pointer; color: #e2412f; text-decoration: underline; font-size: 11.5px; font-weight: 600; }
+    /* Tech with the diamonds over it (purseTabs.ts DiamondsTab, the user 6 Nov 2026): the diamonds take half the page at most, the tree the rest */
+    #hq .hq-techpage { display: flex; flex-direction: column; gap: 10px; overflow: hidden; }
+    #hq .hq-techpage > .hq-tech { flex: 1; min-height: 0; height: auto; }
+    #hq .hq-dia { flex: none; max-height: 50%; overflow: auto; padding: 0 2px; scrollbar-width: thin; }
+    #hq .dia-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    #hq .dia-stat { display: flex; align-items: baseline; gap: 7px; min-width: 0; background: #f4f7f8; border-radius: 10px; padding: 6px 10px; }
+    #hq .dia-stat b { font-family: "Fredoka", "Segoe UI", sans-serif; font-size: 17px; color: #1f7f9c; white-space: nowrap; }
+    #hq .dia-stat span { font-size: 11.5px; color: #5d6b73; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #hq .dia-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 16px; margin-top: 8px; }
+    #hq .dia-col h4 { margin: 0 0 3px; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: #7d8a92; }
+    #hq .dia-col ul { list-style: none; margin: 0; padding: 0; }
+    #hq .dia-col li { display: flex; align-items: baseline; gap: 8px; padding: 3px 2px; border-bottom: 1px solid #eef2f4; font-size: 12.5px; color: #1f2b33; }
+    #hq .dia-col li .w { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #hq .dia-col li .w small { color: #8a969d; font-size: 11px; margin-left: 3px; }
+    #hq .dia-col li .w .pt-chip { font-size: 10px; padding: 0 6px; }
+    #hq .dia-col li .n { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 700; }
+    #hq .dia-col li .n.good { color: #1f7f9c; } #hq .dia-col li .n.bad { color: #d2342a; }
+    #hq .dia-more { all: unset; cursor: pointer; display: inline-block; margin-top: 3px; font-size: 11.5px; font-weight: 600; color: #4c5a63; }
+    #hq .dia-more:hover { color: #1f2b33; text-decoration: underline; }
+    #hq .dia-col .pt-none { font-size: 12px; margin: 2px 0; }
+    body.dark-ui #hq .dia-stat { background: rgba(255,255,255,.06); }
+    @media (max-width: 900px) { #hq .dia-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); } #hq .dia-cols { grid-template-columns: 1fr; } #hq .hq-dia { max-height: none; } #hq .hq-techpage { overflow: auto; } }
     #gems { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; font-family: "Fredoka", "Segoe UI", sans-serif; font-size: 15px; font-weight: 700; color: #1f7f9c; font-variant-numeric: tabular-nums; }
     #gems .gem-ico { display: block; width: 20px; height: 24px; transform: translateY(-2px); }
     #facgoal { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-family: "Fredoka", "Segoe UI", sans-serif; font-size: 13px; font-weight: 600; color: #1f2b33; }
@@ -3434,7 +3520,11 @@
     #hq .hq-seat { width: 52px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-left: 1px dashed #c9d3d8; padding: 4px 2px; box-sizing: border-box; text-align: center; border-radius: 0 12px 12px 0; }
     #hq .hq-seat.empty { color: #8a979e; font-size: 10.5px; background: rgba(255,255,255,.55); }
     #hq .hq-seat.me small { font-size: 10.5px; color: #8a6510; font-weight: 600; }
-    #hq .hq-seat.me i, #hq .hq-drv i { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; color: #fff; font-style: normal; font-weight: 700; font-size: 13px; box-shadow: 0 0 0 2px #fff; }
+    #hq .hq-seat.me i, #hq .hq-drv i { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; color: #fff; font-style: normal; font-weight: 700; font-size: 13px; box-shadow: 0 0 0 2px #fff; overflow: hidden; }
+    /* a driver's portrait in the fleet's colour (game/crewPortrait.ts), on the board and its drag ghost */
+    #hq .hq-drv i .crew-face, .hq-ghost i .crew-face, #hq i .crew-face { display: block; width: 100%; height: 100%; }
+    #dock .dk-unit li .what .face { display: inline-block; width: 22px; height: 22px; margin-right: 6px; vertical-align: -6px; border-radius: 50%; overflow: hidden; background: #e3edf2; }
+    #dock .dk-unit li .what .face .crew-face { display: block; }
     #hq .hq-drv { display: flex; flex-direction: column; align-items: center; gap: 1px; cursor: grab; user-select: none; touch-action: none; border-radius: 10px; padding: 3px; }
     #hq .hq-drv small { font-size: 10.5px; color: #1f2b33; font-weight: 600; max-width: 48px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     #hq .hq-drv small.rk { color: #7d8a92; font-weight: 500; }
@@ -3550,6 +3640,38 @@
     body.dark-ui #hq .tp-dress { background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
     body.dark-ui #hq .tr-list li { background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
     body.dark-ui #hq .tr-list li.got { background: rgba(212,175,55,.1); box-shadow: inset 0 0 0 1.5px rgba(226,194,90,.6); }
+    /* Treats & Toppers (game/toppersTab.ts, the user 6 Nov 2026): one row each, the dress as four stands */
+    #hq .tp-part { margin: 22px 2px 0; font-size: 16px; color: #1f2b33; }
+    #hq .tp-part small { font-size: 11.5px; font-weight: 400; color: #7d8a92; margin-left: 6px; }
+    #hq .tr-list.tr-rows { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; }
+    #hq .tr-list.tr-rows li { display: grid; grid-template-columns: 26px minmax(0, 1.25fr) minmax(0, 1fr) 74px; align-items: center; gap: 10px; padding: 5px 10px; border-radius: 9px; }
+    #hq .tr-rows .tr-icon { font-size: 18px; width: 26px; padding: 0; }
+    #hq .tr-rows .tr-name { min-width: 0; display: flex; align-items: baseline; gap: 8px; }
+    #hq .tr-rows .tr-name b { font-size: 13px; color: #1f2b33; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none; max-width: 60%; }
+    #hq .tr-rows .tr-name small { font-size: 11px; color: #7d8a92; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    #hq .tr-rows .tr-mid { min-width: 0; display: flex; align-items: center; }
+    #hq .tr-rows .tr-mid .tr-bar { flex: 1; }
+    #hq .tr-rows .tr-what { font-size: 11px; color: #5d6b73; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #hq .tr-rows .tr-ctl { white-space: nowrap; flex-wrap: nowrap; }
+    #hq .tr-rows .tr-seg button { padding: 2px 9px; font-size: 11.5px; }
+    #hq .tr-rows em { font-style: normal; font-size: 11px; font-weight: 700; color: #9aa6ad; text-align: right; white-space: nowrap; }
+    #hq .tr-rows li.got em { color: #a8801f; }
+    #hq .tr-more { display: block; margin: 5px auto 0; font: inherit; font-size: 12px; font-weight: 600; color: #4c5a63; background: none; border: 0; padding: 3px 12px; border-radius: 999px; cursor: pointer; }
+    #hq .tr-more:hover { background: #eef2f4; color: #1f2b33; }
+    #hq .tp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 8px; }
+    #hq .tp-sq { display: flex; gap: 12px; align-items: center; padding: 8px 10px; border-radius: 12px; background: #f6f8fa; box-shadow: inset 0 0 0 1px #e3e9ec; min-width: 0; }
+    #hq .tp-stage { flex: none; width: 168px; height: 110px; border-radius: 9px; background: radial-gradient(ellipse at 50% 85%, #e4ecdf 0%, #eef3f6 55%, #f6f8fa 100%); display: grid; place-items: center; overflow: hidden; }
+    #hq .tp-stage canvas { width: 168px; height: 110px; display: block; }
+    #hq .tp-stage span { font-size: 11.5px; color: #9aa6ad; text-align: center; padding: 0 10px; }
+    #hq .tp-pick { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    #hq .tp-pick b { font-size: 15px; color: #1f2b33; }
+    #hq .tp-pick small { font-size: 11px; color: #7d8a92; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #hq .tp-pick small.tp-now { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: #5d6b73; }
+    #hq .tp-pick select { font: inherit; font-size: 13px; padding: 5px 8px; border-radius: 8px; border: 1px solid #cdd6db; background: #fff; max-width: 100%; }
+    @media (max-width: 760px) { #hq .tp-grid { grid-template-columns: 1fr; } #hq .tr-list.tr-rows li { grid-template-columns: 26px minmax(0, 1fr) 64px; } #hq .tr-rows .tr-mid { display: none; } }
+    body.dark-ui #hq .tp-part { color: #e9efe8; }
+    body.dark-ui #hq .tp-sq { background: rgba(255,255,255,.05); box-shadow: inset 0 0 0 1px rgba(255,255,255,.1); }
+    body.dark-ui #hq .tr-more:hover { background: rgba(255,255,255,.08); }
     body.dark-ui #hq .tr-top b { color: #eef2f4; }
     body.dark-ui #hq .tr-body p, body.dark-ui #hq .tr-lead { color: #b9c4ca; }
     body.dark-ui #hq .tr-lead { background: rgba(212,175,55,.08); border-color: rgba(226,194,90,.3); }
@@ -3777,7 +3899,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-DWpm8wD7.js"></script>
+  <script type="module" crossorigin src="./assets/index-ByaowLyx.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-B97_EtTR.js">
   <link rel="stylesheet" crossorigin href="./assets/index-BV6iPe3q.css">
 </head>
