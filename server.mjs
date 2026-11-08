@@ -9031,13 +9031,1916 @@ var init_esm = __esm({
   }
 });
 
+// node_modules/source-map-js/lib/base64.js
+var require_base64 = __commonJS({
+  "node_modules/source-map-js/lib/base64.js"(exports) {
+    var intToCharMap = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".split("");
+    exports.encode = function(number) {
+      if (0 <= number && number < intToCharMap.length) {
+        return intToCharMap[number];
+      }
+      throw new TypeError("Must be between 0 and 63: " + number);
+    };
+    exports.decode = function(charCode) {
+      var bigA = 65;
+      var bigZ = 90;
+      var littleA = 97;
+      var littleZ = 122;
+      var zero = 48;
+      var nine = 57;
+      var plus = 43;
+      var slash = 47;
+      var littleOffset = 26;
+      var numberOffset = 52;
+      if (bigA <= charCode && charCode <= bigZ) {
+        return charCode - bigA;
+      }
+      if (littleA <= charCode && charCode <= littleZ) {
+        return charCode - littleA + littleOffset;
+      }
+      if (zero <= charCode && charCode <= nine) {
+        return charCode - zero + numberOffset;
+      }
+      if (charCode == plus) {
+        return 62;
+      }
+      if (charCode == slash) {
+        return 63;
+      }
+      return -1;
+    };
+  }
+});
+
+// node_modules/source-map-js/lib/base64-vlq.js
+var require_base64_vlq = __commonJS({
+  "node_modules/source-map-js/lib/base64-vlq.js"(exports) {
+    var base64 = require_base64();
+    var VLQ_BASE_SHIFT = 5;
+    var VLQ_BASE = 1 << VLQ_BASE_SHIFT;
+    var VLQ_BASE_MASK = VLQ_BASE - 1;
+    var VLQ_CONTINUATION_BIT = VLQ_BASE;
+    function toVLQSigned(aValue) {
+      return aValue < 0 ? (-aValue << 1) + 1 : (aValue << 1) + 0;
+    }
+    function fromVLQSigned(aValue) {
+      var isNegative = (aValue & 1) === 1;
+      var shifted = aValue >> 1;
+      return isNegative ? -shifted : shifted;
+    }
+    exports.encode = function base64VLQ_encode(aValue) {
+      var encoded = "";
+      var digit;
+      var vlq = toVLQSigned(aValue);
+      do {
+        digit = vlq & VLQ_BASE_MASK;
+        vlq >>>= VLQ_BASE_SHIFT;
+        if (vlq > 0) {
+          digit |= VLQ_CONTINUATION_BIT;
+        }
+        encoded += base64.encode(digit);
+      } while (vlq > 0);
+      return encoded;
+    };
+    exports.decode = function base64VLQ_decode(aStr, aIndex, aOutParam) {
+      var strLen = aStr.length;
+      var result = 0;
+      var shift = 0;
+      var continuation, digit;
+      do {
+        if (aIndex >= strLen) {
+          throw new Error("Expected more digits in base 64 VLQ value.");
+        }
+        digit = base64.decode(aStr.charCodeAt(aIndex++));
+        if (digit === -1) {
+          throw new Error("Invalid base64 digit: " + aStr.charAt(aIndex - 1));
+        }
+        continuation = !!(digit & VLQ_CONTINUATION_BIT);
+        digit &= VLQ_BASE_MASK;
+        result = result + (digit << shift);
+        shift += VLQ_BASE_SHIFT;
+      } while (continuation);
+      aOutParam.value = fromVLQSigned(result);
+      aOutParam.rest = aIndex;
+    };
+  }
+});
+
+// node_modules/source-map-js/lib/util.js
+var require_util = __commonJS({
+  "node_modules/source-map-js/lib/util.js"(exports) {
+    function getArg(aArgs, aName, aDefaultValue) {
+      if (aName in aArgs) {
+        return aArgs[aName];
+      } else if (arguments.length === 3) {
+        return aDefaultValue;
+      } else {
+        throw new Error('"' + aName + '" is a required argument.');
+      }
+    }
+    exports.getArg = getArg;
+    var urlRegexp = /^(?:([\w+\-.]+):)?\/\/(?:(\w+:\w+)@)?([\w.-]*)(?::(\d+))?(.*)$/;
+    var dataUrlRegexp = /^data:.+\,.+$/;
+    function urlParse(aUrl) {
+      var match = aUrl.match(urlRegexp);
+      if (!match) {
+        return null;
+      }
+      return {
+        scheme: match[1],
+        auth: match[2],
+        host: match[3],
+        port: match[4],
+        path: match[5]
+      };
+    }
+    exports.urlParse = urlParse;
+    function urlGenerate(aParsedUrl) {
+      var url = "";
+      if (aParsedUrl.scheme) {
+        url += aParsedUrl.scheme + ":";
+      }
+      url += "//";
+      if (aParsedUrl.auth) {
+        url += aParsedUrl.auth + "@";
+      }
+      if (aParsedUrl.host) {
+        url += aParsedUrl.host;
+      }
+      if (aParsedUrl.port) {
+        url += ":" + aParsedUrl.port;
+      }
+      if (aParsedUrl.path) {
+        url += aParsedUrl.path;
+      }
+      return url;
+    }
+    exports.urlGenerate = urlGenerate;
+    var MAX_CACHED_INPUTS = 32;
+    function lruMemoize(f) {
+      var cache2 = [];
+      return function(input) {
+        for (var i = 0; i < cache2.length; i++) {
+          if (cache2[i].input === input) {
+            var temp = cache2[0];
+            cache2[0] = cache2[i];
+            cache2[i] = temp;
+            return cache2[0].result;
+          }
+        }
+        var result = f(input);
+        cache2.unshift({
+          input,
+          result
+        });
+        if (cache2.length > MAX_CACHED_INPUTS) {
+          cache2.pop();
+        }
+        return result;
+      };
+    }
+    var normalize2 = lruMemoize(function normalize3(aPath) {
+      var path2 = aPath;
+      var url = urlParse(aPath);
+      if (url) {
+        if (!url.path) {
+          return aPath;
+        }
+        path2 = url.path;
+      }
+      var isAbsolute = exports.isAbsolute(path2);
+      var parts = [];
+      var start = 0;
+      var i = 0;
+      while (true) {
+        start = i;
+        i = path2.indexOf("/", start);
+        if (i === -1) {
+          parts.push(path2.slice(start));
+          break;
+        } else {
+          parts.push(path2.slice(start, i));
+          while (i < path2.length && path2[i] === "/") {
+            i++;
+          }
+        }
+      }
+      for (var part, up = 0, i = parts.length - 1; i >= 0; i--) {
+        part = parts[i];
+        if (part === ".") {
+          parts.splice(i, 1);
+        } else if (part === "..") {
+          up++;
+        } else if (up > 0) {
+          if (part === "") {
+            parts.splice(i + 1, up);
+            up = 0;
+          } else {
+            parts.splice(i, 2);
+            up--;
+          }
+        }
+      }
+      path2 = parts.join("/");
+      if (path2 === "") {
+        path2 = isAbsolute ? "/" : ".";
+      }
+      if (url) {
+        url.path = path2;
+        return urlGenerate(url);
+      }
+      return path2;
+    });
+    exports.normalize = normalize2;
+    function join4(aRoot, aPath) {
+      if (aRoot === "") {
+        aRoot = ".";
+      }
+      if (aPath === "") {
+        aPath = ".";
+      }
+      var aPathUrl = urlParse(aPath);
+      var aRootUrl = urlParse(aRoot);
+      if (aRootUrl) {
+        aRoot = aRootUrl.path || "/";
+      }
+      if (aPathUrl && !aPathUrl.scheme) {
+        if (aRootUrl) {
+          aPathUrl.scheme = aRootUrl.scheme;
+        }
+        return urlGenerate(aPathUrl);
+      }
+      if (aPathUrl || aPath.match(dataUrlRegexp)) {
+        return aPath;
+      }
+      if (aRootUrl && !aRootUrl.host && !aRootUrl.path) {
+        aRootUrl.host = aPath;
+        return urlGenerate(aRootUrl);
+      }
+      var joined = aPath.charAt(0) === "/" ? aPath : normalize2(aRoot.replace(/\/+$/, "") + "/" + aPath);
+      if (aRootUrl) {
+        aRootUrl.path = joined;
+        return urlGenerate(aRootUrl);
+      }
+      return joined;
+    }
+    exports.join = join4;
+    exports.isAbsolute = function(aPath) {
+      return aPath.charAt(0) === "/" || urlRegexp.test(aPath);
+    };
+    function relative(aRoot, aPath) {
+      if (aRoot === "") {
+        aRoot = ".";
+      }
+      aRoot = aRoot.replace(/\/$/, "");
+      var level = 0;
+      while (aPath.indexOf(aRoot + "/") !== 0) {
+        var index = aRoot.lastIndexOf("/");
+        if (index < 0) {
+          return aPath;
+        }
+        aRoot = aRoot.slice(0, index);
+        if (aRoot.match(/^([^\/]+:\/)?\/*$/)) {
+          return aPath;
+        }
+        ++level;
+      }
+      return Array(level + 1).join("../") + aPath.substr(aRoot.length + 1);
+    }
+    exports.relative = relative;
+    var supportsNullProto = (function() {
+      var obj = /* @__PURE__ */ Object.create(null);
+      return !("__proto__" in obj);
+    })();
+    function identity(s) {
+      return s;
+    }
+    function toSetString(aStr) {
+      if (isProtoString(aStr)) {
+        return "$" + aStr;
+      }
+      return aStr;
+    }
+    exports.toSetString = supportsNullProto ? identity : toSetString;
+    function fromSetString(aStr) {
+      if (isProtoString(aStr)) {
+        return aStr.slice(1);
+      }
+      return aStr;
+    }
+    exports.fromSetString = supportsNullProto ? identity : fromSetString;
+    function isProtoString(s) {
+      if (!s) {
+        return false;
+      }
+      var length = s.length;
+      if (length < 9) {
+        return false;
+      }
+      if (s.charCodeAt(length - 1) !== 95 || s.charCodeAt(length - 2) !== 95 || s.charCodeAt(length - 3) !== 111 || s.charCodeAt(length - 4) !== 116 || s.charCodeAt(length - 5) !== 111 || s.charCodeAt(length - 6) !== 114 || s.charCodeAt(length - 7) !== 112 || s.charCodeAt(length - 8) !== 95 || s.charCodeAt(length - 9) !== 95) {
+        return false;
+      }
+      for (var i = length - 10; i >= 0; i--) {
+        if (s.charCodeAt(i) !== 36) {
+          return false;
+        }
+      }
+      return true;
+    }
+    function compareByOriginalPositions(mappingA, mappingB, onlyCompareOriginal) {
+      var cmp = strcmp(mappingA.source, mappingB.source);
+      if (cmp !== 0) {
+        return cmp;
+      }
+      cmp = mappingA.originalLine - mappingB.originalLine;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      cmp = mappingA.originalColumn - mappingB.originalColumn;
+      if (cmp !== 0 || onlyCompareOriginal) {
+        return cmp;
+      }
+      cmp = mappingA.generatedColumn - mappingB.generatedColumn;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      cmp = mappingA.generatedLine - mappingB.generatedLine;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      return strcmp(mappingA.name, mappingB.name);
+    }
+    exports.compareByOriginalPositions = compareByOriginalPositions;
+    function compareByOriginalPositionsNoSource(mappingA, mappingB, onlyCompareOriginal) {
+      var cmp;
+      cmp = mappingA.originalLine - mappingB.originalLine;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      cmp = mappingA.originalColumn - mappingB.originalColumn;
+      if (cmp !== 0 || onlyCompareOriginal) {
+        return cmp;
+      }
+      cmp = mappingA.generatedColumn - mappingB.generatedColumn;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      cmp = mappingA.generatedLine - mappingB.generatedLine;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      return strcmp(mappingA.name, mappingB.name);
+    }
+    exports.compareByOriginalPositionsNoSource = compareByOriginalPositionsNoSource;
+    function compareByGeneratedPositionsDeflated(mappingA, mappingB, onlyCompareGenerated) {
+      var cmp = mappingA.generatedLine - mappingB.generatedLine;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      cmp = mappingA.generatedColumn - mappingB.generatedColumn;
+      if (cmp !== 0 || onlyCompareGenerated) {
+        return cmp;
+      }
+      cmp = strcmp(mappingA.source, mappingB.source);
+      if (cmp !== 0) {
+        return cmp;
+      }
+      cmp = mappingA.originalLine - mappingB.originalLine;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      cmp = mappingA.originalColumn - mappingB.originalColumn;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      return strcmp(mappingA.name, mappingB.name);
+    }
+    exports.compareByGeneratedPositionsDeflated = compareByGeneratedPositionsDeflated;
+    function compareByGeneratedPositionsDeflatedNoLine(mappingA, mappingB, onlyCompareGenerated) {
+      var cmp = mappingA.generatedColumn - mappingB.generatedColumn;
+      if (cmp !== 0 || onlyCompareGenerated) {
+        return cmp;
+      }
+      cmp = strcmp(mappingA.source, mappingB.source);
+      if (cmp !== 0) {
+        return cmp;
+      }
+      cmp = mappingA.originalLine - mappingB.originalLine;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      cmp = mappingA.originalColumn - mappingB.originalColumn;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      return strcmp(mappingA.name, mappingB.name);
+    }
+    exports.compareByGeneratedPositionsDeflatedNoLine = compareByGeneratedPositionsDeflatedNoLine;
+    function strcmp(aStr1, aStr2) {
+      if (aStr1 === aStr2) {
+        return 0;
+      }
+      if (aStr1 === null) {
+        return 1;
+      }
+      if (aStr2 === null) {
+        return -1;
+      }
+      if (aStr1 > aStr2) {
+        return 1;
+      }
+      return -1;
+    }
+    function compareByGeneratedPositionsInflated(mappingA, mappingB) {
+      var cmp = mappingA.generatedLine - mappingB.generatedLine;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      cmp = mappingA.generatedColumn - mappingB.generatedColumn;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      cmp = strcmp(mappingA.source, mappingB.source);
+      if (cmp !== 0) {
+        return cmp;
+      }
+      cmp = mappingA.originalLine - mappingB.originalLine;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      cmp = mappingA.originalColumn - mappingB.originalColumn;
+      if (cmp !== 0) {
+        return cmp;
+      }
+      return strcmp(mappingA.name, mappingB.name);
+    }
+    exports.compareByGeneratedPositionsInflated = compareByGeneratedPositionsInflated;
+    function parseSourceMapInput(str2) {
+      return JSON.parse(str2.replace(/^\)]}'[^\n]*\n/, ""));
+    }
+    exports.parseSourceMapInput = parseSourceMapInput;
+    function computeSourceURL(sourceRoot, sourceURL, sourceMapURL) {
+      sourceURL = sourceURL || "";
+      if (sourceRoot) {
+        if (sourceRoot[sourceRoot.length - 1] !== "/" && sourceURL[0] !== "/") {
+          sourceRoot += "/";
+        }
+        sourceURL = sourceRoot + sourceURL;
+      }
+      if (sourceMapURL) {
+        var parsed = urlParse(sourceMapURL);
+        if (!parsed) {
+          throw new Error("sourceMapURL could not be parsed");
+        }
+        if (parsed.path) {
+          var index = parsed.path.lastIndexOf("/");
+          if (index >= 0) {
+            parsed.path = parsed.path.substring(0, index + 1);
+          }
+        }
+        sourceURL = join4(urlGenerate(parsed), sourceURL);
+      }
+      return normalize2(sourceURL);
+    }
+    exports.computeSourceURL = computeSourceURL;
+  }
+});
+
+// node_modules/source-map-js/lib/array-set.js
+var require_array_set = __commonJS({
+  "node_modules/source-map-js/lib/array-set.js"(exports) {
+    var util = require_util();
+    var has = Object.prototype.hasOwnProperty;
+    var hasNativeMap = typeof Map !== "undefined";
+    function ArraySet() {
+      this._array = [];
+      this._set = hasNativeMap ? /* @__PURE__ */ new Map() : /* @__PURE__ */ Object.create(null);
+    }
+    ArraySet.fromArray = function ArraySet_fromArray(aArray, aAllowDuplicates) {
+      var set = new ArraySet();
+      for (var i = 0, len = aArray.length; i < len; i++) {
+        set.add(aArray[i], aAllowDuplicates);
+      }
+      return set;
+    };
+    ArraySet.prototype.size = function ArraySet_size() {
+      return hasNativeMap ? this._set.size : Object.getOwnPropertyNames(this._set).length;
+    };
+    ArraySet.prototype.add = function ArraySet_add(aStr, aAllowDuplicates) {
+      var sStr = hasNativeMap ? aStr : util.toSetString(aStr);
+      var isDuplicate = hasNativeMap ? this.has(aStr) : has.call(this._set, sStr);
+      var idx2 = this._array.length;
+      if (!isDuplicate || aAllowDuplicates) {
+        this._array.push(aStr);
+      }
+      if (!isDuplicate) {
+        if (hasNativeMap) {
+          this._set.set(aStr, idx2);
+        } else {
+          this._set[sStr] = idx2;
+        }
+      }
+    };
+    ArraySet.prototype.has = function ArraySet_has(aStr) {
+      if (hasNativeMap) {
+        return this._set.has(aStr);
+      } else {
+        var sStr = util.toSetString(aStr);
+        return has.call(this._set, sStr);
+      }
+    };
+    ArraySet.prototype.indexOf = function ArraySet_indexOf(aStr) {
+      if (hasNativeMap) {
+        var idx2 = this._set.get(aStr);
+        if (idx2 >= 0) {
+          return idx2;
+        }
+      } else {
+        var sStr = util.toSetString(aStr);
+        if (has.call(this._set, sStr)) {
+          return this._set[sStr];
+        }
+      }
+      throw new Error('"' + aStr + '" is not in the set.');
+    };
+    ArraySet.prototype.at = function ArraySet_at(aIdx) {
+      if (aIdx >= 0 && aIdx < this._array.length) {
+        return this._array[aIdx];
+      }
+      throw new Error("No element indexed by " + aIdx);
+    };
+    ArraySet.prototype.toArray = function ArraySet_toArray() {
+      return this._array.slice();
+    };
+    exports.ArraySet = ArraySet;
+  }
+});
+
+// node_modules/source-map-js/lib/mapping-list.js
+var require_mapping_list = __commonJS({
+  "node_modules/source-map-js/lib/mapping-list.js"(exports) {
+    var util = require_util();
+    function generatedPositionAfter(mappingA, mappingB) {
+      var lineA = mappingA.generatedLine;
+      var lineB = mappingB.generatedLine;
+      var columnA = mappingA.generatedColumn;
+      var columnB = mappingB.generatedColumn;
+      return lineB > lineA || lineB == lineA && columnB >= columnA || util.compareByGeneratedPositionsInflated(mappingA, mappingB) <= 0;
+    }
+    function MappingList() {
+      this._array = [];
+      this._sorted = true;
+      this._last = { generatedLine: -1, generatedColumn: 0 };
+    }
+    MappingList.prototype.unsortedForEach = function MappingList_forEach(aCallback, aThisArg) {
+      this._array.forEach(aCallback, aThisArg);
+    };
+    MappingList.prototype.add = function MappingList_add(aMapping) {
+      if (generatedPositionAfter(this._last, aMapping)) {
+        this._last = aMapping;
+        this._array.push(aMapping);
+      } else {
+        this._sorted = false;
+        this._array.push(aMapping);
+      }
+    };
+    MappingList.prototype.toArray = function MappingList_toArray() {
+      if (!this._sorted) {
+        this._array.sort(util.compareByGeneratedPositionsInflated);
+        this._sorted = true;
+      }
+      return this._array;
+    };
+    exports.MappingList = MappingList;
+  }
+});
+
+// node_modules/source-map-js/lib/source-map-generator.js
+var require_source_map_generator = __commonJS({
+  "node_modules/source-map-js/lib/source-map-generator.js"(exports) {
+    var base64VLQ = require_base64_vlq();
+    var util = require_util();
+    var ArraySet = require_array_set().ArraySet;
+    var MappingList = require_mapping_list().MappingList;
+    function SourceMapGenerator(aArgs) {
+      if (!aArgs) {
+        aArgs = {};
+      }
+      this._file = util.getArg(aArgs, "file", null);
+      this._sourceRoot = util.getArg(aArgs, "sourceRoot", null);
+      this._skipValidation = util.getArg(aArgs, "skipValidation", false);
+      this._ignoreInvalidMapping = util.getArg(aArgs, "ignoreInvalidMapping", false);
+      this._sources = new ArraySet();
+      this._names = new ArraySet();
+      this._mappings = new MappingList();
+      this._sourcesContents = null;
+    }
+    SourceMapGenerator.prototype._version = 3;
+    SourceMapGenerator.fromSourceMap = function SourceMapGenerator_fromSourceMap(aSourceMapConsumer, generatorOps) {
+      var sourceRoot = aSourceMapConsumer.sourceRoot;
+      var generator = new SourceMapGenerator(Object.assign(generatorOps || {}, {
+        file: aSourceMapConsumer.file,
+        sourceRoot
+      }));
+      aSourceMapConsumer.eachMapping(function(mapping) {
+        var newMapping = {
+          generated: {
+            line: mapping.generatedLine,
+            column: mapping.generatedColumn
+          }
+        };
+        if (mapping.source != null) {
+          newMapping.source = mapping.source;
+          if (sourceRoot != null) {
+            newMapping.source = util.relative(sourceRoot, newMapping.source);
+          }
+          newMapping.original = {
+            line: mapping.originalLine,
+            column: mapping.originalColumn
+          };
+          if (mapping.name != null) {
+            newMapping.name = mapping.name;
+          }
+        }
+        generator.addMapping(newMapping);
+      });
+      aSourceMapConsumer.sources.forEach(function(sourceFile) {
+        var sourceRelative = sourceFile;
+        if (sourceRoot !== null) {
+          sourceRelative = util.relative(sourceRoot, sourceFile);
+        }
+        if (!generator._sources.has(sourceRelative)) {
+          generator._sources.add(sourceRelative);
+        }
+        var content = aSourceMapConsumer.sourceContentFor(sourceFile);
+        if (content != null) {
+          generator.setSourceContent(sourceFile, content);
+        }
+      });
+      return generator;
+    };
+    SourceMapGenerator.prototype.addMapping = function SourceMapGenerator_addMapping(aArgs) {
+      var generated = util.getArg(aArgs, "generated");
+      var original = util.getArg(aArgs, "original", null);
+      var source = util.getArg(aArgs, "source", null);
+      var name = util.getArg(aArgs, "name", null);
+      if (!this._skipValidation) {
+        if (this._validateMapping(generated, original, source, name) === false) {
+          return;
+        }
+      }
+      if (source != null) {
+        source = String(source);
+        if (!this._sources.has(source)) {
+          this._sources.add(source);
+        }
+      }
+      if (name != null) {
+        name = String(name);
+        if (!this._names.has(name)) {
+          this._names.add(name);
+        }
+      }
+      this._mappings.add({
+        generatedLine: generated.line,
+        generatedColumn: generated.column,
+        originalLine: original != null && original.line,
+        originalColumn: original != null && original.column,
+        source,
+        name
+      });
+    };
+    SourceMapGenerator.prototype.setSourceContent = function SourceMapGenerator_setSourceContent(aSourceFile, aSourceContent) {
+      var source = aSourceFile;
+      if (this._sourceRoot != null) {
+        source = util.relative(this._sourceRoot, source);
+      }
+      if (aSourceContent != null) {
+        if (!this._sourcesContents) {
+          this._sourcesContents = /* @__PURE__ */ Object.create(null);
+        }
+        this._sourcesContents[util.toSetString(source)] = aSourceContent;
+      } else if (this._sourcesContents) {
+        delete this._sourcesContents[util.toSetString(source)];
+        if (Object.keys(this._sourcesContents).length === 0) {
+          this._sourcesContents = null;
+        }
+      }
+    };
+    SourceMapGenerator.prototype.applySourceMap = function SourceMapGenerator_applySourceMap(aSourceMapConsumer, aSourceFile, aSourceMapPath) {
+      var sourceFile = aSourceFile;
+      if (aSourceFile == null) {
+        if (aSourceMapConsumer.file == null) {
+          throw new Error(
+            `SourceMapGenerator.prototype.applySourceMap requires either an explicit source file, or the source map's "file" property. Both were omitted.`
+          );
+        }
+        sourceFile = aSourceMapConsumer.file;
+      }
+      var sourceRoot = this._sourceRoot;
+      if (sourceRoot != null) {
+        sourceFile = util.relative(sourceRoot, sourceFile);
+      }
+      var newSources = new ArraySet();
+      var newNames = new ArraySet();
+      this._mappings.unsortedForEach(function(mapping) {
+        if (mapping.source === sourceFile && mapping.originalLine != null) {
+          var original = aSourceMapConsumer.originalPositionFor({
+            line: mapping.originalLine,
+            column: mapping.originalColumn
+          });
+          if (original.source != null) {
+            mapping.source = original.source;
+            if (aSourceMapPath != null) {
+              mapping.source = util.join(aSourceMapPath, mapping.source);
+            }
+            if (sourceRoot != null) {
+              mapping.source = util.relative(sourceRoot, mapping.source);
+            }
+            mapping.originalLine = original.line;
+            mapping.originalColumn = original.column;
+            if (original.name != null) {
+              mapping.name = original.name;
+            }
+          }
+        }
+        var source = mapping.source;
+        if (source != null && !newSources.has(source)) {
+          newSources.add(source);
+        }
+        var name = mapping.name;
+        if (name != null && !newNames.has(name)) {
+          newNames.add(name);
+        }
+      }, this);
+      this._sources = newSources;
+      this._names = newNames;
+      aSourceMapConsumer.sources.forEach(function(sourceFile2) {
+        var content = aSourceMapConsumer.sourceContentFor(sourceFile2);
+        if (content != null) {
+          if (aSourceMapPath != null) {
+            sourceFile2 = util.join(aSourceMapPath, sourceFile2);
+          }
+          if (sourceRoot != null) {
+            sourceFile2 = util.relative(sourceRoot, sourceFile2);
+          }
+          this.setSourceContent(sourceFile2, content);
+        }
+      }, this);
+    };
+    SourceMapGenerator.prototype._validateMapping = function SourceMapGenerator_validateMapping(aGenerated, aOriginal, aSource, aName) {
+      if (aOriginal && typeof aOriginal.line !== "number" && typeof aOriginal.column !== "number") {
+        var message = "original.line and original.column are not numbers -- you probably meant to omit the original mapping entirely and only map the generated position. If so, pass null for the original mapping instead of an object with empty or null values.";
+        if (this._ignoreInvalidMapping) {
+          if (typeof console !== "undefined" && console.warn) {
+            console.warn(message);
+          }
+          return false;
+        } else {
+          throw new Error(message);
+        }
+      }
+      if (aGenerated && "line" in aGenerated && "column" in aGenerated && aGenerated.line > 0 && aGenerated.column >= 0 && !aOriginal && !aSource && !aName) {
+        return;
+      } else if (aGenerated && "line" in aGenerated && "column" in aGenerated && aOriginal && "line" in aOriginal && "column" in aOriginal && aGenerated.line > 0 && aGenerated.column >= 0 && aOriginal.line > 0 && aOriginal.column >= 0 && aSource) {
+        return;
+      } else {
+        var message = "Invalid mapping: " + JSON.stringify({
+          generated: aGenerated,
+          source: aSource,
+          original: aOriginal,
+          name: aName
+        });
+        if (this._ignoreInvalidMapping) {
+          if (typeof console !== "undefined" && console.warn) {
+            console.warn(message);
+          }
+          return false;
+        } else {
+          throw new Error(message);
+        }
+      }
+    };
+    SourceMapGenerator.prototype._serializeMappings = function SourceMapGenerator_serializeMappings() {
+      var previousGeneratedColumn = 0;
+      var previousGeneratedLine = 1;
+      var previousOriginalColumn = 0;
+      var previousOriginalLine = 0;
+      var previousName = 0;
+      var previousSource = 0;
+      var result = "";
+      var next;
+      var mapping;
+      var nameIdx;
+      var sourceIdx;
+      var mappings = this._mappings.toArray();
+      for (var i = 0, len = mappings.length; i < len; i++) {
+        mapping = mappings[i];
+        next = "";
+        if (mapping.generatedLine !== previousGeneratedLine) {
+          previousGeneratedColumn = 0;
+          while (mapping.generatedLine !== previousGeneratedLine) {
+            next += ";";
+            previousGeneratedLine++;
+          }
+        } else {
+          if (i > 0) {
+            if (!util.compareByGeneratedPositionsInflated(mapping, mappings[i - 1])) {
+              continue;
+            }
+            next += ",";
+          }
+        }
+        next += base64VLQ.encode(mapping.generatedColumn - previousGeneratedColumn);
+        previousGeneratedColumn = mapping.generatedColumn;
+        if (mapping.source != null) {
+          sourceIdx = this._sources.indexOf(mapping.source);
+          next += base64VLQ.encode(sourceIdx - previousSource);
+          previousSource = sourceIdx;
+          next += base64VLQ.encode(mapping.originalLine - 1 - previousOriginalLine);
+          previousOriginalLine = mapping.originalLine - 1;
+          next += base64VLQ.encode(mapping.originalColumn - previousOriginalColumn);
+          previousOriginalColumn = mapping.originalColumn;
+          if (mapping.name != null) {
+            nameIdx = this._names.indexOf(mapping.name);
+            next += base64VLQ.encode(nameIdx - previousName);
+            previousName = nameIdx;
+          }
+        }
+        result += next;
+      }
+      return result;
+    };
+    SourceMapGenerator.prototype._generateSourcesContent = function SourceMapGenerator_generateSourcesContent(aSources, aSourceRoot) {
+      return aSources.map(function(source) {
+        if (!this._sourcesContents) {
+          return null;
+        }
+        if (aSourceRoot != null) {
+          source = util.relative(aSourceRoot, source);
+        }
+        var key2 = util.toSetString(source);
+        return Object.prototype.hasOwnProperty.call(this._sourcesContents, key2) ? this._sourcesContents[key2] : null;
+      }, this);
+    };
+    SourceMapGenerator.prototype.toJSON = function SourceMapGenerator_toJSON() {
+      var map = {
+        version: this._version,
+        sources: this._sources.toArray(),
+        names: this._names.toArray(),
+        mappings: this._serializeMappings()
+      };
+      if (this._file != null) {
+        map.file = this._file;
+      }
+      if (this._sourceRoot != null) {
+        map.sourceRoot = this._sourceRoot;
+      }
+      if (this._sourcesContents) {
+        map.sourcesContent = this._generateSourcesContent(map.sources, map.sourceRoot);
+      }
+      return map;
+    };
+    SourceMapGenerator.prototype.toString = function SourceMapGenerator_toString() {
+      return JSON.stringify(this.toJSON());
+    };
+    exports.SourceMapGenerator = SourceMapGenerator;
+  }
+});
+
+// node_modules/source-map-js/lib/binary-search.js
+var require_binary_search = __commonJS({
+  "node_modules/source-map-js/lib/binary-search.js"(exports) {
+    exports.GREATEST_LOWER_BOUND = 1;
+    exports.LEAST_UPPER_BOUND = 2;
+    function recursiveSearch(aLow, aHigh, aNeedle, aHaystack, aCompare, aBias) {
+      var mid2 = Math.floor((aHigh - aLow) / 2) + aLow;
+      var cmp = aCompare(aNeedle, aHaystack[mid2], true);
+      if (cmp === 0) {
+        return mid2;
+      } else if (cmp > 0) {
+        if (aHigh - mid2 > 1) {
+          return recursiveSearch(mid2, aHigh, aNeedle, aHaystack, aCompare, aBias);
+        }
+        if (aBias == exports.LEAST_UPPER_BOUND) {
+          return aHigh < aHaystack.length ? aHigh : -1;
+        } else {
+          return mid2;
+        }
+      } else {
+        if (mid2 - aLow > 1) {
+          return recursiveSearch(aLow, mid2, aNeedle, aHaystack, aCompare, aBias);
+        }
+        if (aBias == exports.LEAST_UPPER_BOUND) {
+          return mid2;
+        } else {
+          return aLow < 0 ? -1 : aLow;
+        }
+      }
+    }
+    exports.search = function search(aNeedle, aHaystack, aCompare, aBias) {
+      if (aHaystack.length === 0) {
+        return -1;
+      }
+      var index = recursiveSearch(
+        -1,
+        aHaystack.length,
+        aNeedle,
+        aHaystack,
+        aCompare,
+        aBias || exports.GREATEST_LOWER_BOUND
+      );
+      if (index < 0) {
+        return -1;
+      }
+      while (index - 1 >= 0) {
+        if (aCompare(aHaystack[index], aHaystack[index - 1], true) !== 0) {
+          break;
+        }
+        --index;
+      }
+      return index;
+    };
+  }
+});
+
+// node_modules/source-map-js/lib/quick-sort.js
+var require_quick_sort = __commonJS({
+  "node_modules/source-map-js/lib/quick-sort.js"(exports) {
+    function SortTemplate(comparator) {
+      function swap(ary, x, y) {
+        var temp = ary[x];
+        ary[x] = ary[y];
+        ary[y] = temp;
+      }
+      function randomIntInRange(low, high) {
+        return Math.round(low + Math.random() * (high - low));
+      }
+      function doQuickSort(ary, comparator2, p, r) {
+        if (p < r) {
+          var pivotIndex = randomIntInRange(p, r);
+          var i = p - 1;
+          swap(ary, pivotIndex, r);
+          var pivot = ary[r];
+          for (var j = p; j < r; j++) {
+            if (comparator2(ary[j], pivot, false) <= 0) {
+              i += 1;
+              swap(ary, i, j);
+            }
+          }
+          swap(ary, i + 1, j);
+          var q = i + 1;
+          doQuickSort(ary, comparator2, p, q - 1);
+          doQuickSort(ary, comparator2, q + 1, r);
+        }
+      }
+      return doQuickSort;
+    }
+    function cloneSort(comparator) {
+      let template = SortTemplate.toString();
+      let templateFn = new Function(`return ${template}`)();
+      return templateFn(comparator);
+    }
+    var sortCache = /* @__PURE__ */ new WeakMap();
+    exports.quickSort = function(ary, comparator, start = 0) {
+      let doQuickSort = sortCache.get(comparator);
+      if (doQuickSort === void 0) {
+        doQuickSort = cloneSort(comparator);
+        sortCache.set(comparator, doQuickSort);
+      }
+      doQuickSort(ary, comparator, start, ary.length - 1);
+    };
+  }
+});
+
+// node_modules/source-map-js/lib/source-map-consumer.js
+var require_source_map_consumer = __commonJS({
+  "node_modules/source-map-js/lib/source-map-consumer.js"(exports) {
+    var util = require_util();
+    var binarySearch = require_binary_search();
+    var ArraySet = require_array_set().ArraySet;
+    var base64VLQ = require_base64_vlq();
+    var quickSort = require_quick_sort().quickSort;
+    function SourceMapConsumer2(aSourceMap, aSourceMapURL) {
+      var sourceMap = aSourceMap;
+      if (typeof aSourceMap === "string") {
+        sourceMap = util.parseSourceMapInput(aSourceMap);
+      }
+      return sourceMap.sections != null ? new IndexedSourceMapConsumer(sourceMap, aSourceMapURL) : new BasicSourceMapConsumer(sourceMap, aSourceMapURL);
+    }
+    SourceMapConsumer2.fromSourceMap = function(aSourceMap, aSourceMapURL) {
+      return BasicSourceMapConsumer.fromSourceMap(aSourceMap, aSourceMapURL);
+    };
+    SourceMapConsumer2.prototype._version = 3;
+    SourceMapConsumer2.prototype.__generatedMappings = null;
+    Object.defineProperty(SourceMapConsumer2.prototype, "_generatedMappings", {
+      configurable: true,
+      enumerable: true,
+      get: function() {
+        if (!this.__generatedMappings) {
+          this._parseMappings(this._mappings, this.sourceRoot);
+        }
+        return this.__generatedMappings;
+      }
+    });
+    SourceMapConsumer2.prototype.__originalMappings = null;
+    Object.defineProperty(SourceMapConsumer2.prototype, "_originalMappings", {
+      configurable: true,
+      enumerable: true,
+      get: function() {
+        if (!this.__originalMappings) {
+          this._parseMappings(this._mappings, this.sourceRoot);
+        }
+        return this.__originalMappings;
+      }
+    });
+    SourceMapConsumer2.prototype._charIsMappingSeparator = function SourceMapConsumer_charIsMappingSeparator(aStr, index) {
+      var c = aStr.charAt(index);
+      return c === ";" || c === ",";
+    };
+    SourceMapConsumer2.prototype._parseMappings = function SourceMapConsumer_parseMappings(aStr, aSourceRoot) {
+      throw new Error("Subclasses must implement _parseMappings");
+    };
+    SourceMapConsumer2.GENERATED_ORDER = 1;
+    SourceMapConsumer2.ORIGINAL_ORDER = 2;
+    SourceMapConsumer2.GREATEST_LOWER_BOUND = 1;
+    SourceMapConsumer2.LEAST_UPPER_BOUND = 2;
+    SourceMapConsumer2.prototype.eachMapping = function SourceMapConsumer_eachMapping(aCallback, aContext, aOrder) {
+      var context = aContext || null;
+      var order = aOrder || SourceMapConsumer2.GENERATED_ORDER;
+      var mappings;
+      switch (order) {
+        case SourceMapConsumer2.GENERATED_ORDER:
+          mappings = this._generatedMappings;
+          break;
+        case SourceMapConsumer2.ORIGINAL_ORDER:
+          mappings = this._originalMappings;
+          break;
+        default:
+          throw new Error("Unknown order of iteration.");
+      }
+      var sourceRoot = this.sourceRoot;
+      var boundCallback = aCallback.bind(context);
+      var names = this._names;
+      var sources = this._sources;
+      var sourceMapURL = this._sourceMapURL;
+      for (var i = 0, n2 = mappings.length; i < n2; i++) {
+        var mapping = mappings[i];
+        var source = mapping.source === null ? null : sources.at(mapping.source);
+        if (source !== null) {
+          source = util.computeSourceURL(sourceRoot, source, sourceMapURL);
+        }
+        boundCallback({
+          source,
+          generatedLine: mapping.generatedLine,
+          generatedColumn: mapping.generatedColumn,
+          originalLine: mapping.originalLine,
+          originalColumn: mapping.originalColumn,
+          name: mapping.name === null ? null : names.at(mapping.name)
+        });
+      }
+    };
+    SourceMapConsumer2.prototype.allGeneratedPositionsFor = function SourceMapConsumer_allGeneratedPositionsFor(aArgs) {
+      var line = util.getArg(aArgs, "line");
+      var needle = {
+        source: util.getArg(aArgs, "source"),
+        originalLine: line,
+        originalColumn: util.getArg(aArgs, "column", 0)
+      };
+      needle.source = this._findSourceIndex(needle.source);
+      if (needle.source < 0) {
+        return [];
+      }
+      var mappings = [];
+      var index = this._findMapping(
+        needle,
+        this._originalMappings,
+        "originalLine",
+        "originalColumn",
+        util.compareByOriginalPositions,
+        binarySearch.LEAST_UPPER_BOUND
+      );
+      if (index >= 0) {
+        var mapping = this._originalMappings[index];
+        if (aArgs.column === void 0) {
+          var originalLine = mapping.originalLine;
+          while (mapping && mapping.originalLine === originalLine) {
+            mappings.push({
+              line: util.getArg(mapping, "generatedLine", null),
+              column: util.getArg(mapping, "generatedColumn", null),
+              lastColumn: util.getArg(mapping, "lastGeneratedColumn", null)
+            });
+            mapping = this._originalMappings[++index];
+          }
+        } else {
+          var originalColumn = mapping.originalColumn;
+          while (mapping && mapping.originalLine === line && mapping.originalColumn == originalColumn) {
+            mappings.push({
+              line: util.getArg(mapping, "generatedLine", null),
+              column: util.getArg(mapping, "generatedColumn", null),
+              lastColumn: util.getArg(mapping, "lastGeneratedColumn", null)
+            });
+            mapping = this._originalMappings[++index];
+          }
+        }
+      }
+      return mappings;
+    };
+    exports.SourceMapConsumer = SourceMapConsumer2;
+    function BasicSourceMapConsumer(aSourceMap, aSourceMapURL) {
+      var sourceMap = aSourceMap;
+      if (typeof aSourceMap === "string") {
+        sourceMap = util.parseSourceMapInput(aSourceMap);
+      }
+      var version = util.getArg(sourceMap, "version");
+      var sources = util.getArg(sourceMap, "sources");
+      var names = util.getArg(sourceMap, "names", []);
+      var sourceRoot = util.getArg(sourceMap, "sourceRoot", null);
+      var sourcesContent = util.getArg(sourceMap, "sourcesContent", null);
+      var mappings = util.getArg(sourceMap, "mappings");
+      var file = util.getArg(sourceMap, "file", null);
+      if (version != this._version) {
+        throw new Error("Unsupported version: " + version);
+      }
+      if (sourceRoot) {
+        sourceRoot = util.normalize(sourceRoot);
+      }
+      sources = sources.map(String).map(util.normalize).map(function(source) {
+        return sourceRoot && util.isAbsolute(sourceRoot) && util.isAbsolute(source) ? util.relative(sourceRoot, source) : source;
+      });
+      this._names = ArraySet.fromArray(names.map(String), true);
+      this._sources = ArraySet.fromArray(sources, true);
+      this._absoluteSources = this._sources.toArray().map(function(s) {
+        return util.computeSourceURL(sourceRoot, s, aSourceMapURL);
+      });
+      this.sourceRoot = sourceRoot;
+      this.sourcesContent = sourcesContent;
+      this._mappings = mappings;
+      this._sourceMapURL = aSourceMapURL;
+      this.file = file;
+    }
+    BasicSourceMapConsumer.prototype = Object.create(SourceMapConsumer2.prototype);
+    BasicSourceMapConsumer.prototype.consumer = SourceMapConsumer2;
+    BasicSourceMapConsumer.prototype._findSourceIndex = function(aSource) {
+      var relativeSource = aSource;
+      if (this.sourceRoot != null) {
+        relativeSource = util.relative(this.sourceRoot, relativeSource);
+      }
+      if (this._sources.has(relativeSource)) {
+        return this._sources.indexOf(relativeSource);
+      }
+      var i;
+      for (i = 0; i < this._absoluteSources.length; ++i) {
+        if (this._absoluteSources[i] == aSource) {
+          return i;
+        }
+      }
+      return -1;
+    };
+    BasicSourceMapConsumer.fromSourceMap = function SourceMapConsumer_fromSourceMap(aSourceMap, aSourceMapURL) {
+      var smc = Object.create(BasicSourceMapConsumer.prototype);
+      var names = smc._names = ArraySet.fromArray(aSourceMap._names.toArray(), true);
+      var sources = smc._sources = ArraySet.fromArray(aSourceMap._sources.toArray(), true);
+      smc.sourceRoot = aSourceMap._sourceRoot;
+      smc.sourcesContent = aSourceMap._generateSourcesContent(
+        smc._sources.toArray(),
+        smc.sourceRoot
+      );
+      smc.file = aSourceMap._file;
+      smc._sourceMapURL = aSourceMapURL;
+      smc._absoluteSources = smc._sources.toArray().map(function(s) {
+        return util.computeSourceURL(smc.sourceRoot, s, aSourceMapURL);
+      });
+      var generatedMappings = aSourceMap._mappings.toArray().slice();
+      var destGeneratedMappings = smc.__generatedMappings = [];
+      var destOriginalMappings = smc.__originalMappings = [];
+      for (var i = 0, length = generatedMappings.length; i < length; i++) {
+        var srcMapping = generatedMappings[i];
+        var destMapping = new Mapping();
+        destMapping.generatedLine = srcMapping.generatedLine;
+        destMapping.generatedColumn = srcMapping.generatedColumn;
+        if (srcMapping.source) {
+          destMapping.source = sources.indexOf(srcMapping.source);
+          destMapping.originalLine = srcMapping.originalLine;
+          destMapping.originalColumn = srcMapping.originalColumn;
+          if (srcMapping.name) {
+            destMapping.name = names.indexOf(srcMapping.name);
+          }
+          destOriginalMappings.push(destMapping);
+        }
+        destGeneratedMappings.push(destMapping);
+      }
+      quickSort(smc.__originalMappings, util.compareByOriginalPositions);
+      return smc;
+    };
+    BasicSourceMapConsumer.prototype._version = 3;
+    Object.defineProperty(BasicSourceMapConsumer.prototype, "sources", {
+      get: function() {
+        return this._absoluteSources.slice();
+      }
+    });
+    function Mapping() {
+      this.generatedLine = 0;
+      this.generatedColumn = 0;
+      this.source = null;
+      this.originalLine = null;
+      this.originalColumn = null;
+      this.name = null;
+    }
+    var compareGenerated = util.compareByGeneratedPositionsDeflatedNoLine;
+    function sortGenerated(array, start) {
+      let l = array.length;
+      let n2 = array.length - start;
+      if (n2 <= 1) {
+        return;
+      } else if (n2 == 2) {
+        let a = array[start];
+        let b = array[start + 1];
+        if (compareGenerated(a, b) > 0) {
+          array[start] = b;
+          array[start + 1] = a;
+        }
+      } else if (n2 < 20) {
+        for (let i = start; i < l; i++) {
+          for (let j = i; j > start; j--) {
+            let a = array[j - 1];
+            let b = array[j];
+            if (compareGenerated(a, b) <= 0) {
+              break;
+            }
+            array[j - 1] = b;
+            array[j] = a;
+          }
+        }
+      } else {
+        quickSort(array, compareGenerated, start);
+      }
+    }
+    BasicSourceMapConsumer.prototype._parseMappings = function SourceMapConsumer_parseMappings(aStr, aSourceRoot) {
+      var generatedLine = 1;
+      var previousGeneratedColumn = 0;
+      var previousOriginalLine = 0;
+      var previousOriginalColumn = 0;
+      var previousSource = 0;
+      var previousName = 0;
+      var length = aStr.length;
+      var index = 0;
+      var cachedSegments = {};
+      var temp = {};
+      var originalMappings = [];
+      var generatedMappings = [];
+      var mapping, str2, segment, end, value;
+      let subarrayStart = 0;
+      while (index < length) {
+        if (aStr.charAt(index) === ";") {
+          generatedLine++;
+          index++;
+          previousGeneratedColumn = 0;
+          sortGenerated(generatedMappings, subarrayStart);
+          subarrayStart = generatedMappings.length;
+        } else if (aStr.charAt(index) === ",") {
+          index++;
+        } else {
+          mapping = new Mapping();
+          mapping.generatedLine = generatedLine;
+          for (end = index; end < length; end++) {
+            if (this._charIsMappingSeparator(aStr, end)) {
+              break;
+            }
+          }
+          str2 = aStr.slice(index, end);
+          segment = [];
+          while (index < end) {
+            base64VLQ.decode(aStr, index, temp);
+            value = temp.value;
+            index = temp.rest;
+            segment.push(value);
+          }
+          if (segment.length === 2) {
+            throw new Error("Found a source, but no line and column");
+          }
+          if (segment.length === 3) {
+            throw new Error("Found a source and line, but no column");
+          }
+          mapping.generatedColumn = previousGeneratedColumn + segment[0];
+          previousGeneratedColumn = mapping.generatedColumn;
+          if (segment.length > 1) {
+            mapping.source = previousSource + segment[1];
+            previousSource += segment[1];
+            mapping.originalLine = previousOriginalLine + segment[2];
+            previousOriginalLine = mapping.originalLine;
+            mapping.originalLine += 1;
+            mapping.originalColumn = previousOriginalColumn + segment[3];
+            previousOriginalColumn = mapping.originalColumn;
+            if (segment.length > 4) {
+              mapping.name = previousName + segment[4];
+              previousName += segment[4];
+            }
+          }
+          generatedMappings.push(mapping);
+          if (typeof mapping.originalLine === "number") {
+            let currentSource = mapping.source;
+            while (originalMappings.length <= currentSource) {
+              originalMappings.push(null);
+            }
+            if (originalMappings[currentSource] === null) {
+              originalMappings[currentSource] = [];
+            }
+            originalMappings[currentSource].push(mapping);
+          }
+        }
+      }
+      sortGenerated(generatedMappings, subarrayStart);
+      this.__generatedMappings = generatedMappings;
+      for (var i = 0; i < originalMappings.length; i++) {
+        if (originalMappings[i] != null) {
+          quickSort(originalMappings[i], util.compareByOriginalPositionsNoSource);
+        }
+      }
+      this.__originalMappings = [].concat(...originalMappings);
+    };
+    BasicSourceMapConsumer.prototype._findMapping = function SourceMapConsumer_findMapping(aNeedle, aMappings, aLineName, aColumnName, aComparator, aBias) {
+      if (aNeedle[aLineName] <= 0) {
+        throw new TypeError("Line must be greater than or equal to 1, got " + aNeedle[aLineName]);
+      }
+      if (aNeedle[aColumnName] < 0) {
+        throw new TypeError("Column must be greater than or equal to 0, got " + aNeedle[aColumnName]);
+      }
+      return binarySearch.search(aNeedle, aMappings, aComparator, aBias);
+    };
+    BasicSourceMapConsumer.prototype.computeColumnSpans = function SourceMapConsumer_computeColumnSpans() {
+      for (var index = 0; index < this._generatedMappings.length; ++index) {
+        var mapping = this._generatedMappings[index];
+        if (index + 1 < this._generatedMappings.length) {
+          var nextMapping = this._generatedMappings[index + 1];
+          if (mapping.generatedLine === nextMapping.generatedLine) {
+            mapping.lastGeneratedColumn = nextMapping.generatedColumn - 1;
+            continue;
+          }
+        }
+        mapping.lastGeneratedColumn = Infinity;
+      }
+    };
+    BasicSourceMapConsumer.prototype.originalPositionFor = function SourceMapConsumer_originalPositionFor(aArgs) {
+      var needle = {
+        generatedLine: util.getArg(aArgs, "line"),
+        generatedColumn: util.getArg(aArgs, "column")
+      };
+      var index = this._findMapping(
+        needle,
+        this._generatedMappings,
+        "generatedLine",
+        "generatedColumn",
+        util.compareByGeneratedPositionsDeflated,
+        util.getArg(aArgs, "bias", SourceMapConsumer2.GREATEST_LOWER_BOUND)
+      );
+      if (index >= 0) {
+        var mapping = this._generatedMappings[index];
+        if (mapping.generatedLine === needle.generatedLine) {
+          var source = util.getArg(mapping, "source", null);
+          if (source !== null) {
+            source = this._sources.at(source);
+            source = util.computeSourceURL(this.sourceRoot, source, this._sourceMapURL);
+          }
+          var name = util.getArg(mapping, "name", null);
+          if (name !== null) {
+            name = this._names.at(name);
+          }
+          return {
+            source,
+            line: util.getArg(mapping, "originalLine", null),
+            column: util.getArg(mapping, "originalColumn", null),
+            name
+          };
+        }
+      }
+      return {
+        source: null,
+        line: null,
+        column: null,
+        name: null
+      };
+    };
+    BasicSourceMapConsumer.prototype.hasContentsOfAllSources = function BasicSourceMapConsumer_hasContentsOfAllSources() {
+      if (!this.sourcesContent) {
+        return false;
+      }
+      return this.sourcesContent.length >= this._sources.size() && !this.sourcesContent.some(function(sc) {
+        return sc == null;
+      });
+    };
+    BasicSourceMapConsumer.prototype.sourceContentFor = function SourceMapConsumer_sourceContentFor(aSource, nullOnMissing) {
+      if (!this.sourcesContent) {
+        return null;
+      }
+      var index = this._findSourceIndex(aSource);
+      if (index >= 0) {
+        return this.sourcesContent[index];
+      }
+      var relativeSource = aSource;
+      if (this.sourceRoot != null) {
+        relativeSource = util.relative(this.sourceRoot, relativeSource);
+      }
+      var url;
+      if (this.sourceRoot != null && (url = util.urlParse(this.sourceRoot))) {
+        var fileUriAbsPath = relativeSource.replace(/^file:\/\//, "");
+        if (url.scheme == "file" && this._sources.has(fileUriAbsPath)) {
+          return this.sourcesContent[this._sources.indexOf(fileUriAbsPath)];
+        }
+        if ((!url.path || url.path == "/") && this._sources.has("/" + relativeSource)) {
+          return this.sourcesContent[this._sources.indexOf("/" + relativeSource)];
+        }
+      }
+      if (nullOnMissing) {
+        return null;
+      } else {
+        throw new Error('"' + relativeSource + '" is not in the SourceMap.');
+      }
+    };
+    BasicSourceMapConsumer.prototype.generatedPositionFor = function SourceMapConsumer_generatedPositionFor(aArgs) {
+      var source = util.getArg(aArgs, "source");
+      source = this._findSourceIndex(source);
+      if (source < 0) {
+        return {
+          line: null,
+          column: null,
+          lastColumn: null
+        };
+      }
+      var needle = {
+        source,
+        originalLine: util.getArg(aArgs, "line"),
+        originalColumn: util.getArg(aArgs, "column")
+      };
+      var index = this._findMapping(
+        needle,
+        this._originalMappings,
+        "originalLine",
+        "originalColumn",
+        util.compareByOriginalPositions,
+        util.getArg(aArgs, "bias", SourceMapConsumer2.GREATEST_LOWER_BOUND)
+      );
+      if (index >= 0) {
+        var mapping = this._originalMappings[index];
+        if (mapping.source === needle.source) {
+          return {
+            line: util.getArg(mapping, "generatedLine", null),
+            column: util.getArg(mapping, "generatedColumn", null),
+            lastColumn: util.getArg(mapping, "lastGeneratedColumn", null)
+          };
+        }
+      }
+      return {
+        line: null,
+        column: null,
+        lastColumn: null
+      };
+    };
+    exports.BasicSourceMapConsumer = BasicSourceMapConsumer;
+    function IndexedSourceMapConsumer(aSourceMap, aSourceMapURL) {
+      var sourceMap = aSourceMap;
+      if (typeof aSourceMap === "string") {
+        sourceMap = util.parseSourceMapInput(aSourceMap);
+      }
+      var version = util.getArg(sourceMap, "version");
+      var sections = util.getArg(sourceMap, "sections");
+      if (version != this._version) {
+        throw new Error("Unsupported version: " + version);
+      }
+      this._sources = new ArraySet();
+      this._names = new ArraySet();
+      var lastOffset = {
+        line: -1,
+        column: 0
+      };
+      this._sections = sections.map(function(s) {
+        if (s.url) {
+          throw new Error("Support for url field in sections not implemented.");
+        }
+        var offset = util.getArg(s, "offset");
+        var offsetLine = util.getArg(offset, "line");
+        var offsetColumn = util.getArg(offset, "column");
+        if (offsetLine < lastOffset.line || offsetLine === lastOffset.line && offsetColumn < lastOffset.column) {
+          throw new Error("Section offsets must be ordered and non-overlapping.");
+        }
+        lastOffset = offset;
+        return {
+          generatedOffset: {
+            // The offset fields are 0-based, but we use 1-based indices when
+            // encoding/decoding from VLQ.
+            generatedLine: offsetLine + 1,
+            generatedColumn: offsetColumn + 1
+          },
+          consumer: new SourceMapConsumer2(util.getArg(s, "map"), aSourceMapURL)
+        };
+      });
+    }
+    IndexedSourceMapConsumer.prototype = Object.create(SourceMapConsumer2.prototype);
+    IndexedSourceMapConsumer.prototype.constructor = SourceMapConsumer2;
+    IndexedSourceMapConsumer.prototype._version = 3;
+    Object.defineProperty(IndexedSourceMapConsumer.prototype, "sources", {
+      get: function() {
+        var sources = [];
+        for (var i = 0; i < this._sections.length; i++) {
+          for (var j = 0; j < this._sections[i].consumer.sources.length; j++) {
+            sources.push(this._sections[i].consumer.sources[j]);
+          }
+        }
+        return sources;
+      }
+    });
+    IndexedSourceMapConsumer.prototype.originalPositionFor = function IndexedSourceMapConsumer_originalPositionFor(aArgs) {
+      var needle = {
+        generatedLine: util.getArg(aArgs, "line"),
+        generatedColumn: util.getArg(aArgs, "column")
+      };
+      var sectionIndex = binarySearch.search(
+        needle,
+        this._sections,
+        function(needle2, section2) {
+          var cmp = needle2.generatedLine - section2.generatedOffset.generatedLine;
+          if (cmp) {
+            return cmp;
+          }
+          return needle2.generatedColumn - section2.generatedOffset.generatedColumn;
+        }
+      );
+      var section = this._sections[sectionIndex];
+      if (!section) {
+        return {
+          source: null,
+          line: null,
+          column: null,
+          name: null
+        };
+      }
+      return section.consumer.originalPositionFor({
+        line: needle.generatedLine - (section.generatedOffset.generatedLine - 1),
+        column: needle.generatedColumn - (section.generatedOffset.generatedLine === needle.generatedLine ? section.generatedOffset.generatedColumn - 1 : 0),
+        bias: aArgs.bias
+      });
+    };
+    IndexedSourceMapConsumer.prototype.hasContentsOfAllSources = function IndexedSourceMapConsumer_hasContentsOfAllSources() {
+      return this._sections.every(function(s) {
+        return s.consumer.hasContentsOfAllSources();
+      });
+    };
+    IndexedSourceMapConsumer.prototype.sourceContentFor = function IndexedSourceMapConsumer_sourceContentFor(aSource, nullOnMissing) {
+      for (var i = 0; i < this._sections.length; i++) {
+        var section = this._sections[i];
+        var content = section.consumer.sourceContentFor(aSource, true);
+        if (content || content === "") {
+          return content;
+        }
+      }
+      if (nullOnMissing) {
+        return null;
+      } else {
+        throw new Error('"' + aSource + '" is not in the SourceMap.');
+      }
+    };
+    IndexedSourceMapConsumer.prototype.generatedPositionFor = function IndexedSourceMapConsumer_generatedPositionFor(aArgs) {
+      for (var i = 0; i < this._sections.length; i++) {
+        var section = this._sections[i];
+        if (section.consumer._findSourceIndex(util.getArg(aArgs, "source")) === -1) {
+          continue;
+        }
+        var generatedPosition = section.consumer.generatedPositionFor(aArgs);
+        if (generatedPosition) {
+          var ret = {
+            line: generatedPosition.line + (section.generatedOffset.generatedLine - 1),
+            column: generatedPosition.column + (section.generatedOffset.generatedLine === generatedPosition.line ? section.generatedOffset.generatedColumn - 1 : 0)
+          };
+          return ret;
+        }
+      }
+      return {
+        line: null,
+        column: null
+      };
+    };
+    IndexedSourceMapConsumer.prototype._parseMappings = function IndexedSourceMapConsumer_parseMappings(aStr, aSourceRoot) {
+      this.__generatedMappings = [];
+      this.__originalMappings = [];
+      for (var i = 0; i < this._sections.length; i++) {
+        var section = this._sections[i];
+        var sectionMappings = section.consumer._generatedMappings;
+        for (var j = 0; j < sectionMappings.length; j++) {
+          var mapping = sectionMappings[j];
+          var source = section.consumer._sources.at(mapping.source);
+          if (source !== null) {
+            source = util.computeSourceURL(section.consumer.sourceRoot, source, this._sourceMapURL);
+          }
+          this._sources.add(source);
+          source = this._sources.indexOf(source);
+          var name = null;
+          if (mapping.name) {
+            name = section.consumer._names.at(mapping.name);
+            this._names.add(name);
+            name = this._names.indexOf(name);
+          }
+          var adjustedMapping = {
+            source,
+            generatedLine: mapping.generatedLine + (section.generatedOffset.generatedLine - 1),
+            generatedColumn: mapping.generatedColumn + (section.generatedOffset.generatedLine === mapping.generatedLine ? section.generatedOffset.generatedColumn - 1 : 0),
+            originalLine: mapping.originalLine,
+            originalColumn: mapping.originalColumn,
+            name
+          };
+          this.__generatedMappings.push(adjustedMapping);
+          if (typeof adjustedMapping.originalLine === "number") {
+            this.__originalMappings.push(adjustedMapping);
+          }
+        }
+      }
+      quickSort(this.__generatedMappings, util.compareByGeneratedPositionsDeflated);
+      quickSort(this.__originalMappings, util.compareByOriginalPositions);
+    };
+    exports.IndexedSourceMapConsumer = IndexedSourceMapConsumer;
+  }
+});
+
+// node_modules/source-map-js/lib/source-node.js
+var require_source_node = __commonJS({
+  "node_modules/source-map-js/lib/source-node.js"(exports) {
+    var SourceMapGenerator = require_source_map_generator().SourceMapGenerator;
+    var util = require_util();
+    var REGEX_NEWLINE = /(\r?\n)/;
+    var NEWLINE_CODE = 10;
+    var isSourceNode = "$$$isSourceNode$$$";
+    function SourceNode(aLine, aColumn, aSource, aChunks, aName) {
+      this.children = [];
+      this.sourceContents = {};
+      this.line = aLine == null ? null : aLine;
+      this.column = aColumn == null ? null : aColumn;
+      this.source = aSource == null ? null : aSource;
+      this.name = aName == null ? null : aName;
+      this[isSourceNode] = true;
+      if (aChunks != null) this.add(aChunks);
+    }
+    SourceNode.fromStringWithSourceMap = function SourceNode_fromStringWithSourceMap(aGeneratedCode, aSourceMapConsumer, aRelativePath) {
+      var node = new SourceNode();
+      var remainingLines = aGeneratedCode.split(REGEX_NEWLINE);
+      var remainingLinesIndex = 0;
+      var shiftNextLine = function() {
+        var lineContents = getNextLine();
+        var newLine = getNextLine() || "";
+        return lineContents + newLine;
+        function getNextLine() {
+          return remainingLinesIndex < remainingLines.length ? remainingLines[remainingLinesIndex++] : void 0;
+        }
+      };
+      var lastGeneratedLine = 1, lastGeneratedColumn = 0;
+      var lastMapping = null;
+      aSourceMapConsumer.eachMapping(function(mapping) {
+        if (lastMapping !== null) {
+          if (lastGeneratedLine < mapping.generatedLine) {
+            addMappingWithCode(lastMapping, shiftNextLine());
+            lastGeneratedLine++;
+            lastGeneratedColumn = 0;
+          } else {
+            var nextLine = remainingLines[remainingLinesIndex] || "";
+            var code = nextLine.substr(0, mapping.generatedColumn - lastGeneratedColumn);
+            remainingLines[remainingLinesIndex] = nextLine.substr(mapping.generatedColumn - lastGeneratedColumn);
+            lastGeneratedColumn = mapping.generatedColumn;
+            addMappingWithCode(lastMapping, code);
+            lastMapping = mapping;
+            return;
+          }
+        }
+        while (lastGeneratedLine < mapping.generatedLine) {
+          node.add(shiftNextLine());
+          lastGeneratedLine++;
+        }
+        if (lastGeneratedColumn < mapping.generatedColumn) {
+          var nextLine = remainingLines[remainingLinesIndex] || "";
+          node.add(nextLine.substr(0, mapping.generatedColumn));
+          remainingLines[remainingLinesIndex] = nextLine.substr(mapping.generatedColumn);
+          lastGeneratedColumn = mapping.generatedColumn;
+        }
+        lastMapping = mapping;
+      }, this);
+      if (remainingLinesIndex < remainingLines.length) {
+        if (lastMapping) {
+          addMappingWithCode(lastMapping, shiftNextLine());
+        }
+        node.add(remainingLines.splice(remainingLinesIndex).join(""));
+      }
+      aSourceMapConsumer.sources.forEach(function(sourceFile) {
+        var content = aSourceMapConsumer.sourceContentFor(sourceFile);
+        if (content != null) {
+          if (aRelativePath != null) {
+            sourceFile = util.join(aRelativePath, sourceFile);
+          }
+          node.setSourceContent(sourceFile, content);
+        }
+      });
+      return node;
+      function addMappingWithCode(mapping, code) {
+        if (mapping === null || mapping.source === void 0) {
+          node.add(code);
+        } else {
+          var source = aRelativePath ? util.join(aRelativePath, mapping.source) : mapping.source;
+          node.add(new SourceNode(
+            mapping.originalLine,
+            mapping.originalColumn,
+            source,
+            code,
+            mapping.name
+          ));
+        }
+      }
+    };
+    SourceNode.prototype.add = function SourceNode_add(aChunk) {
+      if (Array.isArray(aChunk)) {
+        aChunk.forEach(function(chunk) {
+          this.add(chunk);
+        }, this);
+      } else if (aChunk[isSourceNode] || typeof aChunk === "string") {
+        if (aChunk) {
+          this.children.push(aChunk);
+        }
+      } else {
+        throw new TypeError(
+          "Expected a SourceNode, string, or an array of SourceNodes and strings. Got " + aChunk
+        );
+      }
+      return this;
+    };
+    SourceNode.prototype.prepend = function SourceNode_prepend(aChunk) {
+      if (Array.isArray(aChunk)) {
+        for (var i = aChunk.length - 1; i >= 0; i--) {
+          this.prepend(aChunk[i]);
+        }
+      } else if (aChunk[isSourceNode] || typeof aChunk === "string") {
+        this.children.unshift(aChunk);
+      } else {
+        throw new TypeError(
+          "Expected a SourceNode, string, or an array of SourceNodes and strings. Got " + aChunk
+        );
+      }
+      return this;
+    };
+    SourceNode.prototype.walk = function SourceNode_walk(aFn) {
+      var chunk;
+      for (var i = 0, len = this.children.length; i < len; i++) {
+        chunk = this.children[i];
+        if (chunk[isSourceNode]) {
+          chunk.walk(aFn);
+        } else {
+          if (chunk !== "") {
+            aFn(chunk, {
+              source: this.source,
+              line: this.line,
+              column: this.column,
+              name: this.name
+            });
+          }
+        }
+      }
+    };
+    SourceNode.prototype.join = function SourceNode_join(aSep) {
+      var newChildren;
+      var i;
+      var len = this.children.length;
+      if (len > 0) {
+        newChildren = [];
+        for (i = 0; i < len - 1; i++) {
+          newChildren.push(this.children[i]);
+          newChildren.push(aSep);
+        }
+        newChildren.push(this.children[i]);
+        this.children = newChildren;
+      }
+      return this;
+    };
+    SourceNode.prototype.replaceRight = function SourceNode_replaceRight(aPattern, aReplacement) {
+      var lastChild = this.children[this.children.length - 1];
+      if (lastChild[isSourceNode]) {
+        lastChild.replaceRight(aPattern, aReplacement);
+      } else if (typeof lastChild === "string") {
+        this.children[this.children.length - 1] = lastChild.replace(aPattern, aReplacement);
+      } else {
+        this.children.push("".replace(aPattern, aReplacement));
+      }
+      return this;
+    };
+    SourceNode.prototype.setSourceContent = function SourceNode_setSourceContent(aSourceFile, aSourceContent) {
+      this.sourceContents[util.toSetString(aSourceFile)] = aSourceContent;
+    };
+    SourceNode.prototype.walkSourceContents = function SourceNode_walkSourceContents(aFn) {
+      for (var i = 0, len = this.children.length; i < len; i++) {
+        if (this.children[i][isSourceNode]) {
+          this.children[i].walkSourceContents(aFn);
+        }
+      }
+      var sources = Object.keys(this.sourceContents);
+      for (var i = 0, len = sources.length; i < len; i++) {
+        aFn(util.fromSetString(sources[i]), this.sourceContents[sources[i]]);
+      }
+    };
+    SourceNode.prototype.toString = function SourceNode_toString() {
+      var str2 = "";
+      this.walk(function(chunk) {
+        str2 += chunk;
+      });
+      return str2;
+    };
+    SourceNode.prototype.toStringWithSourceMap = function SourceNode_toStringWithSourceMap(aArgs) {
+      var generated = {
+        code: "",
+        line: 1,
+        column: 0
+      };
+      var map = new SourceMapGenerator(aArgs);
+      var sourceMappingActive = false;
+      var lastOriginalSource = null;
+      var lastOriginalLine = null;
+      var lastOriginalColumn = null;
+      var lastOriginalName = null;
+      this.walk(function(chunk, original) {
+        generated.code += chunk;
+        if (original.source !== null && original.line !== null && original.column !== null) {
+          if (lastOriginalSource !== original.source || lastOriginalLine !== original.line || lastOriginalColumn !== original.column || lastOriginalName !== original.name) {
+            map.addMapping({
+              source: original.source,
+              original: {
+                line: original.line,
+                column: original.column
+              },
+              generated: {
+                line: generated.line,
+                column: generated.column
+              },
+              name: original.name
+            });
+          }
+          lastOriginalSource = original.source;
+          lastOriginalLine = original.line;
+          lastOriginalColumn = original.column;
+          lastOriginalName = original.name;
+          sourceMappingActive = true;
+        } else if (sourceMappingActive) {
+          map.addMapping({
+            generated: {
+              line: generated.line,
+              column: generated.column
+            }
+          });
+          lastOriginalSource = null;
+          sourceMappingActive = false;
+        }
+        for (var idx2 = 0, length = chunk.length; idx2 < length; idx2++) {
+          if (chunk.charCodeAt(idx2) === NEWLINE_CODE) {
+            generated.line++;
+            generated.column = 0;
+            if (idx2 + 1 === length) {
+              lastOriginalSource = null;
+              sourceMappingActive = false;
+            } else if (sourceMappingActive) {
+              map.addMapping({
+                source: original.source,
+                original: {
+                  line: original.line,
+                  column: original.column
+                },
+                generated: {
+                  line: generated.line,
+                  column: generated.column
+                },
+                name: original.name
+              });
+            }
+          } else {
+            generated.column++;
+          }
+        }
+      });
+      this.walkSourceContents(function(sourceFile, sourceContent) {
+        map.setSourceContent(sourceFile, sourceContent);
+      });
+      return { code: generated.code, map };
+    };
+    exports.SourceNode = SourceNode;
+  }
+});
+
+// node_modules/source-map-js/source-map.js
+var require_source_map = __commonJS({
+  "node_modules/source-map-js/source-map.js"(exports) {
+    exports.SourceMapGenerator = require_source_map_generator().SourceMapGenerator;
+    exports.SourceMapConsumer = require_source_map_consumer().SourceMapConsumer;
+    exports.SourceNode = require_source_node().SourceNode;
+  }
+});
+
 // server/index.ts
 import { createServer } from "node:http";
-import { createReadStream, existsSync, readFileSync as readFileSync2, statSync } from "node:fs";
+import { createReadStream, existsSync as existsSync2, readFileSync as readFileSync3, statSync } from "node:fs";
 import { createHash as createHash3, randomBytes as randomBytes4, scrypt, timingSafeEqual as timingSafeEqual2 } from "node:crypto";
 import { gunzipSync } from "node:zlib";
-import { extname, join as join2, normalize, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { extname, join as join3, normalize, resolve } from "node:path";
+import { fileURLToPath as fileURLToPath2 } from "node:url";
 
 // node_modules/ws/wrapper.mjs
 var import_stream = __toESM(require_stream(), 1);
@@ -9785,25 +11688,37 @@ function renderAnalytics() {
   var markAt = function (k) { return function (e) { var t = e.m[k]; return t != null && (AN.fwin !== '15' || t <= 900) ? t : null; }; };
   // only games whose first session could record every step (the user, 6 Nov 2026: "nitrous done" looked off): the first
   // drive's missions, the free roam and the Helping Hand's car and driver are recorded from 0.7.5, so a game begun
-  // before counted at "earned $" and could never reach "nitrous done", a false cliff there and wrong bases after it
+  // before counted at "earned $" and could never reach "nitrous done", a false cliff there and wrong bases after it.
+  // The first drive changed order in 0.7.9 (7 Nov 2026: the fleet steps before the handbrake, which waits for a level 2
+  // HQ), so each version's games are read against their own steps (adminPage.ts FUNNEL, FUNNEL_OLD)
   var FUNNEL_FROM = [0, 7, 5];
-  var since = function (v) {
-    var p = /^(\d+)\.(\d+)\.(\d+)/.exec(v || '');
-    if (!p) return false;
-    for (var i = 0; i < 3; i++) { var d = Number(p[i + 1]) - FUNNEL_FROM[i]; if (d) return d > 0; }
-    return true;
-  };
-  var fresh = cohort.filter(function (e) { return since(e.v); });
-  html += anCard('First-session funnel' + (AN.fwin === '15' ? ' · within 15 min of play' : ''), anFunnel(fresh, FUNNEL.map(function (f) { return [f[1], markAt(f[0])]; }), mmss),
-    'Of the cohort, the ' + num(fresh.length) + ' ' + unit + ' that began on ' + FUNNEL_FROM.join('.') + ' or later (earlier ones never recorded the first drive’s missions; ' + num(cohort.length - fresh.length) + ' left out). Step on: of those who reached the step above, the share who went on to this one (the same people, so a skipped step doesn’t inflate it), and the median play time between the two. The weakest step is marked. From the journey marks (net/journey.ts).');
+  var fresh = cohort.filter(function (e) { return verFrom(e.v, FUNNEL_FROM); });
+  var freshNew = fresh.filter(function (e) { return verFrom(e.v, FUNNEL_NEW_FROM); }), freshOld = fresh.filter(function (e) { return !verFrom(e.v, FUNNEL_NEW_FROM); });
+  var stepsOf = function (e) { return verFrom(e.v, FUNNEL_NEW_FROM) ? FUNNEL : FUNNEL_OLD; };
+  var win = AN.fwin === '15' ? ' · within 15 min of play' : '';
+  var how = 'Step on: of those who reached the step above, the share who went on to this one (the same people, so a skipped step doesn’t inflate it), and the median play time between the two. The weakest step is marked. From the journey marks (net/journey.ts).';
+  html += anCard('First-session funnel · ' + FUNNEL_NEW_FROM.join('.') + ' and later' + win, freshNew.length ? anFunnel(freshNew, FUNNEL.map(function (f) { return [f[1], markAt(f[0])]; }), mmss) : '<div class="mute">No ' + unit + ' began on ' + FUNNEL_NEW_FROM.join('.') + ' or later yet.</div>',
+    'The first drive as it runs now: the getting-started steps (Put her to Work, a level 2 HQ) in the free roam, then the handbrake. ' + num(freshNew.length) + ' ' + unit + '. ' + how);
+  html += anCard('First-session funnel · ' + FUNNEL_FROM.join('.') + ' to 0.7.8' + win, anFunnel(freshOld, FUNNEL_OLD.map(function (f) { return [f[1], markAt(f[0])]; }), mmss),
+    'The first drive as it ran before: the handbrake and drift straight after the roam, the fleet after it all. ' + num(freshOld.length) + ' ' + unit + ' (' + num(cohort.length - fresh.length) + ' begun before ' + FUNNEL_FROM.join('.') + ' left out: they never recorded the first drive’s missions). ' + how);
+  // the first drive's helpers (0.7.9): how often each came up, and how many it helped on to the next step
+  var helped = function (side, then) { var saw = freshNew.filter(function (e) { return markAt(side)(e) != null; }); var on = saw.filter(function (e) { return markAt(then)(e) != null; }).length; return [saw.length, on]; };
+  var helpers = [['keysAgain', 'missionDone'], ['guide:hq', 'did:first:crew'], ['guide:card', 'did:first:crew'], ['guide:work', 'did:first:crew'], ['quietEnd', 'did:first:hq']].map(function (h) {
+    var r = helped(h[0], h[1]);
+    return { label: funnelName(h[0]) + ' → ' + funnelName(h[1]), share: freshNew.length ? r[0] / freshNew.length * 100 : 0, value: num(r[0]) + ' saw it · ' + anPct(r[0] ? r[1] / r[0] * 100 : null) + ' went on', color: COL[2] };
+  });
+  html += anCard('First-drive helpers · ' + FUNNEL_NEW_FROM.join('.') + ' and later' + win, freshNew.length ? anHbars(helpers) : '<div class="mute">None yet.</div>',
+    'Bars: the share of the ' + num(freshNew.length) + ' ' + unit + ' who saw each (the keys card again for a struggling driver, the Put her to Work click guide’s steps, the end of the tutorial’s quiet). Went on: of those, the share who reached the step after it.');
   var LADDER = [[60, '1 min'], [300, '5 min'], [900, '15 min'], [1800, '30 min'], [3600, '1 h'], [7200, '2 h'], [18000, '5 h'], [36000, '10 h'], [72000, '20 h'], [180000, '50 h']];
   html += anCard('Play-time ladder', anFunnel(cohort, LADDER.map(function (s) { return [s[1], function (e) { return e.pl >= s[0] ? s[0] : null; }]; }), null),
     'Total play time each ' + (unit === 'players' ? 'player' : 'game') + ' of the cohort has reached so far, over every session. Step on: of those who reached the rung above, the share who reached this one.');
   var car = CAREER.map(function (c, i) { var got = cohort.filter(c[1]).length; return { label: c[0], share: cohort.length ? got / cohort.length * 100 : 0, value: num(got) + ' · ' + anPct(cohort.length ? got / cohort.length * 100 : null), color: COL[1] }; });
   html += anCard('Career milestones', anHbars(car), 'Where each ' + (unit === 'players' ? 'player' : 'game') + ' of the cohort stands now (its latest report), not when it got there.');
   var churned = aged.filter(function (e) { return e.lastAct <= today - 7; }), stops = {};
-  churned.forEach(function (e) { var last = 'never started'; FUNNEL.forEach(function (f) { if (markAt(f[0])(e) != null) last = f[1]; }); stops[last] = (stops[last] || 0) + 1; });
+  // each against its own version's steps (a game from before 0.7.9 met the HQ after the drift)
+  churned.forEach(function (e) { var last = 'never started'; stepsOf(e).forEach(function (f) { if (markAt(f[0])(e) != null) last = f[1]; }); stops[last] = (stops[last] || 0) + 1; });
   var order = ['never started'].concat(FUNNEL.map(function (f) { return f[1]; }));
+  FUNNEL_OLD.forEach(function (f) { if (order.indexOf(f[1]) < 0) order.push(f[1]); });
   var drop = order.filter(function (k) { return stops[k]; }).map(function (k) { return { label: k, share: churned.length ? stops[k] / churned.length * 100 : 0, value: num(stops[k]) + ' · ' + anPct(churned.length ? stops[k] / churned.length * 100 : null), color: COL[3] }; });
   html += anCard('Where lapsed ' + unit + ' stopped', anHbars(drop), num(churned.length) + ' of the cohort have not played for 7+ days: the furthest first-session step each reached.');
   var bandsP = [['< 1 min', 60], ['1–5 min', 300], ['5–15 min', 900], ['15–60 min', 3600], ['1–5 h', 18000], ['5–20 h', 72000], ['20 h +', Infinity]];
@@ -10026,13 +11941,38 @@ async function api(path, body) {
 
 var visits = [];
 var games = [], feedback = [], sortKey = 'last', sortDir = -1, openGid = null;
-/** The milestones a new player meets, in order (server/admin.ts FUNNEL), with what the page calls them. */
-var FUNNEL = [['play', 'played'], ['tut:controls', 'welcome closed'], ['tut:offer', 'controls learned'], ['tut:job', 'first job shown'], ['took', 'took a mission'], ['pickup', 'picked up'], ['delivered', 'delivered'],
+/**
+ * The milestones a new player meets, in order (server/admin.ts FUNNEL), with what the page calls them: the first drive
+ * as it runs since 0.7.9 (7 Nov 2026), where the getting-started track (Put her to Work, a level 2 HQ) comes in the
+ * free roam before the handbrake, which now waits for that HQ. Since 0.7.8 the welcome closes straight onto the first
+ * job's card (tut:offer); 0.7.7 and older had a controls stage between (tut:controls), left out of every funnel.
+ */
+var FUNNEL = [['play', 'played'], ['tut:offer', 'welcome closed'], ['tut:job', 'first job accepted'], ['took', 'took a mission'], ['pickup', 'picked up'], ['delivered', 'delivered'],
+  ['missionDone', 'first job done'], ['earned', 'earned $'], ['did:first:nitrous', 'nitrous done'], ['min5', '5 min'],
+  ['did:first:hand', 'Helping Hand done'], ['vehicle', '2nd vehicle (her car)'], ['driver', 'first driver (her)'], ['roam', 'free to roam'],
+  ['did:first:crew', 'Put her to Work done'], ['hq', 'HQ grade up'], ['did:first:hq', 'HQ upgrade done'], ['min15', '15 min'],
+  ['did:first:friend', 'handbrake done'], ['did:first:drift', 'drift done'], ['tutorialEnd', 'tutorial over or skipped']];
+/** The first drive as it ran from 0.7.5 to 0.7.8: the handbrake and drift straight after the roam, the fleet steps after it all. */
+var FUNNEL_OLD = [['play', 'played'], ['tut:offer', 'welcome closed'], ['tut:job', 'first job accepted'], ['took', 'took a mission'], ['pickup', 'picked up'], ['delivered', 'delivered'],
   ['missionDone', 'first job done'], ['earned', 'earned $'], ['did:first:nitrous', 'nitrous done'], ['min5', '5 min'],
   ['did:first:hand', 'Helping Hand done'], ['vehicle', '2nd vehicle (her car)'], ['driver', 'first driver (her)'], ['roam', 'free to roam'], ['min15', '15 min'],
-  ['did:first:friend', 'handbrake done'], ['did:first:drift', 'drift done'], ['tutorialEnd', 'tutorial over or skipped'], ['hq', 'HQ']];
+  ['did:first:friend', 'handbrake done'], ['did:first:drift', 'drift done'], ['tutorialEnd', 'tutorial over or skipped'], ['hq', 'HQ grade up']];
+/** The version the new first drive began in: a game begun on it or later is read with FUNNEL, before it with FUNNEL_OLD. */
+var FUNNEL_NEW_FROM = [0, 7, 9];
+/** Marks beside the funnel, not steps of it (server/admin.ts SIDE_MARKS): the first drive's helpers since 0.7.9. */
+var SIDE_MARKS = [['keysAgain', 'keys card shown again (struggling)'], ['guide:hq', 'work guide: open the HQ'], ['guide:fleet', 'work guide: Fleet tab'],
+  ['guide:card', 'work guide: her card'], ['guide:work', 'work guide: press Work'], ['quietEnd', 'tutorial quiet over (diamonds shown)']];
+/** A version string at or past [major, minor, patch]. */
+function verFrom(v, from) {
+  var p = /^(\d+)\.(\d+)\.(\d+)/.exec(v || '');
+  if (!p) return false;
+  for (var i = 0; i < 3; i++) { var d = Number(p[i + 1]) - from[i]; if (d) return d > 0; }
+  return true;
+}
 function funnelName(k) {
   for (var i = 0; i < FUNNEL.length; i++) if (FUNNEL[i][0] === k) return FUNNEL[i][1];
+  for (var j = 0; j < SIDE_MARKS.length; j++) if (SIDE_MARKS[j][0] === k) return SIDE_MARKS[j][1];
+  if (k === 'tut:controls') return 'controls learned (0.7.7 and older)';
   if (/^did:/.test(k)) return 'done ' + k.slice(4);
   var m = /^(panel|tut|track):(.*)$/.exec(k);
   if (m) return m[1] === 'panel' ? 'opened ' + m[2] : m[1] === 'tut' ? 'tutorial: ' + m[2] : 'getting started step ' + m[2];
@@ -10097,7 +12037,7 @@ function matches(text) { var q = $('search').value.trim().toLowerCase(); return 
 function funnelStats() {
   var js = games.filter(function (g) { return g.by15 != null; });
   if (!js.length) return [];
-  return [[js.length, 'games with a first-15-minutes record']].concat(FUNNEL.map(function (f) {
+  return [[js.length, 'games with a first-15-minutes record']].concat(FUNNEL.concat(SIDE_MARKS).map(function (f) {
     var n = js.filter(function (g) { return g.by15.indexOf(f[0]) >= 0; }).length;
     return [Math.round(100 * n / js.length) + '%', f[1] + ' in 15 min (' + n + ')'];
   }));
@@ -10283,7 +12223,7 @@ function visitPerfCard(list) {
 }
 
 // ---- Performance: every visit's frame rate (server/analytics.ts bookVisitPerf, /api/admin/perf), cut by machine ----
-var PF = { rows: null, by: 'model', min: 2 };
+var PF = { rows: null, by: 'model', min: 2, dev: 'desktop' };
 async function loadPerf(force) {
   if (PF.rows && !force) { renderPerf(); return; }
   $('perf').innerHTML = '<div class="card mute">Loading…</div>';
@@ -10309,23 +12249,30 @@ function pfKey(v, by) {
   if (by === 'quality') return v.quality || '?';
   if (by === 'bound') return v.bound || '(before field data)';
   if (by === 'screen') return v.screen ? v.screen[0] + '×' + v.screen[1] : '?';
+  if (by === 'dev') return v.dev || 'unknown';
   return '?';
 }
 function pfMed(a) { a = a.filter(function (x) { return x != null && isFinite(x); }).sort(function (x, y) { return x - y; }); return a.length ? a[Math.floor(a.length / 2)] : null; }
 function pfTop(counts) { var best = null, n = 0; for (var k in counts) if (counts[k] > n) { n = counts[k]; best = k; } return best; }
 function pfFix(v, d) { return v == null ? '—' : (Math.round(v * Math.pow(10, d || 0)) / Math.pow(10, d || 0)).toString(); }
 function renderPerf() {
-  var rows = (PF.rows || []).filter(function (v) { return v.vs >= 20; });
-  var opts = [['model', 'GPU model'], ['gpu', 'GPU kind'], ['browser', 'Browser'], ['os', 'OS'], ['dpr', 'Pixel ratio'], ['screen', 'Screen'], ['quality', 'Quality'], ['bound', 'Held by']];
-  var h = '<div class="card"><h3>Performance by machine <span class="mute" style="font-weight:400">· ' + rows.length + ' visits with 20 s or more of play</span></h3>';
-  h += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px">' + opts.map(function (o) { return '<button class="btn' + (PF.by === o[0] ? ' on' : '') + '" data-pfby="' + o[0] + '"' + (PF.by === o[0] ? ' style="background:var(--ink);color:var(--card)"' : '') + '>' + esc(o[1]) + '</button>'; }).join('') + '</div>';
+  // the game is made for a desktop: phones and tablets are left out unless asked for (the user, 7 Nov 2026)
+  var devOk = function (v) { var d = v.dev || 'desktop'; return PF.dev === 'all' || (PF.dev === 'desktop' ? d === 'desktop' : d !== 'desktop'); };
+  var played = (PF.rows || []).filter(function (v) { return v.vs >= 20; });
+  var rows = played.filter(devOk);
+  var opts = [['model', 'GPU model'], ['gpu', 'GPU kind'], ['browser', 'Browser'], ['os', 'OS'], ['dpr', 'Pixel ratio'], ['screen', 'Screen'], ['quality', 'Quality'], ['bound', 'Held by'], ['dev', 'Device']];
+  var devs = [['desktop', 'Desktop'], ['phones', 'Phones + tablets'], ['all', 'All devices']];
+  var btn = function (on, attr, val, label) { return '<button class="btn' + (on ? ' on' : '') + '" ' + attr + '="' + val + '"' + (on ? ' style="background:var(--ink);color:var(--card)"' : '') + '>' + esc(label) + '</button>'; };
+  var h = '<div class="card"><h3>Performance by machine <span class="mute" style="font-weight:400">· ' + rows.length + ' visits with 20 s or more of play' + (rows.length < played.length ? ' (' + (played.length - rows.length) + ' more on other devices)' : '') + '</span></h3>';
+  h += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 4px">' + devs.map(function (o) { return btn(PF.dev === o[0], 'data-pfdev', o[0], o[1]); }).join('') + '</div>';
+  h += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px">' + opts.map(function (o) { return btn(PF.by === o[0], 'data-pfby', o[0], o[1]); }).join('') + '</div>';
   var groups = {};
   rows.forEach(function (v) { var k = pfKey(v, PF.by); (groups[k] = groups[k] || []).push(v); });
   var list = Object.keys(groups).map(function (k) {
     var g = groups[k], players = {}, causes = {}, parts = {}, mins = 0, freezes = 0, frames = 0, bound = { cpu: 0, gpu: 0 }, withBound = 0;
     g.forEach(function (v) {
       players[v.pid || v.g] = 1; mins += v.vs / 60; freezes += v.o250 || 0;
-      (v.hitches || []).forEach(function (x) { causes[x.cause] = (causes[x.cause] || 0) + 1; });
+      (v.hitches || []).forEach(function (x) { if (x.panel !== 'loading') causes[x.cause] = (causes[x.cause] || 0) + 1; });
       (v.parts || []).forEach(function (p) { parts[p[0]] = (parts[p[0]] || 0) + p[1] * (v.n || 0); });
       frames += v.n || 0;
       if (v.bound) { withBound++; if (v.bound === 'cpu') bound.cpu++; if (v.bound === 'gpu') bound.gpu++; }
@@ -10341,12 +12288,14 @@ function renderPerf() {
     list.map(function (r) { return [esc(r.k), num(r.n), num(r.players), fpsTxt(r.fps), fpsTxt(r.low1), pfFix(r.p95, 0), pfFix(r.fpm, 2), pfFix(r.cpu, 1), pfFix(r.gpu, 1),
       r.cpuB == null ? '—' : Math.round(r.cpuB * 100) + '%', r.gpuB == null ? '—' : Math.round(r.gpuB * 100) + '%', esc(r.cause || '—'), esc(r.slow || '—')]; })) + '</div>';
   // every freeze, by cause
-  var causes = {};
-  rows.forEach(function (v) { (v.hitches || []).forEach(function (x) { var c = causes[x.cause] = causes[x.cause] || { n: 0, ms: [], first: 0 }; c.n++; c.ms.push(x.ms); if (x.t < 60) c.first++; }); });
+  // a freeze behind the loading screen was never seen: left out (7 Nov 2026), and counted beside the title
+  var causes = {}, behind = 0;
+  rows.forEach(function (v) { (v.hitches || []).forEach(function (x) { if (x.panel === 'loading') { behind++; return; } var c = causes[x.cause] = causes[x.cause] || { n: 0, ms: [], first: 0, steps: {} }; c.n++; c.ms.push(x.ms); if (x.t < 60) c.first++; (x.steps || []).forEach(function (st) { c.steps[st[0]] = (c.steps[st[0]] || 0) + 1; }); }); });
   var all = Object.keys(causes).reduce(function (a, k) { return a + causes[k].n; }, 0);
-  h += '<div class="card"><h3>Freezes (250 ms or more) by cause <span class="mute" style="font-weight:400">· ' + num(all) + ' kept</span></h3>' +
-    table([['Cause'], ['Freezes', 1], ['Share', 1], ['Median ms', 1], ['In the first minute', 1]], Object.keys(causes).sort(function (a, b) { return causes[b].n - causes[a].n; }).map(function (k) {
-      var c = causes[k]; return [esc(k), num(c.n), Math.round(100 * c.n / Math.max(1, all)) + '%', num(pfMed(c.ms)), num(c.first)];
+  h += '<div class="card"><h3>Freezes (250 ms or more) by cause <span class="mute" style="font-weight:400">· ' + num(all) + ' kept' + (behind ? ', ' + num(behind) + ' more behind the loading screen left out' : '') + '</span></h3>' +
+    table([['Cause'], ['Freezes', 1], ['Share', 1], ['Median ms', 1], ['In the first minute', 1], ['Chunk steps in the frame before']], Object.keys(causes).sort(function (a, b) { return causes[b].n - causes[a].n; }).map(function (k) {
+      var c = causes[k], st = Object.keys(c.steps).sort(function (a, b) { return c.steps[b] - c.steps[a]; }).slice(0, 3).map(function (n) { return n + ' ×' + c.steps[n]; }).join(', ');
+      return [esc(k), num(c.n), Math.round(100 * c.n / Math.max(1, all)) + '%', num(pfMed(c.ms)), num(c.first), esc(st || '—')];
     })) + '</div>';
   // the game's parts, weighted by frames
   var parts = {}, frames = 0;
@@ -10355,13 +12304,14 @@ function renderPerf() {
     table([['Part'], ['ms / frame', 1]], Object.keys(parts).sort(function (a, b) { return parts[b] - parts[a]; }).map(function (k) { return [esc(k), pfFix(parts[k] / Math.max(1, frames), 2)]; })) + '</div>';
   // the browser's long frames: which scripts
   var scripts = {};
-  rows.forEach(function (v) { (v.loaf || []).forEach(function (l) { (l.scripts || []).forEach(function (s) { var k = (s.fn || '(anonymous)') + ' · ' + (s.src || '?') + ':' + s.pos; var o = scripts[k] = scripts[k] || { n: 0, ms: 0, inv: s.inv }; o.n++; o.ms += s.ms || 0; }); }); });
-  h += '<div class="card"><h3>Long frames the browser reported, by script</h3>' +
-    table([['Function · file:char'], ['Called by'], ['Times', 1], ['Total ms', 1]], Object.keys(scripts).sort(function (a, b) { return scripts[b].ms - scripts[a].ms; }).slice(0, 30).map(function (k) {
-      return [esc(k), esc(scripts[k].inv || ''), num(scripts[k].n), num(scripts[k].ms)];
+  rows.forEach(function (v) { (v.loaf || []).forEach(function (l) { (l.scripts || []).forEach(function (s) { var k = (s.fn || '(anonymous)') + ' · ' + (s.src || '?') + ':' + s.pos; var o = scripts[k] = scripts[k] || { n: 0, ms: 0, inv: s.inv, at: s.at }; o.n++; o.ms += s.ms || 0; }); }); });
+  h += '<div class="card"><h3>Long frames the browser reported, by script <span class="mute" style="font-weight:400">· the source from the build’s map (server/sourceMaps.ts), where it has one</span></h3>' +
+    table([['In the source'], ['Function · file:char'], ['Called by'], ['Times', 1], ['Total ms', 1]], Object.keys(scripts).sort(function (a, b) { return scripts[b].ms - scripts[a].ms; }).slice(0, 30).map(function (k) {
+      return [esc(scripts[k].at || '—'), esc(k), esc(scripts[k].inv || ''), num(scripts[k].n), num(scripts[k].ms)];
     })) + '</div>';
   $('perf').innerHTML = h;
   Array.prototype.forEach.call($('perf').querySelectorAll('[data-pfby]'), function (b) { b.onclick = function () { PF.by = b.getAttribute('data-pfby'); renderPerf(); }; });
+  Array.prototype.forEach.call($('perf').querySelectorAll('[data-pfdev]'), function (b) { b.onclick = function () { PF.dev = b.getAttribute('data-pfdev'); renderPerf(); }; });
 }
 
 function fbHtml(f) {
@@ -10674,6 +12624,10 @@ var VISIT_HITCHES = 30;
 var VISIT_WINDOWS_EARLY = 4;
 var VISIT_WINDOWS_LATE = 8;
 var VISIT_LOAF = 8;
+function deviceKind(d) {
+  if (!d || typeof d !== "object") return null;
+  return d.mobile ? "mobile" : d.touchPoints && !d.fine ? "touch" : "desktop";
+}
 function gpuClass(gpu) {
   const g = gpu.toLowerCase();
   if (/swiftshader|llvmpipe|software|basic render/.test(g)) return "software";
@@ -10684,11 +12638,15 @@ function gpuClass(gpu) {
   if (/mali|adreno|powervr/.test(g)) return "mobile";
   return g && g !== "unknown" ? "other" : "unknown";
 }
+var GC_MB = 20;
 function hitchCause(h) {
   if (h.prog > 0) return "shaders";
-  if (h.chunks > 0) return "chunks";
+  const stepMs = (h.steps ?? []).reduce((a, s) => a + s[1], 0);
+  if (h.steps && h.steps.length && stepMs >= 0.4 * h.ms) return `chunks: ${h.steps[0][0]}`;
+  if (!h.steps && h.chunks > 0) return "chunks";
   if (h.cpu == null) return "unknown";
   if (h.cpu >= 0.6 * h.ms) return `game: ${h.parts[0]?.[0] ?? "other"}`;
+  if (h.gc != null && h.gc >= GC_MB) return "garbage collection";
   return "outside the game (GPU, GC, browser)";
 }
 var txt = (v, max) => typeof v === "string" ? v.slice(0, max) : "";
@@ -10740,7 +12698,8 @@ function bookVisitPerf(had, m, now, version) {
       heap: nul(h.heap),
       menu: h.menu ? 1 : 0,
       cam: txt(h.cam, 12),
-      panel: typeof h.panel === "string" ? h.panel.slice(0, 24) : null
+      panel: typeof h.panel === "string" ? h.panel.slice(0, 24) : null,
+      ...Array.isArray(h.steps) ? { steps: pairs(h.steps, 2), geo: num(h.geo), gc: nul(h.gc) } : {}
     };
     return [{ ...one, cause: hitchCause(one) }];
   });
@@ -10755,6 +12714,7 @@ function bookVisitPerf(had, m, now, version) {
     quality: txt(p?.quality?.label, 40),
     gpu: gpuClass(gpuName),
     gpuName,
+    dev: deviceKind(p?.device),
     vs: num(f.seconds),
     hid: num(p?.hiddenSeconds),
     n: num(f.count),
@@ -10870,6 +12830,53 @@ function analyticsRow(gid, r) {
     q: perf.quality?.label ?? null,
     err: Array.isArray(perf.errors) ? perf.errors.length : 0
   };
+}
+
+// server/sourceMaps.ts
+var import_source_map_js = __toESM(require_source_map(), 1);
+import { existsSync, readFileSync as readFileSync2 } from "node:fs";
+import { join as join2 } from "node:path";
+import { fileURLToPath } from "node:url";
+var HERE = fileURLToPath(new URL(".", import.meta.url));
+var DIRS = [join2(HERE, "sourcemaps"), join2(HERE, "..", "..", "maps"), join2(process.cwd(), "maps")];
+var KEEP = 4;
+var cache = /* @__PURE__ */ new Map();
+function load(file) {
+  if (cache.has(file)) {
+    const had = cache.get(file);
+    cache.delete(file);
+    cache.set(file, had);
+    return had;
+  }
+  let got = null;
+  const dir = DIRS.find((d) => existsSync(join2(d, `${file}.map`)) && existsSync(join2(d, `${file}.lines.json`)));
+  if (dir) {
+    try {
+      const raw = JSON.parse(readFileSync2(join2(dir, `${file}.map`), "utf8"));
+      const starts = JSON.parse(readFileSync2(join2(dir, `${file}.lines.json`), "utf8"));
+      if (Array.isArray(starts) && starts.length) got = { map: new import_source_map_js.SourceMapConsumer(raw), starts };
+    } catch (e) {
+      console.warn(`source map ${file}: ${e.message}`);
+    }
+  }
+  cache.set(file, got);
+  while (cache.size > KEEP) cache.delete(cache.keys().next().value);
+  return got;
+}
+function sourceAt(file, pos) {
+  if (typeof file !== "string" || !/^[\w.-]+\.js$/.test(file) || typeof pos !== "number" || !(pos >= 0)) return null;
+  const m = load(file);
+  if (!m) return null;
+  let lo = 0, hi = m.starts.length - 1;
+  while (lo < hi) {
+    const mid2 = lo + hi + 1 >> 1;
+    if (m.starts[mid2] <= pos) lo = mid2;
+    else hi = mid2 - 1;
+  }
+  const o = m.map.originalPositionFor({ line: lo + 1, column: pos - m.starts[lo] });
+  if (!o.source) return null;
+  const src = o.source.replace(/^(\.\.\/)+/, "").replace(/^\/?node_modules\//, "");
+  return `${src}:${o.line}${o.name ? ` ${o.name}` : ""}`;
 }
 
 // src/game/cars.ts
@@ -11009,11 +13016,11 @@ var ROWS = [
   ["powderVan", "Powder van", "van", 0.9, [], ["quarry"], 5917246, 14827823, "powder", void 0, "steam"],
   ["circusCar", "Circus car", "boxcar", 1.3, [], [], 14168362, 15909198, "circus", void 0, void 0, true]
 ];
-var WAGONS = ROWS.map(([id, name, body, length, cargo, from, color, accent, style, load, era, special]) => {
+var WAGONS = ROWS.map(([id, name, body, length, cargo, from, color, accent, style, load2, era, special]) => {
   const s = { id, name, role: "wagon", era: era ?? null, length, body, cargo, from, color, freight: true };
   if (accent !== void 0) s.accent = accent;
   if (style) s.style = style;
-  if (load !== void 0) s.load = load;
+  if (load2 !== void 0) s.load = load2;
   if (special) s.special = true;
   return s;
 });
@@ -11118,6 +13125,7 @@ var SETS = [
     name: "The Arrow",
     era: "modern",
     freight: false,
+    twinCab: true,
     cars: ["wedge", "modernFirst", "modernCoach", "bistroCar", "modernCoach", "modernCoach", "wedgeRear"],
     topSpeed: 4.5,
     accel: 0.9,
@@ -11196,8 +13204,9 @@ var DEFS = [
     group: "road",
     halfLen: 0.55,
     blurb: "Pickup with a crate in the back. Climbs steep tiles and hops curbs.",
-    tags: ["steep slopes", "hops curbs"],
+    tags: ["steep slopes", "hops curbs", "horsebox +20%"],
     hint: "Hops 1-step curbs and climbs steep tiles",
+    bonus: { ids: ["horses", "racehorse", "livestock", "cattle", "hay"], share: 0.2, label: "Horsebox" },
     capacity: 8,
     holds: ["people", "parcel", "freight", "bulk"]
   },
@@ -11222,8 +13231,9 @@ var DEFS = [
     halfWid: 0.34,
     lean: -0.06,
     blurb: "Family SUV with a roof box. Fords rivers and shrugs off hills.",
-    tags: ["wades rivers", "steep slopes"],
+    tags: ["wades rivers", "steep slopes", "plantation goods +20%"],
     hint: "Fords rivers up to 2 steps deep",
+    bonus: { ids: ["tea", "roastedCoffee", "blendedTea"], share: 0.2, label: "Plantation run" },
     capacity: 5,
     holds: ["people", "parcel", "freight"]
   },
@@ -11252,8 +13262,9 @@ var DEFS = [
     bumpMul: 0.6,
     tyres: { single: true, width: 1.2 },
     blurb: "A nippy motorbike that leans into every bend. Keep its feet dry.",
-    tags: ["fastest on two wheels", "leans in turns", "no wading", "stopped by rails"],
+    tags: ["fastest on two wheels", "leans in turns", "no wading", "stopped by rails", "despatch +30%"],
     hint: "Leans into turns \xB7 can\u2019t enter water or cross rails",
+    bonus: { ids: ["registered", "dailies", "recordings", "telemetry", "honey", "blendedTea"], share: 0.3, label: "Despatch rider" },
     capacity: 1,
     holds: ["people", "parcel"]
   },
@@ -11282,8 +13293,9 @@ var DEFS = [
     trailer: { hitch: 0.3, length: 1.9 },
     tyres: { width: 0.34 },
     blurb: "Semi-truck hauling a trailer three tiles long. Slow to start, hard to stop.",
-    tags: ["longest", "trailer swings", "hates hills"],
+    tags: ["longest", "trailer swings", "hates hills", "flatbed loads +25%"],
     hint: "Swing wide \u2014 the trailer cuts corners",
+    bonus: { ids: ["timber", "lumber", "furniture", "panels", "steel"], share: 0.25, label: "Flatbed" },
     capacity: 26,
     holds: ["parcel", "freight", "bulk", "container"]
   },
@@ -11311,8 +13323,9 @@ var DEFS = [
     springK: 55,
     tyres: { width: 0.6 },
     blurb: "Monster truck on huge squishy tyres. Ledges? What ledges?",
-    tags: ["hops 2-step ledges", "bouncy", "wades rivers"],
+    tags: ["hops 2-step ledges", "bouncy", "wades rivers", "whisky +20%"],
     hint: "Drops and climbs 2-step ledges",
+    bonus: { ids: ["whisky", "agedCask"], share: 0.2, label: "Highland" },
     capacity: 3,
     holds: ["people", "parcel"]
   },
@@ -11338,8 +13351,10 @@ var DEFS = [
     halfWid: 0.34,
     lean: -0.14,
     blurb: "Ice-cream van with a giant cone on the roof. Top-heavy and wobbly.",
-    tags: ["sways in turns", "slow & sweet"],
+    tags: ["sways in turns", "slow & sweet", "ice cream +30%"],
     hint: "Take corners gently \u2014 it sways",
+    bonus: { ids: ["iceCream", "iceCreamTubs", "sundaes", "cocktails"], share: 0.3, label: "Soft serve" },
+    coldHold: 0.5,
     capacity: 4,
     holds: ["parcel"]
   },
@@ -11367,8 +13382,9 @@ var DEFS = [
     surface: { farm: 1.5 },
     tyres: { width: 0.62 },
     blurb: "Farm tractor. Barely faster than walking, but nothing stops it.",
-    tags: ["crawls up anything", "faster on fields"],
+    tags: ["crawls up anything", "faster on fields", "farm goods +20%"],
     hint: "Speeds up on farm fields",
+    bonus: { ids: ["grain", "crops", "milk", "livestock", "hay", "wool"], share: 0.2, label: "Farm fresh" },
     capacity: 12,
     holds: ["bulk"]
   },
@@ -11397,8 +13413,9 @@ var DEFS = [
     springK: 80,
     tyres: { width: 0.5 },
     blurb: "Dune buggy with a roll cage and a whip flag. Flies across beaches and desert.",
-    tags: ["loves sand", "bouncy"],
+    tags: ["loves sand", "bouncy", "caravan goods +25%"],
     hint: "Fastest on beaches, desert and canyon floors",
+    bonus: { ids: ["spiceBlend", "dates"], share: 0.25, label: "Caravan" },
     capacity: 2,
     holds: ["people", "parcel"]
   },
@@ -11426,8 +13443,9 @@ var DEFS = [
     surface: { track: 1.3, offroad: 0.7 },
     bumpMul: 0.4,
     blurb: "Go-kart. Rockets along dirt tracks, bogs down on grass.",
-    tags: ["track boost", "slow off-track", "no wading", "stopped by rails"],
+    tags: ["track boost", "slow off-track", "no wading", "stopped by rails", "honey +20%"],
     hint: "Stick to the dirt tracks for a boost \xB7 too low to cross rails",
+    bonus: { ids: ["honey", "preserves"], share: 0.2, label: "Country lanes" },
     capacity: 1,
     holds: ["parcel"]
   },
@@ -11457,8 +13475,9 @@ var DEFS = [
     bumpMul: 0.8,
     convertible: true,
     blurb: "A little convertible. The roof folds away in fine weather, and passengers pay for the view.",
-    tags: ["top down pays", "roof follows the weather"],
+    tags: ["top down pays", "roof follows the weather", "picnic goods +25%"],
     hint: "People loads pay +25% if the roof was down most of the ride",
+    bonus: { ids: ["wine", "perfume", "hamper", "cocktails", "sundaes"], share: 0.25, label: "Picnic" },
     capacity: 3,
     holds: ["people", "parcel"]
   },
@@ -11494,8 +13513,9 @@ var DEFS = [
     chirp: true,
     tyres: { width: 0.5 },
     blurb: "Low, lime-green sports car. Nothing is quicker on tarmac; nothing is sorrier on grass.",
-    tags: ["fastest on tarmac", "hates dirt", "handbrake stock", "no wading", "stopped by rails"],
+    tags: ["fastest on tarmac", "hates dirt", "handbrake stock", "no wading", "stopped by rails", "express goods +25%"],
     hint: "Stay on the tarmac \xB7 hold Space to drift \xB7 too low to cross rails",
+    bonus: { ids: ["couture", "devices", "agedCask"], share: 0.25, label: "Express" },
     capacity: 2,
     holds: ["people", "parcel"]
   },
@@ -11679,8 +13699,9 @@ var DEFS = [
     bumpMul: 0.75,
     postal: 0.2,
     blurb: "A boxy red mail van with a sliding door. Stops on a sixpence, hops the kerb, and every parcel on the round pays a little more.",
-    tags: ["parcels pay +20%", "the fuller the round the better", "hops curbs", "parcels only"],
+    tags: ["parcels pay +20%", "the fuller the round the better", "hops curbs", "parcels only", "sorted post +20%"],
     hint: "Parcels pay +20%, and +3% more for every other parcel aboard (up to +20% more) \xB7 hops 1-step curbs",
+    bonus: { ids: ["sortedPost", "express", "stationery"], share: 0.2, label: "Royal Mail" },
     capacity: 8,
     holds: ["parcel"]
   },
@@ -11710,8 +13731,9 @@ var DEFS = [
     knock: 0.6,
     wrecker: 0.5,
     blurb: "A tow truck with a boom and a hook. The town wreckers haul stuck cars out in these; own one and your drivers\u2019 tows come cheaper.",
-    tags: ["tow bills \u221250%", "hops curbs", "steep slopes", "shrugs off knocks"],
+    tags: ["tow bills \u221250%", "hops curbs", "steep slopes", "shrugs off knocks", "scrap +30%"],
     hint: "While you own one, your hired drivers\u2019 tow bills are halved",
+    bonus: { ids: ["scrap", "salvage", "rubble", "scrapBales"], share: 0.3, label: "Recovery" },
     capacity: 2,
     holds: ["parcel", "freight"]
   },
@@ -11742,8 +13764,9 @@ var DEFS = [
     surface: { offroad: 1.25, sand: 1.2, snow: 1.3, farm: 1.2 },
     tyres: { width: 0.55 },
     blurb: "A four-wheeled quad bike. Faster off the road than on it, and up slopes nothing else will try.",
-    tags: ["faster off-road", "steep slopes", "snow & sand", "small hold"],
+    tags: ["faster off-road", "steep slopes", "snow & sand", "small hold", "trail goods +20%"],
     hint: "Quicker on grass, sand, snow and fields \xB7 climbs steep tiles",
+    bonus: { ids: ["ice", "wool", "furs", "peat", "winterFeed", "samples", "expeditionKit"], share: 0.2, label: "Trailhead" },
     capacity: 2,
     holds: ["people", "parcel"]
   },
@@ -11809,8 +13832,9 @@ var DEFS = [
     surface: { offroad: 1.1, sand: 1.15, snow: 1.1, farm: 1.05 },
     tyres: { width: 0.5 },
     blurb: "An army surplus 4x4, wide and squat on big knobbly tyres. Quick on the road and quicker still across country.",
-    tags: ["faster off-road", "steep slopes", "wades rivers", "grips in mud"],
+    tags: ["faster off-road", "steep slopes", "wades rivers", "grips in mud", "trail goods +20%"],
     hint: "Quicker on grass, sand, snow and fields \xB7 fords rivers 2 steps deep \xB7 climbs steep tiles",
+    bonus: { ids: ["ice", "wool", "furs", "peat", "winterFeed", "samples", "expeditionKit"], share: 0.2, label: "Trailhead" },
     capacity: 5,
     holds: ["people", "parcel", "freight"]
   },
@@ -11846,8 +13870,9 @@ var DEFS = [
     surface: { offroad: 1.15, sand: 1.1, snow: 1.15, farm: 1.15 },
     tyres: { width: 0.8 },
     blurb: "An army surplus tank on two clanking tracks. Barely faster than the tractor, but no slope, ledge, river or fence slows it down.",
-    tags: ["tracked", "flattens fences", "climbs 2-step ledges", "shrugs off knocks", "slow"],
+    tags: ["tracked", "flattens fences", "climbs 2-step ledges", "shrugs off knocks", "slow", "fireworks +25%"],
     hint: "Crawls over 2-step ledges and steep tiles \xB7 faster off-road than on it \xB7 fences go flat \xB7 the turret looks into the turn",
+    bonus: { ids: ["fireworks"], share: 0.25, label: "Magazine" },
     capacity: 4,
     holds: ["people", "freight"]
   },
@@ -12573,7 +14598,7 @@ var DEFS = [
     halfLen: 0.5,
     halfWid: 0.3,
     pursuit: 8,
-    bonus: { ids: ["evidence", "prisoners", "cadets"], share: 0.25, label: "On duty" },
+    bonus: { ids: ["evidence", "prisoners", "cadets", "cash", "gateReceipts", "purse", "chips"], share: 0.25, label: "On duty" },
     blurb: "A town patrol car. White, with a dark bonnet and a lightbar, and a siren that clears the road.",
     tags: ["siren on K", "police loads +25%", "quick"],
     hint: "K sounds the siren: traffic ahead pulls over \xB7 evidence, prisoners and cadets pay +25%",
@@ -12608,7 +14633,7 @@ var DEFS = [
     drift: { yaw: 1.1, follow: 2.4, drag: 1.4 },
     burnout: true,
     pursuit: 12,
-    bonus: { ids: ["evidence", "prisoners", "cadets"], share: 0.5, label: "Pursuit" },
+    bonus: { ids: ["evidence", "prisoners", "cadets", "cash", "gateReceipts", "purse", "chips"], share: 0.5, label: "Pursuit" },
     tyres: { width: 0.5 },
     blurb: "A black-and-white pursuit car with a pushbar and grille lights. Traffic parts for it.",
     tags: ["siren clears 12 tiles", "police loads +50%", "fast", "no wading"],
@@ -12640,7 +14665,7 @@ var DEFS = [
     halfWid: 0.32,
     bumpMul: 0.5,
     stealth: 0.8,
-    bonus: { ids: ["protection", "laundry", "stolenGoods"], share: 0.3, label: "No questions" },
+    bonus: { ids: ["protection", "laundry", "stolenGoods", "auctionLot", "antiques"], share: 0.3, label: "No questions" },
     tyres: { width: 0.46 },
     blurb: "A long black sedan with fat tyres and dark glass. Police cones take longer to see it.",
     tags: ["cones see 20% less", "Family loads +30%", "quick"],
@@ -12672,7 +14697,7 @@ var DEFS = [
     halfWid: 0.32,
     bumpMul: 0.5,
     stealth: 0.6,
-    bonus: { ids: ["protection", "laundry", "stolenGoods"], share: 0.4, label: "False floor" },
+    bonus: { ids: ["protection", "laundry", "stolenGoods", "auctionLot", "antiques"], share: 0.4, label: "False floor" },
     blurb: "A hearse with a false floor. Contraband rides in it unseen: the police cones see little more than half as far.",
     tags: ["cones see 40% less", "false floor", "night runs +25%"],
     hint: "Police cones see 40% less of it, and a night run delivered in it pays +25%",
@@ -12706,7 +14731,7 @@ var DEFS = [
     vip: 0.6,
     knock: 0.4,
     pursuit: 6,
-    bonus: { ids: ["stateVisit", "diplomats", "delegates", "delegation"], share: 0.5, label: "Affairs of state" },
+    bonus: { ids: ["stateVisit", "diplomats", "delegates", "delegation", "sealedPapers"], share: 0.5, label: "Affairs of state" },
     tyres: { width: 0.42 },
     blurb: "An armoured stretch limousine with flags on the wings. Two outriders clear the way.",
     tags: ["fares +60%", "state loads +50%", "outriders on K", "armoured"],
@@ -12745,7 +14770,7 @@ var DEFS = [
     springK: 50,
     surface: { offroad: 1.1, sand: 1.2, snow: 1.25, farm: 1.1 },
     drift: { yaw: 1.4, follow: 1.6, drag: 0.7 },
-    bonus: { ids: ["probe", "samples", "delegation", "wreckage"], share: 0.4, label: "Homing" },
+    bonus: { ids: ["probe", "samples", "delegation", "wreckage", "exhibit", "satellite", "telemetry"], share: 0.4, label: "Homing" },
     blurb: "A small silver disc that skims a hand above land and water, sliding into its turns.",
     tags: ["land + water", "climbs 2-step ledges", "slides", "Visitor loads +40%"],
     hint: "Skims land and water alike \xB7 hold Space to slide \xB7 probes, samples and wreckage pay +40%",
@@ -12776,7 +14801,7 @@ var DEFS = [
     halfWid: 0.36,
     bumpMul: 0.7,
     knock: 0.6,
-    bonus: { ids: ["cement", "panels", "rebar", "roadstone"], share: 0.25, label: "Poured" },
+    bonus: { ids: ["cement", "panels", "rebar", "roadstone", "readyMix", "asphalt"], share: 0.25, label: "Poured" },
     tyres: { width: 0.5 },
     blurb: "A cement mixer with a turning drum. Cement, panels and rebar pay a quarter more in it.",
     tags: ["building loads +25%", "turning drum", "wades rivers"],
@@ -12810,7 +14835,7 @@ var DEFS = [
     knock: 0.5,
     crane: true,
     wrecker: 0.25,
-    bonus: { ids: ["rebar", "panels", "siteCrew", "steel"], share: 0.3, label: "Lifted" },
+    bonus: { ids: ["rebar", "panels", "siteCrew", "steel", "readyMix", "scrapBales"], share: 0.3, label: "Lifted" },
     tyres: { width: 0.5 },
     blurb: "A crane truck. Park it by a building site and the site goes up twice as fast.",
     tags: ["sites build 2\xD7 beside it", "tow bills \u221225%", "site loads +30%"],
@@ -12873,7 +14898,7 @@ var DEFS = [
     bumpMul: 0.6,
     knock: 0.5,
     surface: { offroad: 1.05, sand: 1, snow: 1, farm: 1 },
-    bonus: { ids: ["troops", "onLeave", "rations", "fieldKit", "ordnance", "recruits"], share: 0.25, label: "Requisitioned" },
+    bonus: { ids: ["troops", "onLeave", "rations", "fieldKit", "ordnance", "recruits", "supplyDrop"], share: 0.25, label: "Requisitioned" },
     tyres: { width: 0.5 },
     blurb: "A six-wheeled canvas-back lorry for a platoon or their kit, at home on any ground.",
     tags: ["six-wheeled", "Army loads +25%", "steep slopes", "wades rivers"],
@@ -12941,7 +14966,7 @@ var DEFS = [
     bumpMul: 0.6,
     convertible: true,
     vip: 0.2,
-    bonus: { ids: ["filmStars", "redCarpet", "premiere", "popStar"], share: 0.5, label: "Star treatment" },
+    bonus: { ids: ["filmStars", "redCarpet", "premiere", "popStar", "releasePrint", "couture"], share: 0.5, label: "Star treatment" },
     drift: { yaw: 1.1, follow: 2.2, drag: 1.2 },
     blurb: "A chrome-finned convertible with a camera crane on the back. Stars pay half again in it.",
     tags: ["stars +50%", "top down pays", "drifts", "no wading"],
@@ -12973,7 +14998,7 @@ var DEFS = [
     halfWid: 0.34,
     bumpMul: 0.7,
     mast: true,
-    bonus: { ids: ["footage", "newsCrew", "pressPool", "scoop"], share: 0.3, label: "Live" },
+    bonus: { ids: ["footage", "newsCrew", "pressPool", "scoop", "specialEdition"], share: 0.3, label: "Live" },
     blurb: "A news van with a dish and a mast. Stopped at a live event, the mast goes up and the fees come in.",
     tags: ["broadcast fee at events", "Press loads +30%", "hops curbs"],
     hint: "Stop within 8 tiles of a match, concert, race or bust: the mast goes up and it earns by the minute",
@@ -13003,7 +15028,7 @@ var DEFS = [
     wave: 0.03,
     planing: 0,
     beach: true,
-    bonus: { ids: ["troops", "rations", "fieldKit", "ordnance"], share: 0.25, label: "Landed" },
+    bonus: { ids: ["troops", "rations", "fieldKit", "ordnance", "supplyDrop"], share: 0.25, label: "Landed" },
     blurb: "A landing craft with a bow ramp. Any beach is a landing, so an island with no harbour is reachable by sea.",
     tags: ["lands on any beach", "big hold", "shallow draught"],
     hint: "Run it up a beach and stop: the beach is a drop for what you carry",
@@ -13032,7 +15057,7 @@ var DEFS = [
     wave: 0.03,
     planing: 0,
     trawl: 2,
-    bonus: { ids: ["fish", "catch", "salmon", "shrimp", "ice", "bait"], share: 0.2, label: "Fresh off the boat" },
+    bonus: { ids: ["fish", "catch", "salmon", "shrimp", "ice", "bait", "smokedFish"], share: 0.2, label: "Fresh off the boat" },
     blurb: "A real trawler. Stop in a shoal and hold Space to haul a net: the catch is yours to land.",
     tags: ["hauls nets", "Guild loads +20%", "open water"],
     hint: "Stop in a shoal (gulls on the water) and hold Space to haul a net \xB7 land the catch at a fish market",
@@ -13062,7 +15087,7 @@ var DEFS = [
     wave: 0.02,
     planing: 0,
     trawl: 4,
-    bonus: { ids: ["fish", "catch", "salmon", "shrimp", "ice"], share: 0.3, label: "Deep-sea catch" },
+    bonus: { ids: ["fish", "catch", "salmon", "shrimp", "ice", "smokedFish"], share: 0.3, label: "Deep-sea catch" },
     blurb: "A deep-sea crabber with a searchlight. Its pot strings pay double in a storm.",
     tags: ["hauls pots", "storm hauls \xD72", "deep water", "big hold"],
     hint: "Stop in a shoal and hold Space to haul \xB7 a haul in a storm is worth double",
@@ -13097,7 +15122,7 @@ var DEFS = [
     halfWid: 0.7,
     rotor: true,
     beam: true,
-    bonus: { ids: ["probe", "samples", "delegation", "wreckage"], share: 0.5, label: "Beamed up" },
+    bonus: { ids: ["probe", "samples", "delegation", "wreckage", "exhibit", "satellite", "telemetry"], share: 0.5, label: "Beamed up" },
     blurb: "It hovers, it turns on the spot, and Shift lifts a waiting load aboard without landing.",
     tags: ["flies", "hovers", "tractor beam", "Visitor loads +50%"],
     hint: `${FLY_HINT} \xB7 over a load, hold Shift low down: the beam takes it aboard`,
@@ -13132,7 +15157,7 @@ var DEFS = [
     halfLen: 0.85,
     halfWid: 1,
     gear: { rotate: 3.4, taxi: 1, groundAccel: 1.2, groundBrake: 2.4, approach: 3.4, runway: 5 },
-    bonus: { ids: ["airMail", "registered", "mail", "parcels", "morningPost"], share: 0.5, label: "Air mail" },
+    bonus: { ids: ["airMail", "registered", "mail", "parcels", "morningPost", "sortedPost", "express"], share: 0.5, label: "Air mail" },
     blurb: "A twin-engined mail plane that lands on any airfield. Air mail and registered mail pay half again.",
     tags: ["flies", "short field", "mail +50%"],
     hint: `${FLY_HINT} \xB7 line up on a runway and hold Shift to land \xB7 mail pays +50%`,
@@ -13167,7 +15192,7 @@ var DEFS = [
     halfWid: 0.36,
     rotor: true,
     mast: true,
-    bonus: { ids: ["newsCrew", "footage", "pressPool", "scoop"], share: 0.5, label: "Exclusive" },
+    bonus: { ids: ["newsCrew", "footage", "pressPool", "scoop", "specialEdition"], share: 0.5, label: "Exclusive" },
     blurb: "A news helicopter with a camera ball. Hover over a race, a chase or a bust and get paid for it.",
     tags: ["flies", "hovers", "films from above", "Press loads +50%"],
     hint: `${FLY_HINT} \xB7 hover within 10 tiles of a live event: it earns by the minute`,
@@ -13255,6 +15280,7 @@ var RAIL_VEHICLES = SETS.map((set) => ({
   weight: set.freight ? 1.1 : 0.7,
   halfLen: setLength(set) / 2,
   halfWid: 0.16,
+  ...set.twinCab ? { twinCab: true } : {},
   ...set.rack ? { rack: true, hint: "W/S move the throttle, which stays set: S through stop into reverse \xB7 on the rack railway only" } : {}
 }));
 var ALL_VEHICLES = [...VEHICLES, ...RAIL_VEHICLES];
@@ -13751,7 +15777,7 @@ load();
 </body></html>`;
 
 // shared/missionText.json
-var missionText_default = { built: "2026-11-07T17:28:50.332Z", limits: { title: 22, why: 130, label: 28, details: 500, caption: 30, line: 100, effectLine: 40 }, soft: ["caption", "line", "effectLine"], titleWords: 4, verbs: ["Deliver", "Bring", "Upgrade", "Reach", "Visit", "Cross", "Ferry", "Race", "Tow", "Fit", "Own", "Meet", "Arrive", "Take", "Buy", "Keep", "Haul", "Hitch", "Win", "Stamp", "Run", "Drift", "Find", "Light", "Follow", "Film", "Guide", "Spot", "Tag", "Cover", "Search", "Land", "Fly", "Hire", "Tail", "Shadow", "Trail", "Lead", "Dive", "Build", "Unlock", "Ask", "Collect", "Sell", "Knock", "Dust", "Level"], groups: ["Main missions", "Circuits", "Night ops", "Tails", "Faction oaths", "Faction rises", "Surveyor\u2019s Commission", "Submarine jobs", "Working vehicles", "Story chains", "Tavern jobs"], entries: [{ key: "e58dc53da5d7", group: "Main missions", file: "src/game/missions/templates.ts", line: 292, lines: [292], tpl: "market", card: "Market Day", field: "title", text: "Market Day", vars: [] }, { key: "89170620a55f", group: "Main missions", file: "src/game/missions/templates.ts", line: 292, lines: [292], tpl: "market", card: "Market Day", field: "why", text: "The market stalls are bare. Run two loads of fresh food into the town\u2019s shops and the town will know your name.", vars: [] }, { key: "f1619d096437", group: "Main missions", file: "src/game/missions/templates.ts", line: 292, lines: [292, 300, 302, 306], tpl: "market", card: "Market Day", field: "effectLine", text: "A week of trade", vars: [] }, { key: "bb6b0a6f811f", group: "Main missions", file: "src/game/missions/templates.ts", line: 294, lines: [294], tpl: "school", card: "The School Run", field: "title", text: "The School Run", vars: [] }, { key: "d7d529ad38b6", group: "Main missions", file: "src/game/missions/templates.ts", line: 294, lines: [294], tpl: "school", card: "The School Run", field: "why", text: "Get the students to class, then bring in what the school is waiting on. Do both and the town owes you one.", vars: [] }, { key: "af48f5ff4922", group: "Main missions", file: "src/game/missions/templates.ts", line: 294, lines: [294, 298], tpl: "school", card: "The School Run", field: "effectLine", text: "The town builds", vars: [] }, { key: "8682dc8766ee", group: "Main missions", file: "src/game/missions/templates.ts", line: 296, lines: [296], tpl: "reopen", card: "Reopening", field: "title", text: "Reopening", vars: [] }, { key: "cb08eb9ddc12", group: "Main missions", file: "src/game/missions/templates.ts", line: 296, lines: [296], tpl: "reopen", card: "Reopening", field: "why", text: "A boarded-up shop could trade again. Bring in the materials to fix it, then stock it, and the town will trust you.", vars: [] }, { key: "d5fd41f5932a", group: "Main missions", file: "src/game/missions/templates.ts", line: 296, lines: [296], tpl: "reopen", card: "Reopening", field: "effectLine", text: "A shop reopens", vars: [] }, { key: "2528b8a146df", group: "Main missions", file: "src/game/missions/templates.ts", line: 298, lines: [298], tpl: "ward", card: "The New Ward", field: "title", text: "The New Ward", vars: [] }, { key: "49a5eede36bb", group: "Main missions", file: "src/game/missions/templates.ts", line: 298, lines: [298], tpl: "ward", card: "The New Ward", field: "why", text: "The clinic is struggling. Bring in the patients, then the supplies to treat them, and the town will trust you.", vars: [] }, { key: "11ed7fb28790", group: "Main missions", file: "src/game/missions/templates.ts", line: 300, lines: [300], tpl: "harbour", card: "Harbour Turnaround", field: "title", text: "Harbour Turnaround", vars: [] }, { key: "af4c9b62c8b1", group: "Main missions", file: "src/game/missions/templates.ts", line: 300, lines: [300], tpl: "harbour", card: "Harbour Turnaround", field: "why", text: "A ship is waiting to sail. Clear its cargo off the quay, then run goods into town, and the port won\u2019t forget it.", vars: [] }, { key: "84351d91be8d", group: "Main missions", file: "src/game/missions/templates.ts", line: 302, lines: [302], tpl: "twoveh", card: "Sea and Road", field: "title", text: "Sea and Road", vars: [] }, { key: "54936688c90d", group: "Main missions", file: "src/game/missions/templates.ts", line: 302, lines: [302], tpl: "twoveh", card: "Sea and Road", field: "why", text: "Fetch a load off the boat at the harbour, then run supplies into town. Two runs, and the town\u2019s trust follows.", vars: [] }, { key: "c16b352f77d4", group: "Main missions", file: "src/game/missions/templates.ts", line: 304, lines: [304], tpl: "bypass", card: "The Bypass", field: "title", text: "The Bypass", vars: [] }, { key: "ef701298cd53", group: "Main missions", file: "src/game/missions/templates.ts", line: 304, lines: [304], tpl: "bypass", card: "The Bypass", field: "why", text: "The town wants a bypass. Haul in the materials for it, then goods for the works, and its levy on you drops.", vars: [] }, { key: "ea16b7fe7174", group: "Main missions", file: "src/game/missions/templates.ts", line: 304, lines: [304], tpl: "bypass", card: "The Bypass", field: "effectLine", text: "Levy down 4%", vars: [] }, { key: "919404764b85", group: "Main missions", file: "src/game/missions/templates.ts", line: 306, lines: [306], tpl: "highcountry", card: "High Country", field: "title", text: "High Country", vars: [] }, { key: "61d9a5b1f31a", group: "Main missions", file: "src/game/missions/templates.ts", line: 306, lines: [306], tpl: "highcountry", card: "High Country", field: "why", text: "The hut above the trees needs building supplies, walkers to fill it and food. Do all three and the town calls you friend.", vars: [] }, { key: "4a761455987e", group: "Main missions", file: "src/game/missions/templates.ts", line: 308, lines: [308], tpl: "graduation", card: "The Graduation", field: "title", text: "The Graduation", vars: [] }, { key: "9463b6aa2738", group: "Main missions", file: "src/game/missions/templates.ts", line: 308, lines: [308], tpl: "graduation", card: "The Graduation", field: "why", text: "Haul in materials, workers and trade goods and the town grows into a city. It will call you friend for it.", vars: [] }, { key: "a4d028881ac9", group: "Main missions", file: "src/game/missions/templates.ts", line: 308, lines: [308], tpl: "graduation", card: "The Graduation", field: "effectLine", text: "The town graduates", vars: [] }, { key: "df9b506e64f0", group: "Main missions", file: "src/game/missions/templates.ts", line: 372, lines: [372], tpl: "t:freedom", card: "Freedom of the Town", field: "title", text: "Freedom of the Town", vars: [] }, { key: "1644ce6e8ca6", group: "Main missions", file: "src/game/missions/templates.ts", line: 372, lines: [372], tpl: "t:freedom", card: "Freedom of the Town", field: "why", text: "The council wants to thank you for all your work. Drive to the town hall for a building, and the whole town will hear your name.", vars: [] }, { key: "38861a7d85e6", group: "Main missions", file: "src/game/missions/templates.ts", line: 374, lines: [374, 1258], tpl: "t:freedom", card: "Freedom of the Town", field: "caption", text: "The {x1}", vars: [{ label: "x1", expr: "shortSite(gift.kind).toLowerCase()" }] }, { key: "54bea549eb59", group: "Main missions", file: "src/game/missions/templates.ts", line: 375, lines: [375], tpl: "t:freedom", card: "Freedom of the Town", field: "label", text: "Reach the town hall", vars: [] }, { key: "e71b95c76427", group: "Main missions", file: "src/game/missions/templates.ts", line: 434, lines: [434], tpl: "first:parts", card: "First Delivery", field: "title", text: "First Delivery", vars: [] }, { key: "29298d2cdc99", group: "Main missions", file: "src/game/missions/templates.ts", line: 434, lines: [434], tpl: "first:parts", card: "First Delivery", field: "why", text: "Your friend {name} at the Auto Shop needs car parts that fell off a van. Pick them up on the road ahead and drive them in.", vars: [{ label: "name", expr: "name" }] }, { key: "cef3f7a3438d", group: "Main missions", file: "src/game/missions/templates.ts", line: 435, lines: [435], tpl: "first:parts", card: "First Delivery", field: "details", text: "Your friend {name} runs the Auto Shop in town and has been waiting on these parts all week. Deliver them and {name} will fit a nitrous bottle to your car for free.", vars: [{ label: "name", expr: "name" }] }, { key: "406ace539fc8", group: "Main missions", file: "src/game/missions/templates.ts", line: 437, lines: [437], tpl: "first:parts", card: "First Delivery", field: "caption", text: "Nitrous, fitted free", vars: [] }, { key: "df7ed3a54e86", group: "Main missions", file: "src/game/missions/templates.ts", line: 439, lines: [439], tpl: "first:parts", card: "First Delivery", field: "label", text: "Car Parts \u2192 the Auto Shop", vars: [] }, { key: "1cfacff372ad", group: "Main missions", file: "src/game/missions/templates.ts", line: 515, lines: [515], tpl: "first:nitrous", card: "Feel the Rush", field: "title", text: "Feel the Rush", vars: [] }, { key: "1e026e8c9793", group: "Main missions", file: "src/game/missions/templates.ts", line: 515, lines: [515], tpl: "first:nitrous", card: "Feel the Rush", field: "why", text: "Your friend {mech} bets you $100 you can\u2019t hit {x1}. Find a long straight, hold W, then press Shift for nitrous.", vars: [{ label: "mech", expr: "f.mech" }, { label: "x1", expr: "speedText(kmh)" }] }, { key: "04dc5d040265", group: "Main missions", file: "src/game/missions/templates.ts", line: 516, lines: [516], tpl: "first:nitrous", card: "Feel the Rush", field: "details", text: "Your friend {mech} just fitted your nitrous bottle and wants to see it work. Your car can\u2019t reach {x1} on its own. A bottle gives a short burst of extra speed, fires only while you hold the throttle, and refills in about a minute.", vars: [{ label: "mech", expr: "f.mech" }, { label: "x1", expr: "speedText(kmh)" }] }, { key: "c036f75c973a", group: "Main missions", file: "src/game/missions/templates.ts", line: 518, lines: [518], tpl: "first:nitrous", card: "Feel the Rush", field: "caption", text: "Your new nitrous", vars: [] }, { key: "8191cdeeda84", group: "Main missions", file: "src/game/missions/templates.ts", line: 519, lines: [519, 1354], tpl: "first:nitrous", card: "Feel the Rush", field: "label", text: "Reach {x1}", vars: [{ label: "x1", expr: "speedText(kmh)" }] }, { key: "b4520c1dbec8", group: "Main missions", file: "src/game/missions/templates.ts", line: 613, lines: [613], tpl: "first:hand", card: null, field: "why", text: "{first} needs a hand with a two-car order for {where}: full fee on your load, {x1}% of hers.", vars: [{ label: "first", expr: "first" }, { label: "where", expr: "where" }, { label: "x1", expr: "Math.round(HAND_SHARE * 100)" }] }, { key: "10220a429938", group: "Main missions", file: "src/game/missions/templates.ts", line: 615, lines: [615], tpl: "first:hand", card: "A Helping Hand", field: "title", text: "A Helping Hand", vars: [] }, { key: "0383f4374313", group: "Main missions", file: "src/game/missions/templates.ts", line: 616, lines: [616], tpl: "first:hand", card: "A Helping Hand", field: "details", text: "Two loads wait on the road ahead. Yours fills your Tomato; the other rides in {first}\u2019s, and while she is in line behind you her hold counts as yours. Both come off together at the door. Your load pays {x1}; hers pays {x2}, and {x3} of that is yours.", vars: [{ label: "first", expr: "first" }, { label: "x1", expr: "money(yours)" }, { label: "x2", expr: "money(hersFull)" }, { label: "x3", expr: "money(hers)" }] }, { key: "87bbb54518a9", group: "Main missions", file: "src/game/missions/templates.ts", line: 618, lines: [618], tpl: "first:hand", card: "A Helping Hand", field: "caption", text: "{first}\u2019s Tomato", vars: [{ label: "first", expr: "first" }] }, { key: "b0b4c0fc01c6", group: "Main missions", file: "src/game/missions/templates.ts", line: 620, lines: [620], tpl: "first:hand", card: "A Helping Hand", field: "label", text: "Deliver both loads", vars: [] }, { key: "8f21bca6e84d", group: "Main missions", file: "src/game/missions/templates.ts", line: 640, lines: [640], tpl: "first:friend", card: null, field: "label", text: "Reach {fr}\u2019s Auto Shop", vars: [{ label: "fr", expr: "fr" }] }, { key: "6bf0aad54701", group: "Main missions", file: "src/game/missions/templates.ts", line: 642, lines: [642], tpl: "first:friend", card: "A Friend\u2019s Handbrake", field: "title", text: "A Friend\u2019s Handbrake", vars: [] }, { key: "46b00f11f675", group: "Main missions", file: "src/game/missions/templates.ts", line: 646, lines: [646], tpl: "first:friend", card: "A Friend\u2019s Handbrake", field: "why", text: "{fr} has a spare handbrake for you. Drive over for a free fit.", vars: [{ label: "fr", expr: "fr" }] }, { key: "051137a4d47b", group: "Main missions", file: "src/game/missions/templates.ts", line: 647, lines: [647], tpl: "first:friend", card: "A Friend\u2019s Handbrake", field: "details", text: "{fr}, a friend of your friend {mech}, has a shop about {x1} tiles away. Follow the yellow arrows, stop in the ring at the shop's door and press Space. A handbrake locks the back wheels when you hold Space, so the tail swings round corners.", vars: [{ label: "fr", expr: "fr" }, { label: "mech", expr: "f.mech" }, { label: "x1", expr: "Math.round(q.far / 5) * 5" }] }, { key: "aa75dc5d2608", group: "Main missions", file: "src/game/missions/templates.ts", line: 649, lines: [649], tpl: "first:friend", card: "A Friend\u2019s Handbrake", field: "caption", text: "A spare handbrake", vars: [] }, { key: "3eb2dd8968ce", group: "Main missions", file: "src/game/missions/templates.ts", line: 650, lines: [650], tpl: "first:friend", card: "A Friend\u2019s Handbrake", field: "label", text: "Reach the Auto Shop", vars: [] }, { key: "f2b96e620881", group: "Main missions", file: "src/game/missions/templates.ts", line: 675, lines: [675], tpl: "first:drift", card: "Drift the Block", field: "title", text: "Drift the Block", vars: [] }, { key: "efead2ee682f", group: "Main missions", file: "src/game/missions/templates.ts", line: 675, lines: [675], tpl: "first:drift", card: "Drift the Block", field: "why", text: "{who} pays $200 to see that handbrake work. Follow the arrows and drift round one left corner, then one right.", vars: [{ label: "who", expr: "who" }] }, { key: "f86cb5d2afac", group: "Main missions", file: "src/game/missions/templates.ts", line: 676, lines: [676], tpl: "first:drift", card: "Drift the Block", field: "details", text: "Build up speed toward the corner, start turning, then hold Space: the back wheels lock and the tail slides out. Let go of Space as the car comes round and drive on. {who} is watching from the shop.", vars: [{ label: "who", expr: "who" }] }, { key: "14c21021215d", group: "Main missions", file: "src/game/missions/templates.ts", line: 678, lines: [678], tpl: "first:drift", card: "Drift the Block", field: "caption", text: "Your new handbrake", vars: [] }, { key: "6803cb348eb6", group: "Main missions", file: "src/game/missions/templates.ts", line: 680, lines: [680], tpl: "first:drift", card: "Drift the Block", field: "label", text: "Drift a left corner", vars: [] }, { key: "f8baddfb5d88", group: "Main missions", file: "src/game/missions/templates.ts", line: 681, lines: [681], tpl: "first:drift", card: "Drift the Block", field: "label", text: "Drift a right corner", vars: [] }, { key: "4ae2e2ffe954", group: "Main missions", file: "src/game/missions/templates.ts", line: 699, lines: [699], tpl: "fast:go", card: "Needs More Go", field: "title", text: "Needs More Go", vars: [] }, { key: "041e69c54e27", group: "Main missions", file: "src/game/missions/templates.ts", line: 699, lines: [699], tpl: "fast:go", card: "Needs More Go", field: "why", text: "Fit any engine upgrade from a Vehicle Shop that stocks engines; {mech} refunds {x1} of it. Then Vera wants a race.", vars: [{ label: "mech", expr: "mech" }, { label: "x1", expr: "money(refund)" }] }, { key: "39ef49d36fe5", group: "Main missions", file: "src/game/missions/templates.ts", line: 700, lines: [700], tpl: "fast:go", card: "Needs More Go", field: "details", text: "Vera Quill, the fastest driver around, won\u2019t race a car this slow. {mech} the mechanic thinks a Stage 1 engine would change her mind, and will cover more than half of what it costs.", vars: [{ label: "mech", expr: "mech" }] }, { key: "4d2f9738d300", group: "Main missions", file: "src/game/missions/templates.ts", line: 702, lines: [702], tpl: "fast:go", card: "Needs More Go", field: "caption", text: "Stage 1 engine", vars: [] }, { key: "5a0be402b4a0", group: "Main missions", file: "src/game/missions/templates.ts", line: 703, lines: [703], tpl: "fast:go", card: "Needs More Go", field: "label", text: "Fit any engine part", vars: [] }, { key: "4ac54a3bcd21", group: "Main missions", file: "src/game/missions/templates.ts", line: 721, lines: [721], tpl: "fast:turbo", card: "{name}\u2019s Turbo", field: "title", text: "{name}\u2019s Turbo", vars: [{ label: "name", expr: "name" }] }, { key: "0392cc49b616", group: "Main missions", file: "src/game/missions/templates.ts", line: 721, lines: [721], tpl: "fast:turbo", card: "{name}\u2019s Turbo", field: "title", text: "The Turbo", vars: [] }, { key: "de872afe2c72", group: "Main missions", file: "src/game/missions/templates.ts", line: 722, lines: [722], tpl: "fast:turbo", card: "{name}\u2019s Turbo", field: "why", text: "Make 3 {x1} runs in 48 hours to keep the garage going, and {name} fits a Stage 2 turbo engine free.", vars: [{ label: "x1", expr: "p.type.name.toLowerCase()" }, { label: "name", expr: "name" }] }, { key: "28a069746f6d", group: "Main missions", file: "src/game/missions/templates.ts", line: 723, lines: [723], tpl: "fast:turbo", card: "{name}\u2019s Turbo", field: "why", text: "Make 3 runs in 48 hours to keep the garage going, and {name} fits a Stage 2 turbo engine free.", vars: [{ label: "name", expr: "name" }] }, { key: "0207bc884df3", group: "Main missions", file: "src/game/missions/templates.ts", line: 725, lines: [725], tpl: "fast:turbo", card: "{name}\u2019s Turbo", field: "caption", text: "Stage 2 engine", vars: [] }, { key: "0039da8732c8", group: "Main missions", file: "src/game/missions/templates.ts", line: 753, lines: [753], tpl: "raceTemplate", card: null, field: "label", text: "Race to {name}", vars: [{ label: "name", expr: "to.name" }] }, { key: "5aaff2df5b85", group: "Main missions", file: "src/game/missions/templates.ts", line: 757, lines: [757], tpl: "raceTemplate", card: null, field: "caption", text: "{short}\u2019s {x1}", vars: [{ label: "short", expr: "r.short" }, { label: "x1", expr: "modelName(rivalModel(r, tier))" }] }, { key: "84774d44f33d", group: "Main missions", file: "src/game/missions/templates.ts", line: 759, lines: [759], tpl: "raceTemplate", card: null, field: "label", text: "Meet {short} at the square", vars: [{ label: "short", expr: "r.short" }] }, { key: "763e97e0cb0c", group: "Main missions", file: "src/game/missions/templates.ts", line: 760, lines: [760], tpl: "raceTemplate", card: null, field: "label", text: "Race to the finish", vars: [] }, { key: "4266bb7b42dd", group: "Main missions", file: "src/game/missions/templates.ts", line: 769, lines: [769], tpl: "veraOne", card: "Vera\u2019s Challenge", field: "title", text: "Vera\u2019s Challenge", vars: [] }, { key: "58379de6f628", group: "Main missions", file: "src/game/missions/templates.ts", line: 773, lines: [773], tpl: "veraTwo", card: "Pink Slip", field: "title", text: "Pink Slip", vars: [] }, { key: "e64fc4f77c95", group: "Main missions", file: "src/game/missions/templates.ts", line: 777, lines: [777], tpl: "ottoRace", card: "Otto\u2019s Shortcut", field: "title", text: "Otto\u2019s Shortcut", vars: [] }, { key: "50a614d25440", group: "Main missions", file: "src/game/missions/templates.ts", line: 781, lines: [781], tpl: "magsRace", card: "Mags\u2019 Streets", field: "title", text: "Mags\u2019 Streets", vars: [] }, { key: "718c4b763d4a", group: "Main missions", file: "src/game/missions/templates.ts", line: 785, lines: [785], tpl: "dukeRace", card: "The Duke\u2019s Slip", field: "title", text: "The Duke\u2019s Slip", vars: [] }, { key: "b4855fdb92df", group: "Main missions", file: "src/game/missions/templates.ts", line: 810, lines: [810], tpl: "heavy:van", card: "Spare Wheels", field: "title", text: "Spare Wheels", vars: [] }, { key: "88454011ee76", group: "Main missions", file: "src/game/missions/templates.ts", line: 810, lines: [810], tpl: "heavy:van", card: "Spare Wheels", field: "why", text: "Old Bram is retiring his {x1}. Run 4 loads to or from the town within 72 hours and it joins your fleet.", vars: [{ label: "x1", expr: "modelName(model)" }] }, { key: "d893a8d9107f", group: "Main missions", file: "src/game/missions/templates.ts", line: 812, lines: [812], tpl: "heavy:van", card: "Spare Wheels", field: "label", text: "Run 4 loads for the town", vars: [] }, { key: "9ee62e3259e8", group: "Main missions", file: "src/game/missions/templates.ts", line: 832, lines: [832], tpl: "first:hq", card: "Upgrade Your HQ", field: "title", text: "Upgrade Your HQ", vars: [] }, { key: "8b727c0af6c4", group: "Main missions", file: "src/game/missions/templates.ts", line: 833, lines: [833], tpl: "first:hq", card: "Upgrade Your HQ", field: "why", text: "Your house is a one-slot HQ, and your driver fills it. Move your HQ to a level 2 building, a shop or a store, for a second slot.", vars: [] }, { key: "1dfea466e074", group: "Main missions", file: "src/game/missions/templates.ts", line: 834, lines: [834], tpl: "first:hq", card: "Upgrade Your HQ", field: "details", text: "A house is a level 1 Lodging: one slot. A level 2 Shopfront, such as a shop, a store, a diner or a barn, opens two and costs from about $1,700. Your house stays yours.", vars: [] }, { key: "73d7b089a0a8", group: "Main missions", file: "src/game/missions/templates.ts", line: 835, lines: [835], tpl: "first:hq", card: "Upgrade Your HQ", field: "caption", text: "A level 2 HQ", vars: [] }, { key: "aacd4139069d", group: "Main missions", file: "src/game/missions/templates.ts", line: 836, lines: [836], tpl: "first:hq", card: "Upgrade Your HQ", field: "label", text: "Upgrade to a 2-slot HQ", vars: [] }, { key: "fefc0fbf9448", group: "Main missions", file: "src/game/missions/templates.ts", line: 850, lines: [850], tpl: "first:car", card: "Second Pair of Wheels", field: "title", text: "Second Pair of Wheels", vars: [] }, { key: "5716745f4ff6", group: "Main missions", file: "src/game/missions/templates.ts", line: 851, lines: [851], tpl: "first:car", card: "Second Pair of Wheels", field: "why", text: "One car is a job; two is a fleet. Buy a second vehicle at a dealer, or win one: Bram gives a Mule for four loads for a town.", vars: [] }, { key: "81031dc892f7", group: "Main missions", file: "src/game/missions/templates.ts", line: 852, lines: [852], tpl: "first:car", card: "Second Pair of Wheels", field: "details", text: "A Tomato costs about $300 at a Vehicle Dealer: drive to its door, stop in the ring and press Space. Your own car parks where you bought the new one. Or take Bram\u2019s \u201CSpare Wheels\u201D job when it comes up, and the Mule is yours free.", vars: [] }, { key: "609c673b4d47", group: "Main missions", file: "src/game/missions/templates.ts", line: 853, lines: [853], tpl: "first:car", card: "Second Pair of Wheels", field: "caption", text: "Vehicle number two", vars: [] }, { key: "05f76df39bd5", group: "Main missions", file: "src/game/missions/templates.ts", line: 854, lines: [854, 1137], tpl: "first:car", card: "Second Pair of Wheels", field: "label", text: "Own 2 vehicles", vars: [] }, { key: "61d1105dc4fa", group: "Main missions", file: "src/game/missions/templates.ts", line: 872, lines: [872], tpl: "first:crew", card: "Put {first} to Work", field: "title", text: "Put {first} to Work", vars: [{ label: "first", expr: "first" }] }, { key: "2575913ff35e", group: "Main missions", file: "src/game/missions/templates.ts", line: 873, lines: [873], tpl: "first:crew", card: "Put {first} to Work", field: "why", text: "{first}\u2019s still following you. Give her Work orders and she\u2019ll find loads of her own and pay you {x1}% of each.", vars: [{ label: "first", expr: "first" }, { label: "x1", expr: "Math.round(HAND_SHARE * 100)" }] }, { key: "124ebe65b442", group: "Main missions", file: "src/game/missions/templates.ts", line: 874, lines: [874], tpl: "first:crew", card: "Put {first} to Work", field: "details", text: "Press H and open Fleet, click {first}\u2019s Tomato, and press Work in its Mode row (or hover her square by your speedo and press Work). She keeps finding loads near her base until you call her back with Follow.", vars: [{ label: "first", expr: "first" }] }, { key: "639bac83b0f6", group: "Main missions", file: "src/game/missions/templates.ts", line: 875, lines: [875], tpl: "first:crew", card: "Put {first} to Work", field: "caption", text: "{first} at work", vars: [{ label: "first", expr: "first" }] }, { key: "1fb032c896a0", group: "Main missions", file: "src/game/missions/templates.ts", line: 876, lines: [876], tpl: "first:crew", card: "Put {first} to Work", field: "label", text: "Keep her out working", vars: [] }, { key: "001872407124", group: "Main missions", file: "src/game/missions/templates.ts", line: 881, lines: [881], tpl: "first:crew", card: "Hire a Hand", field: "title", text: "Hire a Hand", vars: [] }, { key: "bccfdd535566", group: "Main missions", file: "src/game/missions/templates.ts", line: 882, lines: [882], tpl: "first:crew", card: "Hire a Hand", field: "why", text: "A parked car earns nothing. Hire a driver for your second vehicle: your house\u2019s one fleet slot is theirs, and they pay you a cut.", vars: [] }, { key: "4655fb3496fb", group: "Main missions", file: "src/game/missions/templates.ts", line: 883, lines: [883], tpl: "first:crew", card: "Hire a Hand", field: "details", text: "Press H and open Fleet. A rookie with a road licence costs about $300: hire one onto the bench with Hire\u2026, then drag them onto your parked vehicle\u2019s empty seat and they set off to work at once. Hover their square by your speedo to see how they are doing.", vars: [] }, { key: "287800b2cfd4", group: "Main missions", file: "src/game/missions/templates.ts", line: 884, lines: [884], tpl: "first:crew", card: "Hire a Hand", field: "caption", text: "Your first driver", vars: [] }, { key: "a4a3df2f353d", group: "Main missions", file: "src/game/missions/templates.ts", line: 885, lines: [885], tpl: "first:crew", card: "Hire a Hand", field: "label", text: "Hire a driver for it", vars: [] }, { key: "c7feb6ac67b5", group: "Main missions", file: "src/game/missions/templates.ts", line: 901, lines: [901], tpl: "first:roads", card: "Build Your Own Road", field: "title", text: "Build Your Own Road", vars: [] }, { key: "78d7e2929eeb", group: "Main missions", file: "src/game/missions/templates.ts", line: 902, lines: [902], tpl: "first:roads", card: "Build Your Own Road", field: "why", text: "A level 3 HQ can afford to change the map. Open the builder and lay a road of your own: a shortcut, or a way to somewhere new.", vars: [] }, { key: "6d45faa79525", group: "Main missions", file: "src/game/missions/templates.ts", line: 903, lines: [903], tpl: "first:roads", card: "Build Your Own Road", field: "details", text: "Press B, or Build in the corner. Click where the road should start, then where it should end: the ghost shows the route it takes and what it costs. Click again to build it. Z takes back the last road.", vars: [] }, { key: "25f68dcf5f1b", group: "Main missions", file: "src/game/missions/templates.ts", line: 904, lines: [904], tpl: "first:roads", card: "Build Your Own Road", field: "caption", text: "Your first road", vars: [] }, { key: "31dd22570cc1", group: "Main missions", file: "src/game/missions/templates.ts", line: 905, lines: [905], tpl: "first:roads", card: "Build Your Own Road", field: "label", text: "Build 10 tiles of road", vars: [] }, { key: "7071ce31b917", group: "Main missions", file: "src/game/missions/templates.ts", line: 919, lines: [919], tpl: "first:tech", card: "Unlock New Wheels", field: "title", text: "Unlock New Wheels", vars: [] }, { key: "6bcd82fa9d68", group: "Main missions", file: "src/game/missions/templates.ts", line: 920, lines: [920], tpl: "first:tech", card: "Unlock New Wheels", field: "why", text: "Diamonds buy new vehicles. Spend some on the tech tree, and the dealers start stocking what you unlock.", vars: [] }, { key: "e1e5d8fba464", group: "Main missions", file: "src/game/missions/templates.ts", line: 921, lines: [921], tpl: "first:tech", card: "Unlock New Wheels", field: "details", text: "Press H and open the Tech tab. Land, sea and air each have a tree. A lit vehicle is ready: click it, then press Unlock. The dealers that stock it sell it from then on.", vars: [] }, { key: "6a3538d6f9d5", group: "Main missions", file: "src/game/missions/templates.ts", line: 922, lines: [922], tpl: "first:tech", card: "Unlock New Wheels", field: "caption", text: "A new model on sale", vars: [] }, { key: "8cfbd2dc650a", group: "Main missions", file: "src/game/missions/templates.ts", line: 923, lines: [923], tpl: "first:tech", card: "Unlock New Wheels", field: "label", text: "Unlock a vehicle", vars: [] }, { key: "dd425205b673", group: "Main missions", file: "src/game/missions/templates.ts", line: 937, lines: [937], tpl: "first:build", card: "Break Ground", field: "title", text: "Break Ground", vars: [] }, { key: "abb22871d477", group: "Main missions", file: "src/game/missions/templates.ts", line: 938, lines: [938], tpl: "first:build", card: "Break Ground", field: "why", text: "Every building you own leaves you its blueprints. Build one yourself beside a road, out of town or in a town you hold.", vars: [] }, { key: "0549febe3120", group: "Main missions", file: "src/game/missions/templates.ts", line: 939, lines: [939], tpl: "first:build", card: "Break Ground", field: "details", text: "Press B, then pick the Buildings side: your blueprints are the squares, priced for this county. Pick one, move the ghost onto open ground beside a road and click to break ground. R turns it. The site runs a few game hours under its cranes, and the building is yours by deed from the first spade.", vars: [] }, { key: "54da91202fa1", group: "Main missions", file: "src/game/missions/templates.ts", line: 940, lines: [940], tpl: "first:build", card: "Break Ground", field: "caption", text: "Your first construction", vars: [] }, { key: "f1a7ac40a895", group: "Main missions", file: "src/game/missions/templates.ts", line: 941, lines: [941], tpl: "first:build", card: "Break Ground", field: "label", text: "Build from your blueprints", vars: [] }, { key: "f4b56e35a107", group: "Main missions", file: "src/game/missions/templates.ts", line: 1073, lines: [1073, 1319], tpl: "first:bridge", card: "Over the Water", field: "title", text: "Over the Water", vars: [] }, { key: "523a1ef25771", group: "Main missions", file: "src/game/missions/templates.ts", line: 1074, lines: [1074], tpl: "first:bridge", card: "Over the Water", field: "why", text: "The road on the far bank is a long way round. Bridge the {x1} with a road of your own, then drive across it.", vars: [{ label: "x1", expr: "s.river ? 'river' : 'water'" }] }, { key: "8e77f94050b7", group: "Main missions", file: "src/game/missions/templates.ts", line: 1075, lines: [1075], tpl: "first:bridge", card: "Over the Water", field: "details", text: "Press B and start a road on one bank, by the ring. Click on the far bank to end it: where the gap is short enough the bridge goes in by itself. V (Big bridges) reaches twice as far, at a price; T makes it a toll bridge that CPU traffic pays to cross.", vars: [] }, { key: "7d6a8afafabd", group: "Main missions", file: "src/game/missions/templates.ts", line: 1076, lines: [1076], tpl: "first:bridge", card: "Over the Water", field: "caption", text: "Your first bridge", vars: [] }, { key: "38c70c680512", group: "Main missions", file: "src/game/missions/templates.ts", line: 1078, lines: [1078], tpl: "first:bridge", card: "Over the Water", field: "label", text: "Build the bridge", vars: [] }, { key: "3eaf76a5911e", group: "Main missions", file: "src/game/missions/templates.ts", line: 1079, lines: [1079], tpl: "first:bridge", card: "Over the Water", field: "label", text: "Cross your new bridge", vars: [] }, { key: "a9a0e36000a3", group: "Main missions", file: "src/game/missions/templates.ts", line: 1097, lines: [1097], tpl: "first:rails", card: "Your Own Railway", field: "title", text: "Your Own Railway", vars: [] }, { key: "1ef89038856c", group: "Main missions", file: "src/game/missions/templates.ts", line: 1098, lines: [1098], tpl: "first:rails", card: "Your Own Railway", field: "why", text: "One track carries trains one way at a time. Build a line of your own, then a second beside it, so trains can pass.", vars: [] }, { key: "b3ddebe4a433", group: "Main missions", file: "src/game/missions/templates.ts", line: 1099, lines: [1099], tpl: "first:rails", card: "Your Own Railway", field: "details", text: "Press B, then Rails. Click where a track starts (buffers, a line for a junction, or open ground), then where it ends. Hold Shift as you pick the end for a parallel track beside the nearest line. Z undoes the last track.", vars: [] }, { key: "71229f999bef", group: "Main missions", file: "src/game/missions/templates.ts", line: 1100, lines: [1100], tpl: "first:rails", card: "Your Own Railway", field: "caption", text: "Your own railway", vars: [] }, { key: "60536be575ff", group: "Main missions", file: "src/game/missions/templates.ts", line: 1102, lines: [1102], tpl: "first:rails", card: "Your Own Railway", field: "label", text: "Build 12 tiles of track", vars: [] }, { key: "0fc40e7ca85f", group: "Main missions", file: "src/game/missions/templates.ts", line: 1103, lines: [1103], tpl: "first:rails", card: "Your Own Railway", field: "label", text: "Build a parallel track", vars: [] }, { key: "e368e2753321", group: "Main missions", file: "src/game/missions/templates.ts", line: 1118, lines: [1118], tpl: "first:land", card: "Moving Earth", field: "title", text: "Moving Earth", vars: [] }, { key: "bb80c037b226", group: "Main missions", file: "src/game/missions/templates.ts", line: 1119, lines: [1119], tpl: "first:land", card: "Moving Earth", field: "why", text: "Rough ground gets in the way of roads and lots. Pick up the terrain tool and level the patch in the ring, flat as a table.", vars: [] }, { key: "bc5fb6ca0f13", group: "Main missions", file: "src/game/missions/templates.ts", line: 1120, lines: [1120], tpl: "first:land", card: "Moving Earth", field: "details", text: "Press T for the terrain tool. Shift-drag across the ring to bring all the ground under the brush to one height; 1 to 7 sizes the brush. A plain drag raises or lowers. F switches cliff and smooth, V digs water, Z undoes. Each lift costs $2. Buildings must be bulldozed (X) first; in a town you hold you may grade its open ground.", vars: [] }, { key: "2a1e20dad03d", group: "Main missions", file: "src/game/missions/templates.ts", line: 1121, lines: [1121], tpl: "first:land", card: "Moving Earth", field: "caption", text: "Flat as a table", vars: [] }, { key: "74915a8caa10", group: "Main missions", file: "src/game/missions/templates.ts", line: 1122, lines: [1122], tpl: "first:land", card: "Moving Earth", field: "label", text: "Level the lot", vars: [] }, { key: "e89084044439", group: "Main missions", file: "src/game/missions/templates.ts", line: 1135, lines: [1135], tpl: "heavy:hand", card: "A Spare Hand", field: "title", text: "A Spare Hand", vars: [] }, { key: "906d140e8116", group: "Main missions", file: "src/game/missions/templates.ts", line: 1135, lines: [1135], tpl: "heavy:hand", card: "A Spare Hand", field: "why", text: "Bram knows a driver who needs work. Own two vehicles, then meet Bram at his yard, and the driver joins you free.", vars: [] }, { key: "300f18cb511f", group: "Main missions", file: "src/game/missions/templates.ts", line: 1136, lines: [1136], tpl: "heavy:hand", card: "A Spare Hand", field: "caption", text: "A driver for it", vars: [] }, { key: "0caecb2480f0", group: "Main missions", file: "src/game/missions/templates.ts", line: 1137, lines: [1137], tpl: "heavy:hand", card: "A Spare Hand", field: "label", text: "Meet Bram at the yard", vars: [] }, { key: "c987d5894afb", group: "Main missions", file: "src/game/missions/templates.ts", line: 1173, lines: [1173], tpl: "towTemplate", card: null, field: "label", text: "Bring {min} vehicles", vars: [{ label: "min", expr: "min" }] }, { key: "80a86b5b684a", group: "Main missions", file: "src/game/missions/templates.ts", line: 1174, lines: [1174], tpl: "towTemplate", card: null, field: "label", text: "Tow it to the {name}", vars: [{ label: "name", expr: "route.to.name" }] }, { key: "6868394c773a", group: "Main missions", file: "src/game/missions/templates.ts", line: 1174, lines: [1174], tpl: "towTemplate", card: null, field: "label", text: "Tow it home", vars: [] }, { key: "4872c2a5d9ee", group: "Main missions", file: "src/game/missions/templates.ts", line: 1195, lines: [1195], tpl: "pullingTogether", card: "Pulling Together", field: "title", text: "Pulling Together", vars: [] }, { key: "034b4ad95a0d", group: "Main missions", file: "src/game/missions/templates.ts", line: 1195, lines: [1195], tpl: "pullingTogether", card: "Pulling Together", field: "why", text: "Learn to tow on an old wreck that won\u2019t mind a scrape. Bring two vehicles, hitch up with Enter and drag it away.", vars: [] }, { key: "632e69855085", group: "Main missions", file: "src/game/missions/templates.ts", line: 1195, lines: [1195], tpl: "pullingTogether", card: "Pulling Together", field: "caption", text: "An old wreck", vars: [] }, { key: "1ab623de2446", group: "Main missions", file: "src/game/missions/templates.ts", line: 1202, lines: [1202], tpl: "twoRopes", card: "Two Ropes", field: "title", text: "Two Ropes", vars: [] }, { key: "c09d1e69d6d8", group: "Main missions", file: "src/game/missions/templates.ts", line: 1202, lines: [1202], tpl: "twoRopes", card: "Two Ropes", field: "why", text: "The new church bell is too heavy for one car. Tow it in with two vehicles on ropes and the town grows round it.", vars: [] }, { key: "abc768d1671e", group: "Main missions", file: "src/game/missions/templates.ts", line: 1202, lines: [1202], tpl: "twoRopes", card: "Two Ropes", field: "caption", text: "The church bell", vars: [] }, { key: "dd84b2207f33", group: "Main missions", file: "src/game/missions/templates.ts", line: 1205, lines: [1205], tpl: "twoRopes[2]", card: "Two Ropes", field: "line", text: "The town builds", vars: [] }, { key: "cb6031213689", group: "Main missions", file: "src/game/missions/templates.ts", line: 1209, lines: [1209], tpl: "theBoiler", card: "The Boiler", field: "title", text: "The Boiler", vars: [] }, { key: "51cdbc505fc9", group: "Main missions", file: "src/game/missions/templates.ts", line: 1209, lines: [1209], tpl: "theBoiler", card: "The Boiler", field: "why", text: "Bram\u2019s last job: a mill boiler that needs three vehicles on the ropes to drag it up to the works.", vars: [] }, { key: "b3cfc7d27d82", group: "Main missions", file: "src/game/missions/templates.ts", line: 1209, lines: [1209], tpl: "theBoiler", card: "The Boiler", field: "caption", text: "A mill boiler", vars: [] }, { key: "aba9a5d6f56c", group: "Main missions", file: "src/game/missions/templates.ts", line: 1217, lines: [1217], tpl: "yachtTow", card: "High and Dry", field: "title", text: "High and Dry", vars: [] }, { key: "605a407e9e43", group: "Main missions", file: "src/game/missions/templates.ts", line: 1217, lines: [1217], tpl: "yachtTow", card: "High and Dry", field: "why", text: "A storm left a yacht high and dry in a field. Tow it back to the harbour with two vehicles and its owner pays well.", vars: [] }, { key: "97cc64e22555", group: "Main missions", file: "src/game/missions/templates.ts", line: 1217, lines: [1217], tpl: "yachtTow", card: "High and Dry", field: "caption", text: "A stranded yacht", vars: [] }, { key: "3d33e18f602a", group: "Main missions", file: "src/game/missions/templates.ts", line: 1223, lines: [1223], tpl: "statueTow", card: "The Statue", field: "title", text: "The Statue", vars: [] }, { key: "5d22d01a2f3d", group: "Main missions", file: "src/game/missions/templates.ts", line: 1223, lines: [1223], tpl: "statueTow", card: "The Statue", field: "why", text: "The quarry has finished the town\u2019s new statue. Tow it into town with two vehicles and the town will thank you.", vars: [] }, { key: "ccd6f853cd75", group: "Main missions", file: "src/game/missions/templates.ts", line: 1223, lines: [1223], tpl: "statueTow", card: "The Statue", field: "caption", text: "A stone statue", vars: [] }, { key: "a32263e01e44", group: "Main missions", file: "src/game/missions/templates.ts", line: 1253, lines: [1253, 1501], tpl: "keys:bakery", card: "The Keys", field: "title", text: "The Keys", vars: [] }, { key: "3111a9ff8125", group: "Main missions", file: "src/game/missions/templates.ts", line: 1254, lines: [1254], tpl: "keys:bakery", card: "The Keys", field: "why", text: "Keep {who}\u2019s {x1} stocked with 3 deliveries in 72 hours and {who} hands you the keys to the building.", vars: [{ label: "who", expr: "who" }, { label: "x1", expr: "place.toLowerCase()" }] }, { key: "5cbaa205e7cb", group: "Main missions", file: "src/game/missions/templates.ts", line: 1255, lines: [1255], tpl: "keys:bakery", card: "The Keys", field: "why", text: "Keep the shop stocked with 3 deliveries in 72 hours and {who} hands you the keys.", vars: [{ label: "who", expr: "who" }] }, { key: "3b61611644b1", group: "Main missions", file: "src/game/missions/templates.ts", line: 1256, lines: [1256], tpl: "keys:bakery", card: "The Keys", field: "details", text: "{who} is ready to retire and wants the shop to go to someone who kept it running. Owning a building pays you a cut of every delivery made to its door, yours or anyone else\u2019s.", vars: [{ label: "who", expr: "who" }] }, { key: "dc37a56424e2", group: "Main missions", file: "src/game/missions/templates.ts", line: 1267, lines: [1267], tpl: "clearLot", card: "Clear the Lot", field: "title", text: "Clear the Lot", vars: [] }, { key: "8445c04aeeaf", group: "Main missions", file: "src/game/missions/templates.ts", line: 1267, lines: [1267], tpl: "clearLot", card: "Clear the Lot", field: "why", text: "A wreck is dumped on a boarded-up lot. Tow it away with two vehicles and the lot and its building are yours.", vars: [] }, { key: "271a930f77cb", group: "Main missions", file: "src/game/missions/templates.ts", line: 1267, lines: [1267], tpl: "clearLot", card: "Clear the Lot", field: "caption", text: "A dead van", vars: [] }, { key: "e715b07cb38e", group: "Main missions", file: "src/game/missions/templates.ts", line: 1271, lines: [1271], tpl: "clearLot[1]", card: "Clear the Lot", field: "line", text: "The lot reopens", vars: [] }, { key: "6b11647666f2", group: "Main missions", file: "src/game/missions/templates.ts", line: 1290, lines: [1290], tpl: "keys:next", card: "Next Door", field: "title", text: "Next Door", vars: [] }, { key: "f9faa18c870e", group: "Main missions", file: "src/game/missions/templates.ts", line: 1290, lines: [1290], tpl: "keys:next", card: "Next Door", field: "why", text: "Keep your own place busy with two deliveries in 48 hours and the neighbour next door agrees to sell up to you.", vars: [] }, { key: "cabd7f011606", group: "Main missions", file: "src/game/missions/templates.ts", line: 1292, lines: [1292], tpl: "keys:next", card: "Next Door", field: "caption", text: "Next door: the {x1}", vars: [{ label: "x1", expr: "shortSite(nb.kind).toLowerCase()" }] }, { key: "9fdfb543a650", group: "Main missions", file: "src/game/missions/templates.ts", line: 1317, lines: [1317], tpl: "trip:ferry", card: null, field: "label", text: "Ferry to {name}", vars: [{ label: "name", expr: "f.to.port.name" }] }, { key: "cb18cc376c2b", group: "Main missions", file: "src/game/missions/templates.ts", line: 1319, lines: [1319], tpl: "trip:ferry", card: "Over the Water", field: "why", text: "They\u2019ve never heard of you over the water. Take the car ferry across and drive into the far town to make your name.", vars: [] }, { key: "1b61cd37e16e", group: "Main missions", file: "src/game/missions/templates.ts", line: 1321, lines: [1321], tpl: "trip:ferry", card: "Over the Water", field: "caption", text: "The car ferry", vars: [] }, { key: "7537cc3abd9f", group: "Main missions", file: "src/game/missions/templates.ts", line: 1323, lines: [1323], tpl: "trip:ferry", card: "Over the Water", field: "label", text: "Take the ferry", vars: [] }, { key: "8a21e9212021", group: "Main missions", file: "src/game/missions/templates.ts", line: 1324, lines: [1324], tpl: "trip:ferry", card: "Over the Water", field: "label", text: "Reach {name}", vars: [{ label: "name", expr: "name" }] }, { key: "bbc354f67d54", group: "Main missions", file: "src/game/missions/templates.ts", line: 1324, lines: [1324], tpl: "trip:ferry", card: "Over the Water", field: "label", text: "Reach the far town", vars: [] }, { key: "ab4b00ef6102", group: "Main missions", file: "src/game/missions/templates.ts", line: 1340, lines: [1340], tpl: "freshStamps", card: null, field: "label", text: "Visit {x1}", vars: [{ label: "x1", expr: "REGIONS[b.w.region!].title" }] }, { key: "243a26cb08be", group: "Main missions", file: "src/game/missions/templates.ts", line: 1341, lines: [1341], tpl: "freshStamps", card: null, field: "label", text: "Visit a new biome", vars: [] }, { key: "157dbd5fe501", group: "Main missions", file: "src/game/missions/templates.ts", line: 1355, lines: [1355], tpl: "freshStamps", card: null, field: "label", text: "Reach a wonder", vars: [] }, { key: "2ffe39eb7589", group: "Main missions", file: "src/game/missions/templates.ts", line: 1372, lines: [1372], tpl: "trip:postcards", card: "Postcards", field: "title", text: "Postcards", vars: [] }, { key: "dd85e08d3be9", group: "Main missions", file: "src/game/missions/templates.ts", line: 1372, lines: [1372], tpl: "trip:postcards", card: "Postcards", field: "why", text: "Visit each place on the list to stamp your Passport, and your car gets a free coat of {name} paint.", vars: [{ label: "name", expr: "paint.name" }] }, { key: "f3fc2b4a5756", group: "Main missions", file: "src/game/missions/templates.ts", line: 1374, lines: [1374], tpl: "trip:postcards", card: "Postcards", field: "caption", text: "New stamps", vars: [] }, { key: "e18259908b34", group: "Main missions", file: "src/game/missions/templates.ts", line: 1446, lines: [1446], tpl: "rescue", card: null, field: "details", text: "{name} is waving from the water. Get alongside in any boat with a seat free, bring them in to the harbour, and it won\u2019t forget it.", vars: [{ label: "name", expr: "name" }] }, { key: "0bfcf20571b8", group: "Main missions", file: "src/game/missions/templates.ts", line: 1499, lines: [1499], tpl: "fast", card: "Something Fast", field: "title", text: "Something Fast", vars: [] }, { key: "d75a5a2fe33a", group: "Main missions", file: "src/game/missions/templates.ts", line: 1500, lines: [1500], tpl: "heavy", card: "Heavy Lifting", field: "title", text: "Heavy Lifting", vars: [] }, { key: "aa047fe1ad7e", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 69, lines: [69], tpl: "deliverTo", card: null, field: "label", text: "{x1}{name} \u2192 Circuit", vars: [{ label: "x1", expr: "n > 1 ? `${n}\xD7 ` : ''" }, { label: "name", expr: "p.type.name" }] }, { key: "e83275092015", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 88, lines: [88], tpl: "circuit:hotlap", card: "Hot Lap", field: "title", text: "Hot Lap", vars: [] }, { key: "62e902a44a63", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 88, lines: [88], tpl: "circuit:hotlap", card: "Hot Lap", field: "why", text: "Set a clean lap of {name} in under {x1} s in your {c.def.name}. Beat the clock and the team fits racing tyres.", vars: [{ label: "name", expr: "name" }, { label: "x1", expr: "secs.toFixed(1)" }, { label: "c.def.name", expr: "c.def.name" }] }, { key: "a5a3fb4b14cd", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 89, lines: [89], tpl: "circuit:hotlap", card: "Hot Lap", field: "details", text: "{x1} wants to see what your {name} can do on a proper track. Drive in at the gate, get up to speed and take the chequered line flying.", vars: [{ label: "x1", expr: "who.name.split(',')[0]" }, { label: "name", expr: "c.def.name" }] }, { key: "d2d64a620749", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 90, lines: [90], tpl: "circuit:hotlap", card: "Hot Lap", field: "caption", text: "Racing tyres", vars: [] }, { key: "7aa2349980df", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 91, lines: [91], tpl: "circuit:hotlap", card: "Hot Lap", field: "label", text: "Race a lap under {x1} s", vars: [{ label: "x1", expr: "secs.toFixed(1)" }] }, { key: "ed7e49465be8", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 105, lines: [105], tpl: "circuit:raceday", card: "Race Day", field: "title", text: "Race Day", vars: [] }, { key: "ded8a29ce889", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 105, lines: [105], tpl: "circuit:raceday", card: "Race Day", field: "why", text: "Take a grid slot at {x1}: {LAPS} laps against five cars just like yours. Finish in the top three.", vars: [{ label: "x1", expr: "shortName(k.name)" }, { label: "LAPS", expr: "LAPS" }] }, { key: "e1250f742386", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 106, lines: [106], tpl: "circuit:raceday", card: "Race Day", field: "details", text: "A one-make race: every car on the grid is a {name}, so what you have fitted is your edge. The stands will be full.", vars: [{ label: "name", expr: "c.def.name" }] }, { key: "c860457be6ce", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 107, lines: [107], tpl: "circuit:raceday", card: "Race Day", field: "caption", text: "The winner\u2019s cup", vars: [] }, { key: "50acabf763bc", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 108, lines: [108], tpl: "circuit:raceday", card: "Race Day", field: "label", text: "Race to a top three finish", vars: [] }, { key: "114409ead766", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 139, lines: [139], tpl: "slicks", card: "Fresh Rubber", field: "title", text: "Fresh Rubber", vars: [] }, { key: "3625ad0fdce7", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 143, lines: [143], tpl: "fuel", card: "Fuel for the Rig", field: "title", text: "Fuel for the Rig", vars: [] }, { key: "a11a32a9723d", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 147, lines: [147], tpl: "racecar", card: "Car for the Grid", field: "title", text: "Car for the Grid", vars: [] }, { key: "9dab8c5eb489", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 151, lines: [151], tpl: "fans", card: "Fan Bus", field: "title", text: "Fan Bus", vars: [] }, { key: "10a8df00c290", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 139, lines: [139], tpl: "text.hiker", card: "Lost on the Hill", field: "title", text: "Lost on the Hill", vars: [] }, { key: "2e8ec062c23f", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 139, lines: [139], tpl: "text.hiker", card: "Lost on the Hill", field: "why", text: "A walker never came down off the hill. Find them with your searchlight, land beside them and fly them to the hospital.", vars: [] }, { key: "7d931126e5ea", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 139, lines: [139], tpl: "text.hiker", card: "Lost on the Hill", field: "label", text: "Find the lost hiker", vars: [] }, { key: "03b2250c08fd", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 140, lines: [140], tpl: "text.child", card: "Missing Child", field: "title", text: "Missing Child", vars: [] }, { key: "37be7c616ea3", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 140, lines: [140], tpl: "text.child", card: "Missing Child", field: "why", text: "A child wandered into the fields at dusk. Sweep them with your searchlight, pick the child up and fly to the hospital.", vars: [] }, { key: "78c3f609b5f8", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 140, lines: [140], tpl: "text.child", card: "Missing Child", field: "label", text: "Find the missing child", vars: [] }, { key: "da18c48a28b9", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 141, lines: [141], tpl: "text.dog", card: "Lost Dog", field: "title", text: "Lost Dog", vars: [] }, { key: "c9aad9d66a36", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 141, lines: [141], tpl: "text.dog", card: "Lost Dog", field: "why", text: "Their dog bolted at the fireworks and hasn\u2019t come home. Sweep the fields with your searchlight until you find it.", vars: [] }, { key: "05fa8ad887b1", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 141, lines: [141], tpl: "text.dog", card: "Lost Dog", field: "label", text: "Find the lost dog", vars: [] }, { key: "e6e49b6af2e2", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 145, lines: [145], tpl: "lostHiker", card: null, field: "caption", text: "Searchlight work", vars: [] }, { key: "0502c0a72003", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 171, lines: [171], tpl: "manOverboard", card: "Man Overboard", field: "title", text: "Man Overboard", vars: [] }, { key: "f8ccdd60c1f6", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 171, lines: [171], tpl: "manOverboard", card: "Man Overboard", field: "why", text: "Someone went over the side off the harbour. Find the swimmer with your searchlight and light the lifeboat\u2019s way to them.", vars: [] }, { key: "e82596ee708a", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 173, lines: [173], tpl: "manOverboard", card: "Man Overboard", field: "caption", text: "The lifeboat", vars: [] }, { key: "f82953945643", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 197, lines: [197], tpl: "hotPursuit", card: "Hot Pursuit", field: "title", text: "Hot Pursuit", vars: [] }, { key: "5b3c60afdfa6", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 197, lines: [197], tpl: "hotPursuit", card: "Hot Pursuit", field: "why", text: "A getaway driver is about to run. Keep his car in your searchlight while the patrol chases. Lose him in the dark and he\u2019s gone.", vars: [] }, { key: "6fe4f5485212", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 199, lines: [199, 349], tpl: "hotPursuit", card: "Hot Pursuit", field: "caption", text: "Police air support", vars: [] }, { key: "e6d4d8a192e0", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 221, lines: [221], tpl: "stolenCar", card: "Stolen Car", field: "title", text: "Stolen Car", vars: [] }, { key: "72db82bccc5b", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 221, lines: [221], tpl: "stolenCar", card: "Stolen Car", field: "why", text: "A stolen car is hiding in the streets with its lights off. Find it with your searchlight, then keep it lit when it runs.", vars: [] }, { key: "9910e76e4bdf", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 223, lines: [223], tpl: "stolenCar", card: "Stolen Car", field: "caption", text: "The stolen car", vars: [] }, { key: "d29ce810bcc5", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 242, lines: [242], tpl: "liveNews", card: "Live at Eleven", field: "title", text: "Live at Eleven", vars: [] }, { key: "3382e8d9ad72", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 242, lines: [242], tpl: "liveNews", card: "Live at Eleven", field: "why", text: "A lorry has jack-knifed and the eleven o\u2019clock news wants pictures. Hold the story in your beam for a minute on air.", vars: [] }, { key: "e4f9936eb5c0", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 244, lines: [244], tpl: "liveNews", card: "Live at Eleven", field: "caption", text: "Tonight\u2019s story", vars: [] }, { key: "4e10091794fb", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 264, lines: [264], tpl: "nightShoot", card: "The Night Shoot", field: "title", text: "The Night Shoot", vars: [] }, { key: "3a67f7694282", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 264, lines: [264], tpl: "nightShoot", card: "The Night Shoot", field: "why", text: "A film crew needs a helicopter light for its big car stunt. Follow the car, hit the mark and nail the reveal.", vars: [] }, { key: "e12615a5558c", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 266, lines: [266], tpl: "nightShoot", card: "The Night Shoot", field: "caption", text: "The stunt car", vars: [] }, { key: "dff7e9e4c3be", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 292, lines: [292], tpl: "bindBlackout", card: "Blackout", field: "title", text: "Blackout", vars: [] }, { key: "e3799ebd8ab5", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 292, lines: [292], tpl: "bindBlackout", card: "Blackout", field: "why", text: "The power is out across town and an ambulance is crawling in the dark. Light the road ahead of it all the way to the hospital.", vars: [] }, { key: "155466c38789", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 294, lines: [294], tpl: "bindBlackout", card: "Blackout", field: "caption", text: "The ambulance", vars: [] }, { key: "785f6fd56c72", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 318, lines: [318], tpl: "looseStock", card: "Loose Stock", field: "title", text: "Loose Stock", vars: [] }, { key: "3f69775f9449", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 318, lines: [318], tpl: "looseStock", card: "Loose Stock", field: "why", text: "The {x1} through the fence and out on the road. Light each stray so the rancher can round it up before a car hits it.", vars: [{ label: "x1", expr: "what === 'sheep' ? 'sheep are' : 'cows are'" }] }, { key: "de3eb2427354", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 320, lines: [320], tpl: "looseStock", card: "Loose Stock", field: "caption", text: "The rancher\u2019s pickup", vars: [] }, { key: "99d591cb23fe", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 347, lines: [347], tpl: "dropSpotter", card: "Drop Spotter", field: "title", text: "Drop Spotter", vars: [] }, { key: "c2e9b60d102c", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 347, lines: [347], tpl: "dropSpotter", card: "Drop Spotter", field: "why", text: "Smugglers are meeting tonight. Sweep the area with your searchlight for their lanterns and tag each contact for the police.", vars: [] }, { key: "594bd3487196", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 244, lines: [244], tpl: "tail:spouse", card: "Working Late", field: "title", text: "Working Late", vars: [] }, { key: "35f250bb44b0", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 244, lines: [244], tpl: "tail:spouse", card: "Working Late", field: "caption", text: "The husband\u2019s convertible", vars: [] }, { key: "bf4c1731fb4f", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 244, lines: [244], tpl: "tail:spouse", card: "Working Late", field: "label", text: "Tail the red Sunny", vars: [] }, { key: "b40c098c4c08", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 257, lines: [257], tpl: "tail:claim", card: "Miracle Recovery", field: "title", text: "Miracle Recovery", vars: [] }, { key: "2eeccd24b7b7", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 257, lines: [257], tpl: "tail:claim", card: "Miracle Recovery", field: "caption", text: "The claimant\u2019s SUV", vars: [] }, { key: "10cc066b74c5", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 257, lines: [257], tpl: "tail:claim", card: "Miracle Recovery", field: "label", text: "Tail the blue Bramble", vars: [] }, { key: "fc6a66ca5763", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 270, lines: [270], tpl: "tail:scoop", card: "The Secret Party", field: "title", text: "The Secret Party", vars: [] }, { key: "4318accb17f6", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 270, lines: [270], tpl: "tail:scoop", card: "The Secret Party", field: "caption", text: "The star\u2019s limousine", vars: [] }, { key: "6fc32df74b21", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 270, lines: [270], tpl: "tail:scoop", card: "The Secret Party", field: "label", text: "Tail the black limo", vars: [] }, { key: "04e1da7f8fd6", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 283, lines: [283], tpl: "tail:rival", card: "Follow the Van", field: "title", text: "Follow the Van", vars: [] }, { key: "d6197bf2cf4f", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 283, lines: [283], tpl: "tail:rival", card: "Follow the Van", field: "caption", text: "A rival\u2019s van", vars: [] }, { key: "bc2e3e0ac4a4", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 283, lines: [283], tpl: "tail:rival", card: "Follow the Van", field: "label", text: "Tail the rival van", vars: [] }, { key: "c4cd2abfb29e", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 308, lines: [308], tpl: "tail:rival", card: "Follow the Van", field: "line", text: "{name} run their vans out of {town}: their depot is lit", vars: [{ label: "name", expr: "s.firm.name" }, { label: "town", expr: "s.firm.town" }] }, { key: "17f5f8299ba6", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 318, lines: [318], tpl: "tail:getaway", card: "Getaway Car", field: "title", text: "Getaway Car", vars: [] }, { key: "d1c562c6e728", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 318, lines: [318], tpl: "tail:getaway", card: "Getaway Car", field: "caption", text: "The getaway car", vars: [] }, { key: "5b56d8bbfc98", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 318, lines: [318], tpl: "tail:getaway", card: "Getaway Car", field: "label", text: "Tail the green Wasabi", vars: [] }, { key: "cb172e462b3e", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 338, lines: [338], tpl: "tail:getaway", card: "Getaway Car", field: "line", text: "The gang\u2019s hideout: {toName}, out past {x1}", vars: [{ label: "toName", expr: "s.toName" }, { label: "x1", expr: "s.town ? s.town.name.replace(/ City$/, '') : 'the town'" }] }, { key: "7397431a91b2", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 351, lines: [351], tpl: "tail:courier", card: "The Courier", field: "title", text: "The Courier", vars: [] }, { key: "f092ff26966d", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 351, lines: [351], tpl: "tail:courier", card: "The Courier", field: "caption", text: "The courier\u2019s runabout", vars: [] }, { key: "f0416e203bd1", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 351, lines: [351], tpl: "tail:courier", card: "The Courier", field: "label", text: "Tail the yellow Pip", vars: [] }, { key: "e79554a6deff", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 372, lines: [372], tpl: "tail:courier", card: "The Courier", field: "line", text: "{x1}{x2} nobody has claimed, at {toName}: drive up and press Tab", vars: [{ label: "x1", expr: "what.charAt(0).toUpperCase()" }, { label: "x2", expr: "what.slice(1)" }, { label: "toName", expr: "s.toName" }] }, { key: "b6ea896c0398", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 379, lines: [379], tpl: "tail:fence", card: "Who\u2019s Buying", field: "title", text: "Who\u2019s Buying", vars: [] }, { key: "091b8f28f6a7", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 379, lines: [379], tpl: "tail:fence", card: "Who\u2019s Buying", field: "caption", text: "The fence\u2019s van", vars: [] }, { key: "37be107dec4f", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 379, lines: [379], tpl: "tail:fence", card: "Who\u2019s Buying", field: "label", text: "Tail the maroon Mule", vars: [] }, { key: "369d19d0c616", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 392, lines: [392], tpl: "tail:fence", card: "Who\u2019s Buying", field: "line", text: "The fence\u2019s people at {toName} will have a night run for you after dark", vars: [{ label: "toName", expr: "s.toName" }] }, { key: "173458df6202", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 443, lines: [443], tpl: "trainTemplate", card: null, field: "caption", text: "A freight on the line", vars: [] }, { key: "2847b9065575", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 454, lines: [454], tpl: "tail:freight", card: "Missing Wagons", field: "title", text: "Missing Wagons", vars: [] }, { key: "8ca7f8abdbd3", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 454, lines: [454, 462], tpl: "tail:freight", card: "Missing Wagons", field: "label", text: "Trail the next freight", vars: [] }, { key: "8e76363a0c77", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 456, lines: [456], tpl: "tail:freight", card: "Missing Wagons", field: "why", text: "Wagons keep going missing between stations. Follow the next freight from the roads beside the line and see where it really stops.", vars: [] }, { key: "1cd44572476b", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 457, lines: [457], tpl: "tail:freight", card: "Missing Wagons", field: "details", text: "The guard rides at the back and watches the line behind. A car keeping level with the train for long gets noticed too, and a freight waits for nobody.", vars: [] }, { key: "6783d765fef8", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 462, lines: [462], tpl: "tail:wagon", card: "Off the Rails", field: "title", text: "Off the Rails", vars: [] }, { key: "e7e35b00aee4", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 464, lines: [464], tpl: "tail:wagon", card: "Off the Rails", field: "why", text: "My goods ride hidden in a freight wagon. Follow the train from the road and see where it\u2019s cut off, then we can talk business.", vars: [] }, { key: "e77c00e5bd66", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 465, lines: [465], tpl: "tail:wagon", card: "Off the Rails", field: "details", text: "If the guard sees a car shadowing his train, the wagon never comes off. Keep back, keep out of his sight, and don\u2019t lose it.", vars: [] }, { key: "ef571b6c5137", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 466, lines: [466], tpl: "tail:wagon", card: "Off the Rails", field: "line", text: "The wagon comes off at {name}: a contact will call on you some night", vars: [{ label: "name", expr: "yard.name" }] }, { key: "268385b3fd11", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 61, lines: [61], tpl: "JOBS.police[0]", card: "Before the Hearing", field: "title", text: "Before the Hearing", vars: [] }, { key: "c4e34c3d2580", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 61, lines: [61], tpl: "JOBS.police[0]", card: "Before the Hearing", field: "why", text: "The court sits at noon and the evidence is still in the station locker. Get it there sealed.", vars: [] }, { key: "356bb3efaa9a", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 62, lines: [62, 138], tpl: "JOBS.police[1]", card: "The Transfer", field: "title", text: "The Transfer", vars: [] }, { key: "a1600de74085", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 62, lines: [62], tpl: "JOBS.police[1]", card: "The Transfer", field: "why", text: "Two officers, one passenger, a route nobody publishes. Drive carefully and say nothing.", vars: [] }, { key: "5ede37bb9861", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 65, lines: [65], tpl: "JOBS.family[0]", card: "The Envelope", field: "title", text: "The Envelope", vars: [] }, { key: "788bb6e75f63", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 65, lines: [65], tpl: "JOBS.family[0]", card: "The Envelope", field: "why", text: "A shopkeeper is behind with his insurance. Remind him, politely, with this envelope.", vars: [] }, { key: "4aec44a0a6bf", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 66, lines: [66], tpl: "JOBS.family[1]", card: "Wash Day", field: "title", text: "Wash Day", vars: [] }, { key: "3c1ee50d99bf", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 66, lines: [66], tpl: "JOBS.family[1]", card: "Wash Day", field: "why", text: "Last night\u2019s takings need to be somewhere else by morning, and clean when they get there.", vars: [] }, { key: "9be50608fe14", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 69, lines: [69, 153], tpl: "JOBS.ministry[0]", card: "In Triplicate", field: "title", text: "In Triplicate", vars: [] }, { key: "2f72585eb845", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 69, lines: [69], tpl: "JOBS.ministry[0]", card: "In Triplicate", field: "why", text: "Forms that must be signed today, by somebody who has not yet heard of them.", vars: [] }, { key: "cadfd55973ac", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 70, lines: [70], tpl: "JOBS.ministry[1]", card: "Diplomatic Bag", field: "title", text: "Diplomatic Bag", vars: [] }, { key: "b99535d812bc", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 70, lines: [70], tpl: "JOBS.ministry[1]", card: "Diplomatic Bag", field: "why", text: "Two attach\xE9s and a briefcase they will not put down. On time, and no bumps.", vars: [] }, { key: "6d126fefe11f", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 73, lines: [73], tpl: "JOBS.visitors[0]", card: "It Hums", field: "title", text: "It Hums", vars: [] }, { key: "5b2de759bd34", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 73, lines: [73], tpl: "JOBS.visitors[0]", card: "It Hums", field: "why", text: "Something warm and humming lies in a field. The Envoy would like it taken somewhere quiet.", vars: [] }, { key: "02dc28315f71", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 74, lines: [74], tpl: "JOBS.visitors[1]", card: "Soil Samples", field: "title", text: "Soil Samples", vars: [] }, { key: "2b34935eb01f", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 74, lines: [74], tpl: "JOBS.visitors[1]", card: "Soil Samples", field: "why", text: "They are curious about our dirt. Bring them a sample, and do not open the jar.", vars: [] }, { key: "341f19335e59", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 77, lines: [77], tpl: "JOBS.unions[0]", card: "The Pour", field: "title", text: "The Pour", vars: [] }, { key: "e63a93f0c713", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 77, lines: [77], tpl: "JOBS.unions[0]", card: "The Pour", field: "why", text: "The pour is booked for this afternoon and the cement is still at the works.", vars: [] }, { key: "84324095144b", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 78, lines: [78, 167], tpl: "JOBS.unions[1]", card: "Morning Shift", field: "title", text: "Morning Shift", vars: [] }, { key: "e4efbd615787", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 78, lines: [78], tpl: "JOBS.unions[1]", card: "Morning Shift", field: "why", text: "A crew for the site, hard hats on and flasks full. The foreman is counting heads.", vars: [] }, { key: "a361360d4617", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 81, lines: [81], tpl: "JOBS.post[0]", card: "Before the Round", field: "title", text: "Before the Round", vars: [] }, { key: "4a9ddc81fca3", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 81, lines: [81], tpl: "JOBS.post[0]", card: "Before the Round", field: "why", text: "The morning letters are sorted and the round goes out at nine. Get them to the counter first.", vars: [] }, { key: "ca6db3a5c4d3", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 82, lines: [82, 173], tpl: "JOBS.post[1]", card: "Signed For", field: "title", text: "Signed For", vars: [] }, { key: "319dd16eb35d", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 82, lines: [82], tpl: "JOBS.post[1]", card: "Signed For", field: "why", text: "Registered, insured and not to be dropped. Somebody is waiting with a pen.", vars: [] }, { key: "154a254a7589", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 85, lines: [85, 180], tpl: "JOBS.army[0]", card: "Mess Call", field: "title", text: "Mess Call", vars: [] }, { key: "93e738bef18f", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 85, lines: [85], tpl: "JOBS.army[0]", card: "Mess Call", field: "why", text: "The base kitchen is out of everything but tea. Bring rations before the men notice.", vars: [] }, { key: "f2f79444ed0e", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 86, lines: [86], tpl: "JOBS.army[1]", card: "Handle With Care", field: "title", text: "Handle With Care", vars: [] }, { key: "374bd3d82afc", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 86, lines: [86], tpl: "JOBS.army[1]", card: "Handle With Care", field: "why", text: "Crates stencilled DO NOT DROP, for the range. Take the bumps slowly.", vars: [] }, { key: "cf19ee358220", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 89, lines: [89, 187], tpl: "JOBS.studios[0]", card: "The Dailies", field: "title", text: "The Dailies", vars: [] }, { key: "193082f44443", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 89, lines: [89], tpl: "JOBS.studios[0]", card: "The Dailies", field: "why", text: "Yesterday\u2019s film, wanted in the screening room before the director wakes up.", vars: [] }, { key: "9a1146836825", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 90, lines: [90, 186], tpl: "JOBS.studios[1]", card: "On Location", field: "title", text: "On Location", vars: [] }, { key: "1e2dfbf77acc", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 90, lines: [90], tpl: "JOBS.studios[1]", card: "On Location", field: "why", text: "A crew, a camera and one afternoon of good light. Get them to the set.", vars: [] }, { key: "de015e13e29b", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 93, lines: [93, 194], tpl: "JOBS.guild[0]", card: "Ice for the Boxes", field: "title", text: "Ice for the Boxes", vars: [] }, { key: "77c2151c9f15", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 93, lines: [93], tpl: "JOBS.guild[0]", card: "Ice for the Boxes", field: "why", text: "The boats are coming in and the market has no ice. It will not wait long.", vars: [] }, { key: "8d175a3246ec", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 94, lines: [94, 195], tpl: "JOBS.guild[1]", card: "Evening Bait", field: "title", text: "Evening Bait", vars: [] }, { key: "54dcd98858a7", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 94, lines: [94], tpl: "JOBS.guild[1]", card: "Evening Bait", field: "why", text: "A cool box of bait for the evening boats, before they cast off.", vars: [] }, { key: "98ac0c225190", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 97, lines: [97], tpl: "JOBS.press[0]", card: "Hold the Front Page", field: "title", text: "Hold the Front Page", vars: [] }, { key: "95442f123cd3", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 97, lines: [97], tpl: "JOBS.press[0]", card: "Hold the Front Page", field: "why", text: "A leaked memo. The editor wants it before the other papers do.", vars: [] }, { key: "606988cb3dfe", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 98, lines: [98], tpl: "JOBS.press[1]", card: "Hot off the Press", field: "title", text: "Hot off the Press", vars: [] }, { key: "3833bfab361a", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 98, lines: [98], tpl: "JOBS.press[1]", card: "Hot off the Press", field: "why", text: "Bundles still warm from the presses. Yesterday\u2019s news sells for nothing.", vars: [] }, { key: "b35874beeaef", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 120, lines: [120], tpl: "fac:*", card: null, field: "details", text: "{name} pays for its own work at its own rate: the friendlier you are, the better.", vars: [{ label: "name", expr: "d.name" }] }, { key: "68d2f896be1a", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 137, lines: [137], tpl: "OATHS.police[0]", card: "Chain of Evidence", field: "title", text: "Chain of Evidence", vars: [] }, { key: "47a922b9a3b5", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 137, lines: [137], tpl: "OATHS.police[0]", card: "Chain of Evidence", field: "why", text: "Two bags of evidence for the court, sealed and signed. Prove you can be trusted with them.", vars: [] }, { key: "827546f49427", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 138, lines: [138], tpl: "OATHS.police[1]", card: "The Transfer", field: "why", text: "A prisoner moved between stations, in your car, with nobody the wiser.", vars: [] }, { key: "7c05e70ec89e", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 139, lines: [139], tpl: "OATHS.police[2]", card: "Cadet Run", field: "title", text: "Cadet Run", vars: [] }, { key: "5b59d8d90490", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 139, lines: [139], tpl: "OATHS.police[2]", card: "Cadet Run", field: "why", text: "This year\u2019s cadets, from the bus station to their first day at the station.", vars: [] }, { key: "9cf4a552b833", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 140, lines: [140], tpl: "OATHS.police[3]", card: "Recovered Goods", field: "title", text: "Recovered Goods", vars: [] }, { key: "b9f3435f3689", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 140, lines: [140], tpl: "OATHS.police[3]", card: "Recovered Goods", field: "why", text: "A chop shop full of somebody else\u2019s televisions. Take them to the impound. The Family will not thank you.", vars: [] }, { key: "bd278ebebb10", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 141, lines: [141], tpl: "OATHS.police[4]", card: "On the Beat", field: "title", text: "On the Beat", vars: [] }, { key: "cbb2840a7238", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 141, lines: [141], tpl: "OATHS.police[4]", card: "On the Beat", field: "why", text: "Walk the beat with them: three stations after dark, a few minutes at each.", vars: [] }, { key: "ed62f0379e8b", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 144, lines: [144], tpl: "OATHS.family[0]", card: "The Round", field: "title", text: "The Round", vars: [] }, { key: "631c5e4f47c9", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 144, lines: [144], tpl: "OATHS.family[0]", card: "The Round", field: "why", text: "Two shops behind on their insurance. Remind them, with envelopes.", vars: [] }, { key: "35add58ccce9", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 145, lines: [145], tpl: "OATHS.family[1]", card: "Clean Money", field: "title", text: "Clean Money", vars: [] }, { key: "d6ff230c16f1", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 145, lines: [145], tpl: "OATHS.family[1]", card: "Clean Money", field: "why", text: "The casino\u2019s takings, out the back door and into the club.", vars: [] }, { key: "7246f4195205", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 146, lines: [146], tpl: "OATHS.family[2]", card: "Lost Evidence", field: "title", text: "Lost Evidence", vars: [] }, { key: "0430e02c91ec", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 146, lines: [146], tpl: "OATHS.family[2]", card: "Lost Evidence", field: "why", text: "There is evidence at the station that would be better at the chop shop. The Constabulary will not forgive this.", vars: [] }, { key: "873ac1df7c10", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 147, lines: [147], tpl: "OATHS.family[3]", card: "A Quiet Word", field: "title", text: "A Quiet Word", vars: [] }, { key: "d770970d41df", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 147, lines: [147], tpl: "OATHS.family[3]", card: "A Quiet Word", field: "why", text: "The Don would like a word, at the villa, at midnight. Come alone.", vars: [] }, { key: "dd44be780621", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 148, lines: [148], tpl: "OATHS.family[4]", card: "Family Business", field: "title", text: "Family Business", vars: [] }, { key: "3e3c4ddb73f3", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 148, lines: [148], tpl: "OATHS.family[4]", card: "Family Business", field: "why", text: "A suitcase of cash to the villa. Nobody counts it but the Don.", vars: [] }, { key: "0db30bc8207f", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 151, lines: [151], tpl: "OATHS.ministry[0]", card: "Polling Day", field: "title", text: "Polling Day", vars: [] }, { key: "4c4d3ab2fbff", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 151, lines: [151], tpl: "OATHS.ministry[0]", card: "Polling Day", field: "why", text: "Two town halls are waiting for their ballot boxes, and the polls open whether they are there or not.", vars: [] }, { key: "8dc25351c445", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 152, lines: [152], tpl: "OATHS.ministry[1]", card: "State Visit", field: "title", text: "State Visit", vars: [] }, { key: "226d70d9d39e", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 152, lines: [152], tpl: "OATHS.ministry[1]", card: "State Visit", field: "why", text: "A head of state, from the airport to the embassy. Smooth, on time, no knocks.", vars: [] }, { key: "e09ee8203e1c", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 153, lines: [153], tpl: "OATHS.ministry[2]", card: "In Triplicate", field: "why", text: "Forms for the court, signed in three places and needed in four.", vars: [] }, { key: "795fa16db9ec", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 154, lines: [154], tpl: "OATHS.ministry[3]", card: "Hangar 18", field: "title", text: "Hangar 18", vars: [] }, { key: "68d140791e3a", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 154, lines: [154], tpl: "OATHS.ministry[3]", card: "Hangar 18", field: "why", text: "Something fell out of the sky. Bring what is left of it to the hangar, and forget what you saw. The Visitors will not.", vars: [] }, { key: "34b0a5f3dafc", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 155, lines: [155], tpl: "OATHS.ministry[4]", card: "Visitors at the Door", field: "title", text: "Visitors at the Door", vars: [] }, { key: "e02bca3d3a06", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 155, lines: [155], tpl: "OATHS.ministry[4]", card: "Visitors at the Door", field: "why", text: "Two tall figures wish to meet the Minister. Bring them in quietly, before anyone takes a picture.", vars: [] }, { key: "50141b0fd5ad", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 158, lines: [158], tpl: "OATHS.visitors[0]", card: "Lights in the Sky", field: "title", text: "Lights in the Sky", vars: [] }, { key: "be829dee0eeb", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 158, lines: [158], tpl: "OATHS.visitors[0]", card: "Lights in the Sky", field: "why", text: "Wait at the ring after dark. Something will want to see you there.", vars: [] }, { key: "0402838b03d0", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 159, lines: [159], tpl: "OATHS.visitors[1]", card: "The Probe", field: "title", text: "The Probe", vars: [] }, { key: "d786aa4634d0", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 159, lines: [159], tpl: "OATHS.visitors[1]", card: "The Probe", field: "why", text: "One of theirs, lost in a field and humming. Take it home.", vars: [] }, { key: "3dd62116aa3d", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 160, lines: [160], tpl: "OATHS.visitors[2]", card: "Taken Back", field: "title", text: "Taken Back", vars: [] }, { key: "591a1c84d407", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 160, lines: [160], tpl: "OATHS.visitors[2]", card: "Taken Back", field: "why", text: "Their wreckage, before the Army takes it to the hangar. The Army will not thank you.", vars: [] }, { key: "92b72664b17c", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 161, lines: [161], tpl: "OATHS.visitors[3]", card: "Specimens", field: "title", text: "Specimens", vars: [] }, { key: "42c7c387e417", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 161, lines: [161], tpl: "OATHS.visitors[3]", card: "Specimens", field: "why", text: "They are curious about our dirt, and our researchers have plenty of it.", vars: [] }, { key: "51da35f10d73", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 162, lines: [162], tpl: "OATHS.visitors[4]", card: "First Contact", field: "title", text: "First Contact", vars: [] }, { key: "a7623b22bc44", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 162, lines: [162], tpl: "OATHS.visitors[4]", card: "First Contact", field: "why", text: "A delegation to the town hall, at an hour nobody will see them arrive.", vars: [] }, { key: "269f046b08f1", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 165, lines: [165], tpl: "OATHS.unions[0]", card: "First Pour", field: "title", text: "First Pour", vars: [] }, { key: "9f7105048903", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 165, lines: [165], tpl: "OATHS.unions[0]", card: "First Pour", field: "why", text: "Cement for the yard, two loads, before the mixer drivers go home.", vars: [] }, { key: "b2664d2fccde", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 166, lines: [166], tpl: "OATHS.unions[1]", card: "Rebar", field: "title", text: "Rebar", vars: [] }, { key: "f05076343146", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 166, lines: [166], tpl: "OATHS.unions[1]", card: "Rebar", field: "why", text: "Steel for the frame of the new tower. The pour waits for nobody.", vars: [] }, { key: "48da698129fa", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 167, lines: [167], tpl: "OATHS.unions[2]", card: "Morning Shift", field: "why", text: "A crew from the hall to the site, hard hats on.", vars: [] }, { key: "aaa36ef85d1c", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 168, lines: [168], tpl: "OATHS.unions[3]", card: "Handed In", field: "title", text: "Handed In", vars: [] }, { key: "f43f337ba772", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 168, lines: [168], tpl: "OATHS.unions[3]", card: "Handed In", field: "why", text: "The Family has been leaning on the yard. Take their envelope to the hall instead of paying it. They will remember.", vars: [] }, { key: "a284e6cfc133", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 169, lines: [169], tpl: "OATHS.unions[4]", card: "Topping Out", field: "title", text: "Topping Out", vars: [] }, { key: "5e816cc93948", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 169, lines: [169], tpl: "OATHS.unions[4]", card: "Topping Out", field: "why", text: "Roadstone for the last stretch of the new road. The whole hall will be there.", vars: [] }, { key: "2b773bdc9ca8", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 172, lines: [172], tpl: "OATHS.post[0]", card: "The Morning Post", field: "title", text: "The Morning Post", vars: [] }, { key: "d2eb1f1b44e3", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 172, lines: [172], tpl: "OATHS.post[0]", card: "The Morning Post", field: "why", text: "Two post offices waiting for the morning letters before nine.", vars: [] }, { key: "f9ed831b8df9", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 173, lines: [173], tpl: "OATHS.post[1]", card: "Signed For", field: "why", text: "Registered mail for the bank, insured, and not to be dropped.", vars: [] }, { key: "151d93dff816", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 174, lines: [174], tpl: "OATHS.post[2]", card: "The Island Bag", field: "title", text: "The Island Bag", vars: [] }, { key: "a90f39d2ed74", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 174, lines: [174], tpl: "OATHS.post[2]", card: "The Island Bag", field: "why", text: "A sack of mail for the harbour, where the boat takes it out to the islands.", vars: [] }, { key: "a87e5b58d80d", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 175, lines: [175], tpl: "OATHS.post[3]", card: "The Country Round", field: "title", text: "The Country Round", vars: [] }, { key: "87bb3846e758", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 175, lines: [175], tpl: "OATHS.post[3]", card: "The Country Round", field: "why", text: "The mailboxes at the end of the lanes, before the farmers come down for them.", vars: [] }, { key: "85244a9b48e9", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 176, lines: [176], tpl: "OATHS.post[4]", card: "Return to Sender", field: "title", text: "Return to Sender", vars: [] }, { key: "419b0140f8c6", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 176, lines: [176], tpl: "OATHS.post[4]", card: "Return to Sender", field: "why", text: "A bag from the Social Club that is not mail. Take it to the police. The Family will not like it.", vars: [] }, { key: "8a34368e7335", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 179, lines: [179], tpl: "OATHS.army[0]", card: "Recruits", field: "title", text: "Recruits", vars: [] }, { key: "fc712dff22fa", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 179, lines: [179], tpl: "OATHS.army[0]", card: "Recruits", field: "why", text: "Fresh haircuts and one bag each, from the bus station to the base.", vars: [] }, { key: "02b14ca88898", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 180, lines: [180], tpl: "OATHS.army[1]", card: "Mess Call", field: "why", text: "Rations for the base before the men notice the kitchen is empty.", vars: [] }, { key: "3f9efa1151e9", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 181, lines: [181], tpl: "OATHS.army[2]", card: "Live Rounds", field: "title", text: "Live Rounds", vars: [] }, { key: "7532618e6819", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 181, lines: [181], tpl: "OATHS.army[2]", card: "Live Rounds", field: "why", text: "Ordnance for the airbase. Every bump costs it.", vars: [] }, { key: "dfeb0ebb83b7", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 182, lines: [182], tpl: "OATHS.army[3]", card: "Secured", field: "title", text: "Secured", vars: [] }, { key: "07680cbb1cc7", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 182, lines: [182], tpl: "OATHS.army[3]", card: "Secured", field: "why", text: "The crash site is ours. Bring the wreckage in before the Visitors take it home. They will not forget.", vars: [] }, { key: "59883abc09fb", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 183, lines: [183], tpl: "OATHS.army[4]", card: "Parade Day", field: "title", text: "Parade Day", vars: [] }, { key: "0d778d4cde2f", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 183, lines: [183], tpl: "OATHS.army[4]", card: "Parade Day", field: "why", text: "The colours, the band and a vehicle polished to shine, through the middle of town.", vars: [] }, { key: "d9a0212d069d", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 186, lines: [186], tpl: "OATHS.studios[0]", card: "On Location", field: "why", text: "A crew and a camera to the landmark, while the light is good.", vars: [] }, { key: "586fab371838", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 187, lines: [187], tpl: "OATHS.studios[1]", card: "The Dailies", field: "why", text: "Yesterday\u2019s film to the screening room, before the director wakes up.", vars: [] }, { key: "b1a305f6ad2a", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 188, lines: [188], tpl: "OATHS.studios[2]", card: "Opening Night", field: "title", text: "Opening Night", vars: [] }, { key: "0838f6cbeb16", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 188, lines: [188], tpl: "OATHS.studios[2]", card: "Opening Night", field: "why", text: "The star of the picture, from the hills to the premiere. The crowd is waiting.", vars: [] }, { key: "bacae6020222", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 189, lines: [189], tpl: "OATHS.studios[3]", card: "Bought Back", field: "title", text: "Bought Back", vars: [] }, { key: "88bca1655ded", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 189, lines: [189], tpl: "OATHS.studios[3]", card: "Bought Back", field: "why", text: "The Press has footage the studio would rather it didn\u2019t. Get it back to the lot. The Press will be furious.", vars: [] }, { key: "b1139b90022d", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 190, lines: [190], tpl: "OATHS.studios[4]", card: "The Red Carpet", field: "title", text: "The Red Carpet", vars: [] }, { key: "e0b597660088", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 190, lines: [190], tpl: "OATHS.studios[4]", card: "The Red Carpet", field: "why", text: "The biggest night of the year, and you are driving.", vars: [] }, { key: "05b46cbca495", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 193, lines: [193], tpl: "OATHS.guild[0]", card: "Dawn at the Market", field: "title", text: "Dawn at the Market", vars: [] }, { key: "15903061fcb0", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 193, lines: [193], tpl: "OATHS.guild[0]", card: "Dawn at the Market", field: "why", text: "Be at the fish market at dawn, when the bell goes and the boats come in.", vars: [] }, { key: "cececfcccba4", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 194, lines: [194], tpl: "OATHS.guild[1]", card: "Ice for the Boxes", field: "why", text: "The catch is coming in and the market has no ice.", vars: [] }, { key: "4a8df81758e8", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 195, lines: [195], tpl: "OATHS.guild[2]", card: "Evening Bait", field: "why", text: "Bait for the evening boats, before they cast off.", vars: [] }, { key: "1787873a3ff4", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 196, lines: [196], tpl: "OATHS.guild[3]", card: "The Morning Catch", field: "title", text: "The Morning Catch", vars: [] }, { key: "df3abe34af4d", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 196, lines: [196], tpl: "OATHS.guild[3]", card: "The Morning Catch", field: "why", text: "Fresh fish from the harbour to the market, before the auction.", vars: [] }, { key: "2cdf7b7ea261", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 197, lines: [197], tpl: "OATHS.guild[4]", card: "In the Nets", field: "title", text: "In the Nets", vars: [] }, { key: "5a8141cc8408", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 197, lines: [197], tpl: "OATHS.guild[4]", card: "In the Nets", field: "why", text: "Something that is not fish came up in the nets. Take it to the police. The Family will want to know who did.", vars: [] }, { key: "a9318b23f3dc", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 200, lines: [200], tpl: "OATHS.press[0]", card: "Leaked", field: "title", text: "Leaked", vars: [] }, { key: "c52e2da75fd4", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 200, lines: [200], tpl: "OATHS.press[0]", card: "Leaked", field: "why", text: "A memo from the town hall, for the newsroom, before anybody notices it\u2019s gone.", vars: [] }, { key: "f14633e6d78a", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 201, lines: [201], tpl: "OATHS.press[1]", card: "Morning Edition", field: "title", text: "Morning Edition", vars: [] }, { key: "49bcfe432992", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 201, lines: [201], tpl: "OATHS.press[1]", card: "Morning Edition", field: "why", text: "Bundles for two newsstands, still warm from the presses.", vars: [] }, { key: "c870457b2cbf", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 202, lines: [202], tpl: "OATHS.press[2]", card: "Tape at Six", field: "title", text: "Tape at Six", vars: [] }, { key: "0638835cc4e0", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 202, lines: [202], tpl: "OATHS.press[2]", card: "Tape at Six", field: "why", text: "Footage from the stadium for the six o\u2019clock news.", vars: [] }, { key: "b286dbb8d3d9", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 203, lines: [203], tpl: "OATHS.press[3]", card: "The Scoop", field: "title", text: "The Scoop", vars: [] }, { key: "8151649b05a7", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 203, lines: [203], tpl: "OATHS.press[3]", card: "The Scoop", field: "why", text: "A star\u2019s secret, from the mansion to the newsroom. The Studios will be livid.", vars: [] }, { key: "442e355efb9b", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 204, lines: [204], tpl: "OATHS.press[4]", card: "Live from the Scene", field: "title", text: "Live from the Scene", vars: [] }, { key: "e18eddf7a491", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 204, lines: [204], tpl: "OATHS.press[4]", card: "Live from the Scene", field: "why", text: "Park by the stadium and go live: hold the shot for half a minute.", vars: [] }, { key: "02d958c1c6e6", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 273, lines: [273], tpl: "start.ride", card: null, field: "label", text: "the {rideName}", vars: [{ label: "rideName", expr: "rideName" }] }, { key: "0c1ebb6f42a3", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 276, lines: [276], tpl: "oathStep", card: "{title}", field: "details", text: "The Oath of {name}, step {x1} of 5, begun at their hall in the {rideName}. {x2}", vars: [{ label: "name", expr: "d.name" }, { label: "x1", expr: "i + 1" }, { label: "rideName", expr: "rideName" }, { label: "x2", expr: "i === 4 ? 'The last step: done, and they count you Sworn.' : 'Each step done moves you on to the next.'" }] }, { key: "f7bddac89651", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 277, lines: [277], tpl: "oathStep", card: "{title}", field: "caption", text: "{icon} The Oath \xB7 {x1} of 5", vars: [{ label: "icon", expr: "d.icon" }, { label: "x1", expr: "i + 1" }] }, { key: "42688a8c78ef", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 287, lines: [287], tpl: "OATH_ARCS", card: "The Oath of {x1}", field: "title", text: "The Oath of {x1}", vars: [{ label: "x1", expr: "FACTIONS[f].name" }] }, { key: "a14b394e5763", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 58, lines: [58], tpl: "CHAINS.police[0]", card: "The Thin Blue Line", field: "title", text: "The Thin Blue Line", vars: [] }, { key: "182040358aac", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 58, lines: [58], tpl: "CHAINS.police[0]", card: "The Thin Blue Line", field: "why", text: "Detective Sergeant Rourke would like a word at the station, then a bag of evidence taken to the court. Sealed.", vars: [] }, { key: "aa7d48bb5494", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 59, lines: [59], tpl: "CHAINS.police[0]", card: "The Thin Blue Line", field: "details", text: "The Constabulary keep the peace in every town: the patrols, the stations, the courts and the cells. Carry their evidence and their prisoners and they will remember your plates kindly. Chief Constable Margaret Hale has run the county force for twenty years and never once taken an envelope.", vars: [] }, { key: "55d39b80b6dd", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 63, lines: [63], tpl: "CHAINS.police[1]", card: "Borrowed Cadets", field: "title", text: "Borrowed Cadets", vars: [] }, { key: "7c32f15347f6", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 63, lines: [63], tpl: "CHAINS.police[1]", card: "Borrowed Cadets", field: "why", text: "The Army lends the station its cadets every summer. Fetch this year\u2019s from the base before the drill sergeant changes his mind.", vars: [] }, { key: "5fb05f46b3b3", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 64, lines: [64], tpl: "CHAINS.police[1]", card: "Borrowed Cadets", field: "details", text: "The Constabulary and the Army are allies: Chief Hale and Colonel Ada Strand trained together, and a favour to one is a favour to both. Work with the soldiers and the police hear about it, and the other way round.", vars: [] }, { key: "a287e7a233e8", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 68, lines: [68], tpl: "CHAINS.police[2]", card: "The Chop Shop", field: "title", text: "The Chop Shop", vars: [] }, { key: "efe73e0395fa", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 68, lines: [68], tpl: "CHAINS.police[2]", card: "The Chop Shop", field: "why", text: "A chop shop full of somebody else\u2019s televisions. Take them to the impound before they are sold twice.", vars: [] }, { key: "24208ab257e9", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 69, lines: [69], tpl: "CHAINS.police[2]", card: "The Chop Shop", field: "details", text: "The Family run the chop shops and the social clubs, and they take it personally when their goods go to the impound. Police and Family are opposed: what one thanks you for, the other holds against you. Mr. Benedetti will hear about this one.", vars: [] }, { key: "4a61f7ee2955", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 73, lines: [73], tpl: "CHAINS.police[3]", card: "Off the Record", field: "title", text: "Off the Record", vars: [] }, { key: "501f7071e438", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 73, lines: [73], tpl: "CHAINS.police[3]", card: "Off the Record", field: "why", text: "Somebody at the station is tipping off the Family. Get the evidence to a judge before it turns up in the papers.", vars: [] }, { key: "5ddccdfa795c", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 74, lines: [74], tpl: "CHAINS.police[3]", card: "Off the Record", field: "details", text: "A bent officer, and Rourke means to catch him quietly. The Press would love the story: Editor Cass Marlow neither likes nor hates the police, but she loves a headline, and a leak would let the man walk. Evidence first, newspapers after.", vars: [] }, { key: "189d4358a526", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 78, lines: [78], tpl: "CHAINS.police[4]", card: "The Chief\u2019s Last Case", field: "title", text: "The Chief\u2019s Last Case", vars: [] }, { key: "10a983593d41", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 78, lines: [78], tpl: "CHAINS.police[4]", card: "The Chief\u2019s Last Case", field: "why", text: "Chief Hale retires at the month\u2019s end. She wants the bent officer in court, brought in by somebody she trusts.", vars: [] }, { key: "bf54d39a7d37", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 79, lines: [79], tpl: "CHAINS.police[4]", card: "The Chief\u2019s Last Case", field: "details", text: "Margaret Hale joined as a cadet the year the Family burned the old station down, and has spent her career taking back the streets they ran. The officer who sold her out was her own sergeant. Meet her after dark, then take him in: her last conviction, and the force will remember who drove.", vars: [] }, { key: "7f4efa9d1e12", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 85, lines: [85], tpl: "CHAINS.family[0]", card: "An Introduction", field: "title", text: "An Introduction", vars: [] }, { key: "88c3b1251888", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 85, lines: [85], tpl: "CHAINS.family[0]", card: "An Introduction", field: "why", text: "Mr. Benedetti doesn\u2019t hire strangers. Come to the club, have an espresso, then run one small errand for him.", vars: [] }, { key: "8f76817457ef", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 86, lines: [86], tpl: "CHAINS.family[0]", card: "An Introduction", field: "details", text: "The Family: social clubs, chop shops, a villa on the hill and every load that moves after dark. Their work pays well and their night runs pay better. Nobody says the word. The Don, Vittorio Caruso, is old now, and they say he has not left the villa in a year.", vars: [] }, { key: "bb59be0ec52a", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 90, lines: [90], tpl: "CHAINS.family[1]", card: "Cheap Cement", field: "title", text: "Cheap Cement", vars: [] }, { key: "03ecdfe64f52", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 90, lines: [90], tpl: "CHAINS.family[1]", card: "Cheap Cement", field: "why", text: "Half the sites in the county pour Family cement. Take a load to the builders\u2019 yard, and say nothing about the price.", vars: [] }, { key: "8e5480c9dc2f", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 91, lines: [91], tpl: "CHAINS.family[1]", card: "Cheap Cement", field: "details", text: "The Brotherhood of Builders pretends not to know where its cheap cement comes from. Shop Steward Mags Doyle has no love for the Family, but she likes a cheap pour, and the Family likes the Brotherhood busy. Neither side thanks you for the other, but the trucks keep rolling.", vars: [] }, { key: "bb0b51fdad14", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 95, lines: [95], tpl: "CHAINS.family[2]", card: "Fell Off a Lorry", field: "title", text: "Fell Off a Lorry", vars: [] }, { key: "e801e449cc7b", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 95, lines: [95], tpl: "CHAINS.family[2]", card: "Fell Off a Lorry", field: "why", text: "A lorry of televisions fell off the back of something. The chop shop will find them a home before the police do.", vars: [] }, { key: "c16a9b81aff3", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 96, lines: [96], tpl: "CHAINS.family[2]", card: "Fell Off a Lorry", field: "details", text: "The Constabulary are the Family\u2019s oldest enemy. Every load you carry for one costs you with the other, so choose your friends with care. Detective Sergeant Rourke keeps a list of plates, and yours has just gone on it.", vars: [] }, { key: "8af08c47e53a", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 100, lines: [100], tpl: "CHAINS.family[3]", card: "Wash Day", field: "title", text: "Wash Day", vars: [] }, { key: "8c8113ac36a4", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 100, lines: [100], tpl: "CHAINS.family[3]", card: "Wash Day", field: "why", text: "Last night\u2019s takings need to be somewhere else by morning. Out the back of the casino and into the club.", vars: [] }, { key: "5b18369629a2", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 101, lines: [101], tpl: "CHAINS.family[3]", card: "Wash Day", field: "details", text: "The Family\u2019s money comes in dirty and goes out clean, and the Fishermen\u2019s Guild is no help: Harbourmaster Brennock won\u2019t let Family crates on his boats, so it goes by road now. That is the Family\u2019s trouble this year, and the Don\u2019s heir wants it solved.", vars: [] }, { key: "dd2a63dd408c", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 105, lines: [105], tpl: "CHAINS.family[4]", card: "The Don\u2019s Birthday", field: "title", text: "The Don\u2019s Birthday", vars: [] }, { key: "a70236190357", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 105, lines: [105], tpl: "CHAINS.family[4]", card: "The Don\u2019s Birthday", field: "why", text: "Don Caruso turns ninety tonight and wants to meet the driver everybody keeps talking about. Midnight, the villa.", vars: [] }, { key: "d8f66412aae9", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 106, lines: [106], tpl: "CHAINS.family[4]", card: "The Don\u2019s Birthday", field: "details", text: "Vittorio Caruso came over with one suitcase and built the Family from a single social club. He means to name his heir tonight, and Mr. Benedetti is not sure it will be him. Pay your respects at midnight, then bring the Don his birthday present from the casino.", vars: [] }, { key: "2e15d30ffc81", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 112, lines: [112], tpl: "CHAINS.ministry[0]", card: "Proper Channels", field: "title", text: "Proper Channels", vars: [] }, { key: "1768aa39ac9f", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 112, lines: [112], tpl: "CHAINS.ministry[0]", card: "Proper Channels", field: "why", text: "The Permanent Secretary will see you at the Ministry. Bring a pen. Then take these forms where they are needed.", vars: [] }, { key: "b7267c0ee68f", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 113, lines: [113], tpl: "CHAINS.ministry[0]", card: "Proper Channels", field: "details", text: "The Ministry is the state above the towns: the halls, the customs posts, the embassies, the Mint, and a hangar nobody talks about. It pays on time and in triplicate. At the top sits Minister Augusta Fairweather, who has never once been surprised in public.", vars: [] }, { key: "413927878fd2", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 117, lines: [117], tpl: "CHAINS.ministry[1]", card: "By Return of Post", field: "title", text: "By Return of Post", vars: [] }, { key: "8464023582ba", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 117, lines: [117], tpl: "CHAINS.ministry[1]", card: "By Return of Post", field: "why", text: "Registered papers for the sorting office, signed for at both ends. The Post carries what the Ministry writes.", vars: [] }, { key: "bd6a4ae3c378", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 118, lines: [118], tpl: "CHAINS.ministry[1]", card: "By Return of Post", field: "details", text: "The Ministry has two old allies. The Post carries its letters, and Postmaster Ivy Penhallow has never lost one. The Army carries out its orders. Help either and the Ministry hears of it.", vars: [] }, { key: "6ade9eecde18", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 122, lines: [122], tpl: "CHAINS.ministry[2]", card: "Polling Day", field: "title", text: "Polling Day", vars: [] }, { key: "2ac0d7cc9ff8", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 122, lines: [122], tpl: "CHAINS.ministry[2]", card: "Polling Day", field: "why", text: "Ballot boxes for the town halls before the polls open. The newspapers will be counting them as closely as we are.", vars: [] }, { key: "b02cbf51df89", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 123, lines: [123], tpl: "CHAINS.ministry[2]", card: "Polling Day", field: "details", text: "The Press and the Ministry are neither friends nor enemies: Editor Cass Marlow prints what the Ministry tells her and then what it didn\u2019t. The unions want a say in the vote and the Guild wants the fishing quotas changed. Nobody is pleased, and that is how the Secretary likes it.", vars: [] }, { key: "dbc88f72ce97", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 127, lines: [127], tpl: "CHAINS.ministry[3]", card: "Something Fell", field: "title", text: "Something Fell", vars: [] }, { key: "7d3b4a7e6500", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 127, lines: [127], tpl: "CHAINS.ministry[3]", card: "Something Fell", field: "why", text: "Something came down in a field last night. Take what is left to the hangar, and kindly forget what you saw.", vars: [] }, { key: "94de56acc6f1", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 128, lines: [128], tpl: "CHAINS.ministry[3]", card: "Something Fell", field: "details", text: "Hangar 18 is the Ministry\u2019s worst-kept secret. The Army guards it gladly; the Visitors would like their wreckage back, and do not forget who took it. The Ministry tries to stay on speaking terms with both, which is harder than it sounds.", vars: [] }, { key: "0deefa6fdd5e", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 132, lines: [132], tpl: "CHAINS.ministry[4]", card: "The Minister\u2019s Guest", field: "title", text: "The Minister\u2019s Guest", vars: [] }, { key: "e782ad1f86c3", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 132, lines: [132], tpl: "CHAINS.ministry[4]", card: "The Minister\u2019s Guest", field: "why", text: "Minister Fairweather asks to see you at midnight. Then a guest of state from the airport, with no cameras.", vars: [] }, { key: "33ddb37e56b5", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 133, lines: [133], tpl: "CHAINS.ministry[4]", card: "The Minister\u2019s Guest", field: "details", text: "Augusta Fairweather has quietly kept the county out of three wars and one invasion. She is the only one in government who has met the Navigator, and tonight she means to arrange a second meeting. Her guest\u2019s name is on no list. Drive smoothly and ask nothing.", vars: [] }, { key: "7754fa4d1d6e", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 139, lines: [139], tpl: "CHAINS.visitors[0]", card: "Lights Over the Hill", field: "title", text: "Lights Over the Hill", vars: [] }, { key: "e44c88a33523", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 139, lines: [139], tpl: "CHAINS.visitors[0]", card: "Lights Over the Hill", field: "why", text: "Wait at the ring after dark. The Envoy will find you, and has something warm and humming to send home.", vars: [] }, { key: "392fec0449b8", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 140, lines: [140], tpl: "CHAINS.visitors[0]", card: "Lights Over the Hill", field: "details", text: "Lights over the mesas, rings of stones in the high country, a crash nobody reported. The Visitors are polite, patient and very far from home, and they want their things back. Bring them what is theirs and they will remember. They remember everything.", vars: [] }, { key: "5b4a9b65c4bb", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 144, lines: [144], tpl: "CHAINS.visitors[1]", card: "Special Effects", field: "title", text: "Special Effects", vars: [] }, { key: "4b60beb21441", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 144, lines: [144], tpl: "CHAINS.visitors[1]", card: "Special Effects", field: "why", text: "A film crew to the crash site, so any photographs look like a picture being made. The Studios owe us a favour.", vars: [] }, { key: "99cb80a1892d", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 145, lines: [145], tpl: "CHAINS.visitors[1]", card: "Special Effects", field: "details", text: "The Studios are the Visitors\u2019 unlikely allies. Producer Dash Delano\u2019s science-fiction pictures have hidden real landings for years: who believes a flying saucer on a film set? Help one and the other is grateful.", vars: [] }, { key: "28b4eb64537f", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 149, lines: [149], tpl: "CHAINS.visitors[2]", card: "Not Theirs to Keep", field: "title", text: "Not Theirs to Keep", vars: [] }, { key: "82773ab6c093", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 149, lines: [149], tpl: "CHAINS.visitors[2]", card: "Not Theirs to Keep", field: "why", text: "The Army is on its way to the crash. Take the wreckage to the ring before the trucks arrive. Quietly.", vars: [] }, { key: "1972542a88af", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 150, lines: [150], tpl: "CHAINS.visitors[2]", card: "Not Theirs to Keep", field: "details", text: "The Army and the Visitors are opposed. Colonel Ada Strand calls the wreckage spoils of war; the Envoy calls it a lifeboat. Every piece you take home is a piece the Army will not forgive, and the Army\u2019s friends in the Constabulary will notice too.", vars: [] }, { key: "1f686ad40427", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 154, lines: [154], tpl: "CHAINS.visitors[3]", card: "A Word Upstairs", field: "title", text: "A Word Upstairs", vars: [] }, { key: "d0da585eea86", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 154, lines: [154], tpl: "CHAINS.visitors[3]", card: "A Word Upstairs", field: "why", text: "The Envoy wants the Ministry to understand. Take these samples to the people who sign the papers.", vars: [] }, { key: "638379ac6c17", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 155, lines: [155], tpl: "CHAINS.visitors[3]", card: "A Word Upstairs", field: "details", text: "The Ministry watches the Visitors with one eye and the Army with the other. Minister Fairweather would rather talk than shoot, and she is the only one upstairs who will listen. These samples show what the Visitors need: nothing of ours, only the way home.", vars: [] }, { key: "a6988204fca5", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 159, lines: [159], tpl: "CHAINS.visitors[4]", card: "The Navigator", field: "title", text: "The Navigator", vars: [] }, { key: "c5d4ef83f78d", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 159, lines: [159], tpl: "CHAINS.visitors[4]", card: "The Navigator", field: "why", text: "The Navigator wishes to meet you at the ring at midnight. Bring the last probe. It is the beacon home.", vars: [] }, { key: "f2eb0a26c0c7", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 160, lines: [160], tpl: "CHAINS.visitors[4]", card: "The Navigator", field: "details", text: "The Navigator brought forty of them here by accident, a wrong turn between two stars, and has spent sixty of our years putting the beacon back together, piece by piece, from fields and hangars. This is the last piece. Meet them at midnight and carry it in.", vars: [] }, { key: "7e7cfcb34503", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 166, lines: [166], tpl: "CHAINS.unions[0]", card: "Hard Hats On", field: "title", text: "Hard Hats On", vars: [] }, { key: "7e4b6c650afc", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 166, lines: [166], tpl: "CHAINS.unions[0]", card: "Hard Hats On", field: "why", text: "Shop Steward Mags Doyle wants to see you at the hall, then a crew to the site for the morning shift.", vars: [] }, { key: "aca95e6027eb", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 167, lines: [167], tpl: "CHAINS.unions[0]", card: "Hard Hats On", field: "details", text: "The Brotherhood of Builders: every building site, every road crew and every cement mixer in the world answers to the hall. Pay for roads and earthworks and the Brotherhood counts it as work done for them. General Secretary Tom Kearney has led the hall for forty years.", vars: [] }, { key: "69490fea9f9d", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 171, lines: [171], tpl: "CHAINS.unions[1]", card: "Permits in Triplicate", field: "title", text: "Permits in Triplicate", vars: [] }, { key: "04dd204da977", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 171, lines: [171], tpl: "CHAINS.unions[1]", card: "Permits in Triplicate", field: "why", text: "Nothing gets built without a stamp from the Ministry. Fetch the permits so the crew can start.", vars: [] }, { key: "2de06bf35370", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 172, lines: [172], tpl: "CHAINS.unions[1]", card: "Permits in Triplicate", field: "details", text: "The Brotherhood and the Ministry need each other and say so as little as possible. The Ministry pays for the roads; the Brotherhood builds them, slowly, until the forms arrive. Doyle hates the paperwork, but she knows a job with no permit is a job with no pay.", vars: [] }, { key: "7234e18a4126", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 176, lines: [176], tpl: "CHAINS.unions[2]", card: "Not Paying", field: "title", text: "Not Paying", vars: [] }, { key: "2efcb85e72cb", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 176, lines: [176], tpl: "CHAINS.unions[2]", card: "Not Paying", field: "why", text: "The Family has been leaning on the yard again. Take their envelope to the police instead of paying it.", vars: [] }, { key: "b30093369fb4", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 177, lines: [177], tpl: "CHAINS.unions[2]", card: "Not Paying", field: "details", text: "The Family sells the Brotherhood cheap cement and then sends men round for a cut. Doyle has had enough. Benedetti will remember who carried that envelope, but the Constabulary will be pleased, and so will every builder who ever paid.", vars: [] }, { key: "998226f3ca6d", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 181, lines: [181], tpl: "CHAINS.unions[3]", card: "The Big Pour", field: "title", text: "The Big Pour", vars: [] }, { key: "ec2bbaad821c", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 181, lines: [181], tpl: "CHAINS.unions[3]", card: "The Big Pour", field: "why", text: "The new tower\u2019s foundations go in today. Two loads of cement, and the whole hall is watching the clock.", vars: [] }, { key: "75ca292a6428", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 182, lines: [182], tpl: "CHAINS.unions[3]", card: "The Big Pour", field: "details", text: "The tower will be the tallest in the county, built by the Brotherhood from the first spade to the topping-out. The old hands remember the last tower, which fell because somebody saved on the cement. Not this time.", vars: [] }, { key: "334fa6a1349e", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 186, lines: [186], tpl: "CHAINS.unions[4]", card: "Big Tom\u2019s Road", field: "title", text: "Big Tom\u2019s Road", vars: [] }, { key: "ade5c93d0825", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 186, lines: [186], tpl: "CHAINS.unions[4]", card: "Big Tom\u2019s Road", field: "why", text: "Big Tom Kearney wants to shake your hand at the yard at dawn. Then roadstone for the last mile of his road.", vars: [] }, { key: "40f91d9bd646", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 187, lines: [187], tpl: "CHAINS.unions[4]", card: "Big Tom\u2019s Road", field: "details", text: "Tom Kearney\u2019s father died building the old coast road, and Tom has spent forty years making sure no one in the hall dies like that again. This new road is his last before he retires, and the hall means to name it after him. Be at the yard at dawn.", vars: [] }, { key: "9575faa8322e", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 193, lines: [193], tpl: "CHAINS.post[0]", card: "First Class", field: "title", text: "First Class", vars: [] }, { key: "a10c708d2d57", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 193, lines: [193], tpl: "CHAINS.post[0]", card: "First Class", field: "why", text: "Postmaster Ivy Penhallow has a round for you. Meet her at the sorting office, then take the morning letters out.", vars: [] }, { key: "8a270a02b5f5", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 194, lines: [194], tpl: "CHAINS.post[0]", card: "First Class", field: "details", text: "The Post: the sorting offices, the rounds, the island boats and the night mail plane. Every letter goes through, whatever the weather. At the top is the Postmaster General, Ambrose Quill, who still does a round himself on Christmas morning.", vars: [] }, { key: "b035ef5a1140", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 198, lines: [198], tpl: "CHAINS.post[1]", card: "The Island Boat", field: "title", text: "The Island Boat", vars: [] }, { key: "7ddf7d2522bf", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 198, lines: [198], tpl: "CHAINS.post[1]", card: "The Island Boat", field: "why", text: "A sack of mail for the harbour, where the Guild\u2019s boats take it out to the islands. They sail on the tide.", vars: [] }, { key: "88d3b6d70911", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 199, lines: [199], tpl: "CHAINS.post[1]", card: "The Island Boat", field: "details", text: "The Post and the Fishermen\u2019s Guild are allies: the Guild\u2019s boats carry the island mail, and the Post has never once docked their pay. Harbourmaster Brennock is a friend of the office. Help one and the other knows.", vars: [] }, { key: "38e9c3d29107", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 203, lines: [203], tpl: "CHAINS.post[2]", card: "Official Business", field: "title", text: "Official Business", vars: [] }, { key: "223d4d4018ae", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 203, lines: [203], tpl: "CHAINS.post[2]", card: "Official Business", field: "why", text: "Registered letters for the Ministry, insured and to be signed for. Not one goes missing.", vars: [] }, { key: "386c21e40d5e", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 204, lines: [204], tpl: "CHAINS.post[2]", card: "Official Business", field: "details", text: "The Ministry is the Post\u2019s other ally and its oldest customer. Every law, permit and summons goes out in a Post van, and the Permanent Secretary counts every envelope twice.", vars: [] }, { key: "7020bda367a2", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 208, lines: [208], tpl: "CHAINS.post[3]", card: "Not Our Parcel", field: "title", text: "Not Our Parcel", vars: [] }, { key: "2d6b19dffb13", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 208, lines: [208], tpl: "CHAINS.post[3]", card: "Not Our Parcel", field: "why", text: "A bag from the Social Club that is not mail. Take it to the police and let them open it.", vars: [] }, { key: "3ce3a0fa4c38", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 209, lines: [209], tpl: "CHAINS.post[3]", card: "Not Our Parcel", field: "details", text: "The Family has been using the parcel post to move what it shouldn\u2019t, and the Post will not stand for it. Penhallow would rather lose a customer than lose her name. The Family will be angry. The Constabulary will be grateful.", vars: [] }, { key: "4c407bb36cc6", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 213, lines: [213], tpl: "CHAINS.post[4]", card: "The Last Round", field: "title", text: "The Last Round", vars: [] }, { key: "dc6ca21fdba7", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 213, lines: [213], tpl: "CHAINS.post[4]", card: "The Last Round", field: "why", text: "Postmaster General Quill does his last round at dawn and wants a driver. Every mailbox at the end of every lane.", vars: [] }, { key: "6024132b9f79", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 214, lines: [214], tpl: "CHAINS.post[4]", card: "The Last Round", field: "details", text: "Ambrose Quill started as a boy on a bicycle, fifty years ago, on the very round he will finish tomorrow. In all that time the Post has lost one letter, and he still keeps it in his desk, unopened. Meet him at dawn and drive him round.", vars: [] }, { key: "d08035a46b12", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 220, lines: [220], tpl: "CHAINS.army[0]", card: "Report for Duty", field: "title", text: "Report for Duty", vars: [] }, { key: "fb44d80a7814", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 220, lines: [220], tpl: "CHAINS.army[0]", card: "Report for Duty", field: "why", text: "Quartermaster Sergeant Okafor needs a civilian driver. Report to the depot, then get rations to the base.", vars: [] }, { key: "43265033f5de", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 221, lines: [221], tpl: "CHAINS.army[0]", card: "Report for Duty", field: "details", text: "The Army: the bases, the forts, the depots and the airbases, the convoys on the roads and the fighters in the sky. It pays on time and asks no questions it does not already know the answer to. Colonel Ada Strand commands the county\u2019s garrison.", vars: [] }, { key: "927fbd10f59f", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 225, lines: [225], tpl: "CHAINS.army[1]", card: "Joint Exercise", field: "title", text: "Joint Exercise", vars: [] }, { key: "f6cc0c2cd35b", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 225, lines: [225], tpl: "CHAINS.army[1]", card: "Joint Exercise", field: "why", text: "The Constabulary\u2019s cadets come to the base for a week of drill. Pick them up from the station.", vars: [] }, { key: "3f32b4505506", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 226, lines: [226], tpl: "CHAINS.army[1]", card: "Joint Exercise", field: "details", text: "The Army and the Constabulary are allies, and Colonel Strand and Chief Hale trained together. Do good work for the soldiers and the police hear of it, and the other way round.", vars: [] }, { key: "8a4fb5dfa373", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 230, lines: [230], tpl: "CHAINS.army[2]", card: "Orders from Above", field: "title", text: "Orders from Above", vars: [] }, { key: "36f878abb992", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 230, lines: [230], tpl: "CHAINS.army[2]", card: "Orders from Above", field: "why", text: "Sealed orders from the Ministry for the base commander. Do not open them. We will know.", vars: [] }, { key: "4daf1e77b329", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 231, lines: [231], tpl: "CHAINS.army[2]", card: "Orders from Above", field: "details", text: "The Army answers to the Ministry, and Minister Fairweather has strong views on what the Army should and should not shoot at. The two are allies, mostly. Colonel Strand reads every order twice.", vars: [] }, { key: "6c35f30784da", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 235, lines: [235], tpl: "CHAINS.army[3]", card: "Recovery Team", field: "title", text: "Recovery Team", vars: [] }, { key: "8b1ec0ac57b8", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 235, lines: [235], tpl: "CHAINS.army[3]", card: "Recovery Team", field: "why", text: "Something came down near the range. Bring the wreckage to the hangar before the Visitors take it home.", vars: [] }, { key: "0372a944df3b", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 236, lines: [236], tpl: "CHAINS.army[3]", card: "Recovery Team", field: "details", text: "The Army and the Visitors are opposed. Strand calls it securing the county; the Envoy calls it theft. Every piece you bring in is a piece the Visitors will hold against you, and their friends at the Studios will hear of it too.", vars: [] }, { key: "dce0b200690b", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 240, lines: [240], tpl: "CHAINS.army[4]", card: "The Colonel\u2019s Parade", field: "title", text: "The Colonel\u2019s Parade", vars: [] }, { key: "12b0e5fefce8", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 240, lines: [240], tpl: "CHAINS.army[4]", card: "The Colonel\u2019s Parade", field: "why", text: "Colonel Strand takes her last salute this morning. Meet her at the base at dawn, then lead the parade through town.", vars: [] }, { key: "c05fcfdcb2f8", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 241, lines: [241], tpl: "CHAINS.army[4]", card: "The Colonel\u2019s Parade", field: "details", text: "Ada Strand has commanded the garrison through two floods, a fire and something in the sky she still won\u2019t talk about. She has asked for the driver from the hangar run to lead her last parade. Be at the base at dawn, polished.", vars: [] }, { key: "05386424851e", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 247, lines: [247], tpl: "CHAINS.studios[0]", card: "Lights, Camera", field: "title", text: "Lights, Camera", vars: [] }, { key: "0f74ffaef5ce", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 247, lines: [247], tpl: "CHAINS.studios[0]", card: "Lights, Camera", field: "why", text: "Producer Dash Delano wants to see you at the gate. Then yesterday\u2019s film to the screening room, fast.", vars: [] }, { key: "84a9b2d5bf4f", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 248, lines: [248], tpl: "CHAINS.studios[0]", card: "Lights, Camera", field: "details", text: "The Studios: the lots, the backlots, the premieres and the stars in their hillside mansions. Every picture needs a driver, and the good ones get a credit. The studio belongs to Vivienne Lark, who was the biggest star in the world before she bought it.", vars: [] }, { key: "7004bfa38d41", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 252, lines: [252], tpl: "CHAINS.studios[1]", card: "Creature Feature", field: "title", text: "Creature Feature", vars: [] }, { key: "bcfe7d595e78", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 252, lines: [252], tpl: "CHAINS.studios[1]", card: "Creature Feature", field: "why", text: "A crew to the crop circle to shoot the saucer picture. Our friends in the sky like a good cover story.", vars: [] }, { key: "0dd876ab5728", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 253, lines: [253], tpl: "CHAINS.studios[1]", card: "Creature Feature", field: "details", text: "The Studios and the Visitors are allies. Delano\u2019s science-fiction pictures have hidden real landings for years, and in return the Envoy gives the best notes on special effects in the business. Help either and the other is grateful.", vars: [] }, { key: "d0601a7de720", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 257, lines: [257], tpl: "CHAINS.studios[2]", card: "Kill the Story", field: "title", text: "Kill the Story", vars: [] }, { key: "a2f31f86839d", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 257, lines: [257], tpl: "CHAINS.studios[2]", card: "Kill the Story", field: "why", text: "The newsroom has footage the studio would rather it didn\u2019t. Get it back to the lot before six.", vars: [] }, { key: "43ee95111a81", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 258, lines: [258], tpl: "CHAINS.studios[2]", card: "Kill the Story", field: "details", text: "The Press and the Studios are rivals. The papers sell scandal and the studio sells dreams, and both want the same front page. The newsroom will be furious, and Editor Cass Marlow does not forget a stolen tape.", vars: [] }, { key: "d63a2bc6c214", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 262, lines: [262], tpl: "CHAINS.studios[3]", card: "On Location", field: "title", text: "On Location", vars: [] }, { key: "658d03b94816", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 262, lines: [262], tpl: "CHAINS.studios[3]", card: "On Location", field: "why", text: "Vivienne Lark\u2019s comeback picture shoots today. A crew to the landmark while the light holds.", vars: [] }, { key: "8c62a3784683", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 263, lines: [263], tpl: "CHAINS.studios[3]", card: "On Location", field: "details", text: "Lark has not stepped in front of a camera in twenty years, and the whole studio has bet the lot on her return. The papers say she is finished. Delano says she has never been better. The light goes at four.", vars: [] }, { key: "34722dcae4c6", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 267, lines: [267], tpl: "CHAINS.studios[4]", card: "Premiere Night", field: "title", text: "Premiere Night", vars: [] }, { key: "8ae0cb268db1", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 267, lines: [267], tpl: "CHAINS.studios[4]", card: "Premiere Night", field: "why", text: "Vivienne Lark wants to meet her driver at the theatre after dark, then ride in from the hills herself.", vars: [] }, { key: "244e3300d597", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 268, lines: [268], tpl: "CHAINS.studios[4]", card: "Premiere Night", field: "details", text: "Vivienne Lark bought the studio with her last pay cheque so nobody could ever tell her what to play again. Tonight is the premiere of the picture that will make her or break her. Meet her at the theatre, then bring her down from the mansion in style.", vars: [] }, { key: "038a1e2d8d21", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 274, lines: [274], tpl: "CHAINS.guild[0]", card: "Fair Winds", field: "title", text: "Fair Winds", vars: [] }, { key: "dc9172db2883", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 274, lines: [274], tpl: "CHAINS.guild[0]", card: "Fair Winds", field: "why", text: "Harbourmaster Brennock would like to look you over at the market. Then ice for the boxes before the boats come in.", vars: [] }, { key: "373242c3a274", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 275, lines: [275], tpl: "CHAINS.guild[0]", card: "Fair Winds", field: "details", text: "The Fishermen\u2019s Guild: the boats, the net lofts, the fish markets and the lifeboats. A Guild skipper never leaves a crew in the water. Their eldest is Mother Corran, who has fished these waters for sixty years and still takes the first boat out.", vars: [] }, { key: "b779ccd474b1", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 279, lines: [279], tpl: "CHAINS.guild[1]", card: "The Mail Boat", field: "title", text: "The Mail Boat", vars: [] }, { key: "f1b0794f6219", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 279, lines: [279], tpl: "CHAINS.guild[1]", card: "The Mail Boat", field: "why", text: "The island post goes out with the evening boats. Bring the sacks to the harbour before they cast off.", vars: [] }, { key: "8f5f7addc805", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 280, lines: [280], tpl: "CHAINS.guild[1]", card: "The Mail Boat", field: "details", text: "The Guild and the Post are allies: the Guild\u2019s boats carry the island mail, and the Post pays on the nail. Postmaster Ivy Penhallow and Brennock have shared a pot of tea every Friday for thirty years.", vars: [] }, { key: "31cec57aec33", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 284, lines: [284], tpl: "CHAINS.guild[2]", card: "Quota Forms", field: "title", text: "Quota Forms", vars: [] }, { key: "7b4a78de7980", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 284, lines: [284], tpl: "CHAINS.guild[2]", card: "Quota Forms", field: "why", text: "The Ministry has changed the quotas again. Fetch the new forms before the auction, or nobody sells a thing.", vars: [] }, { key: "b16d2237286d", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 285, lines: [285], tpl: "CHAINS.guild[2]", card: "Quota Forms", field: "details", text: "The Ministry sets the Guild\u2019s quotas from an office a long way from the sea. Brennock calls them landlubbers; the Permanent Secretary calls the Guild difficult. Neither is wrong, and neither can do without the other.", vars: [] }, { key: "7882211776b4", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 289, lines: [289], tpl: "CHAINS.guild[3]", card: "Only Fish", field: "title", text: "Only Fish", vars: [] }, { key: "d5c61484794f", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 289, lines: [289], tpl: "CHAINS.guild[3]", card: "Only Fish", field: "why", text: "The Family wanted their crates on our boats. We said no. Take the honest catch to market and let them see it.", vars: [] }, { key: "db7eb91ad907", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 290, lines: [290], tpl: "CHAINS.guild[3]", card: "Only Fish", field: "details", text: "The Family has been offering skippers money to carry crates with no fish in them. The Guild refused, and the market has been quiet since. Brennock wants the morning catch landed in plain sight: only fish, every box.", vars: [] }, { key: "b78371bf5b39", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 294, lines: [294], tpl: "CHAINS.guild[4]", card: "Corran\u2019s Boat", field: "title", text: "Corran\u2019s Boat", vars: [] }, { key: "163733d67f01", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 294, lines: [294], tpl: "CHAINS.guild[4]", card: "Corran\u2019s Boat", field: "why", text: "Mother Corran wants to meet you at the harbour at dawn. Then her catch to market, the first of the season.", vars: [] }, { key: "a623f5364d85", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 295, lines: [295], tpl: "CHAINS.guild[4]", card: "Corran\u2019s Boat", field: "details", text: "Corran lost her husband\u2019s boat, the Merrow, in the great storm forty years ago, and has taken the first boat out every season since, in case. She gave the Guild its lifeboats and the rule that nobody is left in the water. Meet her at dawn, and carry her catch in.", vars: [] }, { key: "1188b86d8a3a", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 301, lines: [301], tpl: "CHAINS.press[0]", card: "Hot off the Press", field: "title", text: "Hot off the Press", vars: [] }, { key: "6f5debbc4dc6", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 301, lines: [301], tpl: "CHAINS.press[0]", card: "Hot off the Press", field: "why", text: "Editor Cass Marlow will see you in the newsroom. Then bundles for the newsstands, still warm.", vars: [] }, { key: "168f4b440fbf", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 302, lines: [302], tpl: "CHAINS.press[0]", card: "Hot off the Press", field: "details", text: "The Press: the papers, the radio and television stations, the printworks and the newsstands. They sell the truth, mostly, and a scoop is worth more than gold. The paper belongs to Proprietor Hollis Vane, whom nobody in the newsroom has ever seen smile.", vars: [] }, { key: "42afe6154153", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 306, lines: [306], tpl: "CHAINS.press[1]", card: "Behind the Gates", field: "title", text: "Behind the Gates", vars: [] }, { key: "05bf3a4ae812", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 306, lines: [306], tpl: "CHAINS.press[1]", card: "Behind the Gates", field: "why", text: "A star\u2019s secret, out of the mansion and into the newsroom. The Studios will be livid.", vars: [] }, { key: "7683dbb7282e", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 307, lines: [307], tpl: "CHAINS.press[1]", card: "Behind the Gates", field: "details", text: "The Press and the Studios are rivals: the papers sell scandal and the studio sells dreams. Every scoop you carry for Marlow is one that Producer Dash Delano wanted buried. He will remember.", vars: [] }, { key: "666deda1cbf7", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 311, lines: [311], tpl: "CHAINS.press[2]", card: "Leaked", field: "title", text: "Leaked", vars: [] }, { key: "8b19380965c8", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 311, lines: [311], tpl: "CHAINS.press[2]", card: "Leaked", field: "why", text: "A memo from the town hall that somebody left on a photocopier. Get it here before anybody notices.", vars: [] }, { key: "643e8fc43d2a", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 312, lines: [312], tpl: "CHAINS.press[2]", card: "Leaked", field: "details", text: "The Ministry and the Press are neither friends nor enemies. The Ministry needs the papers to say what it wants, and the papers need the Ministry to keep secrets worth printing. The Permanent Secretary reads Marlow first every morning.", vars: [] }, { key: "c3c63a28cbe4", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 316, lines: [316], tpl: "CHAINS.press[3]", card: "The Bent Sergeant", field: "title", text: "The Bent Sergeant", vars: [] }, { key: "ee1a53b71a3b", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 316, lines: [316], tpl: "CHAINS.press[3]", card: "The Bent Sergeant", field: "why", text: "There is a bent officer at the station and Marlow has the tape. Get it to the studio for the six o\u2019clock news.", vars: [] }, { key: "457908575ec9", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 317, lines: [317], tpl: "CHAINS.press[3]", card: "The Bent Sergeant", field: "details", text: "The Press and the Constabulary circle each other: Chief Hale wants the story kept quiet until the trial, and Marlow wants it out tonight. Somebody is going to be angry whatever you do.", vars: [] }, { key: "49400eb26212", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 321, lines: [321], tpl: "CHAINS.press[4]", card: "Stop the Presses", field: "title", text: "Stop the Presses", vars: [] }, { key: "846df84426ea", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 321, lines: [321], tpl: "CHAINS.press[4]", card: "Stop the Presses", field: "why", text: "Vane means to sell the paper tonight. Meet him at the printworks at midnight, then get the true edition out.", vars: [] }, { key: "780f18cc8aa9", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 322, lines: [322], tpl: "CHAINS.press[4]", card: "Stop the Presses", field: "details", text: "Hollis Vane built the paper from one printing press and a grudge. Lark Pictures has offered him a fortune for it, to bury every story it doesn\u2019t like. Marlow has written the front page that says so. Meet Vane at midnight: he will print it, if you can deliver it by morning.", vars: [] }, { key: "cd2717ef6ae9", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 357, lines: [357], tpl: "riseStep", card: null, field: "caption", text: "{icon} {name} \xB7 {x1} of {RISE_STEPS}", vars: [{ label: "icon", expr: "d.icon" }, { label: "name", expr: "d.name" }, { label: "x1", expr: "i + 1" }, { label: "RISE_STEPS", expr: "RISE_STEPS" }] }, { key: "fc5a7b1ff58d", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 367, lines: [367], tpl: "RISE_ARCS", card: "Meet {x1}", field: "title", text: "Meet {x1}", vars: [{ label: "x1", expr: "FACTIONS[f].name" }] }, { key: "6647dcc75bac", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 21, lines: [21], tpl: "SURVEY_ARC", card: "The Surveyor\u2019s Commission", field: "title", text: "The Surveyor\u2019s Commission", vars: [] }, { key: "453e2192ea10", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 127, lines: [127], tpl: "hill", card: "Over the Hill", field: "title", text: "Over the Hill", vars: [] }, { key: "295706ff652f", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 127, lines: [127], tpl: "hill", card: "Over the Hill", field: "why", text: "The county surveyor wants to know how far your fleet gets. Take anything 400 tiles from home and she pays.", vars: [] }, { key: "2199e6fe03dc", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 128, lines: [128], tpl: "hill", card: "Over the Hill", field: "details", text: "Ada Marchetti has run the county survey for thirty years, and nobody in the office has been past the next hill. She keeps a pin where your fleet began and a ring for the furthest you have been: both are on the map now (M).", vars: [] }, { key: "760328750009", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 129, lines: [129], tpl: "hill", card: "Over the Hill", field: "caption", text: "A county surveyor\u2019s map", vars: [] }, { key: "0c3e6453971f", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 134, lines: [134], tpl: "three", card: "Three Counties", field: "title", text: "Three Counties", vars: [] }, { key: "dd75ef4e3c67", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 134, lines: [134], tpl: "three", card: "Three Counties", field: "why", text: "Set foot in three cells your fleet has never been in. Ada wants the roads checked against her sheets.", vars: [] }, { key: "860fbde09e67", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 135, lines: [135], tpl: "three", card: "Three Counties", field: "details", text: "The survey sheets were drawn from the air in a hurry. Ada wants somebody on the ground in three new places to say whether the roads are where the sheets say they are.", vars: [] }, { key: "60c822a2c1b0", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 136, lines: [136], tpl: "three", card: "Three Counties", field: "caption", text: "Three survey sheets", vars: [] }, { key: "cf8921ac0432", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 137, lines: [137], tpl: "three", card: "Three Counties", field: "label", text: "Find 3 new cells", vars: [] }, { key: "738f2c46bd93", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 141, lines: [141], tpl: "salt", card: "Salt Air", field: "title", text: "Salt Air", vars: [] }, { key: "63236e49f5da", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 141, lines: [141], tpl: "salt", card: "Salt Air", field: "why", text: "The coast has not been surveyed since the war. Take a boat 800 tiles from home and Ada tunes its engine.", vars: [] }, { key: "db93f2d86d33", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 142, lines: [142], tpl: "salt", card: "Salt Air", field: "details", text: "The charts of the coast are older than Ada, and she does not trust a line on them. A boat taken far out along it settles a dozen of her arguments with the harbourmasters.", vars: [] }, { key: "79b913002985", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 143, lines: [143], tpl: "salt", card: "Salt Air", field: "caption", text: "A Stage 2 engine", vars: [] }, { key: "9c5787f88ab8", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 148, lines: [148], tpl: "chart", card: "Charting", field: "title", text: "Charting", vars: [] }, { key: "b63fc901fcb8", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 148, lines: [148], tpl: "chart", card: "Charting", field: "why", text: "Set foot in six new cells within eight hours. The survey office closes its books at the end of the day.", vars: [] }, { key: "7881f8ef8696", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 149, lines: [149], tpl: "chart", card: "Charting", field: "details", text: "The year\u2019s survey is due, and Ada is six sheets short. Anything will do: drive, sail or fly, as long as the fleet has never been there.", vars: [] }, { key: "9cd76c299374", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 150, lines: [150], tpl: "chart", card: "Charting", field: "caption", text: "Six blank sheets", vars: [] }, { key: "b0fbb4114b7a", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 151, lines: [151], tpl: "chart", card: "Charting", field: "label", text: "Find 6 new cells", vars: [] }, { key: "5c339c655729", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 155, lines: [155], tpl: "four", card: "Four Ways", field: "title", text: "Four Ways", vars: [] }, { key: "d8b2a56809c3", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 155, lines: [155], tpl: "four", card: "Four Ways", field: "why", text: "Take something 1,000 tiles from home on land, then on water, then in the air. Ada gives you her Scrambler.", vars: [] }, { key: "77c1a06e781b", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 156, lines: [156], tpl: "four", card: "Four Ways", field: "details", text: "Ada surveyed on foot, by boat and from a borrowed biplane. Her old Scrambler, Theodolite, still has the tyres she fitted for the moors.", vars: [] }, { key: "6b98f05255c0", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 157, lines: [157], tpl: "four", card: "Four Ways", field: "caption", text: "Theodolite, the surveyor\u2019s ATV", vars: [] }, { key: "126659a25cfd", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 167, lines: [167], tpl: "long", card: "Long Way Round", field: "title", text: "Long Way Round", vars: [] }, { key: "939787238b65", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 167, lines: [167], tpl: "long", card: "Long Way Round", field: "why", text: "A survey mark {x1} from home has never been checked. Get to it, any way you like.", vars: [{ label: "x1", expr: "tiles(far)" }] }, { key: "dc18168f9933", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 168, lines: [168], tpl: "long", card: "Long Way Round", field: "details", text: "It is the way your fleet has been least. Ada set the mark from an aeroplane in her first year and never got back to it.", vars: [] }, { key: "04a116e98b7c", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 169, lines: [169], tpl: "long", card: "Long Way Round", field: "caption", text: "An unchecked survey mark", vars: [] }, { key: "6a1c90c20671", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 170, lines: [170, 211], tpl: "long", card: "Long Way Round", field: "label", text: "Reach the survey mark", vars: [] }, { key: "e4a1290ceda5", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 175, lines: [175], tpl: "first", card: "First Footing", field: "title", text: "First Footing", vars: [] }, { key: "7af38a830059", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 175, lines: [175], tpl: "first", card: "First Footing", field: "why", text: "Set foot in twelve cells your fleet has never been in. Ada paints your fleet in the survey\u2019s own orange.", vars: [] }, { key: "618e63162fd1", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 176, lines: [176], tpl: "first", card: "First Footing", field: "details", text: "The survey office\u2019s vans were orange so a farmer could see them coming across three fields. Twelve new cells and Ada says your fleet has earned the colour.", vars: [] }, { key: "aa1978615970", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 177, lines: [177], tpl: "first", card: "First Footing", field: "caption", text: "Survey Orange", vars: [] }, { key: "8b5a6a9e2938", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 178, lines: [178], tpl: "first", card: "First Footing", field: "label", text: "Find 12 new cells", vars: [] }, { key: "1dfc276db72d", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 182, lines: [182], tpl: "farShore", card: "The Far Shore", field: "title", text: "The Far Shore", vars: [] }, { key: "0e6e5b4ab04f", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 182, lines: [182], tpl: "farShore", card: "The Far Shore", field: "why", text: "Take anything 5,000 tiles from home. Ada signs your commission as the county\u2019s own surveyor.", vars: [] }, { key: "7ed3e7551262", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 183, lines: [183], tpl: "farShore", card: "The Far Shore", field: "details", text: "Nobody from the county has been that far out and come back to say so. Ada has kept the commission in a drawer for years, waiting for somebody to sign it for.", vars: [] }, { key: "4eb0ff4b90be", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 184, lines: [184], tpl: "farShore", card: "The Far Shore", field: "caption", text: "The surveyor\u2019s commission", vars: [] }, { key: "487e4c873672", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 208, lines: [208], tpl: "run", card: "Survey Run", field: "title", text: "Survey Run", vars: [] }, { key: "8c8f119c0cf4", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 208, lines: [208], tpl: "run", card: "Survey Run", field: "why", text: "Check a survey mark {x1} from home, further than you have been. Ada pays {x2}.", vars: [{ label: "x1", expr: "tiles(far)" }, { label: "x2", expr: "money(pay)" }] }, { key: "68aa58c3a5d8", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 209, lines: [209], tpl: "run", card: "Survey Run", field: "details", text: "Every run pushes the county\u2019s map out a little. Ada picks a mark beyond anywhere your fleet has been, the way it has been least.", vars: [] }, { key: "dbf82c14a3ef", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 210, lines: [210], tpl: "run", card: "Survey Run", field: "caption", text: "A survey mark", vars: [] }, { key: "db10691912eb", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 232, lines: [232], tpl: "shake", card: "Shakedown", field: "title", text: "Shakedown", vars: [] }, { key: "9eb1d4901a8b", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 232, lines: [232], tpl: "shake", card: "Shakedown", field: "why", text: "Take your {name} 1,000 tiles from home. Ada adds {x1} to what running it in pays.", vars: [{ label: "name", expr: "m.name" }, { label: "x1", expr: "money(150)" }] }, { key: "bb89238e3b13", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 233, lines: [233], tpl: "shake", card: "Shakedown", field: "details", text: "Ada keeps a page for every vehicle in the county, and the {name}\u2019s is blank. A thousand tiles out fills it in.", vars: [{ label: "name", expr: "m.name" }] }, { key: "0046700f2c3a", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 234, lines: [234], tpl: "shake", card: "Shakedown", field: "caption", text: "Your {name}", vars: [{ label: "name", expr: "m.name" }] }, { key: "92a9d27382d4", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 235, lines: [235], tpl: "shake", card: "Shakedown", field: "label", text: "Take it 1,000 tiles out", vars: [] }, { key: "2d95a9b750d3", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 240, lines: [240], tpl: "spot", card: "Spot Check", field: "title", text: "Spot Check", vars: [] }, { key: "a78e83474da1", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 240, lines: [240], tpl: "spot", card: "Spot Check", field: "why", text: "Set foot in four cells your fleet has never been in, within six hours. Ada checks her sheets against yours.", vars: [] }, { key: "bdae5db22783", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 241, lines: [241], tpl: "spot", card: "Spot Check", field: "details", text: "A spot check keeps the survey honest. Four new places, quickly, before the sheets go to print.", vars: [] }, { key: "ccef58551d08", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 242, lines: [242], tpl: "spot", card: "Spot Check", field: "caption", text: "Four sheets to check", vars: [] }, { key: "8a0632b293b1", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 243, lines: [243], tpl: "spot", card: "Spot Check", field: "label", text: "Find 4 new cells", vars: [] }, { key: "41fd7ca20091", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 79, lines: [79], tpl: "sub:overside", card: "Over the Side", field: "title", text: "Over the Side", vars: [] }, { key: "2c49738d04a4", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 79, lines: [79], tpl: "sub:overside", card: "Over the Side", field: "why", text: "A container went over the side and lies on the bottom. Bring it up and land it at the {x1} before its owners give up.", vars: [{ label: "x1", expr: "obj.to.name.toLowerCase()" }] }, { key: "2b08a19c9a1e", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 80, lines: [80], tpl: "sub:overside", card: "Over the Side", field: "details", text: "It lies on the bottom at {x1}. The ship never stopped. Its owners want the box back dry or not, and they want it today.", vars: [{ label: "x1", expr: "called(lost)" }] }, { key: "1b4110438f5c", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 81, lines: [81], tpl: "sub:overside", card: "Over the Side", field: "caption", text: "Lost overboard", vars: [] }, { key: "f05fef7265b3", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 97, lines: [97], tpl: "sub:downline", card: "Down the Line", field: "title", text: "Down the Line", vars: [] }, { key: "b7117a7cdc41", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 97, lines: [97], tpl: "sub:downline", card: "Down the Line", field: "why", text: "The {x1} has broken on the bottom. Take the repair kit down from the {x2} and set it beside the break.", vars: [{ label: "x1", expr: "pipe ? 'pipeline' : 'cable'" }, { label: "x2", expr: "siteRef(port).name.toLowerCase()" }] }, { key: "f7065b0e36a3", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 98, lines: [98], tpl: "sub:downline", card: "Down the Line", field: "details", text: "The rig is running on what is in its tanks. The divers can splice it once the kit is on the bottom beside the break.", vars: [] }, { key: "d71e5817f587", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 99, lines: [99], tpl: "sub:downline", card: "Down the Line", field: "details", text: "Half the coast is on the generators. The divers can splice it once the kit is on the bottom beside the break.", vars: [] }, { key: "d3c27c090890", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 100, lines: [100], tpl: "sub:downline", card: "Down the Line", field: "caption", text: "A pipeline fault", vars: [] }, { key: "4573515414c2", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 100, lines: [100], tpl: "sub:downline", card: "Down the Line", field: "caption", text: "A cable fault", vars: [] }, { key: "eda751f58a6f", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 117, lines: [117], tpl: "sub:wreckrun", card: "Wreck Run", field: "title", text: "Wreck Run", vars: [] }, { key: "1d3099e5092e", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 117, lines: [117], tpl: "sub:wreckrun", card: "Wreck Run", field: "why", text: "Greywater Salvage has a barge on its way to the wreck. Get down there first and land what you find for the museum.", vars: [] }, { key: "d948e575a7ed", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 118, lines: [118], tpl: "sub:wreckrun", card: "Wreck Run", field: "details", text: "The wreck is {x1}. Whatever is on the bottom belongs to whoever brings it up first. Greywater knows that too.", vars: [{ label: "x1", expr: "called(wreck)" }] }, { key: "e2c46566a644", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 119, lines: [119], tpl: "sub:wreckrun", card: "Wreck Run", field: "caption", text: "Beat the salvage men", vars: [] }, { key: "c60c0806c3dd", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 157, lines: [157], tpl: "sub:reefcensus", card: null, field: "label", text: "Dive at {x1}", vars: [{ label: "x1", expr: "k === 0 ? 'the reef' : k === 1 ? 'its edge' : 'its far side'" }] }, { key: "5302aa167aa2", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 159, lines: [159], tpl: "sub:reefcensus", card: "Reef Census", field: "title", text: "Reef Census", vars: [] }, { key: "bbbd4133167b", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 159, lines: [159], tpl: "sub:reefcensus", card: "Reef Census", field: "why", text: "The {x1} needs counting. Go down at three places on it and stay down at each while the cameras run.", vars: [{ label: "x1", expr: "/coral/.test(reef.name) ? 'coral' : 'kelp'" }] }, { key: "272d0783eaf2", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 160, lines: [160], tpl: "sub:reefcensus", card: "Reef Census", field: "details", text: "Eight seconds on the bottom at each mark, stopped, while the survey cameras count the fish.", vars: [] }, { key: "adad3a0f8a86", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 161, lines: [161], tpl: "sub:reefcensus", card: "Reef Census", field: "caption", text: "A census of the reef", vars: [] }, { key: "9e6a8503cbce", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 49, lines: [49], tpl: "RIDE_DOZER", card: null, field: "label", text: "the Dozer", vars: [] }, { key: "3ce9572c9e8e", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 50, lines: [50], tpl: "RIDE_MEDIC", card: null, field: "label", text: "the Medic", vars: [] }, { key: "5569302c7cd8", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 96, lines: [96], tpl: "work:raze", card: null, field: "label", text: "Knock down the old place", vars: [] }, { key: "4d7b5733b929", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 101, lines: [101], tpl: "work:raze", card: null, field: "why", text: "The old {low} has stood boarded up for years. Ram it down in your Dozer and the town will thank you for it.", vars: [{ label: "low", expr: "low" }] }, { key: "decc4fdb89f5", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 102, lines: [102], tpl: "work:raze", card: null, field: "details", text: "{name} has had enough of the old {low}: it is falling in, nobody will buy it, and the council can't run to a demolition crew.", vars: [{ label: "name", expr: "m.name" }, { label: "low", expr: "low" }] }, { key: "363e9b0cdce1", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 105, lines: [105], tpl: "work:raze", card: null, field: "caption", text: "The old {low}", vars: [{ label: "low", expr: "low" }] }, { key: "67e2ed04098b", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 150, lines: [150], tpl: "work:dash", card: null, field: "why", text: "A patient needs the {x1}, fast. Pick them up and the clock starts: {secs} seconds to get them in.", vars: [{ label: "x1", expr: "hosp.name.toLowerCase()" }, { label: "secs", expr: "secs" }] }, { key: "a2541e538388", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 151, lines: [151], tpl: "work:dash", card: null, field: "details", text: "Ambulance control has nobody nearer. Take the quick way, not the pretty one.", vars: [] }, { key: "eafe02a84ce3", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 153, lines: [153], tpl: "work:dash", card: null, field: "caption", text: "The Medic", vars: [] }, { key: "556358b64b97", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 154, lines: [154], tpl: "work:dash", card: null, field: "label", text: "Bring the patient in", vars: [] }, { key: "327681d9f42d", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 166, lines: [166], tpl: "RIDE_HOOKY", card: null, field: "label", text: "Hooky", vars: [] }, { key: "9344999c7b99", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 167, lines: [167], tpl: "RIDE_POST", card: null, field: "label", text: "a post van", vars: [] }, { key: "ea442c740719", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 168, lines: [168], tpl: "RIDE_SUNDAE", card: null, field: "label", text: "Sundae", vars: [] }, { key: "ecc0833beb51", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 169, lines: [169], tpl: "RIDE_BALLOON", card: null, field: "label", text: "the Sunrise", vars: [] }, { key: "63b23733f7bb", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 170, lines: [170], tpl: "RIDE_DUCK", card: null, field: "label", text: "the Puddle Duck", vars: [] }, { key: "ab3c288bdcee", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 211, lines: [211], tpl: "work:recover", card: null, field: "why", text: "A {x1} has broken down on the road out of town. Load it up in Hooky and bring it in to the {x2}.", vars: [{ label: "x1", expr: "defOf(car).name" }, { label: "x2", expr: "g.name.toLowerCase()" }] }, { key: "df26cd5f1e03", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 212, lines: [212], tpl: "work:recover", card: null, field: "details", text: "The driver has the bonnet up and no idea what is wrong. The garage will take it from there.", vars: [] }, { key: "932035b1006d", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 214, lines: [214], tpl: "work:recover", card: null, field: "caption", text: "Hooky to the rescue", vars: [] }, { key: "4a20914bd3f9", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 215, lines: [215], tpl: "work:recover", card: null, field: "label", text: "Tow the car to the garage", vars: [] }, { key: "66e28d3fff3b", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 245, lines: [245], tpl: "work:mail", card: null, field: "label", text: "Collect the {x1} postbox", vars: [{ label: "x1", expr: "words[k]" }] }, { key: "df83447234ec", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 247, lines: [247], tpl: "work:mail", card: null, field: "label", text: "Bring the sacks in", vars: [] }, { key: "a75b39b7b3f7", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 250, lines: [250], tpl: "work:mail", card: null, field: "why", text: "Three postboxes to empty before the last post goes. Stop at each in your post van, then bring the sacks in.", vars: [] }, { key: "2c4a6ceab364", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 251, lines: [251], tpl: "work:mail", card: null, field: "details", text: "The regular postie is off sick and the boxes are overflowing. The sorting office closes at the end of the shift.", vars: [] }, { key: "52bf54e21786", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 253, lines: [253], tpl: "work:mail", card: null, field: "caption", text: "The collection round", vars: [] }, { key: "f9a2cd94f979", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 284, lines: [284], tpl: "work:icecream", card: null, field: "why", text: "Hot day, long queues. Park Sundae at {length} spots round town and sell for a while at each, in the daytime.", vars: [{ label: "length", expr: "stops.length" }] }, { key: "3e698ef4903c", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 285, lines: [285], tpl: "work:icecream", card: null, field: "details", text: "Fifteen seconds parked at each with the chimes going, between ten in the morning and seven at night, while the crowds are out.", vars: [] }, { key: "d1c2ef03c902", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 287, lines: [287], tpl: "work:icecream", card: null, field: "caption", text: "Chimes on", vars: [] }, { key: "9b05c8c6517d", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 324, lines: [324], tpl: "work:scenic", card: null, field: "label", text: "Take off from the field", vars: [] }, { key: "81ebabfa026a", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 326, lines: [326], tpl: "work:scenic", card: null, field: "label", text: "Land in the far field", vars: [] }, { key: "41f9c4fca1ca", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 331, lines: [331], tpl: "work:scenic", card: "Sunrise Flight", field: "title", text: "Sunrise Flight", vars: [] }, { key: "68a05fc9766b", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 331, lines: [331], tpl: "work:scenic", card: "Sunrise Flight", field: "title", text: "Sunset Flight", vars: [] }, { key: "b7d9c708b678", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 332, lines: [332], tpl: "work:scenic", card: "Sunrise Flight", field: "why", text: "Three sightseers want to see the {x1} and the {x2} from the air, then come down in a field.", vars: [{ label: "x1", expr: "sightName(pair[0])" }, { label: "x2", expr: "sightName(pair[1])" }] }, { key: "ff4cbcef7678", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 333, lines: [333], tpl: "work:scenic", card: "Sunrise Flight", field: "details", text: "They are booked for {x1}: go up from the field {x2}, float over both, then land gently in the field past the last.", vars: [{ label: "x1", expr: "dawn ? 'dawn' : 'dusk'" }, { label: "x2", expr: "dawn ? 'between five and nine in the morning' : 'between five and nine in the evening'" }] }, { key: "4e486a1677b7", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 335, lines: [335], tpl: "work:scenic", card: "Sunrise Flight", field: "caption", text: "Up with the sun", vars: [] }, { key: "ed9af63d5d1d", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 335, lines: [335], tpl: "work:scenic", card: "Sunrise Flight", field: "caption", text: "Down with the sun", vars: [] }, { key: "ed20079acdbd", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 356, lines: [356], tpl: "work:ducktour", card: null, field: "label", text: "Meet the tourists", vars: [] }, { key: "a0bd22dc1b90", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 357, lines: [357], tpl: "work:ducktour", card: null, field: "label", text: "Take them into the harbour", vars: [] }, { key: "4dd78f9c0e16", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 358, lines: [358], tpl: "work:ducktour", card: null, field: "label", text: "Cross the harbour", vars: [] }, { key: "8b817c50827a", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 359, lines: [359], tpl: "work:ducktour", card: null, field: "label", text: "Bring them back ashore", vars: [] }, { key: "7d1c821a812c", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 363, lines: [363], tpl: "work:ducktour", card: null, field: "why", text: "A coach party wants the duck tour: round the streets, straight down into the harbour, across it and back to the square.", vars: [] }, { key: "6296ce375d49", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 364, lines: [364], tpl: "work:ducktour", card: null, field: "details", text: "Drive in off a beach or a slipway and the Puddle Duck floats. The tourists love the splash.", vars: [] }, { key: "e665d53276b2", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 366, lines: [366], tpl: "work:ducktour", card: null, field: "caption", text: "Splashdown", vars: [] }, { key: "2d72a2e6eeca", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 377, lines: [377], tpl: "RIDE_BLIMP", card: null, field: "label", text: "the Marshmallow", vars: [] }, { key: "51cacb4d304a", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 378, lines: [378], tpl: "RIDE_GATOR", card: null, field: "label", text: "the Gator", vars: [] }, { key: "cf5abae96a4d", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 379, lines: [379], tpl: "RIDE_YACHT", card: null, field: "label", text: "the Serenade", vars: [] }, { key: "44283c9efa2f", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 380, lines: [380], tpl: "RIDE_BELLE", card: null, field: "label", text: "the Delta Belle", vars: [] }, { key: "60e1db3741db", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 381, lines: [381], tpl: "RIDE_COAST", card: null, field: "label", text: "the Defender", vars: [] }, { key: "e10936370068", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 382, lines: [382], tpl: "RIDE_BIPLANE", card: null, field: "label", text: "the Barnstormer", vars: [] }, { key: "78d020ec4b86", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 383, lines: [383], tpl: "RIDE_GOAT", card: null, field: "label", text: "the Mountain Goat", vars: [] }, { key: "2108915c1e72", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 452, lines: [452], tpl: "work:coverage", card: null, field: "why", text: "The sports channel wants the big match from the air. Hold the Marshmallow over the {name} while the cameras roll.", vars: [{ label: "name", expr: "name" }] }, { key: "3211d7bc70a0", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 453, lines: [453], tpl: "work:coverage", card: null, field: "details", text: "Forty seconds over the ground, low and steady, between noon and ten at night while the crowd is in.", vars: [] }, { key: "17f04604302a", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 455, lines: [455], tpl: "work:coverage", card: null, field: "caption", text: "The best seat in the house", vars: [] }, { key: "24cd909478a2", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 456, lines: [456], tpl: "work:coverage", card: null, field: "label", text: "Cover the big match", vars: [] }, { key: "25e59d79e0c5", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 476, lines: [476], tpl: "work:swamp", card: null, field: "label", text: "Meet the tour party", vars: [] }, { key: "fa93d606d74f", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 477, lines: [477], tpl: "work:swamp", card: null, field: "label", text: "Spot the herons", vars: [] }, { key: "baac0e3afbbd", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 478, lines: [478], tpl: "work:swamp", card: null, field: "label", text: "Spot the gators", vars: [] }, { key: "c7fd3764c122", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 479, lines: [479], tpl: "work:swamp", card: null, field: "label", text: "Bring them back", vars: [] }, { key: "8d95d64b8c9c", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 483, lines: [483], tpl: "work:swamp", card: null, field: "why", text: "A party of sightseers wants the swamp: out through the reeds and mangroves in the Gator, and back before dark.", vars: [] }, { key: "f820bcae4af1", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 484, lines: [484], tpl: "work:swamp", card: null, field: "details", text: "The airboat skims where nothing else floats. Keep the fan down near the herons.", vars: [] }, { key: "ca464d593857", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 486, lines: [486], tpl: "work:swamp", card: null, field: "caption", text: "Into the swamp", vars: [] }, { key: "8ff76b8a1bf4", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 513, lines: [513], tpl: "work:charter", card: null, field: "why", text: "A wedding party wants to sail to {x1} in style. Bring them aboard the Serenade and along the coast.", vars: [{ label: "x1", expr: "dockOf(to).name" }] }, { key: "85fe1f1ce9f3", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 514, lines: [514], tpl: "work:charter", card: null, field: "details", text: "Champagne on the foredeck, the band in the saloon. Keep it smooth: no cutting across the swell.", vars: [] }, { key: "712673ab5e45", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 516, lines: [516], tpl: "work:charter", card: null, field: "caption", text: "Just married", vars: [] }, { key: "aa7bd0ac81cb", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 517, lines: [517], tpl: "work:charter", card: null, field: "label", text: "Bring the wedding party", vars: [] }, { key: "18ce27f8158b", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 539, lines: [539], tpl: "work:cruise", card: null, field: "label", text: "Meet the passengers", vars: [] }, { key: "15bfdcfe5cf7", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 540, lines: [540], tpl: "work:cruise", card: null, field: "label", text: "Reach the first landing", vars: [] }, { key: "b205fa176ac9", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 541, lines: [541], tpl: "work:cruise", card: null, field: "label", text: "Reach the far landing", vars: [] }, { key: "e79aa0f61581", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 542, lines: [542], tpl: "work:cruise", card: null, field: "label", text: "Bring them home", vars: [] }, { key: "5735e20841f4", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 546, lines: [546], tpl: "work:cruise", card: null, field: "why", text: "A day out on the paddle steamer: up the river to two landings, a stop at each to stretch their legs, and home again.", vars: [] }, { key: "d2effed4e136", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 547, lines: [547], tpl: "work:cruise", card: null, field: "details", text: "Stop at each landing for eight seconds while the passengers get on and off. The wheel is slow: give the bends room.", vars: [] }, { key: "4dc9d8ff8e3f", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 549, lines: [549], tpl: "work:cruise", card: null, field: "caption", text: "All aboard", vars: [] }, { key: "ecc49da149b9", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 574, lines: [574], tpl: "work:patrol", card: null, field: "label", text: "Bring the report in", vars: [] }, { key: "40d18277be73", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 577, lines: [577], tpl: "work:patrol", card: null, field: "why", text: "Night runners have been landing goods round the harbour. Search three spots after dark in the Defender, then report in.", vars: [] }, { key: "262dbe926030", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 578, lines: [578], tpl: "work:patrol", card: null, field: "details", text: "Five seconds stopped at each, between nine at night and four in the morning, eyes on the water.", vars: [] }, { key: "2138a89de1ca", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 580, lines: [580], tpl: "work:patrol", card: null, field: "caption", text: "Eyes on the water", vars: [] }, { key: "771f9c39cc8d", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 604, lines: [604], tpl: "work:dust", card: null, field: "label", text: "Dust the {x1} field", vars: [{ label: "x1", expr: "words[k]" }] }, { key: "a88dcbdaa390", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 605, lines: [605], tpl: "work:dust", card: null, field: "label", text: "Land at the airfield", vars: [] }, { key: "b8cc138e3e14", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 609, lines: [609], tpl: "work:dust", card: null, field: "why", text: "Three farms need their fields sprayed before the rain. Fly low over each in the Barnstormer{x1}.", vars: [{ label: "x1", expr: "strip ? ', then land at the airfield' : ''" }] }, { key: "0a1bd48f8e88", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 610, lines: [610], tpl: "work:dust", card: null, field: "details", text: "Fly over the middle of each farm low enough to see the furrows. The farmers will wave.", vars: [] }, { key: "44773deb5d74", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 612, lines: [612], tpl: "work:dust", card: null, field: "caption", text: "Low over the fields", vars: [] }, { key: "e4b0892c3458", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 636, lines: [636], tpl: "work:excursion", card: null, field: "why", text: "A party of walkers wants {x1}. Take them up the rack railway in the Mountain Goat.", vars: [{ label: "x1", expr: "up ? up.name : 'the village on the mountain'" }] }, { key: "80f68555d116", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 637, lines: [637], tpl: "work:excursion", card: null, field: "details", text: "The cog line climbs where nothing else can. Stop at the valley end for them, then all the way up to the buffers at the top.", vars: [] }, { key: "981ea934f773", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 639, lines: [639], tpl: "work:excursion", card: null, field: "caption", text: "Up the rack line", vars: [] }, { key: "ae8855ed28a6", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 641, lines: [641], tpl: "work:excursion", card: null, field: "label", text: "Meet the walkers", vars: [] }, { key: "603f82155801", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 642, lines: [642], tpl: "work:excursion", card: null, field: "label", text: "Take them up the mountain", vars: [] }, { key: "c7eb7562aaab", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 110, lines: [110], tpl: "STEPS[0]", card: "Fresh Catch", field: "title", text: "Fresh Catch", vars: [] }, { key: "5812a42b8531", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 110, lines: [110], tpl: "STEPS[0]", card: "Fresh Catch", field: "why", text: "Skipper Holt has a crate for the aquarium and no van. Westerly, dropping. Bring it in before the weather turns.", vars: [] }, { key: "83ee7ff3ee04", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 111, lines: [111], tpl: "STEPS[0]", card: "Fresh Catch", field: "details", text: "Maren Holt gives the weather before hello. One fish in the crate has no eyes at all, and Dr Lind at the aquarium will want to see it.", vars: [] }, { key: "bcb5461cd9b6", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 112, lines: [112], tpl: "STEPS[0]", card: "Fresh Catch", field: "caption", text: "An odd catch", vars: [] }, { key: "c8623f758d83", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 128, lines: [128, 138], tpl: "STEPS[1]", card: "Night Nets", field: "title", text: "Night Nets", vars: [] }, { key: "9cea9509d52d", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 128, lines: [128], tpl: "STEPS[1]", card: "Night Nets", field: "why", text: "Something came up in Holt\u2019s nets that she won\u2019t talk about by day. Meet her boat at her buoy after dark.", vars: [] }, { key: "a7421f41b613", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 129, lines: [129], tpl: "STEPS[1]", card: "Night Nets", field: "details", text: "\u201CNortherly, rising,\u201D she says across the water, and opens a crate. A flat tile, the size of a hand, warm as tea and humming faintly.", vars: [] }, { key: "b82f1946ffa7", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 130, lines: [130, 140], tpl: "STEPS[1]", card: "Night Nets", field: "caption", text: "Holt\u2019s boat", vars: [] }, { key: "8ab7477dd5a4", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 132, lines: [132, 142], tpl: "STEPS[1]", card: "Night Nets", field: "line", text: "A warm tile came up in Holt\u2019s net off the cape. It hums.", vars: [] }, { key: "90e1f92a952f", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 138, lines: [138], tpl: "STEPS[1]", card: "Night Nets", field: "why", text: "Something came up in Holt\u2019s nets that she won\u2019t talk about by day. Meet her on the harbour after dark.", vars: [] }, { key: "4faf2185f3e1", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 139, lines: [139], tpl: "STEPS[1]", card: "Night Nets", field: "details", text: "\u201CNortherly, rising,\u201D she says, and opens a crate. A flat tile, the size of a hand, warm as tea and humming faintly.", vars: [] }, { key: "00c520758268", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 155, lines: [155], tpl: "STEPS[2]", card: "Specimen", field: "title", text: "Specimen", vars: [] }, { key: "ffe215385b35", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 155, lines: [155], tpl: "STEPS[2]", card: "Specimen", field: "why", text: "Holt wants the tile off her boat. Dr Lind at the aquarium wants it under a microscope. Take it over.", vars: [] }, { key: "e3e8944591a2", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 156, lines: [156], tpl: "STEPS[2]", card: "Specimen", field: "details", text: "Teodor Lind has a Latin name for everything that swims. For the tile he has a shrug. \u201CNot glass. Not stone. Not anything,\u201D he says. \u201CYet.\u201D", vars: [] }, { key: "e668a2ed8b83", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 157, lines: [157], tpl: "STEPS[2]", card: "Specimen", field: "caption", text: "The humming tile", vars: [] }, { key: "5a06fc67f81e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 171, lines: [171], tpl: "STEPS[3]", card: "Keeper\u2019s Light", field: "title", text: "Keeper\u2019s Light", vars: [] }, { key: "fbbe5b81d979", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 171, lines: [171], tpl: "STEPS[3]", card: "Keeper\u2019s Light", field: "why", text: "Lind has heard of a keeper out on the coast who has seen it all before. Nobody gives directions. Find the light.", vars: [] }, { key: "e3ba990ccba9", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 172, lines: [172], tpl: "STEPS[3]", card: "Keeper\u2019s Light", field: "details", text: "It stands {x1} of the aquarium, about {away} tiles off, where the land runs out. \u201CForty years. Sevens. Nobody came up the hill till you,\u201D says Fen.", vars: [{ label: "x1", expr: "bearing(a, l)" }, { label: "away", expr: "away" }] }, { key: "c9a7ef99ece4", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 173, lines: [173], tpl: "STEPS[3]", card: "Keeper\u2019s Light", field: "caption", text: "The lighthouse", vars: [] }, { key: "5b7102cb07f5", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 175, lines: [175], tpl: "STEPS[3]", card: "Keeper\u2019s Light", field: "line", text: "Old Fen the keeper has seen lights under the sea for forty years. Always in sevens.", vars: [] }, { key: "a4161f227b8e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 193, lines: [193, 206], tpl: "STEPS[4]", card: "Coastguard Call", field: "title", text: "Coastguard Call", vars: [] }, { key: "e020f7e651fa", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 193, lines: [193], tpl: "STEPS[4]", card: "Coastguard Call", field: "why", text: "A dinghy is drifting off the cape and the coastguard launch is out of fuel. CPO Rook needs the sailor brought in.", vars: [] }, { key: "d25650d2072c", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 194, lines: [194], tpl: "STEPS[4]", card: "Coastguard Call", field: "details", text: "\u201CLogged. Noted. Next,\u201D says Rook. The sailor says the lights under the water came up around the dinghy. The coastguard has had eleven reports this month.", vars: [] }, { key: "30ba59ae320b", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 195, lines: [195], tpl: "STEPS[4]", card: "Coastguard Call", field: "caption", text: "A dinghy adrift", vars: [] }, { key: "671ef94902f0", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 196, lines: [196], tpl: "STEPS[4]", card: "Coastguard Call", field: "label", text: "Bring the sailor ashore", vars: [] }, { key: "3663a0876831", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 206, lines: [206], tpl: "STEPS[4]", card: "Coastguard Call", field: "why", text: "The coastguard looks after the keeper. CPO Rook needs his supplies run up to the light, and a word with you after.", vars: [] }, { key: "970994c17f3e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 207, lines: [207], tpl: "STEPS[4]", card: "Coastguard Call", field: "details", text: "\u201CLogged. Noted. Next,\u201D says Rook. The coastguard has had eleven reports of lights under the water this month, and filed every one.", vars: [] }, { key: "ffc471852a5c", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 208, lines: [208], tpl: "STEPS[4]", card: "Coastguard Call", field: "caption", text: "The coastguard", vars: [] }, { key: "d0716c6633ac", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 226, lines: [226, 242], tpl: "STEPS[5]", card: "Salvage Rights", field: "title", text: "Salvage Rights", vars: [] }, { key: "c7d6e62e43e7", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 226, lines: [226], tpl: "STEPS[5]", card: "Salvage Rights", field: "why", text: "Greywater has a barge over the wreck that shed the same tiles. First one down sets the buoy. Beat their divers to the bottom.", vars: [] }, { key: "c621bf5e3c9d", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 227, lines: [227], tpl: "STEPS[5]", card: "Salvage Rights", field: "details", text: "The wreck is {x1}. Nobody has ever seen a Greywater diver\u2019s face either. Rook will be watching from the coastguard launch.", vars: [{ label: "x1", expr: "seaName(sw)" }] }, { key: "8b78d86c2294", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 228, lines: [228], tpl: "STEPS[5]", card: "Salvage Rights", field: "caption", text: "Greywater\u2019s barge", vars: [] }, { key: "46bdcf2f565e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 229, lines: [229], tpl: "STEPS[5]", card: "Salvage Rights", field: "label", text: "Dive to the wreck first", vars: [] }, { key: "e95112347b39", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 242, lines: [242], tpl: "STEPS[5]", card: "Salvage Rights", field: "why", text: "A salvage firm called Greywater is after a wreck that shed the same tiles. First there sets the buoy. Beat their van.", vars: [] }, { key: "a55f1f6a62e7", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 243, lines: [243], tpl: "STEPS[5]", card: "Salvage Rights", field: "details", text: "Nobody has ever seen a Greywater driver\u2019s face. Rook will be watching from the coastguard launch.", vars: [] }, { key: "3f75a152701a", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 244, lines: [244], tpl: "STEPS[5]", card: "Salvage Rights", field: "caption", text: "Greywater\u2019s van", vars: [] }, { key: "a81eedd06c26", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 251, lines: [251], tpl: "STEPS[6].beat", card: null, field: "line", text: "The men on the rig say its legs hum at night. The coastguard has logged it.", vars: [] }, { key: "a7aa5792763e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 266, lines: [266, 279], tpl: "STEPS[6]", card: "Rig Supply", field: "title", text: "Rig Supply", vars: [] }, { key: "ca3af7dd0239", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 266, lines: [266], tpl: "STEPS[6]", card: "Rig Supply", field: "why", text: "The rig needs spares and the coastguard wants an excuse to be out there. Two loads by sea to the rig\u2019s landing.", vars: [] }, { key: "d11c55dc746c", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 267, lines: [267, 280], tpl: "STEPS[6]", card: "Rig Supply", field: "details", text: "The rig crew don\u2019t like the nights any more. They say the legs sing. Rook has filed it under weather.", vars: [] }, { key: "1fd3cf1f8a43", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 268, lines: [268, 281], tpl: "STEPS[6]", card: "Rig Supply", field: "caption", text: "The rig", vars: [] }, { key: "3b934754e938", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 279, lines: [279], tpl: "STEPS[6]", card: "Rig Supply", field: "why", text: "The rig needs spares and the coastguard wants an excuse to be out there. Two loads to the rig, and keep your ears open.", vars: [] }, { key: "5369339ae8bf", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 288, lines: [288], tpl: "STEPS[7].beat", card: null, field: "line", text: "A film crew is shooting at the harbour with the free-diver Lio Brandt.", vars: [] }, { key: "4ab48e615a52", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 296, lines: [296], tpl: "STEPS[7]", card: "Screen Test", field: "title", text: "Screen Test", vars: [] }, { key: "c6d341fb065b", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 296, lines: [296], tpl: "STEPS[7]", card: "Screen Test", field: "why", text: "Starlight Pictures is making a film about the hum. Rafe Castellanos needs his crew and his diver at the harbour.", vars: [] }, { key: "57e1c627e336", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 297, lines: [297], tpl: "STEPS[7]", card: "Screen Test", field: "details", text: "Rafe frames everything with his hands. His star, the free-diver Lio Brandt, says \u201Cdown\u201D the way other people say \u201Chome\u201D.", vars: [] }, { key: "a7da01536f60", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 298, lines: [298], tpl: "STEPS[7]", card: "Screen Test", field: "caption", text: "Starlight Pictures", vars: [] }, { key: "1a8a8dd757f8", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 306, lines: [306], tpl: "STEPS[8].beat", card: null, field: "line", text: "The power failed with the tide. The lamps came back flickering in sevens.", vars: [] }, { key: "f17c2461f137", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 317, lines: [317, 331], tpl: "STEPS[8]", card: "Blackout", field: "title", text: "Blackout", vars: [] }, { key: "e194bacfa93b", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 317, lines: [317], tpl: "STEPS[8]", card: "Blackout", field: "why", text: "The hum has blown the substation and an ambulance is crawling through the dark. Light its way to the hospital.", vars: [] }, { key: "62e855011d8b", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 318, lines: [318, 332], tpl: "STEPS[8]", card: "Blackout", field: "details", text: "Every lamp in the harbour town went out at once, and came back flickering. Seven, a pause, seven. Rook has stopped filing it under weather.", vars: [] }, { key: "4b5dddcbc637", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 319, lines: [319], tpl: "STEPS[8]", card: "Blackout", field: "caption", text: "The ambulance", vars: [] }, { key: "b404d32621df", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 331, lines: [331], tpl: "STEPS[8]", card: "Blackout", field: "why", text: "The hum has blown the town\u2019s substation. Rook needs new switchgear brought in before the hospital\u2019s generator runs dry.", vars: [] }, { key: "f9b2cd63c737", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 333, lines: [333], tpl: "STEPS[8]", card: "Blackout", field: "caption", text: "Switchgear", vars: [] }, { key: "f38a8d6d689d", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 340, lines: [340], tpl: "STEPS[9].beat", card: null, field: "line", text: "A warship has dropped anchor off the harbour. The Navy calls it an exercise.", vars: [] }, { key: "f0d316a98d46", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 356, lines: [356, 368], tpl: "STEPS[9]", card: "Dry Dock", field: "title", text: "Dry Dock", vars: [] }, { key: "0a8ea14015da", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 356, lines: [356], tpl: "STEPS[9]", card: "Dry Dock", field: "why", text: "Rook is raising the wreck, but its tiles fall off in the lift. Bring two up to the harbour by the dock for the Navy.", vars: [] }, { key: "3f3004af9153", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 357, lines: [357], tpl: "STEPS[9]", card: "Dry Dock", field: "details", text: "Its hull is studded with the tiles, hundreds of them, all humming. The Navy asked for them by name.", vars: [] }, { key: "ba27e9e1d3d8", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 358, lines: [358], tpl: "STEPS[9]", card: "Dry Dock", field: "caption", text: "The wreck, on the bottom", vars: [] }, { key: "90a3e37a39c5", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 369, lines: [369], tpl: "STEPS[9]", card: "Dry Dock", field: "why", text: "Rook has raised the wreck Greywater wanted. Tow it into the dry dock with two vehicles, where the Navy can look at it.", vars: [] }, { key: "ce105fa3b34a", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 370, lines: [370], tpl: "STEPS[9]", card: "Dry Dock", field: "why", text: "Rook has raised the wreck Greywater wanted and cut it up. Truck it to the dry dock, where the Navy can look at it.", vars: [] }, { key: "d1f818569509", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 371, lines: [371], tpl: "STEPS[9]", card: "Dry Dock", field: "details", text: "Its hull is studded with the tiles, hundreds of them, all humming. The Navy asked for it by name.", vars: [] }, { key: "49cf09562ec2", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 372, lines: [372], tpl: "STEPS[9]", card: "Dry Dock", field: "caption", text: "The wreck", vars: [] }, { key: "d68892a17cbc", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 384, lines: [384], tpl: "STEPS[10]", card: "Flag Officer", field: "title", text: "Flag Officer", vars: [] }, { key: "c35029f44ecc", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 384, lines: [384], tpl: "STEPS[10]", card: "Flag Officer", field: "why", text: "The Navy\u2019s Commander Adeyemi wants to meet the haulier who found the wreck. At the dock, after dark, quietly.", vars: [] }, { key: "51e4406ec9ff", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 385, lines: [385], tpl: "STEPS[10]", card: "Flag Officer", field: "details", text: "\u201CI need boats. You have boats. Good.\u201D Yusra Adeyemi hands you the keys to a hovercraft. \u201CIt doesn\u2019t care what it\u2019s on. You\u2019ll see why.\u201D", vars: [] }, { key: "9eb0bd0a4456", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 386, lines: [386], tpl: "STEPS[10]", card: "Flag Officer", field: "caption", text: "The Navy\u2019s Skimmer", vars: [] }, { key: "38713c70e9a9", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 410, lines: [410], tpl: "clue", card: null, field: "line", text: "Greywater Salvage are stealing tiles off the wreck and taking them to a yard inland.", vars: [] }, { key: "45aeaa9f2969", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 414, lines: [414, 420, 427], tpl: "STEPS[11]", card: "Night Van", field: "title", text: "Night Van", vars: [] }, { key: "47eb4c749558", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 414, lines: [414, 420], tpl: "STEPS[11]", card: "Night Van", field: "why", text: "Greywater\u2019s van has been at the harbour every night, and it always heads {x1}. Find where it unloads.", vars: [{ label: "x1", expr: "bearing(shed, yardSpot)" }] }, { key: "11f2b346363d", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 415, lines: [415, 421], tpl: "STEPS[11]", card: "Night Van", field: "details", text: "About {x1} tiles {x2} of the harbour, says Rook. A yard, he thinks. \u201CLogged. Noted. Found.\u201D", vars: [{ label: "x1", expr: "Math.round(Math.hypot(yardSpot.x - shed.x, yardSpot.z - shed.z) / 10) * 10" }, { label: "x2", expr: "bearing(shed, yardSpot)" }] }, { key: "6fa5a52b5c75", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 416, lines: [416, 422, 429, 453], tpl: "STEPS[11]", card: "Night Van", field: "caption", text: "The grey van", vars: [] }, { key: "7f352f58a54a", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 427, lines: [427], tpl: "STEPS[11]", card: "Night Van", field: "why", text: "Greywater\u2019s van has been at the harbour every night. Rook wants to know where it takes what it loads. Follow it.", vars: [] }, { key: "d4202def2615", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 428, lines: [428], tpl: "STEPS[11]", card: "Night Van", field: "details", text: "\u201CLogged,\u201D says Rook. \u201CNoted. Followed.\u201D The van is grey, and in no hurry.", vars: [] }, { key: "31c6dd4c36bb", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 438, lines: [438], tpl: "STEPS[12].beat", card: null, field: "line", text: "The coastguard has impounded a salvage firm\u2019s vans and what they carried.", vars: [] }, { key: "6acdbe93c29c", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 451, lines: [451, 464], tpl: "STEPS[12]", card: "Hot Pursuit", field: "title", text: "Hot Pursuit", vars: [] }, { key: "60c735b8e3cf", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 451, lines: [451], tpl: "STEPS[12]", card: "Hot Pursuit", field: "why", text: "Greywater is running the tiles out of the county tonight. Keep their van in your beam until the patrol stops it.", vars: [] }, { key: "19f7eed2d224", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 452, lines: [452], tpl: "STEPS[12]", card: "Hot Pursuit", field: "details", text: "Rook has rung ahead. Greywater\u2019s best driver is at the wheel, lights off. Lose the van in the dark and the tiles are gone.", vars: [] }, { key: "28bf8d8ee0b8", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 454, lines: [454], tpl: "STEPS[12]", card: "Hot Pursuit", field: "label", text: "Light the grey van", vars: [] }, { key: "be2fd981a4e3", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 464, lines: [464], tpl: "STEPS[12]", card: "Hot Pursuit", field: "why", text: "Greywater is running the tiles out of the county. Get to the border before their van does and the coastguard does the rest.", vars: [] }, { key: "295f608f222e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 465, lines: [465], tpl: "STEPS[12]", card: "Hot Pursuit", field: "details", text: "Rook has rung ahead. Greywater\u2019s best driver is at the wheel and has never lost a race. Shortcuts are allowed.", vars: [] }, { key: "a5f45e9bca28", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 466, lines: [466], tpl: "STEPS[12]", card: "Hot Pursuit", field: "caption", text: "Greywater\u2019s fastest", vars: [] }, { key: "8f6abb4e28f3", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 473, lines: [473], tpl: "STEPS[13].beat", card: null, field: "line", text: "An astronomer inland says the moon has been signalling for weeks.", vars: [] }, { key: "2646bb4326ce", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 481, lines: [481], tpl: "STEPS[13]", card: "Dead Calm", field: "title", text: "Dead Calm", vars: [] }, { key: "907e522204a4", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 481, lines: [481], tpl: "STEPS[13]", card: "Dead Calm", field: "why", text: "The fish have left the bay, every one. Holt\u2019s town has nothing to eat. Three loads of relief food to the harbour.", vars: [] }, { key: "5868c0eda168", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 482, lines: [482], tpl: "STEPS[13]", card: "Dead Calm", field: "details", text: "\u201CFlat calm,\u201D says Holt. \u201CNo wind, no fish, no gulls. Forty years and I have never seen the sea this quiet.\u201D", vars: [] }, { key: "3767288d7698", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 483, lines: [483], tpl: "STEPS[13]", card: "Dead Calm", field: "caption", text: "Relief food", vars: [] }, { key: "a529e7c80318", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 490, lines: [490], tpl: "STEPS[14].beat", card: null, field: "line", text: "Lio Brandt says she will dive to the hum, with a crew and whatever floats.", vars: [] }, { key: "61b96adec2a3", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 501, lines: [501], tpl: "STEPS[14]", card: "Premiere", field: "title", text: "Premiere", vars: [] }, { key: "7e62a70238fe", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 501, lines: [501], tpl: "STEPS[14]", card: "Premiere", field: "why", text: "Starlight\u2019s film is finished and the marquee reads THE HUM. Rafe needs his stars on the red carpet tonight.", vars: [] }, { key: "df2e19d40bc3", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 502, lines: [502], tpl: "STEPS[14]", card: "Premiere", field: "details", text: "On the carpet, Lio Brandt tells the cameras she will dive to the hum \u201Cwith a crew and whatever floats\u201D. The Navy declines to comment.", vars: [] }, { key: "996aa8e6e6e3", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 503, lines: [503], tpl: "STEPS[14]", card: "Premiere", field: "caption", text: "The premiere", vars: [] }, { key: "1c1898a96fd2", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 515, lines: [515], tpl: "STEPS[15]", card: "The Hum Answers", field: "title", text: "The Hum Answers", vars: [] }, { key: "f9c789f6f55f", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 515, lines: [515], tpl: "STEPS[15]", card: "The Hum Answers", field: "why", text: "Fen will flash the lamp in sevens at midnight, and Lind wants to see what answers. Be at the light and keep still.", vars: [] }, { key: "23130f81000e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 516, lines: [516], tpl: "STEPS[15]", card: "The Hum Answers", field: "details", text: "Fen works the lamp by hand. Out past the cape the sea lights up from underneath and answers in eights. \u201CIt\u2019s a door,\u201D says Lind. \u201CIt isn\u2019t ours.\u201D", vars: [] }, { key: "bd15aaac997e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 517, lines: [517], tpl: "STEPS[15]", card: "The Hum Answers", field: "caption", text: "The light", vars: [] }, { key: "61dc63663f63", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 519, lines: [519], tpl: "STEPS[15]", card: "The Hum Answers", field: "line", text: "Fen flashed sevens and the sea answered in eights. Lind says it is a door, and it isn\u2019t ours.", vars: [] }, { key: "f0f349c20ae6", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 534, lines: [534], tpl: "STEPS[16]", card: "Hull Plates", field: "title", text: "Hull Plates", vars: [] }, { key: "24861908e1a5", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 534, lines: [534], tpl: "STEPS[16]", card: "Hull Plates", field: "why", text: "The Navy is building something in the dry dock and needs a fleet that keeps quiet. Three loads of hull plate, and two vehicles.", vars: [] }, { key: "6acff4e1d73e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 535, lines: [535], tpl: "STEPS[16]", card: "Hull Plates", field: "details", text: "\u201CPlates, sphere, people,\u201D says Adeyemi. \u201CThis is plates.\u201D They are curved, and very thick.", vars: [] }, { key: "6c89e94b8455", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 536, lines: [536], tpl: "STEPS[16]", card: "Hull Plates", field: "caption", text: "The dry dock", vars: [] }, { key: "bf1684e8110c", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 537, lines: [537], tpl: "STEPS[16]", card: "Hull Plates", field: "label", text: "Own 2 vehicles", vars: [] }, { key: "101df60ef51b", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 543, lines: [543], tpl: "STEPS[17].beat", card: null, field: "line", text: "A submarine is taking shape in the dry dock. The Navy calls it a research vessel.", vars: [] }, { key: "94766043bb78", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 553, lines: [553], tpl: "STEPS[17]", card: "Pressure Test", field: "title", text: "Pressure Test", vars: [] }, { key: "02f2ba12d4b0", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 554, lines: [554], tpl: "STEPS[17]", card: "Pressure Test", field: "why", text: "The pressure sphere is the heart of the boat, and too heavy for two. Tow it to the dock with three vehicles on the ropes.", vars: [] }, { key: "b8fcd8774d9b", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 555, lines: [555], tpl: "STEPS[17]", card: "Pressure Test", field: "why", text: "The pressure sphere is the heart of the boat. Bring it to the dock on the biggest truck you have, and gently.", vars: [] }, { key: "38f624af5d17", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 556, lines: [556], tpl: "STEPS[17]", card: "Pressure Test", field: "details", text: "Thick steel and four small windows. \u201CThe crew lives in that,\u201D says Adeyemi. \u201CAll the way down.\u201D", vars: [] }, { key: "bd69c91399c2", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 557, lines: [557], tpl: "STEPS[17]", card: "Pressure Test", field: "caption", text: "The pressure sphere", vars: [] }, { key: "2ced19cbdb40", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 572, lines: [572], tpl: "STEPS[18]", card: "Dive Crew", field: "title", text: "Dive Crew", vars: [] }, { key: "5e6b2b5d4567", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 572, lines: [572], tpl: "STEPS[18]", card: "Dive Crew", field: "why", text: "The Navy needs haulage on the bottom of the ocean, and Adeyemi wants your fleet. Show her four vehicles. Bring the divers.", vars: [] }, { key: "fc5ec4871134", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 573, lines: [573], tpl: "STEPS[18]", card: "Dive Crew", field: "details", text: "\u201CNot the surface. The bottom,\u201D says Adeyemi. \u201CThe door is on the floor of the trench, and doors need hauliers. Show me a fleet that floats.\u201D", vars: [] }, { key: "e7189f08e288", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 574, lines: [574], tpl: "STEPS[18]", card: "Dive Crew", field: "caption", text: "The submarine", vars: [] }, { key: "9d2837daee9f", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 575, lines: [575], tpl: "STEPS[18]", card: "Dive Crew", field: "label", text: "Own 4 vehicles", vars: [] }, { key: "ad8b882d4286", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 575, lines: [575], tpl: "STEPS[18]", card: "Dive Crew", field: "label", text: "Hire 2 drivers out", vars: [] }, { key: "0deb5e4769a6", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 582, lines: [582], tpl: "STEPS[19].beat", card: null, field: "line", text: "The Navy says she dives for real at the spring tide, and the fleet is going with her.", vars: [] }, { key: "2ae1e86c95db", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 589, lines: [589], tpl: "STEPS[19]", card: "Sea Trials", field: "title", text: "Sea Trials", vars: [] }, { key: "ddd5f1d40d61", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 589, lines: [589], tpl: "STEPS[19]", card: "Sea Trials", field: "why", text: "Dawn, the dock flooding, everyone on the quay. Lead three of your vehicles to the dock in formation and hold while she floats.", vars: [] }, { key: "e7f66a3bf29c", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 590, lines: [590], tpl: "STEPS[19]", card: "Sea Trials", field: "details", text: "Fen on the quay, Lind, Holt, Rook, Lio on camera. The gate opens and the water under her lights up in sevens. \u201CShe dives at the spring tide,\u201D says Adeyemi. \u201CBring everything that floats.\u201D", vars: [] }, { key: "8daecad91a09", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 591, lines: [591], tpl: "STEPS[19]", card: "Sea Trials", field: "caption", text: "Sea trials", vars: [] }, { key: "25d7a8d1d0b4", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 594, lines: [594], tpl: "STEPS[19]", card: "Sea Trials", field: "line", text: "The submarine dives at the spring tide. The Navy wants your fleet on the ocean floor.", vars: [] }, { key: "eb1443a5dad6", group: "Story chains", file: "src/game/missions/story/kit.ts", line: 298, lines: [298], tpl: "race", card: null, field: "label", text: "Meet {short} at the start", vars: [{ label: "short", expr: "r.short" }] }, { key: "b9a58f21a0e8", group: "Story chains", file: "src/game/missions/story/kit.ts", line: 298, lines: [298], tpl: "race", card: null, field: "label", text: "Meet at the start line", vars: [] }, { key: "f5af6181ef49", group: "Story chains", file: "src/game/missions/story/kit.ts", line: 327, lines: [327], tpl: "tow", card: null, field: "label", text: "Bring {min} vehicles", vars: [{ label: "min", expr: "min" }] }, { key: "000171d8393a", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 119, lines: [119], tpl: "STEPS[0]", card: "Lens Delivery", field: "title", text: "Lens Delivery", vars: [] }, { key: "bebd251793de", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 119, lines: [119], tpl: "STEPS[0]", card: "Lens Delivery", field: "why", text: "Professor Halloway\u2019s new lens is waiting to be collected. Bring it up to her before the sky clears tonight.", vars: [] }, { key: "e5126929eb64", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 120, lines: [120], tpl: "STEPS[0]", card: "Lens Delivery", field: "details", text: "Wren Halloway has watched the same patch of the moon for thirty years, and something new has turned up on it. \u201CProbably nothing,\u201D she says. \u201CA hair over nothing.\u201D", vars: [] }, { key: "b35c7b78711d", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 132, lines: [132], tpl: "STEPS[1]", card: "Night Shift", field: "title", text: "Night Shift", vars: [] }, { key: "97a2fcdc3ca3", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 132, lines: [132], tpl: "STEPS[1]", card: "Night Shift", field: "why", text: "Halloway wants a second pair of eyes. Come up after dark and look through the telescope. She won\u2019t say at what.", vars: [] }, { key: "3ae7c0afb385", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 133, lines: [133], tpl: "STEPS[1]", card: "Night Shift", field: "details", text: "She has shown nobody else. \u201CTell me if you see it too,\u201D she says, \u201Cand then tell me I\u2019m not mad.\u201D", vars: [] }, { key: "458bf35de8bc", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 136, lines: [136], tpl: "STEPS[1]", card: "Night Shift", field: "line", text: "A light on the moon blinks in sevens: seven flashes, a pause, seven more. Every night.", vars: [] }, { key: "c298dfa59615", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 142, lines: [142], tpl: "STEPS[2].beat", card: null, field: "line", text: "A local stargazer says the moon is blinking at us. Film at six.", vars: [] }, { key: "29e00956413e", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 150, lines: [150], tpl: "STEPS[2]", card: "Hot Tape", field: "title", text: "Hot Tape", vars: [] }, { key: "f61114a126a6", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 150, lines: [150], tpl: "STEPS[2]", card: "Hot Tape", field: "why", text: "Halloway has filmed the light. Take her tapes to the newsroom, where a reporter called Cass Marlow is waiting.", vars: [] }, { key: "c88bf748680f", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 151, lines: [151], tpl: "STEPS[2]", card: "Hot Tape", field: "details", text: "Cass Marlow speaks in headlines. \u201CSTARGAZER SAYS MOON BLINKS,\u201D she says when you ring. \u201CBring me the tapes.\u201D", vars: [] }, { key: "53b0ab78e05e", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 152, lines: [152], tpl: "STEPS[2]", card: "Hot Tape", field: "caption", text: "Observation tapes", vars: [] }, { key: "4b6f8ee57d71", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 163, lines: [163], tpl: "reward[1]", card: null, field: "line", text: "The grey car that watches the observatory belongs to the Army.", vars: [] }, { key: "4c3a0a5ae027", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 167, lines: [167, 175], tpl: "STEPS[3]", card: "Grey Grandee", field: "title", text: "Grey Grandee", vars: [] }, { key: "c55a6cd5167d", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 167, lines: [167], tpl: "STEPS[3]", card: "Grey Grandee", field: "why", text: "A grey limousine has sat outside the observatory all week. Cass wants to know whose it is. Follow it, unseen.", vars: [] }, { key: "db59c01be8dc", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 168, lines: [168], tpl: "STEPS[3]", card: "Grey Grandee", field: "details", text: "\u201CNOBODY PARKS A LIMO OUTSIDE A TELESCOPE,\u201D says Cass. Find out where it goes.", vars: [] }, { key: "c0a790958f76", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 169, lines: [169, 177], tpl: "STEPS[3]", card: "Grey Grandee", field: "caption", text: "The grey Grandee", vars: [] }, { key: "ae0f061062b2", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 176, lines: [176], tpl: "STEPS[3]", card: "Grey Grandee", field: "details", text: "Cass lost it on the road out. It went {x1}, about {x2} tiles. Somewhere official.", vars: [{ label: "x1", expr: "bearing(o, b)" }, { label: "x2", expr: "Math.round(Math.hypot(b.x - o.x, b.z - o.z) / 10) * 10" }] }, { key: "5d70318c8ebe", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 193, lines: [193], tpl: "STEPS[4]", card: "Rations Run", field: "title", text: "Rations Run", vars: [] }, { key: "f82acf08155f", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 193, lines: [193], tpl: "STEPS[4]", card: "Rations Run", field: "why", text: "The base needs feeding and asks no questions of whoever does it. Two loads of mess supplies, and keep it to yourself.", vars: [] }, { key: "af1b72732e11", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 194, lines: [194], tpl: "STEPS[4]", card: "Rations Run", field: "details", text: "Colonel Ada Strand never asks a question. \u201CYou\u2019ll not talk about the sky,\u201D she says. \u201CYou\u2019ll be paid on time.\u201D The base stays lit all night now.", vars: [] }, { key: "4017efc499c1", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 195, lines: [195, 335], tpl: "STEPS[4]", card: "Rations Run", field: "caption", text: "The Army", vars: [] }, { key: "982fce7eec81", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 211, lines: [211], tpl: "STEPS[5]", card: "Old Ears", field: "title", text: "Old Ears", vars: [] }, { key: "43489d72c52a", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 211, lines: [211], tpl: "STEPS[5]", card: "Old Ears", field: "why", text: "Halloway needs a receiver, and there is one in a satellite that fell out of the sky years ago. Find it and bring it back.", vars: [] }, { key: "30a93a05b5df", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 212, lines: [212], tpl: "STEPS[5]", card: "Old Ears", field: "details", text: "It came down {x1} of the observatory, about {away} tiles off. The Army\u2019s grey car was there before you; mind they left the receiver.", vars: [{ label: "x1", expr: "bearing(o, sat)" }, { label: "away", expr: "away" }] }, { key: "ecb0e10cfa1a", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 213, lines: [213], tpl: "STEPS[5]", card: "Old Ears", field: "caption", text: "A satellite receiver", vars: [] }, { key: "a24eb0ebbd6e", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 218, lines: [218], tpl: "STEPS[5]", card: "Old Ears", field: "line", text: "The light on the moon rides a carrier wave. It is a transmission. Somebody is sending.", vars: [] }, { key: "8a566c3f4a76", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 236, lines: [236], tpl: "STEPS[6]", card: "First to the Pad", field: "title", text: "First to the Pad", vars: [] }, { key: "1ae153c16839", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 236, lines: [236], tpl: "STEPS[6]", card: "First to the Pad", field: "why", text: "The spaceport wants one haulier, and the first to its gate gets the contract. Oswin Pike wants it too. Beat him there.", vars: [] }, { key: "4f85797e1a4e", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 237, lines: [237], tpl: "STEPS[6]", card: "First to the Pad", field: "details", text: "Ilse Varga of Kestrel Launch will be at the gate with a stopwatch. Pike smiles at you the way a tow truck smiles at a ditch.", vars: [] }, { key: "97cb082df884", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 238, lines: [238], tpl: "STEPS[6]", card: "First to the Pad", field: "caption", text: "Pike\u2019s Pip", vars: [] }, { key: "63f2964aec66", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 245, lines: [245], tpl: "STEPS[7].beat", card: null, field: "line", text: "A commercial payload, says Kestrel Launch. Nobody will say what.", vars: [] }, { key: "f1ccd5ebac70", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 253, lines: [253], tpl: "STEPS[7]", card: "Pad Supplies", field: "title", text: "Pad Supplies", vars: [] }, { key: "f7ccdc93df18", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 253, lines: [253], tpl: "STEPS[7]", card: "Pad Supplies", field: "why", text: "Kestrel Launch has a client and a date. Ilse Varga needs three loads of supplies at the pad, and no questions asked.", vars: [] }, { key: "edbd39fe6580", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 254, lines: [254], tpl: "STEPS[7]", card: "Pad Supplies", field: "details", text: "Ilse Varga counts down in ordinary sentences. \u201CThree things. Valves, seals, cable. In that order.\u201D The pad\u2019s floodlights are on all night now.", vars: [] }, { key: "132a6c93e81c", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 255, lines: [255, 376, 436], tpl: "STEPS[7]", card: "Pad Supplies", field: "caption", text: "The launch pad", vars: [] }, { key: "12aff4c96bfd", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 263, lines: [263], tpl: "STEPS[8].beat", card: null, field: "line", text: "The pop star told a full stadium she is going to space.", vars: [] }, { key: "3ce8b4703dc8", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 273, lines: [273], tpl: "STEPS[8]", card: "Star Power", field: "title", text: "Star Power", vars: [] }, { key: "a999ec42e351", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 273, lines: [273], tpl: "STEPS[8]", card: "Star Power", field: "why", text: "Pop star Juno Vale plays the stadium tonight and wants the haulier the spaceport uses. Bring her gear, then her.", vars: [] }, { key: "9be31bffcc76", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 274, lines: [274], tpl: "STEPS[8]", card: "Star Power", field: "details", text: "Juno thinks everything is iconic. \u201CA haulier for a rocket. That\u2019s iconic.\u201D She has heard about the light on the moon, like everybody.", vars: [] }, { key: "7c9a3bfb8dbb", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 275, lines: [275], tpl: "STEPS[8]", card: "Star Power", field: "caption", text: "Tonight\u2019s show", vars: [] }, { key: "be0c146e8842", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 283, lines: [283], tpl: "STEPS[9].beat", card: null, field: "line", text: "Soldiers turned reporters away from the launch pad today. Kestrel says it was not asked.", vars: [] }, { key: "e51ba135fccb", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 291, lines: [291], tpl: "STEPS[9]", card: "Press Pool", field: "title", text: "Press Pool", vars: [] }, { key: "792f8a3c63cf", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 291, lines: [291], tpl: "STEPS[9]", card: "Press Pool", field: "why", text: "The Army has shut the spaceport to the press. Cass has a crew and a way in round the back. Get them to the pad.", vars: [] }, { key: "7361bc572eb6", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 292, lines: [292], tpl: "STEPS[9]", card: "Press Pool", field: "details", text: "\u201CARMY SHUTS GATE,\u201D says Cass. \u201CHAULIER OPENS IT.\u201D Ilse Varga will let a contractor\u2019s vehicle through. She and the colonel are no longer speaking.", vars: [] }, { key: "31ff8b731dd6", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 293, lines: [293], tpl: "STEPS[9]", card: "Press Pool", field: "caption", text: "Channel 6", vars: [] }, { key: "52a22ebda516", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 307, lines: [307], tpl: "STEPS[10]", card: "Quiet Word", field: "title", text: "Quiet Word", vars: [] }, { key: "c5f6db015be3", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 307, lines: [307], tpl: "STEPS[10]", card: "Quiet Word", field: "why", text: "Colonel Strand wants a word, somewhere quiet, after dark. She says to come alone. She doesn\u2019t say why.", vars: [] }, { key: "fa1d0a5b849c", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 308, lines: [308], tpl: "STEPS[10]", card: "Quiet Word", field: "details", text: "\u201CWe sent it sevens on Tuesday. It sent eight on Wednesday.\u201D The colonel tells you things; she never asks. \u201CYou\u2019ll want something that doesn\u2019t mind a dirt road.\u201D", vars: [] }, { key: "1d47d7c1075a", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 309, lines: [309], tpl: "STEPS[10]", card: "Quiet Word", field: "caption", text: "The colonel\u2019s Badger", vars: [] }, { key: "51a93a9ab5dc", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 317, lines: [317], tpl: "STEPS[11].beat", card: null, field: "line", text: "Tanks stand at the spaceport tonight. Kestrel calls them guests. Loud guests.", vars: [] }, { key: "b3e52c84bc84", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 327, lines: [327, 333], tpl: "STEPS[11]", card: "Convoy", field: "title", text: "Convoy", vars: [] }, { key: "14aa2fb6f835", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 327, lines: [327], tpl: "STEPS[11]", card: "Convoy", field: "why", text: "The Army is moving onto the pad. Lift two loads of soldiers from the base by air, before the press can count them.", vars: [] }, { key: "6f23e08862ca", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 328, lines: [328], tpl: "STEPS[11]", card: "Convoy", field: "details", text: "\u201CLow and quick,\u201D says the colonel. Ilse Varga will have to share her pad with tanks, and one of them is now yours: the Army is short of drivers.", vars: [] }, { key: "f3cb6ac71d6c", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 329, lines: [329], tpl: "STEPS[11]", card: "Convoy", field: "caption", text: "The Army by air", vars: [] }, { key: "4bfd77993d52", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 333, lines: [333], tpl: "STEPS[11]", card: "Convoy", field: "why", text: "The Army is moving onto the pad. Two loads of soldiers from the base, before the press can count them.", vars: [] }, { key: "470ef3fab4c4", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 334, lines: [334], tpl: "STEPS[11]", card: "Convoy", field: "details", text: "\u201CYou\u2019ll not stop on the way,\u201D says the colonel. Ilse Varga will have to share her pad with tanks, and one of them is now yours: the Army is short of drivers.", vars: [] }, { key: "cabc308627b6", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 352, lines: [352], tpl: "STEPS[12]", card: "The Big Dish", field: "title", text: "The Big Dish", vars: [] }, { key: "897c28527a72", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 353, lines: [353], tpl: "STEPS[12]", card: "The Big Dish", field: "why", text: "Halloway and the colonel agree on one thing: the pad needs a big dish to answer with. Tow it in with two vehicles.", vars: [] }, { key: "81b9fffa74c8", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 354, lines: [354], tpl: "STEPS[12]", card: "The Big Dish", field: "why", text: "Halloway and the colonel agree on one thing: the pad needs a big dish to answer with. Truck it over in sections.", vars: [] }, { key: "2e1b97599f99", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 355, lines: [355], tpl: "STEPS[12]", card: "The Big Dish", field: "details", text: "It came off the observatory on a low trailer. \u201CGently,\u201D says Halloway. \u201CIt\u2019s a hair over priceless.\u201D", vars: [] }, { key: "dcd44ae5de78", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 356, lines: [356], tpl: "STEPS[12]", card: "The Big Dish", field: "caption", text: "The radio dish", vars: [] }, { key: "69783c6412a6", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 363, lines: [363], tpl: "STEPS[13].beat", card: null, field: "line", text: "Out on the coast, the boats report a hum under the water. Nobody is listening.", vars: [] }, { key: "e708e47b21b9", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 374, lines: [374, 386], tpl: "STEPS[13]", card: "Dead Air", field: "title", text: "Dead Air", vars: [] }, { key: "f4620fb117a2", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 374, lines: [374], tpl: "STEPS[13]", card: "Dead Air", field: "why", text: "The signal drowns every radio in the county. Cass goes on air from the pad tonight. Hold it in your beam while she does.", vars: [] }, { key: "e55db336c90d", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 375, lines: [375], tpl: "STEPS[13]", card: "Dead Air", field: "details", text: "\u201CSIGNAL JAMS RADIO,\u201D says Cass, from the only camera still working. Keep the light on the pad and the county sees what she is talking about.", vars: [] }, { key: "dccd0ff5b8e5", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 377, lines: [377], tpl: "STEPS[13]", card: "Dead Air", field: "label", text: "Light the pad on air", vars: [] }, { key: "519679104f06", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 386, lines: [386], tpl: "STEPS[13]", card: "Dead Air", field: "why", text: "The signal is drowning out every radio in the county. Cass knows an engineer who can tune it out. Fetch them.", vars: [] }, { key: "2bbed0b11f54", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 387, lines: [387], tpl: "STEPS[13]", card: "Dead Air", field: "details", text: "\u201CSIGNAL JAMS RADIO,\u201D says Cass, on the one channel left. The engineer says the signal isn\u2019t only coming from the sky.", vars: [] }, { key: "a9036703349e", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 388, lines: [388], tpl: "STEPS[13]", card: "Dead Air", field: "caption", text: "The radio station", vars: [] }, { key: "3ade0408b6c0", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 395, lines: [395], tpl: "STEPS[14].beat", card: null, field: "line", text: "Fans camp at the spaceport gate as the pop star refuses to step down from the flight.", vars: [] }, { key: "a018a9c6c4cd", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 403, lines: [403], tpl: "STEPS[14]", card: "Fan Mail", field: "title", text: "Fan Mail", vars: [] }, { key: "17f78a20bb85", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 403, lines: [403], tpl: "STEPS[14]", card: "Fan Mail", field: "why", text: "Juno\u2019s manager wants her off the flight. Juno wants her fans at the gate. Two loads of them, banners and all.", vars: [] }, { key: "2afb4441af37", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 404, lines: [404], tpl: "STEPS[14]", card: "Fan Mail", field: "details", text: "\u201CIf they won\u2019t let me go up,\u201D says Juno, \u201Cthey can tell my fans why.\u201D The fans bring tents.", vars: [] }, { key: "63b5d30bbefd", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 405, lines: [405], tpl: "STEPS[14]", card: "Fan Mail", field: "caption", text: "The fan club", vars: [] }, { key: "06996fd5e91d", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 416, lines: [416], tpl: "STEPS[15]", card: "The Answer", field: "title", text: "The Answer", vars: [] }, { key: "7847251cd140", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 416, lines: [416], tpl: "STEPS[15]", card: "The Answer", field: "why", text: "The dish is up. At midnight Halloway will answer the signal, and she wants a witness. Be at the pad and keep still.", vars: [] }, { key: "72e4f655cc88", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 417, lines: [417], tpl: "STEPS[15]", card: "The Answer", field: "details", text: "The dish turns on its own. \u201CIt\u2019s counting in our count now,\u201D Halloway whispers. \u201CIt\u2019s sending a place. The far side. Nobody\u2019s been.\u201D", vars: [] }, { key: "c0def1ded6c9", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 418, lines: [418], tpl: "STEPS[15]", card: "The Answer", field: "caption", text: "The dish, listening", vars: [] }, { key: "838536b05e81", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 420, lines: [420], tpl: "STEPS[15]", card: "The Answer", field: "line", text: "The signal sent coordinates on the far side of the moon. Halloway said it: it isn\u2019t ours.", vars: [] }, { key: "3a8a198c474c", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 434, lines: [434], tpl: "STEPS[16]", card: "Rocket Parts", field: "title", text: "Rocket Parts", vars: [] }, { key: "bdf12862c617", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 434, lines: [434], tpl: "STEPS[16]", card: "Rocket Parts", field: "why", text: "Kestrel has a new client, and it isn\u2019t a satellite. Three rocket sections to the pad, and bring a second vehicle in.", vars: [] }, { key: "8616bc57e772", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 435, lines: [435], tpl: "STEPS[16]", card: "Rocket Parts", field: "details", text: "\u201CThree things,\u201D says Ilse Varga. \u201CParts, fuel, people. This is parts.\u201D The sections are bigger than anything Kestrel has flown.", vars: [] }, { key: "1ea4dc185785", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 437, lines: [437], tpl: "STEPS[16]", card: "Rocket Parts", field: "label", text: "Own 2 vehicles", vars: [] }, { key: "3b502ff2fc77", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 443, lines: [443], tpl: "STEPS[17].beat", card: null, field: "line", text: "Kestrel names a launch window. The Army says it will not stand in the way.", vars: [] }, { key: "64d1d102984c", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 451, lines: [451], tpl: "STEPS[17]", card: "Hot Load", field: "title", text: "Hot Load", vars: [] }, { key: "14b33352740a", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 451, lines: [451], tpl: "STEPS[17]", card: "Hot Load", field: "why", text: "The fuel boils off if it waits. Get the cryo tanks to the pad before they warm up. The Army will clear the road.", vars: [] }, { key: "0dd919477a01", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 452, lines: [452], tpl: "STEPS[17]", card: "Hot Load", field: "details", text: "\u201CYou\u2019ll not stop,\u201D says the colonel. \u201CWe\u2019ll not stop you.\u201D Two of her Badgers will be on the road. This is fuel.", vars: [] }, { key: "21644461e8c0", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 453, lines: [453], tpl: "STEPS[17]", card: "Hot Load", field: "caption", text: "Cryo fuel", vars: [] }, { key: "f94d1c387124", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 467, lines: [467], tpl: "STEPS[18]", card: "Flight Crew", field: "title", text: "Flight Crew", vars: [] }, { key: "7598d2c241a9", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 467, lines: [467], tpl: "STEPS[18]", card: "Flight Crew", field: "why", text: "Kestrel needs haulage on the Moon\u2019s surface, and Varga wants your fleet. Show her four vehicles that work. Bring the crew.", vars: [] }, { key: "6f4ab6c2191f", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 468, lines: [468], tpl: "STEPS[18]", card: "Flight Crew", field: "details", text: "\u201CRovers, cargo, people, on the surface,\u201D says Ilse Varga. \u201CThe Moon\u2019s surface. The coordinates are a landing site, and a landing site needs a haulier.\u201D", vars: [] }, { key: "bfd2bcd872d8", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 469, lines: [469], tpl: "STEPS[18]", card: "Flight Crew", field: "caption", text: "Kestrel Launch", vars: [] }, { key: "ee9aaee2f8e6", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 470, lines: [470], tpl: "STEPS[18]", card: "Flight Crew", field: "label", text: "Own 4 vehicles", vars: [] }, { key: "117847f07d9e", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 470, lines: [470], tpl: "STEPS[18]", card: "Flight Crew", field: "label", text: "Hire 2 drivers out", vars: [] }, { key: "f1dc8bb0be1e", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 477, lines: [477], tpl: "STEPS[19].beat", card: null, field: "line", text: "Kestrel Launch says the window opens at the next full moon, and the fleet is going.", vars: [] }, { key: "247f77d30a8b", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 485, lines: [485], tpl: "STEPS[19]", card: "T-Minus", field: "title", text: "T-Minus", vars: [] }, { key: "a468b6ce132d", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 485, lines: [485], tpl: "STEPS[19]", card: "T-Minus", field: "why", text: "Dawn, the count running, everyone watching. Lead three of your vehicles to the pad in formation and hold for the count.", vars: [] }, { key: "156124d10c4d", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 486, lines: [486], tpl: "STEPS[19]", card: "T-Minus", field: "details", text: "Halloway, the colonel, Cass on air, Juno in a flight suit and Pike in his lorry. The signal pulses once. \u201CThe window opens at the next full moon,\u201D says Varga. \u201CBring the fleet.\u201D", vars: [] }, { key: "5897f1db7eab", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 487, lines: [487], tpl: "STEPS[19]", card: "T-Minus", field: "caption", text: "The moon rocket", vars: [] }, { key: "ac5916c2bad0", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 489, lines: [489], tpl: "STEPS[19]", card: "T-Minus", field: "line", text: "The launch window opens at the next full moon. Kestrel wants your fleet on the Moon.", vars: [] }, { key: "35dde787f17b", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 474, lines: [474], tpl: "bind \u203A treasure", card: null, field: "title", text: "Hidden Treasure", vars: [] }, { key: "1c8524cc33bd", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 478, lines: [478], tpl: "bind \u203A treasure", card: null, field: "why", text: "Find it from the clue alone. No marker until you\u2019re within {HIDDEN_REVEAL} tiles; then stop in the ring.", vars: [{ label: "HIDDEN_REVEAL", expr: "HIDDEN_REVEAL" }] }, { key: "7a48cec2608a", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 479, lines: [479], tpl: "bind \u203A treasure", card: null, field: "details", text: "{x1} at {name} in {t.t.name} says it\u2019s {say}. Nobody will point the way: not the map, not the tracker.", vars: [{ label: "x1", expr: "this.visit?.teller.name ?? 'Someone'" }, { label: "name", expr: "t.name" }, { label: "t.t.name", expr: "t.t.name" }, { label: "say", expr: "spot.say" }] }, { key: "f1c3030ebd01", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 480, lines: [480], tpl: "bind \u203A treasure", card: null, field: "caption", text: "A chest, if it\u2019s there", vars: [] }, { key: "19986c7e2bb7", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 481, lines: [481], tpl: "bind \u203A treasure", card: null, field: "label", text: "Find the spot", vars: [] }, { key: "f5dee149afc2", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 489, lines: [489], tpl: "bind \u203A smuggle", card: "A Quiet Load", field: "title", text: "A Quiet Load", vars: [] }, { key: "faa7fc69899a", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 503, lines: [503], tpl: "bind \u203A explore", card: null, field: "title", text: "See {name}", vars: [{ label: "name", expr: "spot.at.name" }] }, { key: "fbe69dd22abf", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 503, lines: [503], tpl: "bind \u203A explore", card: null, field: "title", text: "The Big City", vars: [] }, { key: "b5c89f546f58", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 503, lines: [503], tpl: "bind \u203A explore", card: null, field: "title", text: "Another Country", vars: [] }, { key: "a61e62d78708", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 503, lines: [503], tpl: "bind \u203A explore", card: null, field: "title", text: "Off the Map", vars: [] }, { key: "51c3331d5c59", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 507, lines: [507], tpl: "bind \u203A explore", card: null, field: "why", text: "Somewhere you\u2019ve never been: {name}, {x1} tiles {x2}. Get there and look.", vars: [{ label: "name", expr: "spot.at.name" }, { label: "x1", expr: "Math.round(d)" }, { label: "x2", expr: "way(t.x, t.z, spot.at.x, spot.at.z)" }] }, { key: "5ea8b91f18af", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 508, lines: [508], tpl: "bind \u203A explore", card: null, field: "details", text: "Told at {name} in {t.t.name}. Your map is dark over it: go and see it for yourself.", vars: [{ label: "name", expr: "t.name" }, { label: "t.t.name", expr: "t.t.name" }] }, { key: "dd7b1fa0829e", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 510, lines: [510, 527], tpl: "bind \u203A explore", card: null, field: "label", text: "Reach {x1}", vars: [{ label: "x1", expr: "short(spot.at.name)" }] }, { key: "3a5127e848ae", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 520, lines: [520], tpl: "bind \u203A timed", card: null, field: "title", text: "Against the Clock", vars: [] }, { key: "f29ef6fae591", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 524, lines: [524], tpl: "bind \u203A timed", card: null, field: "why", text: "{name}, {x1} tiles {x2}, inside {x3}. Stop in the ring there.", vars: [{ label: "name", expr: "to.name" }, { label: "x1", expr: "Math.round(d)" }, { label: "x2", expr: "way(t.x, t.z, to.x, to.z)" }, { label: "x3", expr: "minutes(secs)" }] }, { key: "064dd1d2d821", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 525, lines: [525], tpl: "bind \u203A timed", card: null, field: "details", text: "Asked at {name} in {t.t.name}. The clock started when you said yes.", vars: [{ label: "name", expr: "t.name" }, { label: "t.t.name", expr: "t.t.name" }] }, { key: "f6044cbafea2", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 526, lines: [526], tpl: "bind \u203A timed", card: null, field: "caption", text: "An envelope that can\u2019t be late", vars: [] }, { key: "e3d5309b4f5d", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 537, lines: [537], tpl: "bind \u203A fetch", card: null, field: "title", text: "There and Back", vars: [] }, { key: "cfbf62441ffb", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 541, lines: [541], tpl: "bind \u203A fetch", card: null, field: "why", text: "Collect it at {name} and bring it back to {t.name}\u2019s door, all inside {x1}.", vars: [{ label: "name", expr: "from.name" }, { label: "t.name", expr: "t.name" }, { label: "x1", expr: "minutes(secs)" }] }, { key: "d4c5bace6d68", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 542, lines: [542], tpl: "bind \u203A fetch", card: null, field: "details", text: "Asked at {name} in {t.t.name}. Stop in the ring at {from.name}, then in the tavern\u2019s ring and press Space.", vars: [{ label: "name", expr: "t.name" }, { label: "t.t.name", expr: "t.t.name" }, { label: "from.name", expr: "from.name" }] }, { key: "79b3579c4152", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 543, lines: [543], tpl: "bind \u203A fetch", card: null, field: "caption", text: "Handle with care", vars: [] }, { key: "dd9dbb775592", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 545, lines: [545], tpl: "bind \u203A fetch", card: null, field: "label", text: "Collect at {x1}", vars: [{ label: "x1", expr: "short(from.name)" }] }, { key: "a15476a56d8a", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 546, lines: [546], tpl: "bind \u203A fetch", card: null, field: "label", text: "Back to {x1}", vars: [{ label: "x1", expr: "short(t.name)" }] }, { key: "c112d8ab2446", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 563, lines: [563], tpl: "want.wrecker", card: null, field: "label", text: "a tow truck", vars: [] }, { key: "4b9f933083d0", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 564, lines: [564], tpl: "want.ambulance", card: null, field: "label", text: "an ambulance", vars: [] }, { key: "f25ba8466a8e", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 565, lines: [565], tpl: "want.bus", card: null, field: "label", text: "a bus", vars: [] }, { key: "3ffd193ba620", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 566, lines: [566], tpl: "want.limo", card: null, field: "label", text: "a limousine", vars: [] }, { key: "b877393dd9ae", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 567, lines: [567], tpl: "want.heli", card: null, field: "label", text: "a helicopter", vars: [] }, { key: "fbaa94da465e", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 568, lines: [568], tpl: "want.boat", card: null, field: "label", text: "a boat", vars: [] }, { key: "69b3d626b203", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 569, lines: [569], tpl: "want.quad", card: null, field: "label", text: "a quad bike", vars: [] }, { key: "0405778f15a8", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 638, lines: [638], tpl: "rideJob", card: null, field: "title", text: "A Particular Job", vars: [] }, { key: "551240d87ddb", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 644, lines: [644], tpl: "rideJob", card: null, field: "why", text: "It has to be done in {label}: {x1}{x2}. Stop in the ring each time.", vars: [{ label: "label", expr: "r.label" }, { label: "x1", expr: "a!.name" }, { label: "x2", expr: "b ? `, then ${b.name}` : ''" }] }, { key: "9f8e0801bb08", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 645, lines: [645], tpl: "rideJob", card: null, field: "details", text: "Asked at {name} in {t.t.name}. Arriving in anything but {label} doesn\u2019t count, so fetch one first if you have to.", vars: [{ label: "name", expr: "t.name" }, { label: "t.t.name", expr: "t.t.name" }, { label: "label", expr: "r.label" }] }, { key: "d0ea810ac2a7", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 646, lines: [646], tpl: "rideJob", card: null, field: "caption", text: "Only {label} will do", vars: [{ label: "label", expr: "r.label" }] }] };
+var missionText_default = { built: "2026-11-08T21:21:21.490Z", limits: { title: 22, why: 130, label: 28, details: 500, caption: 30, line: 100, effectLine: 40 }, soft: ["caption", "line", "effectLine"], titleWords: 4, verbs: ["Deliver", "Bring", "Upgrade", "Reach", "Visit", "Cross", "Ferry", "Race", "Tow", "Fit", "Own", "Meet", "Arrive", "Take", "Buy", "Keep", "Haul", "Hitch", "Win", "Stamp", "Run", "Drift", "Find", "Light", "Follow", "Film", "Guide", "Spot", "Tag", "Cover", "Search", "Land", "Fly", "Hire", "Tail", "Shadow", "Trail", "Lead", "Dive", "Build", "Unlock", "Ask", "Collect", "Sell", "Knock", "Dust", "Level"], groups: ["Main missions", "Circuits", "Night ops", "Tails", "Faction oaths", "Faction rises", "Surveyor\u2019s Commission", "Submarine jobs", "Working vehicles", "Story chains", "Tavern jobs"], entries: [{ key: "e58dc53da5d7", group: "Main missions", file: "src/game/missions/templates.ts", line: 292, lines: [292], tpl: "market", card: "Market Day", field: "title", text: "Market Day", vars: [] }, { key: "89170620a55f", group: "Main missions", file: "src/game/missions/templates.ts", line: 292, lines: [292], tpl: "market", card: "Market Day", field: "why", text: "The market stalls are bare. Run two loads of fresh food into the town\u2019s shops and the town will know your name.", vars: [] }, { key: "f1619d096437", group: "Main missions", file: "src/game/missions/templates.ts", line: 292, lines: [292, 300, 302, 306], tpl: "market", card: "Market Day", field: "effectLine", text: "A week of trade", vars: [] }, { key: "bb6b0a6f811f", group: "Main missions", file: "src/game/missions/templates.ts", line: 294, lines: [294], tpl: "school", card: "The School Run", field: "title", text: "The School Run", vars: [] }, { key: "d7d529ad38b6", group: "Main missions", file: "src/game/missions/templates.ts", line: 294, lines: [294], tpl: "school", card: "The School Run", field: "why", text: "Get the students to class, then bring in what the school is waiting on. Do both and the town owes you one.", vars: [] }, { key: "af48f5ff4922", group: "Main missions", file: "src/game/missions/templates.ts", line: 294, lines: [294, 298], tpl: "school", card: "The School Run", field: "effectLine", text: "The town builds", vars: [] }, { key: "8682dc8766ee", group: "Main missions", file: "src/game/missions/templates.ts", line: 296, lines: [296], tpl: "reopen", card: "Reopening", field: "title", text: "Reopening", vars: [] }, { key: "cb08eb9ddc12", group: "Main missions", file: "src/game/missions/templates.ts", line: 296, lines: [296], tpl: "reopen", card: "Reopening", field: "why", text: "A boarded-up shop could trade again. Bring in the materials to fix it, then stock it, and the town will trust you.", vars: [] }, { key: "d5fd41f5932a", group: "Main missions", file: "src/game/missions/templates.ts", line: 296, lines: [296], tpl: "reopen", card: "Reopening", field: "effectLine", text: "A shop reopens", vars: [] }, { key: "2528b8a146df", group: "Main missions", file: "src/game/missions/templates.ts", line: 298, lines: [298], tpl: "ward", card: "The New Ward", field: "title", text: "The New Ward", vars: [] }, { key: "49a5eede36bb", group: "Main missions", file: "src/game/missions/templates.ts", line: 298, lines: [298], tpl: "ward", card: "The New Ward", field: "why", text: "The clinic is struggling. Bring in the patients, then the supplies to treat them, and the town will trust you.", vars: [] }, { key: "11ed7fb28790", group: "Main missions", file: "src/game/missions/templates.ts", line: 300, lines: [300], tpl: "harbour", card: "Harbour Turnaround", field: "title", text: "Harbour Turnaround", vars: [] }, { key: "af4c9b62c8b1", group: "Main missions", file: "src/game/missions/templates.ts", line: 300, lines: [300], tpl: "harbour", card: "Harbour Turnaround", field: "why", text: "A ship is waiting to sail. Clear its cargo off the quay, then run goods into town, and the port won\u2019t forget it.", vars: [] }, { key: "84351d91be8d", group: "Main missions", file: "src/game/missions/templates.ts", line: 302, lines: [302], tpl: "twoveh", card: "Sea and Road", field: "title", text: "Sea and Road", vars: [] }, { key: "54936688c90d", group: "Main missions", file: "src/game/missions/templates.ts", line: 302, lines: [302], tpl: "twoveh", card: "Sea and Road", field: "why", text: "Fetch a load off the boat at the harbour, then run supplies into town. Two runs, and the town\u2019s trust follows.", vars: [] }, { key: "c16b352f77d4", group: "Main missions", file: "src/game/missions/templates.ts", line: 304, lines: [304], tpl: "bypass", card: "The Bypass", field: "title", text: "The Bypass", vars: [] }, { key: "ef701298cd53", group: "Main missions", file: "src/game/missions/templates.ts", line: 304, lines: [304], tpl: "bypass", card: "The Bypass", field: "why", text: "The town wants a bypass. Haul in the materials for it, then goods for the works, and its levy on you drops.", vars: [] }, { key: "ea16b7fe7174", group: "Main missions", file: "src/game/missions/templates.ts", line: 304, lines: [304], tpl: "bypass", card: "The Bypass", field: "effectLine", text: "Levy down 4%", vars: [] }, { key: "919404764b85", group: "Main missions", file: "src/game/missions/templates.ts", line: 306, lines: [306], tpl: "highcountry", card: "High Country", field: "title", text: "High Country", vars: [] }, { key: "61d9a5b1f31a", group: "Main missions", file: "src/game/missions/templates.ts", line: 306, lines: [306], tpl: "highcountry", card: "High Country", field: "why", text: "The hut above the trees needs building supplies, walkers to fill it and food. Do all three and the town calls you friend.", vars: [] }, { key: "4a761455987e", group: "Main missions", file: "src/game/missions/templates.ts", line: 308, lines: [308], tpl: "graduation", card: "The Graduation", field: "title", text: "The Graduation", vars: [] }, { key: "9463b6aa2738", group: "Main missions", file: "src/game/missions/templates.ts", line: 308, lines: [308], tpl: "graduation", card: "The Graduation", field: "why", text: "Haul in materials, workers and trade goods and the town grows into a city. It will call you friend for it.", vars: [] }, { key: "a4d028881ac9", group: "Main missions", file: "src/game/missions/templates.ts", line: 308, lines: [308], tpl: "graduation", card: "The Graduation", field: "effectLine", text: "The town graduates", vars: [] }, { key: "df9b506e64f0", group: "Main missions", file: "src/game/missions/templates.ts", line: 372, lines: [372], tpl: "t:freedom", card: "Freedom of the Town", field: "title", text: "Freedom of the Town", vars: [] }, { key: "1644ce6e8ca6", group: "Main missions", file: "src/game/missions/templates.ts", line: 372, lines: [372], tpl: "t:freedom", card: "Freedom of the Town", field: "why", text: "The council wants to thank you for all your work. Drive to the town hall for a building, and the whole town will hear your name.", vars: [] }, { key: "38861a7d85e6", group: "Main missions", file: "src/game/missions/templates.ts", line: 374, lines: [374, 1260], tpl: "t:freedom", card: "Freedom of the Town", field: "caption", text: "The {x1}", vars: [{ label: "x1", expr: "shortSite(gift.kind).toLowerCase()" }] }, { key: "54bea549eb59", group: "Main missions", file: "src/game/missions/templates.ts", line: 375, lines: [375], tpl: "t:freedom", card: "Freedom of the Town", field: "label", text: "Reach the town hall", vars: [] }, { key: "e71b95c76427", group: "Main missions", file: "src/game/missions/templates.ts", line: 434, lines: [434], tpl: "first:parts", card: "First Delivery", field: "title", text: "First Delivery", vars: [] }, { key: "29298d2cdc99", group: "Main missions", file: "src/game/missions/templates.ts", line: 434, lines: [434], tpl: "first:parts", card: "First Delivery", field: "why", text: "Your friend {name} at the Auto Shop needs car parts that fell off a van. Pick them up on the road ahead and drive them in.", vars: [{ label: "name", expr: "name" }] }, { key: "cef3f7a3438d", group: "Main missions", file: "src/game/missions/templates.ts", line: 435, lines: [435], tpl: "first:parts", card: "First Delivery", field: "details", text: "Your friend {name} runs the Auto Shop in town and has been waiting on these parts all week. Deliver them and {name} will fit a nitrous bottle to your car for free.", vars: [{ label: "name", expr: "name" }] }, { key: "406ace539fc8", group: "Main missions", file: "src/game/missions/templates.ts", line: 437, lines: [437], tpl: "first:parts", card: "First Delivery", field: "caption", text: "Nitrous, fitted free", vars: [] }, { key: "df7ed3a54e86", group: "Main missions", file: "src/game/missions/templates.ts", line: 439, lines: [439], tpl: "first:parts", card: "First Delivery", field: "label", text: "Car Parts \u2192 the Auto Shop", vars: [] }, { key: "1cfacff372ad", group: "Main missions", file: "src/game/missions/templates.ts", line: 515, lines: [515], tpl: "first:nitrous", card: "Feel the Rush", field: "title", text: "Feel the Rush", vars: [] }, { key: "1e026e8c9793", group: "Main missions", file: "src/game/missions/templates.ts", line: 515, lines: [515], tpl: "first:nitrous", card: "Feel the Rush", field: "why", text: "Your friend {mech} bets you $100 you can\u2019t hit {x1}. Find a long straight, hold W, then press Shift for nitrous.", vars: [{ label: "mech", expr: "f.mech" }, { label: "x1", expr: "speedText(kmh)" }] }, { key: "04dc5d040265", group: "Main missions", file: "src/game/missions/templates.ts", line: 516, lines: [516], tpl: "first:nitrous", card: "Feel the Rush", field: "details", text: "Your friend {mech} just fitted your nitrous bottle and wants to see it work. Your car can\u2019t reach {x1} on its own. A bottle gives a short burst of extra speed, fires only while you hold the throttle, and refills in about a minute.", vars: [{ label: "mech", expr: "f.mech" }, { label: "x1", expr: "speedText(kmh)" }] }, { key: "c036f75c973a", group: "Main missions", file: "src/game/missions/templates.ts", line: 518, lines: [518], tpl: "first:nitrous", card: "Feel the Rush", field: "caption", text: "Your new nitrous", vars: [] }, { key: "8191cdeeda84", group: "Main missions", file: "src/game/missions/templates.ts", line: 519, lines: [519, 1356], tpl: "first:nitrous", card: "Feel the Rush", field: "label", text: "Reach {x1}", vars: [{ label: "x1", expr: "speedText(kmh)" }] }, { key: "b4520c1dbec8", group: "Main missions", file: "src/game/missions/templates.ts", line: 615, lines: [615], tpl: "first:hand", card: null, field: "why", text: "{first} needs a hand with a two-car order for {where}: full fee on your load, {x1}% of hers.", vars: [{ label: "first", expr: "first" }, { label: "where", expr: "where" }, { label: "x1", expr: "Math.round(HAND_SHARE * 100)" }] }, { key: "10220a429938", group: "Main missions", file: "src/game/missions/templates.ts", line: 617, lines: [617], tpl: "first:hand", card: "A Helping Hand", field: "title", text: "A Helping Hand", vars: [] }, { key: "0383f4374313", group: "Main missions", file: "src/game/missions/templates.ts", line: 618, lines: [618], tpl: "first:hand", card: "A Helping Hand", field: "details", text: "Two loads wait on the road ahead. Yours fills your Tomato; the other rides in {first}\u2019s, and while she is in line behind you her hold counts as yours. Both come off together at the door. Your load pays {x1}; hers pays {x2}, and {x3} of that is yours.", vars: [{ label: "first", expr: "first" }, { label: "x1", expr: "money(yours)" }, { label: "x2", expr: "money(hersFull)" }, { label: "x3", expr: "money(hers)" }] }, { key: "87bbb54518a9", group: "Main missions", file: "src/game/missions/templates.ts", line: 620, lines: [620], tpl: "first:hand", card: "A Helping Hand", field: "caption", text: "{first}\u2019s Tomato", vars: [{ label: "first", expr: "first" }] }, { key: "b0b4c0fc01c6", group: "Main missions", file: "src/game/missions/templates.ts", line: 622, lines: [622], tpl: "first:hand", card: "A Helping Hand", field: "label", text: "Deliver both loads", vars: [] }, { key: "8f21bca6e84d", group: "Main missions", file: "src/game/missions/templates.ts", line: 642, lines: [642], tpl: "first:friend", card: null, field: "label", text: "Reach {fr}\u2019s Auto Shop", vars: [{ label: "fr", expr: "fr" }] }, { key: "6bf0aad54701", group: "Main missions", file: "src/game/missions/templates.ts", line: 644, lines: [644], tpl: "first:friend", card: "A Friend\u2019s Handbrake", field: "title", text: "A Friend\u2019s Handbrake", vars: [] }, { key: "46b00f11f675", group: "Main missions", file: "src/game/missions/templates.ts", line: 648, lines: [648], tpl: "first:friend", card: "A Friend\u2019s Handbrake", field: "why", text: "{fr} has a spare handbrake for you. Drive over for a free fit.", vars: [{ label: "fr", expr: "fr" }] }, { key: "051137a4d47b", group: "Main missions", file: "src/game/missions/templates.ts", line: 649, lines: [649], tpl: "first:friend", card: "A Friend\u2019s Handbrake", field: "details", text: "{fr}, a friend of your friend {mech}, has a shop about {x1} tiles away. Follow the yellow arrows, stop in the ring at the shop's door and press Space. A handbrake locks the back wheels when you hold Space, so the tail swings round corners.", vars: [{ label: "fr", expr: "fr" }, { label: "mech", expr: "f.mech" }, { label: "x1", expr: "Math.round(q.far / 5) * 5" }] }, { key: "aa75dc5d2608", group: "Main missions", file: "src/game/missions/templates.ts", line: 651, lines: [651], tpl: "first:friend", card: "A Friend\u2019s Handbrake", field: "caption", text: "A spare handbrake", vars: [] }, { key: "3eb2dd8968ce", group: "Main missions", file: "src/game/missions/templates.ts", line: 652, lines: [652], tpl: "first:friend", card: "A Friend\u2019s Handbrake", field: "label", text: "Reach the Auto Shop", vars: [] }, { key: "f2b96e620881", group: "Main missions", file: "src/game/missions/templates.ts", line: 677, lines: [677], tpl: "first:drift", card: "Drift the Block", field: "title", text: "Drift the Block", vars: [] }, { key: "efead2ee682f", group: "Main missions", file: "src/game/missions/templates.ts", line: 677, lines: [677], tpl: "first:drift", card: "Drift the Block", field: "why", text: "{who} pays $200 to see that handbrake work. Follow the arrows and drift round one left corner, then one right.", vars: [{ label: "who", expr: "who" }] }, { key: "f86cb5d2afac", group: "Main missions", file: "src/game/missions/templates.ts", line: 678, lines: [678], tpl: "first:drift", card: "Drift the Block", field: "details", text: "Build up speed toward the corner, start turning, then hold Space: the back wheels lock and the tail slides out. Let go of Space as the car comes round and drive on. {who} is watching from the shop.", vars: [{ label: "who", expr: "who" }] }, { key: "14c21021215d", group: "Main missions", file: "src/game/missions/templates.ts", line: 680, lines: [680], tpl: "first:drift", card: "Drift the Block", field: "caption", text: "Your new handbrake", vars: [] }, { key: "6803cb348eb6", group: "Main missions", file: "src/game/missions/templates.ts", line: 682, lines: [682], tpl: "first:drift", card: "Drift the Block", field: "label", text: "Drift a left corner", vars: [] }, { key: "f8baddfb5d88", group: "Main missions", file: "src/game/missions/templates.ts", line: 683, lines: [683], tpl: "first:drift", card: "Drift the Block", field: "label", text: "Drift a right corner", vars: [] }, { key: "4ae2e2ffe954", group: "Main missions", file: "src/game/missions/templates.ts", line: 701, lines: [701], tpl: "fast:go", card: "Needs More Go", field: "title", text: "Needs More Go", vars: [] }, { key: "041e69c54e27", group: "Main missions", file: "src/game/missions/templates.ts", line: 701, lines: [701], tpl: "fast:go", card: "Needs More Go", field: "why", text: "Fit any engine upgrade from a Vehicle Shop that stocks engines; {mech} refunds {x1} of it. Then Vera wants a race.", vars: [{ label: "mech", expr: "mech" }, { label: "x1", expr: "money(refund)" }] }, { key: "39ef49d36fe5", group: "Main missions", file: "src/game/missions/templates.ts", line: 702, lines: [702], tpl: "fast:go", card: "Needs More Go", field: "details", text: "Vera Quill, the fastest driver around, won\u2019t race a car this slow. {mech} the mechanic thinks a Stage 1 engine would change her mind, and will cover more than half of what it costs.", vars: [{ label: "mech", expr: "mech" }] }, { key: "4d2f9738d300", group: "Main missions", file: "src/game/missions/templates.ts", line: 704, lines: [704], tpl: "fast:go", card: "Needs More Go", field: "caption", text: "Stage 1 engine", vars: [] }, { key: "5a0be402b4a0", group: "Main missions", file: "src/game/missions/templates.ts", line: 705, lines: [705], tpl: "fast:go", card: "Needs More Go", field: "label", text: "Fit any engine part", vars: [] }, { key: "4ac54a3bcd21", group: "Main missions", file: "src/game/missions/templates.ts", line: 723, lines: [723], tpl: "fast:turbo", card: "{name}\u2019s Turbo", field: "title", text: "{name}\u2019s Turbo", vars: [{ label: "name", expr: "name" }] }, { key: "0392cc49b616", group: "Main missions", file: "src/game/missions/templates.ts", line: 723, lines: [723], tpl: "fast:turbo", card: "{name}\u2019s Turbo", field: "title", text: "The Turbo", vars: [] }, { key: "de872afe2c72", group: "Main missions", file: "src/game/missions/templates.ts", line: 724, lines: [724], tpl: "fast:turbo", card: "{name}\u2019s Turbo", field: "why", text: "Make 3 {x1} runs in 48 hours to keep the garage going, and {name} fits a Stage 2 turbo engine free.", vars: [{ label: "x1", expr: "p.type.name.toLowerCase()" }, { label: "name", expr: "name" }] }, { key: "28a069746f6d", group: "Main missions", file: "src/game/missions/templates.ts", line: 725, lines: [725], tpl: "fast:turbo", card: "{name}\u2019s Turbo", field: "why", text: "Make 3 runs in 48 hours to keep the garage going, and {name} fits a Stage 2 turbo engine free.", vars: [{ label: "name", expr: "name" }] }, { key: "0207bc884df3", group: "Main missions", file: "src/game/missions/templates.ts", line: 727, lines: [727], tpl: "fast:turbo", card: "{name}\u2019s Turbo", field: "caption", text: "Stage 2 engine", vars: [] }, { key: "0039da8732c8", group: "Main missions", file: "src/game/missions/templates.ts", line: 755, lines: [755], tpl: "raceTemplate", card: null, field: "label", text: "Race to {name}", vars: [{ label: "name", expr: "to.name" }] }, { key: "5aaff2df5b85", group: "Main missions", file: "src/game/missions/templates.ts", line: 759, lines: [759], tpl: "raceTemplate", card: null, field: "caption", text: "{short}\u2019s {x1}", vars: [{ label: "short", expr: "r.short" }, { label: "x1", expr: "modelName(rivalModel(r, tier))" }] }, { key: "84774d44f33d", group: "Main missions", file: "src/game/missions/templates.ts", line: 761, lines: [761], tpl: "raceTemplate", card: null, field: "label", text: "Meet {short} at the square", vars: [{ label: "short", expr: "r.short" }] }, { key: "763e97e0cb0c", group: "Main missions", file: "src/game/missions/templates.ts", line: 762, lines: [762], tpl: "raceTemplate", card: null, field: "label", text: "Race to the finish", vars: [] }, { key: "4266bb7b42dd", group: "Main missions", file: "src/game/missions/templates.ts", line: 771, lines: [771], tpl: "veraOne", card: "Vera\u2019s Challenge", field: "title", text: "Vera\u2019s Challenge", vars: [] }, { key: "58379de6f628", group: "Main missions", file: "src/game/missions/templates.ts", line: 775, lines: [775], tpl: "veraTwo", card: "Pink Slip", field: "title", text: "Pink Slip", vars: [] }, { key: "e64fc4f77c95", group: "Main missions", file: "src/game/missions/templates.ts", line: 779, lines: [779], tpl: "ottoRace", card: "Otto\u2019s Shortcut", field: "title", text: "Otto\u2019s Shortcut", vars: [] }, { key: "50a614d25440", group: "Main missions", file: "src/game/missions/templates.ts", line: 783, lines: [783], tpl: "magsRace", card: "Mags\u2019 Streets", field: "title", text: "Mags\u2019 Streets", vars: [] }, { key: "718c4b763d4a", group: "Main missions", file: "src/game/missions/templates.ts", line: 787, lines: [787], tpl: "dukeRace", card: "The Duke\u2019s Slip", field: "title", text: "The Duke\u2019s Slip", vars: [] }, { key: "b4855fdb92df", group: "Main missions", file: "src/game/missions/templates.ts", line: 812, lines: [812], tpl: "heavy:van", card: "Spare Wheels", field: "title", text: "Spare Wheels", vars: [] }, { key: "88454011ee76", group: "Main missions", file: "src/game/missions/templates.ts", line: 812, lines: [812], tpl: "heavy:van", card: "Spare Wheels", field: "why", text: "Old Bram is retiring his {x1}. Run 4 loads to or from the town within 72 hours and it joins your fleet.", vars: [{ label: "x1", expr: "modelName(model)" }] }, { key: "d893a8d9107f", group: "Main missions", file: "src/game/missions/templates.ts", line: 814, lines: [814], tpl: "heavy:van", card: "Spare Wheels", field: "label", text: "Run 4 loads for the town", vars: [] }, { key: "9ee62e3259e8", group: "Main missions", file: "src/game/missions/templates.ts", line: 834, lines: [834], tpl: "first:hq", card: "Upgrade Your HQ", field: "title", text: "Upgrade Your HQ", vars: [] }, { key: "8b727c0af6c4", group: "Main missions", file: "src/game/missions/templates.ts", line: 835, lines: [835], tpl: "first:hq", card: "Upgrade Your HQ", field: "why", text: "Your house is a one-slot HQ, and your driver fills it. Move your HQ to a level 2 building, a shop or a store, for a second slot.", vars: [] }, { key: "1dfea466e074", group: "Main missions", file: "src/game/missions/templates.ts", line: 836, lines: [836], tpl: "first:hq", card: "Upgrade Your HQ", field: "details", text: "A house is a level 1 Lodging: one slot. A level 2 Shopfront, such as a shop, a store, a diner or a barn, opens two and costs from about $1,700. Your house stays yours.", vars: [] }, { key: "73d7b089a0a8", group: "Main missions", file: "src/game/missions/templates.ts", line: 837, lines: [837], tpl: "first:hq", card: "Upgrade Your HQ", field: "caption", text: "A level 2 HQ", vars: [] }, { key: "aacd4139069d", group: "Main missions", file: "src/game/missions/templates.ts", line: 838, lines: [838], tpl: "first:hq", card: "Upgrade Your HQ", field: "label", text: "Upgrade to a 2-slot HQ", vars: [] }, { key: "fefc0fbf9448", group: "Main missions", file: "src/game/missions/templates.ts", line: 852, lines: [852], tpl: "first:car", card: "Second Pair of Wheels", field: "title", text: "Second Pair of Wheels", vars: [] }, { key: "5716745f4ff6", group: "Main missions", file: "src/game/missions/templates.ts", line: 853, lines: [853], tpl: "first:car", card: "Second Pair of Wheels", field: "why", text: "One car is a job; two is a fleet. Buy a second vehicle at a dealer, or win one: Bram gives a Mule for four loads for a town.", vars: [] }, { key: "81031dc892f7", group: "Main missions", file: "src/game/missions/templates.ts", line: 854, lines: [854], tpl: "first:car", card: "Second Pair of Wheels", field: "details", text: "A Tomato costs about $300 at a Vehicle Dealer: drive to its door, stop in the ring and press Space. Your own car parks where you bought the new one. Or take Bram\u2019s \u201CSpare Wheels\u201D job when it comes up, and the Mule is yours free.", vars: [] }, { key: "609c673b4d47", group: "Main missions", file: "src/game/missions/templates.ts", line: 855, lines: [855], tpl: "first:car", card: "Second Pair of Wheels", field: "caption", text: "Vehicle number two", vars: [] }, { key: "05f76df39bd5", group: "Main missions", file: "src/game/missions/templates.ts", line: 856, lines: [856, 1139], tpl: "first:car", card: "Second Pair of Wheels", field: "label", text: "Own 2 vehicles", vars: [] }, { key: "61d1105dc4fa", group: "Main missions", file: "src/game/missions/templates.ts", line: 874, lines: [874], tpl: "first:crew", card: "Put {first} to Work", field: "title", text: "Put {first} to Work", vars: [{ label: "first", expr: "first" }] }, { key: "2575913ff35e", group: "Main missions", file: "src/game/missions/templates.ts", line: 875, lines: [875], tpl: "first:crew", card: "Put {first} to Work", field: "why", text: "{first}\u2019s still following you. Give her Work orders and she\u2019ll find loads of her own and pay you {x1}% of each.", vars: [{ label: "first", expr: "first" }, { label: "x1", expr: "Math.round(HAND_SHARE * 100)" }] }, { key: "124ebe65b442", group: "Main missions", file: "src/game/missions/templates.ts", line: 876, lines: [876], tpl: "first:crew", card: "Put {first} to Work", field: "details", text: "Press H and open Fleet, click {first}\u2019s Tomato, and press Work in its Mode row (or hover her square by your speedo and press Work). She keeps finding loads near her base until you call her back with Follow.", vars: [{ label: "first", expr: "first" }] }, { key: "639bac83b0f6", group: "Main missions", file: "src/game/missions/templates.ts", line: 877, lines: [877], tpl: "first:crew", card: "Put {first} to Work", field: "caption", text: "{first} at work", vars: [{ label: "first", expr: "first" }] }, { key: "1fb032c896a0", group: "Main missions", file: "src/game/missions/templates.ts", line: 878, lines: [878], tpl: "first:crew", card: "Put {first} to Work", field: "label", text: "Keep her out working", vars: [] }, { key: "001872407124", group: "Main missions", file: "src/game/missions/templates.ts", line: 883, lines: [883], tpl: "first:crew", card: "Hire a Hand", field: "title", text: "Hire a Hand", vars: [] }, { key: "bccfdd535566", group: "Main missions", file: "src/game/missions/templates.ts", line: 884, lines: [884], tpl: "first:crew", card: "Hire a Hand", field: "why", text: "A parked car earns nothing. Hire a driver for your second vehicle: your house\u2019s one fleet slot is theirs, and they pay you a cut.", vars: [] }, { key: "4655fb3496fb", group: "Main missions", file: "src/game/missions/templates.ts", line: 885, lines: [885], tpl: "first:crew", card: "Hire a Hand", field: "details", text: "Press H and open Fleet. A rookie with a road licence costs about $300: hire one onto the bench with Hire\u2026, then drag them onto your parked vehicle\u2019s empty seat and they set off to work at once. Hover their square by your speedo to see how they are doing.", vars: [] }, { key: "287800b2cfd4", group: "Main missions", file: "src/game/missions/templates.ts", line: 886, lines: [886], tpl: "first:crew", card: "Hire a Hand", field: "caption", text: "Your first driver", vars: [] }, { key: "a4a3df2f353d", group: "Main missions", file: "src/game/missions/templates.ts", line: 887, lines: [887], tpl: "first:crew", card: "Hire a Hand", field: "label", text: "Hire a driver for it", vars: [] }, { key: "c7feb6ac67b5", group: "Main missions", file: "src/game/missions/templates.ts", line: 903, lines: [903], tpl: "first:roads", card: "Build Your Own Road", field: "title", text: "Build Your Own Road", vars: [] }, { key: "78d7e2929eeb", group: "Main missions", file: "src/game/missions/templates.ts", line: 904, lines: [904], tpl: "first:roads", card: "Build Your Own Road", field: "why", text: "A level 3 HQ can afford to change the map. Open the builder and lay a road of your own: a shortcut, or a way to somewhere new.", vars: [] }, { key: "6d45faa79525", group: "Main missions", file: "src/game/missions/templates.ts", line: 905, lines: [905], tpl: "first:roads", card: "Build Your Own Road", field: "details", text: "Press B, or Build in the corner. Click where the road should start, then where it should end: the ghost shows the route it takes and what it costs. Click again to build it. Z takes back the last road.", vars: [] }, { key: "25f68dcf5f1b", group: "Main missions", file: "src/game/missions/templates.ts", line: 906, lines: [906], tpl: "first:roads", card: "Build Your Own Road", field: "caption", text: "Your first road", vars: [] }, { key: "31dd22570cc1", group: "Main missions", file: "src/game/missions/templates.ts", line: 907, lines: [907], tpl: "first:roads", card: "Build Your Own Road", field: "label", text: "Build 10 tiles of road", vars: [] }, { key: "7071ce31b917", group: "Main missions", file: "src/game/missions/templates.ts", line: 921, lines: [921], tpl: "first:tech", card: "Unlock New Wheels", field: "title", text: "Unlock New Wheels", vars: [] }, { key: "6bcd82fa9d68", group: "Main missions", file: "src/game/missions/templates.ts", line: 922, lines: [922], tpl: "first:tech", card: "Unlock New Wheels", field: "why", text: "Diamonds buy new vehicles. Spend some on the tech tree, and the dealers start stocking what you unlock.", vars: [] }, { key: "e1e5d8fba464", group: "Main missions", file: "src/game/missions/templates.ts", line: 923, lines: [923], tpl: "first:tech", card: "Unlock New Wheels", field: "details", text: "Press H and open the Tech tab. Land, sea and air each have a tree. A lit vehicle is ready: click it, then press Unlock. The dealers that stock it sell it from then on.", vars: [] }, { key: "6a3538d6f9d5", group: "Main missions", file: "src/game/missions/templates.ts", line: 924, lines: [924], tpl: "first:tech", card: "Unlock New Wheels", field: "caption", text: "A new model on sale", vars: [] }, { key: "8cfbd2dc650a", group: "Main missions", file: "src/game/missions/templates.ts", line: 925, lines: [925], tpl: "first:tech", card: "Unlock New Wheels", field: "label", text: "Unlock a vehicle", vars: [] }, { key: "dd425205b673", group: "Main missions", file: "src/game/missions/templates.ts", line: 939, lines: [939], tpl: "first:build", card: "Break Ground", field: "title", text: "Break Ground", vars: [] }, { key: "abb22871d477", group: "Main missions", file: "src/game/missions/templates.ts", line: 940, lines: [940], tpl: "first:build", card: "Break Ground", field: "why", text: "Every building you own leaves you its blueprints. Build one yourself beside a road, out of town or in a town you hold.", vars: [] }, { key: "0549febe3120", group: "Main missions", file: "src/game/missions/templates.ts", line: 941, lines: [941], tpl: "first:build", card: "Break Ground", field: "details", text: "Press B, then pick the Buildings side: your blueprints are the squares, priced for this county. Pick one, move the ghost onto open ground beside a road and click to break ground. R turns it. The site runs a few game hours under its cranes, and the building is yours by deed from the first spade.", vars: [] }, { key: "54da91202fa1", group: "Main missions", file: "src/game/missions/templates.ts", line: 942, lines: [942], tpl: "first:build", card: "Break Ground", field: "caption", text: "Your first construction", vars: [] }, { key: "f1a7ac40a895", group: "Main missions", file: "src/game/missions/templates.ts", line: 943, lines: [943], tpl: "first:build", card: "Break Ground", field: "label", text: "Build from your blueprints", vars: [] }, { key: "f4b56e35a107", group: "Main missions", file: "src/game/missions/templates.ts", line: 1075, lines: [1075, 1321], tpl: "first:bridge", card: "Over the Water", field: "title", text: "Over the Water", vars: [] }, { key: "523a1ef25771", group: "Main missions", file: "src/game/missions/templates.ts", line: 1076, lines: [1076], tpl: "first:bridge", card: "Over the Water", field: "why", text: "The road on the far bank is a long way round. Bridge the {x1} with a road of your own, then drive across it.", vars: [{ label: "x1", expr: "s.river ? 'river' : 'water'" }] }, { key: "8e77f94050b7", group: "Main missions", file: "src/game/missions/templates.ts", line: 1077, lines: [1077], tpl: "first:bridge", card: "Over the Water", field: "details", text: "Press B and start a road on one bank, by the ring. Click on the far bank to end it: where the gap is short enough the bridge goes in by itself. V (Big bridges) reaches twice as far, at a price; T makes it a toll bridge that CPU traffic pays to cross.", vars: [] }, { key: "7d6a8afafabd", group: "Main missions", file: "src/game/missions/templates.ts", line: 1078, lines: [1078], tpl: "first:bridge", card: "Over the Water", field: "caption", text: "Your first bridge", vars: [] }, { key: "38c70c680512", group: "Main missions", file: "src/game/missions/templates.ts", line: 1080, lines: [1080], tpl: "first:bridge", card: "Over the Water", field: "label", text: "Build the bridge", vars: [] }, { key: "3eaf76a5911e", group: "Main missions", file: "src/game/missions/templates.ts", line: 1081, lines: [1081], tpl: "first:bridge", card: "Over the Water", field: "label", text: "Cross your new bridge", vars: [] }, { key: "a9a0e36000a3", group: "Main missions", file: "src/game/missions/templates.ts", line: 1099, lines: [1099], tpl: "first:rails", card: "Your Own Railway", field: "title", text: "Your Own Railway", vars: [] }, { key: "1ef89038856c", group: "Main missions", file: "src/game/missions/templates.ts", line: 1100, lines: [1100], tpl: "first:rails", card: "Your Own Railway", field: "why", text: "One track carries trains one way at a time. Build a line of your own, then a second beside it, so trains can pass.", vars: [] }, { key: "b3ddebe4a433", group: "Main missions", file: "src/game/missions/templates.ts", line: 1101, lines: [1101], tpl: "first:rails", card: "Your Own Railway", field: "details", text: "Press B, then Rails. Click where a track starts (buffers, a line for a junction, or open ground), then where it ends. Hold Shift as you pick the end for a parallel track beside the nearest line. Z undoes the last track.", vars: [] }, { key: "71229f999bef", group: "Main missions", file: "src/game/missions/templates.ts", line: 1102, lines: [1102], tpl: "first:rails", card: "Your Own Railway", field: "caption", text: "Your own railway", vars: [] }, { key: "60536be575ff", group: "Main missions", file: "src/game/missions/templates.ts", line: 1104, lines: [1104], tpl: "first:rails", card: "Your Own Railway", field: "label", text: "Build 12 tiles of track", vars: [] }, { key: "0fc40e7ca85f", group: "Main missions", file: "src/game/missions/templates.ts", line: 1105, lines: [1105], tpl: "first:rails", card: "Your Own Railway", field: "label", text: "Build a parallel track", vars: [] }, { key: "e368e2753321", group: "Main missions", file: "src/game/missions/templates.ts", line: 1120, lines: [1120], tpl: "first:land", card: "Moving Earth", field: "title", text: "Moving Earth", vars: [] }, { key: "bb80c037b226", group: "Main missions", file: "src/game/missions/templates.ts", line: 1121, lines: [1121], tpl: "first:land", card: "Moving Earth", field: "why", text: "Rough ground gets in the way of roads and lots. Pick up the terrain tool and level the patch in the ring, flat as a table.", vars: [] }, { key: "bc5fb6ca0f13", group: "Main missions", file: "src/game/missions/templates.ts", line: 1122, lines: [1122], tpl: "first:land", card: "Moving Earth", field: "details", text: "Press T for the terrain tool. Shift-drag across the ring to bring all the ground under the brush to one height; 1 to 7 sizes the brush. A plain drag raises or lowers. F switches cliff and smooth, V digs water, Z undoes. Each lift costs $2. Buildings must be bulldozed (X) first; in a town you hold you may grade its open ground.", vars: [] }, { key: "2a1e20dad03d", group: "Main missions", file: "src/game/missions/templates.ts", line: 1123, lines: [1123], tpl: "first:land", card: "Moving Earth", field: "caption", text: "Flat as a table", vars: [] }, { key: "74915a8caa10", group: "Main missions", file: "src/game/missions/templates.ts", line: 1124, lines: [1124], tpl: "first:land", card: "Moving Earth", field: "label", text: "Level the lot", vars: [] }, { key: "e89084044439", group: "Main missions", file: "src/game/missions/templates.ts", line: 1137, lines: [1137], tpl: "heavy:hand", card: "A Spare Hand", field: "title", text: "A Spare Hand", vars: [] }, { key: "906d140e8116", group: "Main missions", file: "src/game/missions/templates.ts", line: 1137, lines: [1137], tpl: "heavy:hand", card: "A Spare Hand", field: "why", text: "Bram knows a driver who needs work. Own two vehicles, then meet Bram at his yard, and the driver joins you free.", vars: [] }, { key: "300f18cb511f", group: "Main missions", file: "src/game/missions/templates.ts", line: 1138, lines: [1138], tpl: "heavy:hand", card: "A Spare Hand", field: "caption", text: "A driver for it", vars: [] }, { key: "0caecb2480f0", group: "Main missions", file: "src/game/missions/templates.ts", line: 1139, lines: [1139], tpl: "heavy:hand", card: "A Spare Hand", field: "label", text: "Meet Bram at the yard", vars: [] }, { key: "c987d5894afb", group: "Main missions", file: "src/game/missions/templates.ts", line: 1175, lines: [1175], tpl: "towTemplate", card: null, field: "label", text: "Bring {min} vehicles", vars: [{ label: "min", expr: "min" }] }, { key: "80a86b5b684a", group: "Main missions", file: "src/game/missions/templates.ts", line: 1176, lines: [1176], tpl: "towTemplate", card: null, field: "label", text: "Tow it to the {name}", vars: [{ label: "name", expr: "route.to.name" }] }, { key: "6868394c773a", group: "Main missions", file: "src/game/missions/templates.ts", line: 1176, lines: [1176], tpl: "towTemplate", card: null, field: "label", text: "Tow it home", vars: [] }, { key: "4872c2a5d9ee", group: "Main missions", file: "src/game/missions/templates.ts", line: 1197, lines: [1197], tpl: "pullingTogether", card: "Pulling Together", field: "title", text: "Pulling Together", vars: [] }, { key: "034b4ad95a0d", group: "Main missions", file: "src/game/missions/templates.ts", line: 1197, lines: [1197], tpl: "pullingTogether", card: "Pulling Together", field: "why", text: "Learn to tow on an old wreck that won\u2019t mind a scrape. Bring two vehicles, hitch up with Enter and drag it away.", vars: [] }, { key: "632e69855085", group: "Main missions", file: "src/game/missions/templates.ts", line: 1197, lines: [1197], tpl: "pullingTogether", card: "Pulling Together", field: "caption", text: "An old wreck", vars: [] }, { key: "1ab623de2446", group: "Main missions", file: "src/game/missions/templates.ts", line: 1204, lines: [1204], tpl: "twoRopes", card: "Two Ropes", field: "title", text: "Two Ropes", vars: [] }, { key: "c09d1e69d6d8", group: "Main missions", file: "src/game/missions/templates.ts", line: 1204, lines: [1204], tpl: "twoRopes", card: "Two Ropes", field: "why", text: "The new church bell is too heavy for one car. Tow it in with two vehicles on ropes and the town grows round it.", vars: [] }, { key: "abc768d1671e", group: "Main missions", file: "src/game/missions/templates.ts", line: 1204, lines: [1204], tpl: "twoRopes", card: "Two Ropes", field: "caption", text: "The church bell", vars: [] }, { key: "dd84b2207f33", group: "Main missions", file: "src/game/missions/templates.ts", line: 1207, lines: [1207], tpl: "twoRopes[2]", card: "Two Ropes", field: "line", text: "The town builds", vars: [] }, { key: "cb6031213689", group: "Main missions", file: "src/game/missions/templates.ts", line: 1211, lines: [1211], tpl: "theBoiler", card: "The Boiler", field: "title", text: "The Boiler", vars: [] }, { key: "51cdbc505fc9", group: "Main missions", file: "src/game/missions/templates.ts", line: 1211, lines: [1211], tpl: "theBoiler", card: "The Boiler", field: "why", text: "Bram\u2019s last job: a mill boiler that needs three vehicles on the ropes to drag it up to the works.", vars: [] }, { key: "b3cfc7d27d82", group: "Main missions", file: "src/game/missions/templates.ts", line: 1211, lines: [1211], tpl: "theBoiler", card: "The Boiler", field: "caption", text: "A mill boiler", vars: [] }, { key: "aba9a5d6f56c", group: "Main missions", file: "src/game/missions/templates.ts", line: 1219, lines: [1219], tpl: "yachtTow", card: "High and Dry", field: "title", text: "High and Dry", vars: [] }, { key: "605a407e9e43", group: "Main missions", file: "src/game/missions/templates.ts", line: 1219, lines: [1219], tpl: "yachtTow", card: "High and Dry", field: "why", text: "A storm left a yacht high and dry in a field. Tow it back to the harbour with two vehicles and its owner pays well.", vars: [] }, { key: "97cc64e22555", group: "Main missions", file: "src/game/missions/templates.ts", line: 1219, lines: [1219], tpl: "yachtTow", card: "High and Dry", field: "caption", text: "A stranded yacht", vars: [] }, { key: "3d33e18f602a", group: "Main missions", file: "src/game/missions/templates.ts", line: 1225, lines: [1225], tpl: "statueTow", card: "The Statue", field: "title", text: "The Statue", vars: [] }, { key: "5d22d01a2f3d", group: "Main missions", file: "src/game/missions/templates.ts", line: 1225, lines: [1225], tpl: "statueTow", card: "The Statue", field: "why", text: "The quarry has finished the town\u2019s new statue. Tow it into town with two vehicles and the town will thank you.", vars: [] }, { key: "ccd6f853cd75", group: "Main missions", file: "src/game/missions/templates.ts", line: 1225, lines: [1225], tpl: "statueTow", card: "The Statue", field: "caption", text: "A stone statue", vars: [] }, { key: "a32263e01e44", group: "Main missions", file: "src/game/missions/templates.ts", line: 1255, lines: [1255, 1503], tpl: "keys:bakery", card: "The Keys", field: "title", text: "The Keys", vars: [] }, { key: "3111a9ff8125", group: "Main missions", file: "src/game/missions/templates.ts", line: 1256, lines: [1256], tpl: "keys:bakery", card: "The Keys", field: "why", text: "Keep {who}\u2019s {x1} stocked with 3 deliveries in 72 hours and {who} hands you the keys to the building.", vars: [{ label: "who", expr: "who" }, { label: "x1", expr: "place.toLowerCase()" }] }, { key: "5cbaa205e7cb", group: "Main missions", file: "src/game/missions/templates.ts", line: 1257, lines: [1257], tpl: "keys:bakery", card: "The Keys", field: "why", text: "Keep the shop stocked with 3 deliveries in 72 hours and {who} hands you the keys.", vars: [{ label: "who", expr: "who" }] }, { key: "3b61611644b1", group: "Main missions", file: "src/game/missions/templates.ts", line: 1258, lines: [1258], tpl: "keys:bakery", card: "The Keys", field: "details", text: "{who} is ready to retire and wants the shop to go to someone who kept it running. Owning a building pays you a cut of every delivery made to its door, yours or anyone else\u2019s.", vars: [{ label: "who", expr: "who" }] }, { key: "dc37a56424e2", group: "Main missions", file: "src/game/missions/templates.ts", line: 1269, lines: [1269], tpl: "clearLot", card: "Clear the Lot", field: "title", text: "Clear the Lot", vars: [] }, { key: "8445c04aeeaf", group: "Main missions", file: "src/game/missions/templates.ts", line: 1269, lines: [1269], tpl: "clearLot", card: "Clear the Lot", field: "why", text: "A wreck is dumped on a boarded-up lot. Tow it away with two vehicles and the lot and its building are yours.", vars: [] }, { key: "271a930f77cb", group: "Main missions", file: "src/game/missions/templates.ts", line: 1269, lines: [1269], tpl: "clearLot", card: "Clear the Lot", field: "caption", text: "A dead van", vars: [] }, { key: "e715b07cb38e", group: "Main missions", file: "src/game/missions/templates.ts", line: 1273, lines: [1273], tpl: "clearLot[1]", card: "Clear the Lot", field: "line", text: "The lot reopens", vars: [] }, { key: "6b11647666f2", group: "Main missions", file: "src/game/missions/templates.ts", line: 1292, lines: [1292], tpl: "keys:next", card: "Next Door", field: "title", text: "Next Door", vars: [] }, { key: "f9faa18c870e", group: "Main missions", file: "src/game/missions/templates.ts", line: 1292, lines: [1292], tpl: "keys:next", card: "Next Door", field: "why", text: "Keep your own place busy with two deliveries in 48 hours and the neighbour next door agrees to sell up to you.", vars: [] }, { key: "cabd7f011606", group: "Main missions", file: "src/game/missions/templates.ts", line: 1294, lines: [1294], tpl: "keys:next", card: "Next Door", field: "caption", text: "Next door: the {x1}", vars: [{ label: "x1", expr: "shortSite(nb.kind).toLowerCase()" }] }, { key: "9fdfb543a650", group: "Main missions", file: "src/game/missions/templates.ts", line: 1319, lines: [1319], tpl: "trip:ferry", card: null, field: "label", text: "Ferry to {name}", vars: [{ label: "name", expr: "f.to.port.name" }] }, { key: "cb18cc376c2b", group: "Main missions", file: "src/game/missions/templates.ts", line: 1321, lines: [1321], tpl: "trip:ferry", card: "Over the Water", field: "why", text: "They\u2019ve never heard of you over the water. Take the car ferry across and drive into the far town to make your name.", vars: [] }, { key: "1b61cd37e16e", group: "Main missions", file: "src/game/missions/templates.ts", line: 1323, lines: [1323], tpl: "trip:ferry", card: "Over the Water", field: "caption", text: "The car ferry", vars: [] }, { key: "7537cc3abd9f", group: "Main missions", file: "src/game/missions/templates.ts", line: 1325, lines: [1325], tpl: "trip:ferry", card: "Over the Water", field: "label", text: "Take the ferry", vars: [] }, { key: "8a21e9212021", group: "Main missions", file: "src/game/missions/templates.ts", line: 1326, lines: [1326], tpl: "trip:ferry", card: "Over the Water", field: "label", text: "Reach {name}", vars: [{ label: "name", expr: "name" }] }, { key: "bbc354f67d54", group: "Main missions", file: "src/game/missions/templates.ts", line: 1326, lines: [1326], tpl: "trip:ferry", card: "Over the Water", field: "label", text: "Reach the far town", vars: [] }, { key: "ab4b00ef6102", group: "Main missions", file: "src/game/missions/templates.ts", line: 1342, lines: [1342], tpl: "freshStamps", card: null, field: "label", text: "Visit {x1}", vars: [{ label: "x1", expr: "REGIONS[b.w.region!].title" }] }, { key: "243a26cb08be", group: "Main missions", file: "src/game/missions/templates.ts", line: 1343, lines: [1343], tpl: "freshStamps", card: null, field: "label", text: "Visit a new biome", vars: [] }, { key: "157dbd5fe501", group: "Main missions", file: "src/game/missions/templates.ts", line: 1357, lines: [1357], tpl: "freshStamps", card: null, field: "label", text: "Reach a wonder", vars: [] }, { key: "2ffe39eb7589", group: "Main missions", file: "src/game/missions/templates.ts", line: 1374, lines: [1374], tpl: "trip:postcards", card: "Postcards", field: "title", text: "Postcards", vars: [] }, { key: "dd85e08d3be9", group: "Main missions", file: "src/game/missions/templates.ts", line: 1374, lines: [1374], tpl: "trip:postcards", card: "Postcards", field: "why", text: "Visit each place on the list to stamp your Passport, and your car gets a free coat of {name} paint.", vars: [{ label: "name", expr: "paint.name" }] }, { key: "f3fc2b4a5756", group: "Main missions", file: "src/game/missions/templates.ts", line: 1376, lines: [1376], tpl: "trip:postcards", card: "Postcards", field: "caption", text: "New stamps", vars: [] }, { key: "e18259908b34", group: "Main missions", file: "src/game/missions/templates.ts", line: 1448, lines: [1448], tpl: "rescue", card: null, field: "details", text: "{name} is waving from the water. Get alongside in any boat with a seat free, bring them in to the harbour, and it won\u2019t forget it.", vars: [{ label: "name", expr: "name" }] }, { key: "0bfcf20571b8", group: "Main missions", file: "src/game/missions/templates.ts", line: 1501, lines: [1501], tpl: "fast", card: "Something Fast", field: "title", text: "Something Fast", vars: [] }, { key: "d75a5a2fe33a", group: "Main missions", file: "src/game/missions/templates.ts", line: 1502, lines: [1502], tpl: "heavy", card: "Heavy Lifting", field: "title", text: "Heavy Lifting", vars: [] }, { key: "aa047fe1ad7e", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 69, lines: [69], tpl: "deliverTo", card: null, field: "label", text: "{x1}{name} \u2192 Circuit", vars: [{ label: "x1", expr: "n > 1 ? `${n}\xD7 ` : ''" }, { label: "name", expr: "p.type.name" }] }, { key: "e83275092015", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 88, lines: [88], tpl: "circuit:hotlap", card: "Hot Lap", field: "title", text: "Hot Lap", vars: [] }, { key: "62e902a44a63", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 88, lines: [88], tpl: "circuit:hotlap", card: "Hot Lap", field: "why", text: "Set a clean lap of {name} in under {x1} s in your {c.def.name}. Beat the clock and the team fits racing tyres.", vars: [{ label: "name", expr: "name" }, { label: "x1", expr: "secs.toFixed(1)" }, { label: "c.def.name", expr: "c.def.name" }] }, { key: "a5a3fb4b14cd", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 89, lines: [89], tpl: "circuit:hotlap", card: "Hot Lap", field: "details", text: "{x1} wants to see what your {name} can do on a proper track. Drive in at the gate, get up to speed and take the chequered line flying.", vars: [{ label: "x1", expr: "who.name.split(',')[0]" }, { label: "name", expr: "c.def.name" }] }, { key: "d2d64a620749", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 90, lines: [90], tpl: "circuit:hotlap", card: "Hot Lap", field: "caption", text: "Racing tyres", vars: [] }, { key: "7aa2349980df", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 91, lines: [91], tpl: "circuit:hotlap", card: "Hot Lap", field: "label", text: "Race a lap under {x1} s", vars: [{ label: "x1", expr: "secs.toFixed(1)" }] }, { key: "ed7e49465be8", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 105, lines: [105], tpl: "circuit:raceday", card: "Race Day", field: "title", text: "Race Day", vars: [] }, { key: "ded8a29ce889", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 105, lines: [105], tpl: "circuit:raceday", card: "Race Day", field: "why", text: "Take a grid slot at {x1}: {LAPS} laps against five cars just like yours. Finish in the top three.", vars: [{ label: "x1", expr: "shortName(k.name)" }, { label: "LAPS", expr: "LAPS" }] }, { key: "e1250f742386", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 106, lines: [106], tpl: "circuit:raceday", card: "Race Day", field: "details", text: "A one-make race: every car on the grid is a {name}, so what you have fitted is your edge. The stands will be full.", vars: [{ label: "name", expr: "c.def.name" }] }, { key: "c860457be6ce", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 107, lines: [107], tpl: "circuit:raceday", card: "Race Day", field: "caption", text: "The winner\u2019s cup", vars: [] }, { key: "50acabf763bc", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 108, lines: [108], tpl: "circuit:raceday", card: "Race Day", field: "label", text: "Race to a top three finish", vars: [] }, { key: "114409ead766", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 139, lines: [139], tpl: "slicks", card: "Fresh Rubber", field: "title", text: "Fresh Rubber", vars: [] }, { key: "3625ad0fdce7", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 143, lines: [143], tpl: "fuel", card: "Fuel for the Rig", field: "title", text: "Fuel for the Rig", vars: [] }, { key: "a11a32a9723d", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 147, lines: [147], tpl: "racecar", card: "Car for the Grid", field: "title", text: "Car for the Grid", vars: [] }, { key: "9dab8c5eb489", group: "Circuits", file: "src/game/missions/circuitTemplates.ts", line: 151, lines: [151], tpl: "fans", card: "Fan Bus", field: "title", text: "Fan Bus", vars: [] }, { key: "10a8df00c290", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 139, lines: [139], tpl: "text.hiker", card: "Lost on the Hill", field: "title", text: "Lost on the Hill", vars: [] }, { key: "2e8ec062c23f", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 139, lines: [139], tpl: "text.hiker", card: "Lost on the Hill", field: "why", text: "A walker never came down off the hill. Find them with your searchlight, land beside them and fly them to the hospital.", vars: [] }, { key: "7d931126e5ea", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 139, lines: [139], tpl: "text.hiker", card: "Lost on the Hill", field: "label", text: "Find the lost hiker", vars: [] }, { key: "03b2250c08fd", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 140, lines: [140], tpl: "text.child", card: "Missing Child", field: "title", text: "Missing Child", vars: [] }, { key: "37be7c616ea3", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 140, lines: [140], tpl: "text.child", card: "Missing Child", field: "why", text: "A child wandered into the fields at dusk. Sweep them with your searchlight, pick the child up and fly to the hospital.", vars: [] }, { key: "78c3f609b5f8", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 140, lines: [140], tpl: "text.child", card: "Missing Child", field: "label", text: "Find the missing child", vars: [] }, { key: "da18c48a28b9", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 141, lines: [141], tpl: "text.dog", card: "Lost Dog", field: "title", text: "Lost Dog", vars: [] }, { key: "c9aad9d66a36", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 141, lines: [141], tpl: "text.dog", card: "Lost Dog", field: "why", text: "Their dog bolted at the fireworks and hasn\u2019t come home. Sweep the fields with your searchlight until you find it.", vars: [] }, { key: "05fa8ad887b1", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 141, lines: [141], tpl: "text.dog", card: "Lost Dog", field: "label", text: "Find the lost dog", vars: [] }, { key: "e6e49b6af2e2", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 145, lines: [145], tpl: "lostHiker", card: null, field: "caption", text: "Searchlight work", vars: [] }, { key: "0502c0a72003", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 171, lines: [171], tpl: "manOverboard", card: "Man Overboard", field: "title", text: "Man Overboard", vars: [] }, { key: "f8ccdd60c1f6", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 171, lines: [171], tpl: "manOverboard", card: "Man Overboard", field: "why", text: "Someone went over the side off the harbour. Find the swimmer with your searchlight and light the lifeboat\u2019s way to them.", vars: [] }, { key: "e82596ee708a", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 173, lines: [173], tpl: "manOverboard", card: "Man Overboard", field: "caption", text: "The lifeboat", vars: [] }, { key: "f82953945643", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 197, lines: [197], tpl: "hotPursuit", card: "Hot Pursuit", field: "title", text: "Hot Pursuit", vars: [] }, { key: "5b3c60afdfa6", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 197, lines: [197], tpl: "hotPursuit", card: "Hot Pursuit", field: "why", text: "A getaway driver is about to run. Keep his car in your searchlight while the patrol chases. Lose him in the dark and he\u2019s gone.", vars: [] }, { key: "6fe4f5485212", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 199, lines: [199, 349], tpl: "hotPursuit", card: "Hot Pursuit", field: "caption", text: "Police air support", vars: [] }, { key: "e6d4d8a192e0", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 221, lines: [221], tpl: "stolenCar", card: "Stolen Car", field: "title", text: "Stolen Car", vars: [] }, { key: "72db82bccc5b", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 221, lines: [221], tpl: "stolenCar", card: "Stolen Car", field: "why", text: "A stolen car is hiding in the streets with its lights off. Find it with your searchlight, then keep it lit when it runs.", vars: [] }, { key: "9910e76e4bdf", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 223, lines: [223], tpl: "stolenCar", card: "Stolen Car", field: "caption", text: "The stolen car", vars: [] }, { key: "d29ce810bcc5", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 242, lines: [242], tpl: "liveNews", card: "Live at Eleven", field: "title", text: "Live at Eleven", vars: [] }, { key: "3382e8d9ad72", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 242, lines: [242], tpl: "liveNews", card: "Live at Eleven", field: "why", text: "A lorry has jack-knifed and the eleven o\u2019clock news wants pictures. Hold the story in your beam for a minute on air.", vars: [] }, { key: "e4f9936eb5c0", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 244, lines: [244], tpl: "liveNews", card: "Live at Eleven", field: "caption", text: "Tonight\u2019s story", vars: [] }, { key: "4e10091794fb", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 264, lines: [264], tpl: "nightShoot", card: "The Night Shoot", field: "title", text: "The Night Shoot", vars: [] }, { key: "3a67f7694282", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 264, lines: [264], tpl: "nightShoot", card: "The Night Shoot", field: "why", text: "A film crew needs a helicopter light for its big car stunt. Follow the car, hit the mark and nail the reveal.", vars: [] }, { key: "e12615a5558c", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 266, lines: [266], tpl: "nightShoot", card: "The Night Shoot", field: "caption", text: "The stunt car", vars: [] }, { key: "dff7e9e4c3be", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 292, lines: [292], tpl: "bindBlackout", card: "Blackout", field: "title", text: "Blackout", vars: [] }, { key: "e3799ebd8ab5", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 292, lines: [292], tpl: "bindBlackout", card: "Blackout", field: "why", text: "The power is out across town and an ambulance is crawling in the dark. Light the road ahead of it all the way to the hospital.", vars: [] }, { key: "155466c38789", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 294, lines: [294], tpl: "bindBlackout", card: "Blackout", field: "caption", text: "The ambulance", vars: [] }, { key: "785f6fd56c72", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 318, lines: [318], tpl: "looseStock", card: "Loose Stock", field: "title", text: "Loose Stock", vars: [] }, { key: "3f69775f9449", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 318, lines: [318], tpl: "looseStock", card: "Loose Stock", field: "why", text: "The {x1} through the fence and out on the road. Light each stray so the rancher can round it up before a car hits it.", vars: [{ label: "x1", expr: "what === 'sheep' ? 'sheep are' : 'cows are'" }] }, { key: "de3eb2427354", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 320, lines: [320], tpl: "looseStock", card: "Loose Stock", field: "caption", text: "The rancher\u2019s pickup", vars: [] }, { key: "99d591cb23fe", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 347, lines: [347], tpl: "dropSpotter", card: "Drop Spotter", field: "title", text: "Drop Spotter", vars: [] }, { key: "c2e9b60d102c", group: "Night ops", file: "src/game/missions/nightTemplates.ts", line: 347, lines: [347], tpl: "dropSpotter", card: "Drop Spotter", field: "why", text: "Smugglers are meeting tonight. Sweep the area with your searchlight for their lanterns and tag each contact for the police.", vars: [] }, { key: "594bd3487196", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 244, lines: [244], tpl: "tail:spouse", card: "Working Late", field: "title", text: "Working Late", vars: [] }, { key: "35f250bb44b0", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 244, lines: [244], tpl: "tail:spouse", card: "Working Late", field: "caption", text: "The husband\u2019s convertible", vars: [] }, { key: "bf4c1731fb4f", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 244, lines: [244], tpl: "tail:spouse", card: "Working Late", field: "label", text: "Tail the red Sunny", vars: [] }, { key: "b40c098c4c08", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 257, lines: [257], tpl: "tail:claim", card: "Miracle Recovery", field: "title", text: "Miracle Recovery", vars: [] }, { key: "2eeccd24b7b7", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 257, lines: [257], tpl: "tail:claim", card: "Miracle Recovery", field: "caption", text: "The claimant\u2019s SUV", vars: [] }, { key: "10cc066b74c5", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 257, lines: [257], tpl: "tail:claim", card: "Miracle Recovery", field: "label", text: "Tail the blue Bramble", vars: [] }, { key: "fc6a66ca5763", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 270, lines: [270], tpl: "tail:scoop", card: "The Secret Party", field: "title", text: "The Secret Party", vars: [] }, { key: "4318accb17f6", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 270, lines: [270], tpl: "tail:scoop", card: "The Secret Party", field: "caption", text: "The star\u2019s limousine", vars: [] }, { key: "6fc32df74b21", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 270, lines: [270], tpl: "tail:scoop", card: "The Secret Party", field: "label", text: "Tail the black limo", vars: [] }, { key: "04e1da7f8fd6", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 283, lines: [283], tpl: "tail:rival", card: "Follow the Van", field: "title", text: "Follow the Van", vars: [] }, { key: "d6197bf2cf4f", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 283, lines: [283], tpl: "tail:rival", card: "Follow the Van", field: "caption", text: "A rival\u2019s van", vars: [] }, { key: "bc2e3e0ac4a4", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 283, lines: [283], tpl: "tail:rival", card: "Follow the Van", field: "label", text: "Tail the rival van", vars: [] }, { key: "c4cd2abfb29e", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 308, lines: [308], tpl: "tail:rival", card: "Follow the Van", field: "line", text: "{name} run their vans out of {town}: their depot is lit", vars: [{ label: "name", expr: "s.firm.name" }, { label: "town", expr: "s.firm.town" }] }, { key: "17f5f8299ba6", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 318, lines: [318], tpl: "tail:getaway", card: "Getaway Car", field: "title", text: "Getaway Car", vars: [] }, { key: "d1c562c6e728", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 318, lines: [318], tpl: "tail:getaway", card: "Getaway Car", field: "caption", text: "The getaway car", vars: [] }, { key: "5b56d8bbfc98", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 318, lines: [318], tpl: "tail:getaway", card: "Getaway Car", field: "label", text: "Tail the green Wasabi", vars: [] }, { key: "cb172e462b3e", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 338, lines: [338], tpl: "tail:getaway", card: "Getaway Car", field: "line", text: "The gang\u2019s hideout: {toName}, out past {x1}", vars: [{ label: "toName", expr: "s.toName" }, { label: "x1", expr: "s.town ? s.town.name.replace(/ City$/, '') : 'the town'" }] }, { key: "7397431a91b2", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 351, lines: [351], tpl: "tail:courier", card: "The Courier", field: "title", text: "The Courier", vars: [] }, { key: "f092ff26966d", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 351, lines: [351], tpl: "tail:courier", card: "The Courier", field: "caption", text: "The courier\u2019s runabout", vars: [] }, { key: "f0416e203bd1", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 351, lines: [351], tpl: "tail:courier", card: "The Courier", field: "label", text: "Tail the yellow Pip", vars: [] }, { key: "e79554a6deff", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 372, lines: [372], tpl: "tail:courier", card: "The Courier", field: "line", text: "{x1}{x2} nobody has claimed, at {toName}: drive up and press Tab", vars: [{ label: "x1", expr: "what.charAt(0).toUpperCase()" }, { label: "x2", expr: "what.slice(1)" }, { label: "toName", expr: "s.toName" }] }, { key: "b6ea896c0398", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 379, lines: [379], tpl: "tail:fence", card: "Who\u2019s Buying", field: "title", text: "Who\u2019s Buying", vars: [] }, { key: "091b8f28f6a7", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 379, lines: [379], tpl: "tail:fence", card: "Who\u2019s Buying", field: "caption", text: "The fence\u2019s van", vars: [] }, { key: "37be107dec4f", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 379, lines: [379], tpl: "tail:fence", card: "Who\u2019s Buying", field: "label", text: "Tail the maroon Mule", vars: [] }, { key: "369d19d0c616", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 392, lines: [392], tpl: "tail:fence", card: "Who\u2019s Buying", field: "line", text: "The fence\u2019s people at {toName} will have a night run for you after dark", vars: [{ label: "toName", expr: "s.toName" }] }, { key: "173458df6202", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 443, lines: [443], tpl: "trainTemplate", card: null, field: "caption", text: "A freight on the line", vars: [] }, { key: "2847b9065575", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 454, lines: [454], tpl: "tail:freight", card: "Missing Wagons", field: "title", text: "Missing Wagons", vars: [] }, { key: "8ca7f8abdbd3", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 454, lines: [454, 462], tpl: "tail:freight", card: "Missing Wagons", field: "label", text: "Trail the next freight", vars: [] }, { key: "8e76363a0c77", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 456, lines: [456], tpl: "tail:freight", card: "Missing Wagons", field: "why", text: "Wagons keep going missing between stations. Follow the next freight from the roads beside the line and see where it really stops.", vars: [] }, { key: "1cd44572476b", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 457, lines: [457], tpl: "tail:freight", card: "Missing Wagons", field: "details", text: "The guard rides at the back and watches the line behind. A car keeping level with the train for long gets noticed too, and a freight waits for nobody.", vars: [] }, { key: "6783d765fef8", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 462, lines: [462], tpl: "tail:wagon", card: "Off the Rails", field: "title", text: "Off the Rails", vars: [] }, { key: "e7e35b00aee4", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 464, lines: [464], tpl: "tail:wagon", card: "Off the Rails", field: "why", text: "My goods ride hidden in a freight wagon. Follow the train from the road and see where it\u2019s cut off, then we can talk business.", vars: [] }, { key: "e77c00e5bd66", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 465, lines: [465], tpl: "tail:wagon", card: "Off the Rails", field: "details", text: "If the guard sees a car shadowing his train, the wagon never comes off. Keep back, keep out of his sight, and don\u2019t lose it.", vars: [] }, { key: "ef571b6c5137", group: "Tails", file: "src/game/missions/tailTemplates.ts", line: 466, lines: [466], tpl: "tail:wagon", card: "Off the Rails", field: "line", text: "The wagon comes off at {name}: a contact will call on you some night", vars: [{ label: "name", expr: "yard.name" }] }, { key: "268385b3fd11", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 61, lines: [61], tpl: "JOBS.police[0]", card: "Before the Hearing", field: "title", text: "Before the Hearing", vars: [] }, { key: "c4e34c3d2580", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 61, lines: [61], tpl: "JOBS.police[0]", card: "Before the Hearing", field: "why", text: "The court sits at noon and the evidence is still in the station locker. Get it there sealed.", vars: [] }, { key: "356bb3efaa9a", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 62, lines: [62, 138], tpl: "JOBS.police[1]", card: "The Transfer", field: "title", text: "The Transfer", vars: [] }, { key: "a1600de74085", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 62, lines: [62], tpl: "JOBS.police[1]", card: "The Transfer", field: "why", text: "Two officers, one passenger, a route nobody publishes. Drive carefully and say nothing.", vars: [] }, { key: "5ede37bb9861", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 65, lines: [65], tpl: "JOBS.family[0]", card: "The Envelope", field: "title", text: "The Envelope", vars: [] }, { key: "788bb6e75f63", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 65, lines: [65], tpl: "JOBS.family[0]", card: "The Envelope", field: "why", text: "A shopkeeper is behind with his insurance. Remind him, politely, with this envelope.", vars: [] }, { key: "4aec44a0a6bf", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 66, lines: [66], tpl: "JOBS.family[1]", card: "Wash Day", field: "title", text: "Wash Day", vars: [] }, { key: "3c1ee50d99bf", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 66, lines: [66], tpl: "JOBS.family[1]", card: "Wash Day", field: "why", text: "Last night\u2019s takings need to be somewhere else by morning, and clean when they get there.", vars: [] }, { key: "9be50608fe14", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 69, lines: [69, 153], tpl: "JOBS.ministry[0]", card: "In Triplicate", field: "title", text: "In Triplicate", vars: [] }, { key: "2f72585eb845", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 69, lines: [69], tpl: "JOBS.ministry[0]", card: "In Triplicate", field: "why", text: "Forms that must be signed today, by somebody who has not yet heard of them.", vars: [] }, { key: "cadfd55973ac", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 70, lines: [70], tpl: "JOBS.ministry[1]", card: "Diplomatic Bag", field: "title", text: "Diplomatic Bag", vars: [] }, { key: "b99535d812bc", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 70, lines: [70], tpl: "JOBS.ministry[1]", card: "Diplomatic Bag", field: "why", text: "Two attach\xE9s and a briefcase they will not put down. On time, and no bumps.", vars: [] }, { key: "6d126fefe11f", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 73, lines: [73], tpl: "JOBS.visitors[0]", card: "It Hums", field: "title", text: "It Hums", vars: [] }, { key: "5b2de759bd34", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 73, lines: [73], tpl: "JOBS.visitors[0]", card: "It Hums", field: "why", text: "Something warm and humming lies in a field. The Envoy would like it taken somewhere quiet.", vars: [] }, { key: "02dc28315f71", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 74, lines: [74], tpl: "JOBS.visitors[1]", card: "Soil Samples", field: "title", text: "Soil Samples", vars: [] }, { key: "2b34935eb01f", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 74, lines: [74], tpl: "JOBS.visitors[1]", card: "Soil Samples", field: "why", text: "They are curious about our dirt. Bring them a sample, and do not open the jar.", vars: [] }, { key: "341f19335e59", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 77, lines: [77], tpl: "JOBS.unions[0]", card: "The Pour", field: "title", text: "The Pour", vars: [] }, { key: "e63a93f0c713", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 77, lines: [77], tpl: "JOBS.unions[0]", card: "The Pour", field: "why", text: "The pour is booked for this afternoon and the cement is still at the works.", vars: [] }, { key: "84324095144b", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 78, lines: [78, 167], tpl: "JOBS.unions[1]", card: "Morning Shift", field: "title", text: "Morning Shift", vars: [] }, { key: "e4efbd615787", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 78, lines: [78], tpl: "JOBS.unions[1]", card: "Morning Shift", field: "why", text: "A crew for the site, hard hats on and flasks full. The foreman is counting heads.", vars: [] }, { key: "a361360d4617", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 81, lines: [81], tpl: "JOBS.post[0]", card: "Before the Round", field: "title", text: "Before the Round", vars: [] }, { key: "4a9ddc81fca3", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 81, lines: [81], tpl: "JOBS.post[0]", card: "Before the Round", field: "why", text: "The morning letters are sorted and the round goes out at nine. Get them to the counter first.", vars: [] }, { key: "ca6db3a5c4d3", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 82, lines: [82, 173], tpl: "JOBS.post[1]", card: "Signed For", field: "title", text: "Signed For", vars: [] }, { key: "319dd16eb35d", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 82, lines: [82], tpl: "JOBS.post[1]", card: "Signed For", field: "why", text: "Registered, insured and not to be dropped. Somebody is waiting with a pen.", vars: [] }, { key: "154a254a7589", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 85, lines: [85, 180], tpl: "JOBS.army[0]", card: "Mess Call", field: "title", text: "Mess Call", vars: [] }, { key: "93e738bef18f", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 85, lines: [85], tpl: "JOBS.army[0]", card: "Mess Call", field: "why", text: "The base kitchen is out of everything but tea. Bring rations before the men notice.", vars: [] }, { key: "f2f79444ed0e", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 86, lines: [86], tpl: "JOBS.army[1]", card: "Handle With Care", field: "title", text: "Handle With Care", vars: [] }, { key: "374bd3d82afc", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 86, lines: [86], tpl: "JOBS.army[1]", card: "Handle With Care", field: "why", text: "Crates stencilled DO NOT DROP, for the range. Take the bumps slowly.", vars: [] }, { key: "cf19ee358220", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 89, lines: [89, 187], tpl: "JOBS.studios[0]", card: "The Dailies", field: "title", text: "The Dailies", vars: [] }, { key: "193082f44443", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 89, lines: [89], tpl: "JOBS.studios[0]", card: "The Dailies", field: "why", text: "Yesterday\u2019s film, wanted in the screening room before the director wakes up.", vars: [] }, { key: "9a1146836825", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 90, lines: [90, 186], tpl: "JOBS.studios[1]", card: "On Location", field: "title", text: "On Location", vars: [] }, { key: "1e2dfbf77acc", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 90, lines: [90], tpl: "JOBS.studios[1]", card: "On Location", field: "why", text: "A crew, a camera and one afternoon of good light. Get them to the set.", vars: [] }, { key: "de015e13e29b", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 93, lines: [93, 194], tpl: "JOBS.guild[0]", card: "Ice for the Boxes", field: "title", text: "Ice for the Boxes", vars: [] }, { key: "77c2151c9f15", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 93, lines: [93], tpl: "JOBS.guild[0]", card: "Ice for the Boxes", field: "why", text: "The boats are coming in and the market has no ice. It will not wait long.", vars: [] }, { key: "8d175a3246ec", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 94, lines: [94, 195], tpl: "JOBS.guild[1]", card: "Evening Bait", field: "title", text: "Evening Bait", vars: [] }, { key: "54dcd98858a7", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 94, lines: [94], tpl: "JOBS.guild[1]", card: "Evening Bait", field: "why", text: "A cool box of bait for the evening boats, before they cast off.", vars: [] }, { key: "98ac0c225190", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 97, lines: [97], tpl: "JOBS.press[0]", card: "Hold the Front Page", field: "title", text: "Hold the Front Page", vars: [] }, { key: "95442f123cd3", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 97, lines: [97], tpl: "JOBS.press[0]", card: "Hold the Front Page", field: "why", text: "A leaked memo. The editor wants it before the other papers do.", vars: [] }, { key: "606988cb3dfe", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 98, lines: [98], tpl: "JOBS.press[1]", card: "Hot off the Press", field: "title", text: "Hot off the Press", vars: [] }, { key: "3833bfab361a", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 98, lines: [98], tpl: "JOBS.press[1]", card: "Hot off the Press", field: "why", text: "Bundles still warm from the presses. Yesterday\u2019s news sells for nothing.", vars: [] }, { key: "b35874beeaef", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 120, lines: [120], tpl: "fac:*", card: null, field: "details", text: "{name} pays for its own work at its own rate: the friendlier you are, the better.", vars: [{ label: "name", expr: "d.name" }] }, { key: "68d2f896be1a", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 137, lines: [137], tpl: "OATHS.police[0]", card: "Chain of Evidence", field: "title", text: "Chain of Evidence", vars: [] }, { key: "47a922b9a3b5", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 137, lines: [137], tpl: "OATHS.police[0]", card: "Chain of Evidence", field: "why", text: "Two bags of evidence for the court, sealed and signed. Prove you can be trusted with them.", vars: [] }, { key: "827546f49427", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 138, lines: [138], tpl: "OATHS.police[1]", card: "The Transfer", field: "why", text: "A prisoner moved between stations, in your car, with nobody the wiser.", vars: [] }, { key: "7c05e70ec89e", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 139, lines: [139], tpl: "OATHS.police[2]", card: "Cadet Run", field: "title", text: "Cadet Run", vars: [] }, { key: "5b59d8d90490", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 139, lines: [139], tpl: "OATHS.police[2]", card: "Cadet Run", field: "why", text: "This year\u2019s cadets, from the bus station to their first day at the station.", vars: [] }, { key: "9cf4a552b833", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 140, lines: [140], tpl: "OATHS.police[3]", card: "Recovered Goods", field: "title", text: "Recovered Goods", vars: [] }, { key: "b9f3435f3689", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 140, lines: [140], tpl: "OATHS.police[3]", card: "Recovered Goods", field: "why", text: "A chop shop full of somebody else\u2019s televisions. Take them to the impound. The Family will not thank you.", vars: [] }, { key: "bd278ebebb10", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 141, lines: [141], tpl: "OATHS.police[4]", card: "On the Beat", field: "title", text: "On the Beat", vars: [] }, { key: "cbb2840a7238", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 141, lines: [141], tpl: "OATHS.police[4]", card: "On the Beat", field: "why", text: "Walk the beat with them: three stations after dark, a few minutes at each.", vars: [] }, { key: "ed62f0379e8b", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 144, lines: [144], tpl: "OATHS.family[0]", card: "The Round", field: "title", text: "The Round", vars: [] }, { key: "631c5e4f47c9", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 144, lines: [144], tpl: "OATHS.family[0]", card: "The Round", field: "why", text: "Two shops behind on their insurance. Remind them, with envelopes.", vars: [] }, { key: "35add58ccce9", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 145, lines: [145], tpl: "OATHS.family[1]", card: "Clean Money", field: "title", text: "Clean Money", vars: [] }, { key: "d6ff230c16f1", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 145, lines: [145], tpl: "OATHS.family[1]", card: "Clean Money", field: "why", text: "The casino\u2019s takings, out the back door and into the club.", vars: [] }, { key: "7246f4195205", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 146, lines: [146], tpl: "OATHS.family[2]", card: "Lost Evidence", field: "title", text: "Lost Evidence", vars: [] }, { key: "0430e02c91ec", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 146, lines: [146], tpl: "OATHS.family[2]", card: "Lost Evidence", field: "why", text: "There is evidence at the station that would be better at the chop shop. The Constabulary will not forgive this.", vars: [] }, { key: "873ac1df7c10", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 147, lines: [147], tpl: "OATHS.family[3]", card: "A Quiet Word", field: "title", text: "A Quiet Word", vars: [] }, { key: "d770970d41df", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 147, lines: [147], tpl: "OATHS.family[3]", card: "A Quiet Word", field: "why", text: "The Don would like a word, at the villa, at midnight. Come alone.", vars: [] }, { key: "dd44be780621", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 148, lines: [148], tpl: "OATHS.family[4]", card: "Family Business", field: "title", text: "Family Business", vars: [] }, { key: "3e3c4ddb73f3", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 148, lines: [148], tpl: "OATHS.family[4]", card: "Family Business", field: "why", text: "A suitcase of cash to the villa. Nobody counts it but the Don.", vars: [] }, { key: "0db30bc8207f", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 151, lines: [151], tpl: "OATHS.ministry[0]", card: "Polling Day", field: "title", text: "Polling Day", vars: [] }, { key: "4c4d3ab2fbff", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 151, lines: [151], tpl: "OATHS.ministry[0]", card: "Polling Day", field: "why", text: "Two town halls are waiting for their ballot boxes, and the polls open whether they are there or not.", vars: [] }, { key: "8dc25351c445", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 152, lines: [152], tpl: "OATHS.ministry[1]", card: "State Visit", field: "title", text: "State Visit", vars: [] }, { key: "226d70d9d39e", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 152, lines: [152], tpl: "OATHS.ministry[1]", card: "State Visit", field: "why", text: "A head of state, from the airport to the embassy. Smooth, on time, no knocks.", vars: [] }, { key: "e09ee8203e1c", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 153, lines: [153], tpl: "OATHS.ministry[2]", card: "In Triplicate", field: "why", text: "Forms for the court, signed in three places and needed in four.", vars: [] }, { key: "795fa16db9ec", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 154, lines: [154], tpl: "OATHS.ministry[3]", card: "Hangar 18", field: "title", text: "Hangar 18", vars: [] }, { key: "68d140791e3a", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 154, lines: [154], tpl: "OATHS.ministry[3]", card: "Hangar 18", field: "why", text: "Something fell out of the sky. Bring what is left of it to the hangar, and forget what you saw. The Visitors will not.", vars: [] }, { key: "34b0a5f3dafc", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 155, lines: [155], tpl: "OATHS.ministry[4]", card: "Visitors at the Door", field: "title", text: "Visitors at the Door", vars: [] }, { key: "e02bca3d3a06", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 155, lines: [155], tpl: "OATHS.ministry[4]", card: "Visitors at the Door", field: "why", text: "Two tall figures wish to meet the Minister. Bring them in quietly, before anyone takes a picture.", vars: [] }, { key: "50141b0fd5ad", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 158, lines: [158], tpl: "OATHS.visitors[0]", card: "Lights in the Sky", field: "title", text: "Lights in the Sky", vars: [] }, { key: "be829dee0eeb", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 158, lines: [158], tpl: "OATHS.visitors[0]", card: "Lights in the Sky", field: "why", text: "Wait at the ring after dark. Something will want to see you there.", vars: [] }, { key: "0402838b03d0", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 159, lines: [159], tpl: "OATHS.visitors[1]", card: "The Probe", field: "title", text: "The Probe", vars: [] }, { key: "d786aa4634d0", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 159, lines: [159], tpl: "OATHS.visitors[1]", card: "The Probe", field: "why", text: "One of theirs, lost in a field and humming. Take it home.", vars: [] }, { key: "3dd62116aa3d", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 160, lines: [160], tpl: "OATHS.visitors[2]", card: "Taken Back", field: "title", text: "Taken Back", vars: [] }, { key: "591a1c84d407", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 160, lines: [160], tpl: "OATHS.visitors[2]", card: "Taken Back", field: "why", text: "Their wreckage, before the Army takes it to the hangar. The Army will not thank you.", vars: [] }, { key: "92b72664b17c", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 161, lines: [161], tpl: "OATHS.visitors[3]", card: "Specimens", field: "title", text: "Specimens", vars: [] }, { key: "42c7c387e417", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 161, lines: [161], tpl: "OATHS.visitors[3]", card: "Specimens", field: "why", text: "They are curious about our dirt, and our researchers have plenty of it.", vars: [] }, { key: "51da35f10d73", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 162, lines: [162], tpl: "OATHS.visitors[4]", card: "First Contact", field: "title", text: "First Contact", vars: [] }, { key: "a7623b22bc44", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 162, lines: [162], tpl: "OATHS.visitors[4]", card: "First Contact", field: "why", text: "A delegation to the town hall, at an hour nobody will see them arrive.", vars: [] }, { key: "269f046b08f1", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 165, lines: [165], tpl: "OATHS.unions[0]", card: "First Pour", field: "title", text: "First Pour", vars: [] }, { key: "9f7105048903", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 165, lines: [165], tpl: "OATHS.unions[0]", card: "First Pour", field: "why", text: "Cement for the yard, two loads, before the mixer drivers go home.", vars: [] }, { key: "b2664d2fccde", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 166, lines: [166], tpl: "OATHS.unions[1]", card: "Rebar", field: "title", text: "Rebar", vars: [] }, { key: "f05076343146", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 166, lines: [166], tpl: "OATHS.unions[1]", card: "Rebar", field: "why", text: "Steel for the frame of the new tower. The pour waits for nobody.", vars: [] }, { key: "48da698129fa", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 167, lines: [167], tpl: "OATHS.unions[2]", card: "Morning Shift", field: "why", text: "A crew from the hall to the site, hard hats on.", vars: [] }, { key: "aaa36ef85d1c", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 168, lines: [168], tpl: "OATHS.unions[3]", card: "Handed In", field: "title", text: "Handed In", vars: [] }, { key: "f43f337ba772", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 168, lines: [168], tpl: "OATHS.unions[3]", card: "Handed In", field: "why", text: "The Family has been leaning on the yard. Take their envelope to the hall instead of paying it. They will remember.", vars: [] }, { key: "a284e6cfc133", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 169, lines: [169], tpl: "OATHS.unions[4]", card: "Topping Out", field: "title", text: "Topping Out", vars: [] }, { key: "5e816cc93948", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 169, lines: [169], tpl: "OATHS.unions[4]", card: "Topping Out", field: "why", text: "Roadstone for the last stretch of the new road. The whole hall will be there.", vars: [] }, { key: "2b773bdc9ca8", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 172, lines: [172], tpl: "OATHS.post[0]", card: "The Morning Post", field: "title", text: "The Morning Post", vars: [] }, { key: "d2eb1f1b44e3", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 172, lines: [172], tpl: "OATHS.post[0]", card: "The Morning Post", field: "why", text: "Two post offices waiting for the morning letters before nine.", vars: [] }, { key: "f9ed831b8df9", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 173, lines: [173], tpl: "OATHS.post[1]", card: "Signed For", field: "why", text: "Registered mail for the bank, insured, and not to be dropped.", vars: [] }, { key: "151d93dff816", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 174, lines: [174], tpl: "OATHS.post[2]", card: "The Island Bag", field: "title", text: "The Island Bag", vars: [] }, { key: "a90f39d2ed74", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 174, lines: [174], tpl: "OATHS.post[2]", card: "The Island Bag", field: "why", text: "A sack of mail for the harbour, where the boat takes it out to the islands.", vars: [] }, { key: "a87e5b58d80d", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 175, lines: [175], tpl: "OATHS.post[3]", card: "The Country Round", field: "title", text: "The Country Round", vars: [] }, { key: "87bb3846e758", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 175, lines: [175], tpl: "OATHS.post[3]", card: "The Country Round", field: "why", text: "The mailboxes at the end of the lanes, before the farmers come down for them.", vars: [] }, { key: "85244a9b48e9", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 176, lines: [176], tpl: "OATHS.post[4]", card: "Return to Sender", field: "title", text: "Return to Sender", vars: [] }, { key: "419b0140f8c6", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 176, lines: [176], tpl: "OATHS.post[4]", card: "Return to Sender", field: "why", text: "A bag from the Social Club that is not mail. Take it to the police. The Family will not like it.", vars: [] }, { key: "8a34368e7335", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 179, lines: [179], tpl: "OATHS.army[0]", card: "Recruits", field: "title", text: "Recruits", vars: [] }, { key: "fc712dff22fa", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 179, lines: [179], tpl: "OATHS.army[0]", card: "Recruits", field: "why", text: "Fresh haircuts and one bag each, from the bus station to the base.", vars: [] }, { key: "02b14ca88898", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 180, lines: [180], tpl: "OATHS.army[1]", card: "Mess Call", field: "why", text: "Rations for the base before the men notice the kitchen is empty.", vars: [] }, { key: "3f9efa1151e9", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 181, lines: [181], tpl: "OATHS.army[2]", card: "Live Rounds", field: "title", text: "Live Rounds", vars: [] }, { key: "7532618e6819", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 181, lines: [181], tpl: "OATHS.army[2]", card: "Live Rounds", field: "why", text: "Ordnance for the airbase. Every bump costs it.", vars: [] }, { key: "dfeb0ebb83b7", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 182, lines: [182], tpl: "OATHS.army[3]", card: "Secured", field: "title", text: "Secured", vars: [] }, { key: "07680cbb1cc7", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 182, lines: [182], tpl: "OATHS.army[3]", card: "Secured", field: "why", text: "The crash site is ours. Bring the wreckage in before the Visitors take it home. They will not forget.", vars: [] }, { key: "59883abc09fb", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 183, lines: [183], tpl: "OATHS.army[4]", card: "Parade Day", field: "title", text: "Parade Day", vars: [] }, { key: "0d778d4cde2f", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 183, lines: [183], tpl: "OATHS.army[4]", card: "Parade Day", field: "why", text: "The colours, the band and a vehicle polished to shine, through the middle of town.", vars: [] }, { key: "d9a0212d069d", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 186, lines: [186], tpl: "OATHS.studios[0]", card: "On Location", field: "why", text: "A crew and a camera to the landmark, while the light is good.", vars: [] }, { key: "586fab371838", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 187, lines: [187], tpl: "OATHS.studios[1]", card: "The Dailies", field: "why", text: "Yesterday\u2019s film to the screening room, before the director wakes up.", vars: [] }, { key: "b1a305f6ad2a", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 188, lines: [188], tpl: "OATHS.studios[2]", card: "Opening Night", field: "title", text: "Opening Night", vars: [] }, { key: "0838f6cbeb16", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 188, lines: [188], tpl: "OATHS.studios[2]", card: "Opening Night", field: "why", text: "The star of the picture, from the hills to the premiere. The crowd is waiting.", vars: [] }, { key: "bacae6020222", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 189, lines: [189], tpl: "OATHS.studios[3]", card: "Bought Back", field: "title", text: "Bought Back", vars: [] }, { key: "88bca1655ded", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 189, lines: [189], tpl: "OATHS.studios[3]", card: "Bought Back", field: "why", text: "The Press has footage the studio would rather it didn\u2019t. Get it back to the lot. The Press will be furious.", vars: [] }, { key: "b1139b90022d", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 190, lines: [190], tpl: "OATHS.studios[4]", card: "The Red Carpet", field: "title", text: "The Red Carpet", vars: [] }, { key: "e0b597660088", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 190, lines: [190], tpl: "OATHS.studios[4]", card: "The Red Carpet", field: "why", text: "The biggest night of the year, and you are driving.", vars: [] }, { key: "05b46cbca495", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 193, lines: [193], tpl: "OATHS.guild[0]", card: "Dawn at the Market", field: "title", text: "Dawn at the Market", vars: [] }, { key: "15903061fcb0", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 193, lines: [193], tpl: "OATHS.guild[0]", card: "Dawn at the Market", field: "why", text: "Be at the fish market at dawn, when the bell goes and the boats come in.", vars: [] }, { key: "cececfcccba4", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 194, lines: [194], tpl: "OATHS.guild[1]", card: "Ice for the Boxes", field: "why", text: "The catch is coming in and the market has no ice.", vars: [] }, { key: "4a8df81758e8", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 195, lines: [195], tpl: "OATHS.guild[2]", card: "Evening Bait", field: "why", text: "Bait for the evening boats, before they cast off.", vars: [] }, { key: "1787873a3ff4", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 196, lines: [196], tpl: "OATHS.guild[3]", card: "The Morning Catch", field: "title", text: "The Morning Catch", vars: [] }, { key: "df3abe34af4d", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 196, lines: [196], tpl: "OATHS.guild[3]", card: "The Morning Catch", field: "why", text: "Fresh fish from the harbour to the market, before the auction.", vars: [] }, { key: "2cdf7b7ea261", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 197, lines: [197], tpl: "OATHS.guild[4]", card: "In the Nets", field: "title", text: "In the Nets", vars: [] }, { key: "5a8141cc8408", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 197, lines: [197], tpl: "OATHS.guild[4]", card: "In the Nets", field: "why", text: "Something that is not fish came up in the nets. Take it to the police. The Family will want to know who did.", vars: [] }, { key: "a9318b23f3dc", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 200, lines: [200], tpl: "OATHS.press[0]", card: "Leaked", field: "title", text: "Leaked", vars: [] }, { key: "c52e2da75fd4", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 200, lines: [200], tpl: "OATHS.press[0]", card: "Leaked", field: "why", text: "A memo from the town hall, for the newsroom, before anybody notices it\u2019s gone.", vars: [] }, { key: "f14633e6d78a", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 201, lines: [201], tpl: "OATHS.press[1]", card: "Morning Edition", field: "title", text: "Morning Edition", vars: [] }, { key: "49bcfe432992", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 201, lines: [201], tpl: "OATHS.press[1]", card: "Morning Edition", field: "why", text: "Bundles for two newsstands, still warm from the presses.", vars: [] }, { key: "c870457b2cbf", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 202, lines: [202], tpl: "OATHS.press[2]", card: "Tape at Six", field: "title", text: "Tape at Six", vars: [] }, { key: "0638835cc4e0", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 202, lines: [202], tpl: "OATHS.press[2]", card: "Tape at Six", field: "why", text: "Footage from the stadium for the six o\u2019clock news.", vars: [] }, { key: "b286dbb8d3d9", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 203, lines: [203], tpl: "OATHS.press[3]", card: "The Scoop", field: "title", text: "The Scoop", vars: [] }, { key: "8151649b05a7", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 203, lines: [203], tpl: "OATHS.press[3]", card: "The Scoop", field: "why", text: "A star\u2019s secret, from the mansion to the newsroom. The Studios will be livid.", vars: [] }, { key: "442e355efb9b", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 204, lines: [204], tpl: "OATHS.press[4]", card: "Live from the Scene", field: "title", text: "Live from the Scene", vars: [] }, { key: "e18eddf7a491", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 204, lines: [204], tpl: "OATHS.press[4]", card: "Live from the Scene", field: "why", text: "Park by the stadium and go live: hold the shot for half a minute.", vars: [] }, { key: "02d958c1c6e6", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 273, lines: [273], tpl: "start.ride", card: null, field: "label", text: "the {rideName}", vars: [{ label: "rideName", expr: "rideName" }] }, { key: "0c1ebb6f42a3", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 276, lines: [276], tpl: "oathStep", card: "{title}", field: "details", text: "The Oath of {name}, step {x1} of 5, begun at their hall in the {rideName}. {x2}", vars: [{ label: "name", expr: "d.name" }, { label: "x1", expr: "i + 1" }, { label: "rideName", expr: "rideName" }, { label: "x2", expr: "i === 4 ? 'The last step: done, and they count you Sworn.' : 'Each step done moves you on to the next.'" }] }, { key: "f7bddac89651", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 277, lines: [277], tpl: "oathStep", card: "{title}", field: "caption", text: "{icon} The Oath \xB7 {x1} of 5", vars: [{ label: "icon", expr: "d.icon" }, { label: "x1", expr: "i + 1" }] }, { key: "42688a8c78ef", group: "Faction oaths", file: "src/game/missions/factionTemplates.ts", line: 287, lines: [287], tpl: "OATH_ARCS", card: "The Oath of {x1}", field: "title", text: "The Oath of {x1}", vars: [{ label: "x1", expr: "FACTIONS[f].name" }] }, { key: "a14b394e5763", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 58, lines: [58], tpl: "CHAINS.police[0]", card: "The Thin Blue Line", field: "title", text: "The Thin Blue Line", vars: [] }, { key: "182040358aac", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 58, lines: [58], tpl: "CHAINS.police[0]", card: "The Thin Blue Line", field: "why", text: "Detective Sergeant Rourke would like a word at the station, then a bag of evidence taken to the court. Sealed.", vars: [] }, { key: "aa7d48bb5494", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 59, lines: [59], tpl: "CHAINS.police[0]", card: "The Thin Blue Line", field: "details", text: "The Constabulary keep the peace in every town: the patrols, the stations, the courts and the cells. Carry their evidence and their prisoners and they will remember your plates kindly. Chief Constable Margaret Hale has run the county force for twenty years and never once taken an envelope.", vars: [] }, { key: "55d39b80b6dd", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 63, lines: [63], tpl: "CHAINS.police[1]", card: "Borrowed Cadets", field: "title", text: "Borrowed Cadets", vars: [] }, { key: "7c32f15347f6", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 63, lines: [63], tpl: "CHAINS.police[1]", card: "Borrowed Cadets", field: "why", text: "The Army lends the station its cadets every summer. Fetch this year\u2019s from the base before the drill sergeant changes his mind.", vars: [] }, { key: "5fb05f46b3b3", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 64, lines: [64], tpl: "CHAINS.police[1]", card: "Borrowed Cadets", field: "details", text: "The Constabulary and the Army are allies: Chief Hale and Colonel Ada Strand trained together, and a favour to one is a favour to both. Work with the soldiers and the police hear about it, and the other way round.", vars: [] }, { key: "a287e7a233e8", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 68, lines: [68], tpl: "CHAINS.police[2]", card: "The Chop Shop", field: "title", text: "The Chop Shop", vars: [] }, { key: "efe73e0395fa", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 68, lines: [68], tpl: "CHAINS.police[2]", card: "The Chop Shop", field: "why", text: "A chop shop full of somebody else\u2019s televisions. Take them to the impound before they are sold twice.", vars: [] }, { key: "24208ab257e9", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 69, lines: [69], tpl: "CHAINS.police[2]", card: "The Chop Shop", field: "details", text: "The Family run the chop shops and the social clubs, and they take it personally when their goods go to the impound. Police and Family are opposed: what one thanks you for, the other holds against you. Mr. Benedetti will hear about this one.", vars: [] }, { key: "4a61f7ee2955", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 73, lines: [73], tpl: "CHAINS.police[3]", card: "Off the Record", field: "title", text: "Off the Record", vars: [] }, { key: "501f7071e438", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 73, lines: [73], tpl: "CHAINS.police[3]", card: "Off the Record", field: "why", text: "Somebody at the station is tipping off the Family. Get the evidence to a judge before it turns up in the papers.", vars: [] }, { key: "5ddccdfa795c", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 74, lines: [74], tpl: "CHAINS.police[3]", card: "Off the Record", field: "details", text: "A bent officer, and Rourke means to catch him quietly. The Press would love the story: Editor Cass Marlow neither likes nor hates the police, but she loves a headline, and a leak would let the man walk. Evidence first, newspapers after.", vars: [] }, { key: "189d4358a526", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 78, lines: [78], tpl: "CHAINS.police[4]", card: "The Chief\u2019s Last Case", field: "title", text: "The Chief\u2019s Last Case", vars: [] }, { key: "10a983593d41", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 78, lines: [78], tpl: "CHAINS.police[4]", card: "The Chief\u2019s Last Case", field: "why", text: "Chief Hale retires at the month\u2019s end. She wants the bent officer in court, brought in by somebody she trusts.", vars: [] }, { key: "bf54d39a7d37", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 79, lines: [79], tpl: "CHAINS.police[4]", card: "The Chief\u2019s Last Case", field: "details", text: "Margaret Hale joined as a cadet the year the Family burned the old station down, and has spent her career taking back the streets they ran. The officer who sold her out was her own sergeant. Meet her after dark, then take him in: her last conviction, and the force will remember who drove.", vars: [] }, { key: "7f4efa9d1e12", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 85, lines: [85], tpl: "CHAINS.family[0]", card: "An Introduction", field: "title", text: "An Introduction", vars: [] }, { key: "88c3b1251888", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 85, lines: [85], tpl: "CHAINS.family[0]", card: "An Introduction", field: "why", text: "Mr. Benedetti doesn\u2019t hire strangers. Come to the club, have an espresso, then run one small errand for him.", vars: [] }, { key: "8f76817457ef", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 86, lines: [86], tpl: "CHAINS.family[0]", card: "An Introduction", field: "details", text: "The Family: social clubs, chop shops, a villa on the hill and every load that moves after dark. Their work pays well and their night runs pay better. Nobody says the word. The Don, Vittorio Caruso, is old now, and they say he has not left the villa in a year.", vars: [] }, { key: "bb59be0ec52a", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 90, lines: [90], tpl: "CHAINS.family[1]", card: "Cheap Cement", field: "title", text: "Cheap Cement", vars: [] }, { key: "03ecdfe64f52", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 90, lines: [90], tpl: "CHAINS.family[1]", card: "Cheap Cement", field: "why", text: "Half the sites in the county pour Family cement. Take a load to the builders\u2019 yard, and say nothing about the price.", vars: [] }, { key: "8e5480c9dc2f", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 91, lines: [91], tpl: "CHAINS.family[1]", card: "Cheap Cement", field: "details", text: "The Brotherhood of Builders pretends not to know where its cheap cement comes from. Shop Steward Mags Doyle has no love for the Family, but she likes a cheap pour, and the Family likes the Brotherhood busy. Neither side thanks you for the other, but the trucks keep rolling.", vars: [] }, { key: "bb0b51fdad14", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 95, lines: [95], tpl: "CHAINS.family[2]", card: "Fell Off a Lorry", field: "title", text: "Fell Off a Lorry", vars: [] }, { key: "e801e449cc7b", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 95, lines: [95], tpl: "CHAINS.family[2]", card: "Fell Off a Lorry", field: "why", text: "A lorry of televisions fell off the back of something. The chop shop will find them a home before the police do.", vars: [] }, { key: "c16a9b81aff3", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 96, lines: [96], tpl: "CHAINS.family[2]", card: "Fell Off a Lorry", field: "details", text: "The Constabulary are the Family\u2019s oldest enemy. Every load you carry for one costs you with the other, so choose your friends with care. Detective Sergeant Rourke keeps a list of plates, and yours has just gone on it.", vars: [] }, { key: "8af08c47e53a", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 100, lines: [100], tpl: "CHAINS.family[3]", card: "Wash Day", field: "title", text: "Wash Day", vars: [] }, { key: "8c8113ac36a4", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 100, lines: [100], tpl: "CHAINS.family[3]", card: "Wash Day", field: "why", text: "Last night\u2019s takings need to be somewhere else by morning. Out the back of the casino and into the club.", vars: [] }, { key: "5b18369629a2", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 101, lines: [101], tpl: "CHAINS.family[3]", card: "Wash Day", field: "details", text: "The Family\u2019s money comes in dirty and goes out clean, and the Fishermen\u2019s Guild is no help: Harbourmaster Brennock won\u2019t let Family crates on his boats, so it goes by road now. That is the Family\u2019s trouble this year, and the Don\u2019s heir wants it solved.", vars: [] }, { key: "dd2a63dd408c", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 105, lines: [105], tpl: "CHAINS.family[4]", card: "The Don\u2019s Birthday", field: "title", text: "The Don\u2019s Birthday", vars: [] }, { key: "a70236190357", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 105, lines: [105], tpl: "CHAINS.family[4]", card: "The Don\u2019s Birthday", field: "why", text: "Don Caruso turns ninety tonight and wants to meet the driver everybody keeps talking about. Midnight, the villa.", vars: [] }, { key: "d8f66412aae9", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 106, lines: [106], tpl: "CHAINS.family[4]", card: "The Don\u2019s Birthday", field: "details", text: "Vittorio Caruso came over with one suitcase and built the Family from a single social club. He means to name his heir tonight, and Mr. Benedetti is not sure it will be him. Pay your respects at midnight, then bring the Don his birthday present from the casino.", vars: [] }, { key: "2e15d30ffc81", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 112, lines: [112], tpl: "CHAINS.ministry[0]", card: "Proper Channels", field: "title", text: "Proper Channels", vars: [] }, { key: "1768aa39ac9f", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 112, lines: [112], tpl: "CHAINS.ministry[0]", card: "Proper Channels", field: "why", text: "The Permanent Secretary will see you at the Ministry. Bring a pen. Then take these forms where they are needed.", vars: [] }, { key: "b7267c0ee68f", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 113, lines: [113], tpl: "CHAINS.ministry[0]", card: "Proper Channels", field: "details", text: "The Ministry is the state above the towns: the halls, the customs posts, the embassies, the Mint, and a hangar nobody talks about. It pays on time and in triplicate. At the top sits Minister Augusta Fairweather, who has never once been surprised in public.", vars: [] }, { key: "413927878fd2", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 117, lines: [117], tpl: "CHAINS.ministry[1]", card: "By Return of Post", field: "title", text: "By Return of Post", vars: [] }, { key: "8464023582ba", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 117, lines: [117], tpl: "CHAINS.ministry[1]", card: "By Return of Post", field: "why", text: "Registered papers for the sorting office, signed for at both ends. The Post carries what the Ministry writes.", vars: [] }, { key: "bd6a4ae3c378", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 118, lines: [118], tpl: "CHAINS.ministry[1]", card: "By Return of Post", field: "details", text: "The Ministry has two old allies. The Post carries its letters, and Postmaster Ivy Penhallow has never lost one. The Army carries out its orders. Help either and the Ministry hears of it.", vars: [] }, { key: "6ade9eecde18", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 122, lines: [122], tpl: "CHAINS.ministry[2]", card: "Polling Day", field: "title", text: "Polling Day", vars: [] }, { key: "2ac0d7cc9ff8", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 122, lines: [122], tpl: "CHAINS.ministry[2]", card: "Polling Day", field: "why", text: "Ballot boxes for the town halls before the polls open. The newspapers will be counting them as closely as we are.", vars: [] }, { key: "b02cbf51df89", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 123, lines: [123], tpl: "CHAINS.ministry[2]", card: "Polling Day", field: "details", text: "The Press and the Ministry are neither friends nor enemies: Editor Cass Marlow prints what the Ministry tells her and then what it didn\u2019t. The unions want a say in the vote and the Guild wants the fishing quotas changed. Nobody is pleased, and that is how the Secretary likes it.", vars: [] }, { key: "dbc88f72ce97", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 127, lines: [127], tpl: "CHAINS.ministry[3]", card: "Something Fell", field: "title", text: "Something Fell", vars: [] }, { key: "7d3b4a7e6500", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 127, lines: [127], tpl: "CHAINS.ministry[3]", card: "Something Fell", field: "why", text: "Something came down in a field last night. Take what is left to the hangar, and kindly forget what you saw.", vars: [] }, { key: "94de56acc6f1", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 128, lines: [128], tpl: "CHAINS.ministry[3]", card: "Something Fell", field: "details", text: "Hangar 18 is the Ministry\u2019s worst-kept secret. The Army guards it gladly; the Visitors would like their wreckage back, and do not forget who took it. The Ministry tries to stay on speaking terms with both, which is harder than it sounds.", vars: [] }, { key: "0deefa6fdd5e", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 132, lines: [132], tpl: "CHAINS.ministry[4]", card: "The Minister\u2019s Guest", field: "title", text: "The Minister\u2019s Guest", vars: [] }, { key: "e782ad1f86c3", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 132, lines: [132], tpl: "CHAINS.ministry[4]", card: "The Minister\u2019s Guest", field: "why", text: "Minister Fairweather asks to see you at midnight. Then a guest of state from the airport, with no cameras.", vars: [] }, { key: "33ddb37e56b5", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 133, lines: [133], tpl: "CHAINS.ministry[4]", card: "The Minister\u2019s Guest", field: "details", text: "Augusta Fairweather has quietly kept the county out of three wars and one invasion. She is the only one in government who has met the Navigator, and tonight she means to arrange a second meeting. Her guest\u2019s name is on no list. Drive smoothly and ask nothing.", vars: [] }, { key: "7754fa4d1d6e", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 139, lines: [139], tpl: "CHAINS.visitors[0]", card: "Lights Over the Hill", field: "title", text: "Lights Over the Hill", vars: [] }, { key: "e44c88a33523", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 139, lines: [139], tpl: "CHAINS.visitors[0]", card: "Lights Over the Hill", field: "why", text: "Wait at the ring after dark. The Envoy will find you, and has something warm and humming to send home.", vars: [] }, { key: "392fec0449b8", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 140, lines: [140], tpl: "CHAINS.visitors[0]", card: "Lights Over the Hill", field: "details", text: "Lights over the mesas, rings of stones in the high country, a crash nobody reported. The Visitors are polite, patient and very far from home, and they want their things back. Bring them what is theirs and they will remember. They remember everything.", vars: [] }, { key: "5b4a9b65c4bb", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 144, lines: [144], tpl: "CHAINS.visitors[1]", card: "Special Effects", field: "title", text: "Special Effects", vars: [] }, { key: "4b60beb21441", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 144, lines: [144], tpl: "CHAINS.visitors[1]", card: "Special Effects", field: "why", text: "A film crew to the crash site, so any photographs look like a picture being made. The Studios owe us a favour.", vars: [] }, { key: "99cb80a1892d", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 145, lines: [145], tpl: "CHAINS.visitors[1]", card: "Special Effects", field: "details", text: "The Studios are the Visitors\u2019 unlikely allies. Producer Dash Delano\u2019s science-fiction pictures have hidden real landings for years: who believes a flying saucer on a film set? Help one and the other is grateful.", vars: [] }, { key: "28b4eb64537f", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 149, lines: [149], tpl: "CHAINS.visitors[2]", card: "Not Theirs to Keep", field: "title", text: "Not Theirs to Keep", vars: [] }, { key: "82773ab6c093", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 149, lines: [149], tpl: "CHAINS.visitors[2]", card: "Not Theirs to Keep", field: "why", text: "The Army is on its way to the crash. Take the wreckage to the ring before the trucks arrive. Quietly.", vars: [] }, { key: "1972542a88af", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 150, lines: [150], tpl: "CHAINS.visitors[2]", card: "Not Theirs to Keep", field: "details", text: "The Army and the Visitors are opposed. Colonel Ada Strand calls the wreckage spoils of war; the Envoy calls it a lifeboat. Every piece you take home is a piece the Army will not forgive, and the Army\u2019s friends in the Constabulary will notice too.", vars: [] }, { key: "1f686ad40427", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 154, lines: [154], tpl: "CHAINS.visitors[3]", card: "A Word Upstairs", field: "title", text: "A Word Upstairs", vars: [] }, { key: "d0da585eea86", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 154, lines: [154], tpl: "CHAINS.visitors[3]", card: "A Word Upstairs", field: "why", text: "The Envoy wants the Ministry to understand. Take these samples to the people who sign the papers.", vars: [] }, { key: "638379ac6c17", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 155, lines: [155], tpl: "CHAINS.visitors[3]", card: "A Word Upstairs", field: "details", text: "The Ministry watches the Visitors with one eye and the Army with the other. Minister Fairweather would rather talk than shoot, and she is the only one upstairs who will listen. These samples show what the Visitors need: nothing of ours, only the way home.", vars: [] }, { key: "a6988204fca5", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 159, lines: [159], tpl: "CHAINS.visitors[4]", card: "The Navigator", field: "title", text: "The Navigator", vars: [] }, { key: "c5d4ef83f78d", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 159, lines: [159], tpl: "CHAINS.visitors[4]", card: "The Navigator", field: "why", text: "The Navigator wishes to meet you at the ring at midnight. Bring the last probe. It is the beacon home.", vars: [] }, { key: "f2eb0a26c0c7", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 160, lines: [160], tpl: "CHAINS.visitors[4]", card: "The Navigator", field: "details", text: "The Navigator brought forty of them here by accident, a wrong turn between two stars, and has spent sixty of our years putting the beacon back together, piece by piece, from fields and hangars. This is the last piece. Meet them at midnight and carry it in.", vars: [] }, { key: "7e7cfcb34503", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 166, lines: [166], tpl: "CHAINS.unions[0]", card: "Hard Hats On", field: "title", text: "Hard Hats On", vars: [] }, { key: "7e4b6c650afc", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 166, lines: [166], tpl: "CHAINS.unions[0]", card: "Hard Hats On", field: "why", text: "Shop Steward Mags Doyle wants to see you at the hall, then a crew to the site for the morning shift.", vars: [] }, { key: "aca95e6027eb", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 167, lines: [167], tpl: "CHAINS.unions[0]", card: "Hard Hats On", field: "details", text: "The Brotherhood of Builders: every building site, every road crew and every cement mixer in the world answers to the hall. Pay for roads and earthworks and the Brotherhood counts it as work done for them. General Secretary Tom Kearney has led the hall for forty years.", vars: [] }, { key: "69490fea9f9d", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 171, lines: [171], tpl: "CHAINS.unions[1]", card: "Permits in Triplicate", field: "title", text: "Permits in Triplicate", vars: [] }, { key: "04dd204da977", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 171, lines: [171], tpl: "CHAINS.unions[1]", card: "Permits in Triplicate", field: "why", text: "Nothing gets built without a stamp from the Ministry. Fetch the permits so the crew can start.", vars: [] }, { key: "2de06bf35370", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 172, lines: [172], tpl: "CHAINS.unions[1]", card: "Permits in Triplicate", field: "details", text: "The Brotherhood and the Ministry need each other and say so as little as possible. The Ministry pays for the roads; the Brotherhood builds them, slowly, until the forms arrive. Doyle hates the paperwork, but she knows a job with no permit is a job with no pay.", vars: [] }, { key: "7234e18a4126", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 176, lines: [176], tpl: "CHAINS.unions[2]", card: "Not Paying", field: "title", text: "Not Paying", vars: [] }, { key: "2efcb85e72cb", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 176, lines: [176], tpl: "CHAINS.unions[2]", card: "Not Paying", field: "why", text: "The Family has been leaning on the yard again. Take their envelope to the police instead of paying it.", vars: [] }, { key: "b30093369fb4", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 177, lines: [177], tpl: "CHAINS.unions[2]", card: "Not Paying", field: "details", text: "The Family sells the Brotherhood cheap cement and then sends men round for a cut. Doyle has had enough. Benedetti will remember who carried that envelope, but the Constabulary will be pleased, and so will every builder who ever paid.", vars: [] }, { key: "998226f3ca6d", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 181, lines: [181], tpl: "CHAINS.unions[3]", card: "The Big Pour", field: "title", text: "The Big Pour", vars: [] }, { key: "ec2bbaad821c", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 181, lines: [181], tpl: "CHAINS.unions[3]", card: "The Big Pour", field: "why", text: "The new tower\u2019s foundations go in today. Two loads of cement, and the whole hall is watching the clock.", vars: [] }, { key: "75ca292a6428", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 182, lines: [182], tpl: "CHAINS.unions[3]", card: "The Big Pour", field: "details", text: "The tower will be the tallest in the county, built by the Brotherhood from the first spade to the topping-out. The old hands remember the last tower, which fell because somebody saved on the cement. Not this time.", vars: [] }, { key: "334fa6a1349e", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 186, lines: [186], tpl: "CHAINS.unions[4]", card: "Big Tom\u2019s Road", field: "title", text: "Big Tom\u2019s Road", vars: [] }, { key: "ade5c93d0825", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 186, lines: [186], tpl: "CHAINS.unions[4]", card: "Big Tom\u2019s Road", field: "why", text: "Big Tom Kearney wants to shake your hand at the yard at dawn. Then roadstone for the last mile of his road.", vars: [] }, { key: "40f91d9bd646", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 187, lines: [187], tpl: "CHAINS.unions[4]", card: "Big Tom\u2019s Road", field: "details", text: "Tom Kearney\u2019s father died building the old coast road, and Tom has spent forty years making sure no one in the hall dies like that again. This new road is his last before he retires, and the hall means to name it after him. Be at the yard at dawn.", vars: [] }, { key: "9575faa8322e", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 193, lines: [193], tpl: "CHAINS.post[0]", card: "First Class", field: "title", text: "First Class", vars: [] }, { key: "a10c708d2d57", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 193, lines: [193], tpl: "CHAINS.post[0]", card: "First Class", field: "why", text: "Postmaster Ivy Penhallow has a round for you. Meet her at the sorting office, then take the morning letters out.", vars: [] }, { key: "8a270a02b5f5", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 194, lines: [194], tpl: "CHAINS.post[0]", card: "First Class", field: "details", text: "The Post: the sorting offices, the rounds, the island boats and the night mail plane. Every letter goes through, whatever the weather. At the top is the Postmaster General, Ambrose Quill, who still does a round himself on Christmas morning.", vars: [] }, { key: "b035ef5a1140", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 198, lines: [198], tpl: "CHAINS.post[1]", card: "The Island Boat", field: "title", text: "The Island Boat", vars: [] }, { key: "7ddf7d2522bf", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 198, lines: [198], tpl: "CHAINS.post[1]", card: "The Island Boat", field: "why", text: "A sack of mail for the harbour, where the Guild\u2019s boats take it out to the islands. They sail on the tide.", vars: [] }, { key: "88d3b6d70911", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 199, lines: [199], tpl: "CHAINS.post[1]", card: "The Island Boat", field: "details", text: "The Post and the Fishermen\u2019s Guild are allies: the Guild\u2019s boats carry the island mail, and the Post has never once docked their pay. Harbourmaster Brennock is a friend of the office. Help one and the other knows.", vars: [] }, { key: "38e9c3d29107", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 203, lines: [203], tpl: "CHAINS.post[2]", card: "Official Business", field: "title", text: "Official Business", vars: [] }, { key: "223d4d4018ae", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 203, lines: [203], tpl: "CHAINS.post[2]", card: "Official Business", field: "why", text: "Registered letters for the Ministry, insured and to be signed for. Not one goes missing.", vars: [] }, { key: "386c21e40d5e", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 204, lines: [204], tpl: "CHAINS.post[2]", card: "Official Business", field: "details", text: "The Ministry is the Post\u2019s other ally and its oldest customer. Every law, permit and summons goes out in a Post van, and the Permanent Secretary counts every envelope twice.", vars: [] }, { key: "7020bda367a2", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 208, lines: [208], tpl: "CHAINS.post[3]", card: "Not Our Parcel", field: "title", text: "Not Our Parcel", vars: [] }, { key: "2d6b19dffb13", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 208, lines: [208], tpl: "CHAINS.post[3]", card: "Not Our Parcel", field: "why", text: "A bag from the Social Club that is not mail. Take it to the police and let them open it.", vars: [] }, { key: "3ce3a0fa4c38", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 209, lines: [209], tpl: "CHAINS.post[3]", card: "Not Our Parcel", field: "details", text: "The Family has been using the parcel post to move what it shouldn\u2019t, and the Post will not stand for it. Penhallow would rather lose a customer than lose her name. The Family will be angry. The Constabulary will be grateful.", vars: [] }, { key: "4c407bb36cc6", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 213, lines: [213], tpl: "CHAINS.post[4]", card: "The Last Round", field: "title", text: "The Last Round", vars: [] }, { key: "dc6ca21fdba7", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 213, lines: [213], tpl: "CHAINS.post[4]", card: "The Last Round", field: "why", text: "Postmaster General Quill does his last round at dawn and wants a driver. Every mailbox at the end of every lane.", vars: [] }, { key: "6024132b9f79", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 214, lines: [214], tpl: "CHAINS.post[4]", card: "The Last Round", field: "details", text: "Ambrose Quill started as a boy on a bicycle, fifty years ago, on the very round he will finish tomorrow. In all that time the Post has lost one letter, and he still keeps it in his desk, unopened. Meet him at dawn and drive him round.", vars: [] }, { key: "d08035a46b12", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 220, lines: [220], tpl: "CHAINS.army[0]", card: "Report for Duty", field: "title", text: "Report for Duty", vars: [] }, { key: "fb44d80a7814", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 220, lines: [220], tpl: "CHAINS.army[0]", card: "Report for Duty", field: "why", text: "Quartermaster Sergeant Okafor needs a civilian driver. Report to the depot, then get rations to the base.", vars: [] }, { key: "43265033f5de", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 221, lines: [221], tpl: "CHAINS.army[0]", card: "Report for Duty", field: "details", text: "The Army: the bases, the forts, the depots and the airbases, the convoys on the roads and the fighters in the sky. It pays on time and asks no questions it does not already know the answer to. Colonel Ada Strand commands the county\u2019s garrison.", vars: [] }, { key: "927fbd10f59f", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 225, lines: [225], tpl: "CHAINS.army[1]", card: "Joint Exercise", field: "title", text: "Joint Exercise", vars: [] }, { key: "f6cc0c2cd35b", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 225, lines: [225], tpl: "CHAINS.army[1]", card: "Joint Exercise", field: "why", text: "The Constabulary\u2019s cadets come to the base for a week of drill. Pick them up from the station.", vars: [] }, { key: "3f32b4505506", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 226, lines: [226], tpl: "CHAINS.army[1]", card: "Joint Exercise", field: "details", text: "The Army and the Constabulary are allies, and Colonel Strand and Chief Hale trained together. Do good work for the soldiers and the police hear of it, and the other way round.", vars: [] }, { key: "8a4fb5dfa373", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 230, lines: [230], tpl: "CHAINS.army[2]", card: "Orders from Above", field: "title", text: "Orders from Above", vars: [] }, { key: "36f878abb992", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 230, lines: [230], tpl: "CHAINS.army[2]", card: "Orders from Above", field: "why", text: "Sealed orders from the Ministry for the base commander. Do not open them. We will know.", vars: [] }, { key: "4daf1e77b329", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 231, lines: [231], tpl: "CHAINS.army[2]", card: "Orders from Above", field: "details", text: "The Army answers to the Ministry, and Minister Fairweather has strong views on what the Army should and should not shoot at. The two are allies, mostly. Colonel Strand reads every order twice.", vars: [] }, { key: "6c35f30784da", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 235, lines: [235], tpl: "CHAINS.army[3]", card: "Recovery Team", field: "title", text: "Recovery Team", vars: [] }, { key: "8b1ec0ac57b8", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 235, lines: [235], tpl: "CHAINS.army[3]", card: "Recovery Team", field: "why", text: "Something came down near the range. Bring the wreckage to the hangar before the Visitors take it home.", vars: [] }, { key: "0372a944df3b", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 236, lines: [236], tpl: "CHAINS.army[3]", card: "Recovery Team", field: "details", text: "The Army and the Visitors are opposed. Strand calls it securing the county; the Envoy calls it theft. Every piece you bring in is a piece the Visitors will hold against you, and their friends at the Studios will hear of it too.", vars: [] }, { key: "dce0b200690b", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 240, lines: [240], tpl: "CHAINS.army[4]", card: "The Colonel\u2019s Parade", field: "title", text: "The Colonel\u2019s Parade", vars: [] }, { key: "12b0e5fefce8", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 240, lines: [240], tpl: "CHAINS.army[4]", card: "The Colonel\u2019s Parade", field: "why", text: "Colonel Strand takes her last salute this morning. Meet her at the base at dawn, then lead the parade through town.", vars: [] }, { key: "c05fcfdcb2f8", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 241, lines: [241], tpl: "CHAINS.army[4]", card: "The Colonel\u2019s Parade", field: "details", text: "Ada Strand has commanded the garrison through two floods, a fire and something in the sky she still won\u2019t talk about. She has asked for the driver from the hangar run to lead her last parade. Be at the base at dawn, polished.", vars: [] }, { key: "05386424851e", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 247, lines: [247], tpl: "CHAINS.studios[0]", card: "Lights, Camera", field: "title", text: "Lights, Camera", vars: [] }, { key: "0f74ffaef5ce", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 247, lines: [247], tpl: "CHAINS.studios[0]", card: "Lights, Camera", field: "why", text: "Producer Dash Delano wants to see you at the gate. Then yesterday\u2019s film to the screening room, fast.", vars: [] }, { key: "84a9b2d5bf4f", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 248, lines: [248], tpl: "CHAINS.studios[0]", card: "Lights, Camera", field: "details", text: "The Studios: the lots, the backlots, the premieres and the stars in their hillside mansions. Every picture needs a driver, and the good ones get a credit. The studio belongs to Vivienne Lark, who was the biggest star in the world before she bought it.", vars: [] }, { key: "7004bfa38d41", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 252, lines: [252], tpl: "CHAINS.studios[1]", card: "Creature Feature", field: "title", text: "Creature Feature", vars: [] }, { key: "bcfe7d595e78", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 252, lines: [252], tpl: "CHAINS.studios[1]", card: "Creature Feature", field: "why", text: "A crew to the crop circle to shoot the saucer picture. Our friends in the sky like a good cover story.", vars: [] }, { key: "0dd876ab5728", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 253, lines: [253], tpl: "CHAINS.studios[1]", card: "Creature Feature", field: "details", text: "The Studios and the Visitors are allies. Delano\u2019s science-fiction pictures have hidden real landings for years, and in return the Envoy gives the best notes on special effects in the business. Help either and the other is grateful.", vars: [] }, { key: "d0601a7de720", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 257, lines: [257], tpl: "CHAINS.studios[2]", card: "Kill the Story", field: "title", text: "Kill the Story", vars: [] }, { key: "a2f31f86839d", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 257, lines: [257], tpl: "CHAINS.studios[2]", card: "Kill the Story", field: "why", text: "The newsroom has footage the studio would rather it didn\u2019t. Get it back to the lot before six.", vars: [] }, { key: "43ee95111a81", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 258, lines: [258], tpl: "CHAINS.studios[2]", card: "Kill the Story", field: "details", text: "The Press and the Studios are rivals. The papers sell scandal and the studio sells dreams, and both want the same front page. The newsroom will be furious, and Editor Cass Marlow does not forget a stolen tape.", vars: [] }, { key: "d63a2bc6c214", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 262, lines: [262], tpl: "CHAINS.studios[3]", card: "On Location", field: "title", text: "On Location", vars: [] }, { key: "658d03b94816", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 262, lines: [262], tpl: "CHAINS.studios[3]", card: "On Location", field: "why", text: "Vivienne Lark\u2019s comeback picture shoots today. A crew to the landmark while the light holds.", vars: [] }, { key: "8c62a3784683", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 263, lines: [263], tpl: "CHAINS.studios[3]", card: "On Location", field: "details", text: "Lark has not stepped in front of a camera in twenty years, and the whole studio has bet the lot on her return. The papers say she is finished. Delano says she has never been better. The light goes at four.", vars: [] }, { key: "34722dcae4c6", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 267, lines: [267], tpl: "CHAINS.studios[4]", card: "Premiere Night", field: "title", text: "Premiere Night", vars: [] }, { key: "8ae0cb268db1", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 267, lines: [267], tpl: "CHAINS.studios[4]", card: "Premiere Night", field: "why", text: "Vivienne Lark wants to meet her driver at the theatre after dark, then ride in from the hills herself.", vars: [] }, { key: "244e3300d597", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 268, lines: [268], tpl: "CHAINS.studios[4]", card: "Premiere Night", field: "details", text: "Vivienne Lark bought the studio with her last pay cheque so nobody could ever tell her what to play again. Tonight is the premiere of the picture that will make her or break her. Meet her at the theatre, then bring her down from the mansion in style.", vars: [] }, { key: "038a1e2d8d21", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 274, lines: [274], tpl: "CHAINS.guild[0]", card: "Fair Winds", field: "title", text: "Fair Winds", vars: [] }, { key: "dc9172db2883", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 274, lines: [274], tpl: "CHAINS.guild[0]", card: "Fair Winds", field: "why", text: "Harbourmaster Brennock would like to look you over at the market. Then ice for the boxes before the boats come in.", vars: [] }, { key: "373242c3a274", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 275, lines: [275], tpl: "CHAINS.guild[0]", card: "Fair Winds", field: "details", text: "The Fishermen\u2019s Guild: the boats, the net lofts, the fish markets and the lifeboats. A Guild skipper never leaves a crew in the water. Their eldest is Mother Corran, who has fished these waters for sixty years and still takes the first boat out.", vars: [] }, { key: "b779ccd474b1", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 279, lines: [279], tpl: "CHAINS.guild[1]", card: "The Mail Boat", field: "title", text: "The Mail Boat", vars: [] }, { key: "f1b0794f6219", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 279, lines: [279], tpl: "CHAINS.guild[1]", card: "The Mail Boat", field: "why", text: "The island post goes out with the evening boats. Bring the sacks to the harbour before they cast off.", vars: [] }, { key: "8f5f7addc805", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 280, lines: [280], tpl: "CHAINS.guild[1]", card: "The Mail Boat", field: "details", text: "The Guild and the Post are allies: the Guild\u2019s boats carry the island mail, and the Post pays on the nail. Postmaster Ivy Penhallow and Brennock have shared a pot of tea every Friday for thirty years.", vars: [] }, { key: "31cec57aec33", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 284, lines: [284], tpl: "CHAINS.guild[2]", card: "Quota Forms", field: "title", text: "Quota Forms", vars: [] }, { key: "7b4a78de7980", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 284, lines: [284], tpl: "CHAINS.guild[2]", card: "Quota Forms", field: "why", text: "The Ministry has changed the quotas again. Fetch the new forms before the auction, or nobody sells a thing.", vars: [] }, { key: "b16d2237286d", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 285, lines: [285], tpl: "CHAINS.guild[2]", card: "Quota Forms", field: "details", text: "The Ministry sets the Guild\u2019s quotas from an office a long way from the sea. Brennock calls them landlubbers; the Permanent Secretary calls the Guild difficult. Neither is wrong, and neither can do without the other.", vars: [] }, { key: "7882211776b4", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 289, lines: [289], tpl: "CHAINS.guild[3]", card: "Only Fish", field: "title", text: "Only Fish", vars: [] }, { key: "d5c61484794f", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 289, lines: [289], tpl: "CHAINS.guild[3]", card: "Only Fish", field: "why", text: "The Family wanted their crates on our boats. We said no. Take the honest catch to market and let them see it.", vars: [] }, { key: "db7eb91ad907", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 290, lines: [290], tpl: "CHAINS.guild[3]", card: "Only Fish", field: "details", text: "The Family has been offering skippers money to carry crates with no fish in them. The Guild refused, and the market has been quiet since. Brennock wants the morning catch landed in plain sight: only fish, every box.", vars: [] }, { key: "b78371bf5b39", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 294, lines: [294], tpl: "CHAINS.guild[4]", card: "Corran\u2019s Boat", field: "title", text: "Corran\u2019s Boat", vars: [] }, { key: "163733d67f01", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 294, lines: [294], tpl: "CHAINS.guild[4]", card: "Corran\u2019s Boat", field: "why", text: "Mother Corran wants to meet you at the harbour at dawn. Then her catch to market, the first of the season.", vars: [] }, { key: "a623f5364d85", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 295, lines: [295], tpl: "CHAINS.guild[4]", card: "Corran\u2019s Boat", field: "details", text: "Corran lost her husband\u2019s boat, the Merrow, in the great storm forty years ago, and has taken the first boat out every season since, in case. She gave the Guild its lifeboats and the rule that nobody is left in the water. Meet her at dawn, and carry her catch in.", vars: [] }, { key: "1188b86d8a3a", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 301, lines: [301], tpl: "CHAINS.press[0]", card: "Hot off the Press", field: "title", text: "Hot off the Press", vars: [] }, { key: "6f5debbc4dc6", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 301, lines: [301], tpl: "CHAINS.press[0]", card: "Hot off the Press", field: "why", text: "Editor Cass Marlow will see you in the newsroom. Then bundles for the newsstands, still warm.", vars: [] }, { key: "168f4b440fbf", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 302, lines: [302], tpl: "CHAINS.press[0]", card: "Hot off the Press", field: "details", text: "The Press: the papers, the radio and television stations, the printworks and the newsstands. They sell the truth, mostly, and a scoop is worth more than gold. The paper belongs to Proprietor Hollis Vane, whom nobody in the newsroom has ever seen smile.", vars: [] }, { key: "42afe6154153", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 306, lines: [306], tpl: "CHAINS.press[1]", card: "Behind the Gates", field: "title", text: "Behind the Gates", vars: [] }, { key: "05bf3a4ae812", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 306, lines: [306], tpl: "CHAINS.press[1]", card: "Behind the Gates", field: "why", text: "A star\u2019s secret, out of the mansion and into the newsroom. The Studios will be livid.", vars: [] }, { key: "7683dbb7282e", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 307, lines: [307], tpl: "CHAINS.press[1]", card: "Behind the Gates", field: "details", text: "The Press and the Studios are rivals: the papers sell scandal and the studio sells dreams. Every scoop you carry for Marlow is one that Producer Dash Delano wanted buried. He will remember.", vars: [] }, { key: "666deda1cbf7", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 311, lines: [311], tpl: "CHAINS.press[2]", card: "Leaked", field: "title", text: "Leaked", vars: [] }, { key: "8b19380965c8", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 311, lines: [311], tpl: "CHAINS.press[2]", card: "Leaked", field: "why", text: "A memo from the town hall that somebody left on a photocopier. Get it here before anybody notices.", vars: [] }, { key: "643e8fc43d2a", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 312, lines: [312], tpl: "CHAINS.press[2]", card: "Leaked", field: "details", text: "The Ministry and the Press are neither friends nor enemies. The Ministry needs the papers to say what it wants, and the papers need the Ministry to keep secrets worth printing. The Permanent Secretary reads Marlow first every morning.", vars: [] }, { key: "c3c63a28cbe4", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 316, lines: [316], tpl: "CHAINS.press[3]", card: "The Bent Sergeant", field: "title", text: "The Bent Sergeant", vars: [] }, { key: "ee1a53b71a3b", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 316, lines: [316], tpl: "CHAINS.press[3]", card: "The Bent Sergeant", field: "why", text: "There is a bent officer at the station and Marlow has the tape. Get it to the studio for the six o\u2019clock news.", vars: [] }, { key: "457908575ec9", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 317, lines: [317], tpl: "CHAINS.press[3]", card: "The Bent Sergeant", field: "details", text: "The Press and the Constabulary circle each other: Chief Hale wants the story kept quiet until the trial, and Marlow wants it out tonight. Somebody is going to be angry whatever you do.", vars: [] }, { key: "49400eb26212", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 321, lines: [321], tpl: "CHAINS.press[4]", card: "Stop the Presses", field: "title", text: "Stop the Presses", vars: [] }, { key: "846df84426ea", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 321, lines: [321], tpl: "CHAINS.press[4]", card: "Stop the Presses", field: "why", text: "Vane means to sell the paper tonight. Meet him at the printworks at midnight, then get the true edition out.", vars: [] }, { key: "780f18cc8aa9", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 322, lines: [322], tpl: "CHAINS.press[4]", card: "Stop the Presses", field: "details", text: "Hollis Vane built the paper from one printing press and a grudge. Lark Pictures has offered him a fortune for it, to bury every story it doesn\u2019t like. Marlow has written the front page that says so. Meet Vane at midnight: he will print it, if you can deliver it by morning.", vars: [] }, { key: "cd2717ef6ae9", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 357, lines: [357], tpl: "riseStep", card: null, field: "caption", text: "{icon} {name} \xB7 {x1} of {RISE_STEPS}", vars: [{ label: "icon", expr: "d.icon" }, { label: "name", expr: "d.name" }, { label: "x1", expr: "i + 1" }, { label: "RISE_STEPS", expr: "RISE_STEPS" }] }, { key: "fc5a7b1ff58d", group: "Faction rises", file: "src/game/missions/factionChains.ts", line: 367, lines: [367], tpl: "RISE_ARCS", card: "Meet {x1}", field: "title", text: "Meet {x1}", vars: [{ label: "x1", expr: "FACTIONS[f].name" }] }, { key: "6647dcc75bac", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 21, lines: [21], tpl: "SURVEY_ARC", card: "The Surveyor\u2019s Commission", field: "title", text: "The Surveyor\u2019s Commission", vars: [] }, { key: "453e2192ea10", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 127, lines: [127], tpl: "hill", card: "Over the Hill", field: "title", text: "Over the Hill", vars: [] }, { key: "295706ff652f", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 127, lines: [127], tpl: "hill", card: "Over the Hill", field: "why", text: "The county surveyor wants to know how far your fleet gets. Take anything 400 tiles from home and she pays.", vars: [] }, { key: "2199e6fe03dc", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 128, lines: [128], tpl: "hill", card: "Over the Hill", field: "details", text: "Ada Marchetti has run the county survey for thirty years, and nobody in the office has been past the next hill. She keeps a pin where your fleet began and a ring for the furthest you have been: both are on the map now (M).", vars: [] }, { key: "760328750009", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 129, lines: [129], tpl: "hill", card: "Over the Hill", field: "caption", text: "A county surveyor\u2019s map", vars: [] }, { key: "0c3e6453971f", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 134, lines: [134], tpl: "three", card: "Three Counties", field: "title", text: "Three Counties", vars: [] }, { key: "dd75ef4e3c67", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 134, lines: [134], tpl: "three", card: "Three Counties", field: "why", text: "Set foot in three cells your fleet has never been in. Ada wants the roads checked against her sheets.", vars: [] }, { key: "860fbde09e67", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 135, lines: [135], tpl: "three", card: "Three Counties", field: "details", text: "The survey sheets were drawn from the air in a hurry. Ada wants somebody on the ground in three new places to say whether the roads are where the sheets say they are.", vars: [] }, { key: "60c822a2c1b0", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 136, lines: [136], tpl: "three", card: "Three Counties", field: "caption", text: "Three survey sheets", vars: [] }, { key: "cf8921ac0432", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 137, lines: [137], tpl: "three", card: "Three Counties", field: "label", text: "Find 3 new cells", vars: [] }, { key: "738f2c46bd93", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 141, lines: [141], tpl: "salt", card: "Salt Air", field: "title", text: "Salt Air", vars: [] }, { key: "63236e49f5da", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 141, lines: [141], tpl: "salt", card: "Salt Air", field: "why", text: "The coast has not been surveyed since the war. Take a boat 800 tiles from home and Ada tunes its engine.", vars: [] }, { key: "db93f2d86d33", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 142, lines: [142], tpl: "salt", card: "Salt Air", field: "details", text: "The charts of the coast are older than Ada, and she does not trust a line on them. A boat taken far out along it settles a dozen of her arguments with the harbourmasters.", vars: [] }, { key: "79b913002985", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 143, lines: [143], tpl: "salt", card: "Salt Air", field: "caption", text: "A Stage 2 engine", vars: [] }, { key: "9c5787f88ab8", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 148, lines: [148], tpl: "chart", card: "Charting", field: "title", text: "Charting", vars: [] }, { key: "b63fc901fcb8", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 148, lines: [148], tpl: "chart", card: "Charting", field: "why", text: "Set foot in six new cells within eight hours. The survey office closes its books at the end of the day.", vars: [] }, { key: "7881f8ef8696", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 149, lines: [149], tpl: "chart", card: "Charting", field: "details", text: "The year\u2019s survey is due, and Ada is six sheets short. Anything will do: drive, sail or fly, as long as the fleet has never been there.", vars: [] }, { key: "9cd76c299374", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 150, lines: [150], tpl: "chart", card: "Charting", field: "caption", text: "Six blank sheets", vars: [] }, { key: "b0fbb4114b7a", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 151, lines: [151], tpl: "chart", card: "Charting", field: "label", text: "Find 6 new cells", vars: [] }, { key: "5c339c655729", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 155, lines: [155], tpl: "four", card: "Four Ways", field: "title", text: "Four Ways", vars: [] }, { key: "d8b2a56809c3", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 155, lines: [155], tpl: "four", card: "Four Ways", field: "why", text: "Take something 1,000 tiles from home on land, then on water, then in the air. Ada gives you her Scrambler.", vars: [] }, { key: "77c1a06e781b", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 156, lines: [156], tpl: "four", card: "Four Ways", field: "details", text: "Ada surveyed on foot, by boat and from a borrowed biplane. Her old Scrambler, Theodolite, still has the tyres she fitted for the moors.", vars: [] }, { key: "6b98f05255c0", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 157, lines: [157], tpl: "four", card: "Four Ways", field: "caption", text: "Theodolite, the surveyor\u2019s ATV", vars: [] }, { key: "126659a25cfd", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 167, lines: [167], tpl: "long", card: "Long Way Round", field: "title", text: "Long Way Round", vars: [] }, { key: "939787238b65", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 167, lines: [167], tpl: "long", card: "Long Way Round", field: "why", text: "A survey mark {x1} from home has never been checked. Get to it, any way you like.", vars: [{ label: "x1", expr: "tiles(far)" }] }, { key: "dc18168f9933", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 168, lines: [168], tpl: "long", card: "Long Way Round", field: "details", text: "It is the way your fleet has been least. Ada set the mark from an aeroplane in her first year and never got back to it.", vars: [] }, { key: "04a116e98b7c", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 169, lines: [169], tpl: "long", card: "Long Way Round", field: "caption", text: "An unchecked survey mark", vars: [] }, { key: "6a1c90c20671", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 170, lines: [170, 211], tpl: "long", card: "Long Way Round", field: "label", text: "Reach the survey mark", vars: [] }, { key: "e4a1290ceda5", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 175, lines: [175], tpl: "first", card: "First Footing", field: "title", text: "First Footing", vars: [] }, { key: "7af38a830059", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 175, lines: [175], tpl: "first", card: "First Footing", field: "why", text: "Set foot in twelve cells your fleet has never been in. Ada paints your fleet in the survey\u2019s own orange.", vars: [] }, { key: "618e63162fd1", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 176, lines: [176], tpl: "first", card: "First Footing", field: "details", text: "The survey office\u2019s vans were orange so a farmer could see them coming across three fields. Twelve new cells and Ada says your fleet has earned the colour.", vars: [] }, { key: "aa1978615970", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 177, lines: [177], tpl: "first", card: "First Footing", field: "caption", text: "Survey Orange", vars: [] }, { key: "8b5a6a9e2938", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 178, lines: [178], tpl: "first", card: "First Footing", field: "label", text: "Find 12 new cells", vars: [] }, { key: "1dfc276db72d", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 182, lines: [182], tpl: "farShore", card: "The Far Shore", field: "title", text: "The Far Shore", vars: [] }, { key: "0e6e5b4ab04f", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 182, lines: [182], tpl: "farShore", card: "The Far Shore", field: "why", text: "Take anything 5,000 tiles from home. Ada signs your commission as the county\u2019s own surveyor.", vars: [] }, { key: "7ed3e7551262", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 183, lines: [183], tpl: "farShore", card: "The Far Shore", field: "details", text: "Nobody from the county has been that far out and come back to say so. Ada has kept the commission in a drawer for years, waiting for somebody to sign it for.", vars: [] }, { key: "4eb0ff4b90be", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 184, lines: [184], tpl: "farShore", card: "The Far Shore", field: "caption", text: "The surveyor\u2019s commission", vars: [] }, { key: "487e4c873672", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 208, lines: [208], tpl: "run", card: "Survey Run", field: "title", text: "Survey Run", vars: [] }, { key: "8c8f119c0cf4", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 208, lines: [208], tpl: "run", card: "Survey Run", field: "why", text: "Check a survey mark {x1} from home, further than you have been. Ada pays {x2}.", vars: [{ label: "x1", expr: "tiles(far)" }, { label: "x2", expr: "money(pay)" }] }, { key: "68aa58c3a5d8", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 209, lines: [209], tpl: "run", card: "Survey Run", field: "details", text: "Every run pushes the county\u2019s map out a little. Ada picks a mark beyond anywhere your fleet has been, the way it has been least.", vars: [] }, { key: "dbf82c14a3ef", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 210, lines: [210], tpl: "run", card: "Survey Run", field: "caption", text: "A survey mark", vars: [] }, { key: "db10691912eb", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 232, lines: [232], tpl: "shake", card: "Shakedown", field: "title", text: "Shakedown", vars: [] }, { key: "9eb1d4901a8b", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 232, lines: [232], tpl: "shake", card: "Shakedown", field: "why", text: "Take your {name} 1,000 tiles from home. Ada adds {x1} to what running it in pays.", vars: [{ label: "name", expr: "m.name" }, { label: "x1", expr: "money(150)" }] }, { key: "bb89238e3b13", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 233, lines: [233], tpl: "shake", card: "Shakedown", field: "details", text: "Ada keeps a page for every vehicle in the county, and the {name}\u2019s is blank. A thousand tiles out fills it in.", vars: [{ label: "name", expr: "m.name" }] }, { key: "0046700f2c3a", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 234, lines: [234], tpl: "shake", card: "Shakedown", field: "caption", text: "Your {name}", vars: [{ label: "name", expr: "m.name" }] }, { key: "92a9d27382d4", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 235, lines: [235], tpl: "shake", card: "Shakedown", field: "label", text: "Take it 1,000 tiles out", vars: [] }, { key: "2d95a9b750d3", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 240, lines: [240], tpl: "spot", card: "Spot Check", field: "title", text: "Spot Check", vars: [] }, { key: "a78e83474da1", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 240, lines: [240], tpl: "spot", card: "Spot Check", field: "why", text: "Set foot in four cells your fleet has never been in, within six hours. Ada checks her sheets against yours.", vars: [] }, { key: "bdae5db22783", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 241, lines: [241], tpl: "spot", card: "Spot Check", field: "details", text: "A spot check keeps the survey honest. Four new places, quickly, before the sheets go to print.", vars: [] }, { key: "ccef58551d08", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 242, lines: [242], tpl: "spot", card: "Spot Check", field: "caption", text: "Four sheets to check", vars: [] }, { key: "8a0632b293b1", group: "Surveyor\u2019s Commission", file: "src/game/missions/rangeTemplates.ts", line: 243, lines: [243], tpl: "spot", card: "Spot Check", field: "label", text: "Find 4 new cells", vars: [] }, { key: "41fd7ca20091", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 79, lines: [79], tpl: "sub:overside", card: "Over the Side", field: "title", text: "Over the Side", vars: [] }, { key: "2c49738d04a4", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 79, lines: [79], tpl: "sub:overside", card: "Over the Side", field: "why", text: "A container went over the side and lies on the bottom. Bring it up and land it at the {x1} before its owners give up.", vars: [{ label: "x1", expr: "obj.to.name.toLowerCase()" }] }, { key: "2b08a19c9a1e", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 80, lines: [80], tpl: "sub:overside", card: "Over the Side", field: "details", text: "It lies on the bottom at {x1}. The ship never stopped. Its owners want the box back dry or not, and they want it today.", vars: [{ label: "x1", expr: "called(lost)" }] }, { key: "1b4110438f5c", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 81, lines: [81], tpl: "sub:overside", card: "Over the Side", field: "caption", text: "Lost overboard", vars: [] }, { key: "f05fef7265b3", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 97, lines: [97], tpl: "sub:downline", card: "Down the Line", field: "title", text: "Down the Line", vars: [] }, { key: "b7117a7cdc41", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 97, lines: [97], tpl: "sub:downline", card: "Down the Line", field: "why", text: "The {x1} has broken on the bottom. Take the repair kit down from the {x2} and set it beside the break.", vars: [{ label: "x1", expr: "pipe ? 'pipeline' : 'cable'" }, { label: "x2", expr: "siteRef(port).name.toLowerCase()" }] }, { key: "f7065b0e36a3", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 98, lines: [98], tpl: "sub:downline", card: "Down the Line", field: "details", text: "The rig is running on what is in its tanks. The divers can splice it once the kit is on the bottom beside the break.", vars: [] }, { key: "d71e5817f587", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 99, lines: [99], tpl: "sub:downline", card: "Down the Line", field: "details", text: "Half the coast is on the generators. The divers can splice it once the kit is on the bottom beside the break.", vars: [] }, { key: "d3c27c090890", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 100, lines: [100], tpl: "sub:downline", card: "Down the Line", field: "caption", text: "A pipeline fault", vars: [] }, { key: "4573515414c2", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 100, lines: [100], tpl: "sub:downline", card: "Down the Line", field: "caption", text: "A cable fault", vars: [] }, { key: "eda751f58a6f", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 117, lines: [117], tpl: "sub:wreckrun", card: "Wreck Run", field: "title", text: "Wreck Run", vars: [] }, { key: "1d3099e5092e", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 117, lines: [117], tpl: "sub:wreckrun", card: "Wreck Run", field: "why", text: "Greywater Salvage has a barge on its way to the wreck. Get down there first and land what you find for the museum.", vars: [] }, { key: "d948e575a7ed", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 118, lines: [118], tpl: "sub:wreckrun", card: "Wreck Run", field: "details", text: "The wreck is {x1}. Whatever is on the bottom belongs to whoever brings it up first. Greywater knows that too.", vars: [{ label: "x1", expr: "called(wreck)" }] }, { key: "e2c46566a644", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 119, lines: [119], tpl: "sub:wreckrun", card: "Wreck Run", field: "caption", text: "Beat the salvage men", vars: [] }, { key: "c60c0806c3dd", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 157, lines: [157], tpl: "sub:reefcensus", card: null, field: "label", text: "Dive at {x1}", vars: [{ label: "x1", expr: "k === 0 ? 'the reef' : k === 1 ? 'its edge' : 'its far side'" }] }, { key: "5302aa167aa2", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 159, lines: [159], tpl: "sub:reefcensus", card: "Reef Census", field: "title", text: "Reef Census", vars: [] }, { key: "bbbd4133167b", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 159, lines: [159], tpl: "sub:reefcensus", card: "Reef Census", field: "why", text: "The {x1} needs counting. Go down at three places on it and stay down at each while the cameras run.", vars: [{ label: "x1", expr: "/coral/.test(reef.name) ? 'coral' : 'kelp'" }] }, { key: "272d0783eaf2", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 160, lines: [160], tpl: "sub:reefcensus", card: "Reef Census", field: "details", text: "Eight seconds on the bottom at each mark, stopped, while the survey cameras count the fish.", vars: [] }, { key: "adad3a0f8a86", group: "Submarine jobs", file: "src/game/missions/subTemplates.ts", line: 161, lines: [161], tpl: "sub:reefcensus", card: "Reef Census", field: "caption", text: "A census of the reef", vars: [] }, { key: "9e6a8503cbce", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 49, lines: [49], tpl: "RIDE_DOZER", card: null, field: "label", text: "the Dozer", vars: [] }, { key: "3ce9572c9e8e", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 50, lines: [50], tpl: "RIDE_MEDIC", card: null, field: "label", text: "the Medic", vars: [] }, { key: "5569302c7cd8", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 96, lines: [96], tpl: "work:raze", card: null, field: "label", text: "Knock down the old place", vars: [] }, { key: "4d7b5733b929", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 101, lines: [101], tpl: "work:raze", card: null, field: "why", text: "The old {low} has stood boarded up for years. Ram it down in your Dozer and the town will thank you for it.", vars: [{ label: "low", expr: "low" }] }, { key: "decc4fdb89f5", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 102, lines: [102], tpl: "work:raze", card: null, field: "details", text: "{name} has had enough of the old {low}: it is falling in, nobody will buy it, and the council can't run to a demolition crew.", vars: [{ label: "name", expr: "m.name" }, { label: "low", expr: "low" }] }, { key: "363e9b0cdce1", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 105, lines: [105], tpl: "work:raze", card: null, field: "caption", text: "The old {low}", vars: [{ label: "low", expr: "low" }] }, { key: "67e2ed04098b", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 150, lines: [150], tpl: "work:dash", card: null, field: "why", text: "A patient needs the {x1}, fast. Pick them up and the clock starts: {secs} seconds to get them in.", vars: [{ label: "x1", expr: "hosp.name.toLowerCase()" }, { label: "secs", expr: "secs" }] }, { key: "a2541e538388", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 151, lines: [151], tpl: "work:dash", card: null, field: "details", text: "Ambulance control has nobody nearer. Take the quick way, not the pretty one.", vars: [] }, { key: "eafe02a84ce3", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 153, lines: [153], tpl: "work:dash", card: null, field: "caption", text: "The Medic", vars: [] }, { key: "556358b64b97", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 154, lines: [154], tpl: "work:dash", card: null, field: "label", text: "Bring the patient in", vars: [] }, { key: "327681d9f42d", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 166, lines: [166], tpl: "RIDE_HOOKY", card: null, field: "label", text: "Hooky", vars: [] }, { key: "9344999c7b99", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 167, lines: [167], tpl: "RIDE_POST", card: null, field: "label", text: "a post van", vars: [] }, { key: "ea442c740719", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 168, lines: [168], tpl: "RIDE_SUNDAE", card: null, field: "label", text: "Sundae", vars: [] }, { key: "ecc0833beb51", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 169, lines: [169], tpl: "RIDE_BALLOON", card: null, field: "label", text: "the Sunrise", vars: [] }, { key: "63b23733f7bb", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 170, lines: [170], tpl: "RIDE_DUCK", card: null, field: "label", text: "the Puddle Duck", vars: [] }, { key: "ab3c288bdcee", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 211, lines: [211], tpl: "work:recover", card: null, field: "why", text: "A {x1} has broken down on the road out of town. Load it up in Hooky and bring it in to the {x2}.", vars: [{ label: "x1", expr: "defOf(car).name" }, { label: "x2", expr: "g.name.toLowerCase()" }] }, { key: "df26cd5f1e03", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 212, lines: [212], tpl: "work:recover", card: null, field: "details", text: "The driver has the bonnet up and no idea what is wrong. The garage will take it from there.", vars: [] }, { key: "932035b1006d", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 214, lines: [214], tpl: "work:recover", card: null, field: "caption", text: "Hooky to the rescue", vars: [] }, { key: "4a20914bd3f9", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 215, lines: [215], tpl: "work:recover", card: null, field: "label", text: "Tow the car to the garage", vars: [] }, { key: "66e28d3fff3b", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 245, lines: [245], tpl: "work:mail", card: null, field: "label", text: "Collect the {x1} postbox", vars: [{ label: "x1", expr: "words[k]" }] }, { key: "df83447234ec", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 247, lines: [247], tpl: "work:mail", card: null, field: "label", text: "Bring the sacks in", vars: [] }, { key: "a75b39b7b3f7", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 250, lines: [250], tpl: "work:mail", card: null, field: "why", text: "Three postboxes to empty before the last post goes. Stop at each in your post van, then bring the sacks in.", vars: [] }, { key: "2c4a6ceab364", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 251, lines: [251], tpl: "work:mail", card: null, field: "details", text: "The regular postie is off sick and the boxes are overflowing. The sorting office closes at the end of the shift.", vars: [] }, { key: "52bf54e21786", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 253, lines: [253], tpl: "work:mail", card: null, field: "caption", text: "The collection round", vars: [] }, { key: "f9a2cd94f979", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 284, lines: [284], tpl: "work:icecream", card: null, field: "why", text: "Hot day, long queues. Park Sundae at {length} spots round town and sell for a while at each, in the daytime.", vars: [{ label: "length", expr: "stops.length" }] }, { key: "3e698ef4903c", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 285, lines: [285], tpl: "work:icecream", card: null, field: "details", text: "Fifteen seconds parked at each with the chimes going, between ten in the morning and seven at night, while the crowds are out.", vars: [] }, { key: "d1c2ef03c902", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 287, lines: [287], tpl: "work:icecream", card: null, field: "caption", text: "Chimes on", vars: [] }, { key: "9b05c8c6517d", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 324, lines: [324], tpl: "work:scenic", card: null, field: "label", text: "Take off from the field", vars: [] }, { key: "81ebabfa026a", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 326, lines: [326], tpl: "work:scenic", card: null, field: "label", text: "Land in the far field", vars: [] }, { key: "41f9c4fca1ca", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 331, lines: [331], tpl: "work:scenic", card: "Sunrise Flight", field: "title", text: "Sunrise Flight", vars: [] }, { key: "68a05fc9766b", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 331, lines: [331], tpl: "work:scenic", card: "Sunrise Flight", field: "title", text: "Sunset Flight", vars: [] }, { key: "b7d9c708b678", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 332, lines: [332], tpl: "work:scenic", card: "Sunrise Flight", field: "why", text: "Three sightseers want to see the {x1} and the {x2} from the air, then come down in a field.", vars: [{ label: "x1", expr: "sightName(pair[0])" }, { label: "x2", expr: "sightName(pair[1])" }] }, { key: "ff4cbcef7678", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 333, lines: [333], tpl: "work:scenic", card: "Sunrise Flight", field: "details", text: "They are booked for {x1}: go up from the field {x2}, float over both, then land gently in the field past the last.", vars: [{ label: "x1", expr: "dawn ? 'dawn' : 'dusk'" }, { label: "x2", expr: "dawn ? 'between five and nine in the morning' : 'between five and nine in the evening'" }] }, { key: "4e486a1677b7", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 335, lines: [335], tpl: "work:scenic", card: "Sunrise Flight", field: "caption", text: "Up with the sun", vars: [] }, { key: "ed9af63d5d1d", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 335, lines: [335], tpl: "work:scenic", card: "Sunrise Flight", field: "caption", text: "Down with the sun", vars: [] }, { key: "ed20079acdbd", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 356, lines: [356], tpl: "work:ducktour", card: null, field: "label", text: "Meet the tourists", vars: [] }, { key: "a0bd22dc1b90", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 357, lines: [357], tpl: "work:ducktour", card: null, field: "label", text: "Take them into the harbour", vars: [] }, { key: "4dd78f9c0e16", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 358, lines: [358], tpl: "work:ducktour", card: null, field: "label", text: "Cross the harbour", vars: [] }, { key: "8b817c50827a", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 359, lines: [359], tpl: "work:ducktour", card: null, field: "label", text: "Bring them back ashore", vars: [] }, { key: "7d1c821a812c", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 363, lines: [363], tpl: "work:ducktour", card: null, field: "why", text: "A coach party wants the duck tour: round the streets, straight down into the harbour, across it and back to the square.", vars: [] }, { key: "6296ce375d49", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 364, lines: [364], tpl: "work:ducktour", card: null, field: "details", text: "Drive in off a beach or a slipway and the Puddle Duck floats. The tourists love the splash.", vars: [] }, { key: "e665d53276b2", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 366, lines: [366], tpl: "work:ducktour", card: null, field: "caption", text: "Splashdown", vars: [] }, { key: "2d72a2e6eeca", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 377, lines: [377], tpl: "RIDE_BLIMP", card: null, field: "label", text: "the Marshmallow", vars: [] }, { key: "51cacb4d304a", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 378, lines: [378], tpl: "RIDE_GATOR", card: null, field: "label", text: "the Gator", vars: [] }, { key: "cf5abae96a4d", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 379, lines: [379], tpl: "RIDE_YACHT", card: null, field: "label", text: "the Serenade", vars: [] }, { key: "44283c9efa2f", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 380, lines: [380], tpl: "RIDE_BELLE", card: null, field: "label", text: "the Delta Belle", vars: [] }, { key: "60e1db3741db", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 381, lines: [381], tpl: "RIDE_COAST", card: null, field: "label", text: "the Defender", vars: [] }, { key: "e10936370068", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 382, lines: [382], tpl: "RIDE_BIPLANE", card: null, field: "label", text: "the Barnstormer", vars: [] }, { key: "78d020ec4b86", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 383, lines: [383], tpl: "RIDE_GOAT", card: null, field: "label", text: "the Mountain Goat", vars: [] }, { key: "2108915c1e72", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 452, lines: [452], tpl: "work:coverage", card: null, field: "why", text: "The sports channel wants the big match from the air. Hold the Marshmallow over the {name} while the cameras roll.", vars: [{ label: "name", expr: "name" }] }, { key: "3211d7bc70a0", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 453, lines: [453], tpl: "work:coverage", card: null, field: "details", text: "Forty seconds over the ground, low and steady, between noon and ten at night while the crowd is in.", vars: [] }, { key: "17f04604302a", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 455, lines: [455], tpl: "work:coverage", card: null, field: "caption", text: "The best seat in the house", vars: [] }, { key: "24cd909478a2", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 456, lines: [456], tpl: "work:coverage", card: null, field: "label", text: "Cover the big match", vars: [] }, { key: "25e59d79e0c5", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 476, lines: [476], tpl: "work:swamp", card: null, field: "label", text: "Meet the tour party", vars: [] }, { key: "fa93d606d74f", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 477, lines: [477], tpl: "work:swamp", card: null, field: "label", text: "Spot the herons", vars: [] }, { key: "baac0e3afbbd", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 478, lines: [478], tpl: "work:swamp", card: null, field: "label", text: "Spot the gators", vars: [] }, { key: "c7fd3764c122", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 479, lines: [479], tpl: "work:swamp", card: null, field: "label", text: "Bring them back", vars: [] }, { key: "8d95d64b8c9c", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 483, lines: [483], tpl: "work:swamp", card: null, field: "why", text: "A party of sightseers wants the swamp: out through the reeds and mangroves in the Gator, and back before dark.", vars: [] }, { key: "f820bcae4af1", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 484, lines: [484], tpl: "work:swamp", card: null, field: "details", text: "The airboat skims where nothing else floats. Keep the fan down near the herons.", vars: [] }, { key: "ca464d593857", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 486, lines: [486], tpl: "work:swamp", card: null, field: "caption", text: "Into the swamp", vars: [] }, { key: "8ff76b8a1bf4", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 513, lines: [513], tpl: "work:charter", card: null, field: "why", text: "A wedding party wants to sail to {x1} in style. Bring them aboard the Serenade and along the coast.", vars: [{ label: "x1", expr: "dockOf(to).name" }] }, { key: "85fe1f1ce9f3", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 514, lines: [514], tpl: "work:charter", card: null, field: "details", text: "Champagne on the foredeck, the band in the saloon. Keep it smooth: no cutting across the swell.", vars: [] }, { key: "712673ab5e45", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 516, lines: [516], tpl: "work:charter", card: null, field: "caption", text: "Just married", vars: [] }, { key: "aa7bd0ac81cb", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 517, lines: [517], tpl: "work:charter", card: null, field: "label", text: "Bring the wedding party", vars: [] }, { key: "18ce27f8158b", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 539, lines: [539], tpl: "work:cruise", card: null, field: "label", text: "Meet the passengers", vars: [] }, { key: "15bfdcfe5cf7", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 540, lines: [540], tpl: "work:cruise", card: null, field: "label", text: "Reach the first landing", vars: [] }, { key: "b205fa176ac9", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 541, lines: [541], tpl: "work:cruise", card: null, field: "label", text: "Reach the far landing", vars: [] }, { key: "e79aa0f61581", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 542, lines: [542], tpl: "work:cruise", card: null, field: "label", text: "Bring them home", vars: [] }, { key: "5735e20841f4", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 546, lines: [546], tpl: "work:cruise", card: null, field: "why", text: "A day out on the paddle steamer: up the river to two landings, a stop at each to stretch their legs, and home again.", vars: [] }, { key: "d2effed4e136", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 547, lines: [547], tpl: "work:cruise", card: null, field: "details", text: "Stop at each landing for eight seconds while the passengers get on and off. The wheel is slow: give the bends room.", vars: [] }, { key: "4dc9d8ff8e3f", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 549, lines: [549], tpl: "work:cruise", card: null, field: "caption", text: "All aboard", vars: [] }, { key: "ecc49da149b9", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 574, lines: [574], tpl: "work:patrol", card: null, field: "label", text: "Bring the report in", vars: [] }, { key: "40d18277be73", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 577, lines: [577], tpl: "work:patrol", card: null, field: "why", text: "Night runners have been landing goods round the harbour. Search three spots after dark in the Defender, then report in.", vars: [] }, { key: "262dbe926030", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 578, lines: [578], tpl: "work:patrol", card: null, field: "details", text: "Five seconds stopped at each, between nine at night and four in the morning, eyes on the water.", vars: [] }, { key: "2138a89de1ca", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 580, lines: [580], tpl: "work:patrol", card: null, field: "caption", text: "Eyes on the water", vars: [] }, { key: "771f9c39cc8d", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 604, lines: [604], tpl: "work:dust", card: null, field: "label", text: "Dust the {x1} field", vars: [{ label: "x1", expr: "words[k]" }] }, { key: "a88dcbdaa390", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 605, lines: [605], tpl: "work:dust", card: null, field: "label", text: "Land at the airfield", vars: [] }, { key: "b8cc138e3e14", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 609, lines: [609], tpl: "work:dust", card: null, field: "why", text: "Three farms need their fields sprayed before the rain. Fly low over each in the Barnstormer{x1}.", vars: [{ label: "x1", expr: "strip ? ', then land at the airfield' : ''" }] }, { key: "0a1bd48f8e88", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 610, lines: [610], tpl: "work:dust", card: null, field: "details", text: "Fly over the middle of each farm low enough to see the furrows. The farmers will wave.", vars: [] }, { key: "44773deb5d74", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 612, lines: [612], tpl: "work:dust", card: null, field: "caption", text: "Low over the fields", vars: [] }, { key: "e4b0892c3458", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 636, lines: [636], tpl: "work:excursion", card: null, field: "why", text: "A party of walkers wants {x1}. Take them up the rack railway in the Mountain Goat.", vars: [{ label: "x1", expr: "up ? up.name : 'the village on the mountain'" }] }, { key: "80f68555d116", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 637, lines: [637], tpl: "work:excursion", card: null, field: "details", text: "The cog line climbs where nothing else can. Stop at the valley end for them, then all the way up to the buffers at the top.", vars: [] }, { key: "981ea934f773", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 639, lines: [639], tpl: "work:excursion", card: null, field: "caption", text: "Up the rack line", vars: [] }, { key: "ae8855ed28a6", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 641, lines: [641], tpl: "work:excursion", card: null, field: "label", text: "Meet the walkers", vars: [] }, { key: "603f82155801", group: "Working vehicles", file: "src/game/missions/workTemplates.ts", line: 642, lines: [642], tpl: "work:excursion", card: null, field: "label", text: "Take them up the mountain", vars: [] }, { key: "c7eb7562aaab", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 110, lines: [110], tpl: "STEPS[0]", card: "Fresh Catch", field: "title", text: "Fresh Catch", vars: [] }, { key: "5812a42b8531", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 110, lines: [110], tpl: "STEPS[0]", card: "Fresh Catch", field: "why", text: "Skipper Holt has a crate for the aquarium and no van. Westerly, dropping. Bring it in before the weather turns.", vars: [] }, { key: "83ee7ff3ee04", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 111, lines: [111], tpl: "STEPS[0]", card: "Fresh Catch", field: "details", text: "Maren Holt gives the weather before hello. One fish in the crate has no eyes at all, and Dr Lind at the aquarium will want to see it.", vars: [] }, { key: "bcb5461cd9b6", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 112, lines: [112], tpl: "STEPS[0]", card: "Fresh Catch", field: "caption", text: "An odd catch", vars: [] }, { key: "c8623f758d83", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 128, lines: [128, 138], tpl: "STEPS[1]", card: "Night Nets", field: "title", text: "Night Nets", vars: [] }, { key: "9cea9509d52d", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 128, lines: [128], tpl: "STEPS[1]", card: "Night Nets", field: "why", text: "Something came up in Holt\u2019s nets that she won\u2019t talk about by day. Meet her boat at her buoy after dark.", vars: [] }, { key: "a7421f41b613", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 129, lines: [129], tpl: "STEPS[1]", card: "Night Nets", field: "details", text: "\u201CNortherly, rising,\u201D she says across the water, and opens a crate. A flat tile, the size of a hand, warm as tea and humming faintly.", vars: [] }, { key: "b82f1946ffa7", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 130, lines: [130, 140], tpl: "STEPS[1]", card: "Night Nets", field: "caption", text: "Holt\u2019s boat", vars: [] }, { key: "8ab7477dd5a4", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 132, lines: [132, 142], tpl: "STEPS[1]", card: "Night Nets", field: "line", text: "A warm tile came up in Holt\u2019s net off the cape. It hums.", vars: [] }, { key: "90e1f92a952f", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 138, lines: [138], tpl: "STEPS[1]", card: "Night Nets", field: "why", text: "Something came up in Holt\u2019s nets that she won\u2019t talk about by day. Meet her on the harbour after dark.", vars: [] }, { key: "4faf2185f3e1", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 139, lines: [139], tpl: "STEPS[1]", card: "Night Nets", field: "details", text: "\u201CNortherly, rising,\u201D she says, and opens a crate. A flat tile, the size of a hand, warm as tea and humming faintly.", vars: [] }, { key: "00c520758268", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 155, lines: [155], tpl: "STEPS[2]", card: "Specimen", field: "title", text: "Specimen", vars: [] }, { key: "ffe215385b35", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 155, lines: [155], tpl: "STEPS[2]", card: "Specimen", field: "why", text: "Holt wants the tile off her boat. Dr Lind at the aquarium wants it under a microscope. Take it over.", vars: [] }, { key: "e3e8944591a2", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 156, lines: [156], tpl: "STEPS[2]", card: "Specimen", field: "details", text: "Teodor Lind has a Latin name for everything that swims. For the tile he has a shrug. \u201CNot glass. Not stone. Not anything,\u201D he says. \u201CYet.\u201D", vars: [] }, { key: "e668a2ed8b83", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 157, lines: [157], tpl: "STEPS[2]", card: "Specimen", field: "caption", text: "The humming tile", vars: [] }, { key: "5a06fc67f81e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 171, lines: [171], tpl: "STEPS[3]", card: "Keeper\u2019s Light", field: "title", text: "Keeper\u2019s Light", vars: [] }, { key: "fbbe5b81d979", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 171, lines: [171], tpl: "STEPS[3]", card: "Keeper\u2019s Light", field: "why", text: "Lind has heard of a keeper out on the coast who has seen it all before. Nobody gives directions. Find the light.", vars: [] }, { key: "e3ba990ccba9", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 172, lines: [172], tpl: "STEPS[3]", card: "Keeper\u2019s Light", field: "details", text: "It stands {x1} of the aquarium, about {away} tiles off, where the land runs out. \u201CForty years. Sevens. Nobody came up the hill till you,\u201D says Fen.", vars: [{ label: "x1", expr: "bearing(a, l)" }, { label: "away", expr: "away" }] }, { key: "c9a7ef99ece4", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 173, lines: [173], tpl: "STEPS[3]", card: "Keeper\u2019s Light", field: "caption", text: "The lighthouse", vars: [] }, { key: "5b7102cb07f5", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 175, lines: [175], tpl: "STEPS[3]", card: "Keeper\u2019s Light", field: "line", text: "Old Fen the keeper has seen lights under the sea for forty years. Always in sevens.", vars: [] }, { key: "a4161f227b8e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 193, lines: [193, 206], tpl: "STEPS[4]", card: "Coastguard Call", field: "title", text: "Coastguard Call", vars: [] }, { key: "e020f7e651fa", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 193, lines: [193], tpl: "STEPS[4]", card: "Coastguard Call", field: "why", text: "A dinghy is drifting off the cape and the coastguard launch is out of fuel. CPO Rook needs the sailor brought in.", vars: [] }, { key: "d25650d2072c", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 194, lines: [194], tpl: "STEPS[4]", card: "Coastguard Call", field: "details", text: "\u201CLogged. Noted. Next,\u201D says Rook. The sailor says the lights under the water came up around the dinghy. The coastguard has had eleven reports this month.", vars: [] }, { key: "30ba59ae320b", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 195, lines: [195], tpl: "STEPS[4]", card: "Coastguard Call", field: "caption", text: "A dinghy adrift", vars: [] }, { key: "671ef94902f0", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 196, lines: [196], tpl: "STEPS[4]", card: "Coastguard Call", field: "label", text: "Bring the sailor ashore", vars: [] }, { key: "3663a0876831", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 206, lines: [206], tpl: "STEPS[4]", card: "Coastguard Call", field: "why", text: "The coastguard looks after the keeper. CPO Rook needs his supplies run up to the light, and a word with you after.", vars: [] }, { key: "970994c17f3e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 207, lines: [207], tpl: "STEPS[4]", card: "Coastguard Call", field: "details", text: "\u201CLogged. Noted. Next,\u201D says Rook. The coastguard has had eleven reports of lights under the water this month, and filed every one.", vars: [] }, { key: "ffc471852a5c", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 208, lines: [208], tpl: "STEPS[4]", card: "Coastguard Call", field: "caption", text: "The coastguard", vars: [] }, { key: "d0716c6633ac", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 226, lines: [226, 242], tpl: "STEPS[5]", card: "Salvage Rights", field: "title", text: "Salvage Rights", vars: [] }, { key: "c7d6e62e43e7", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 226, lines: [226], tpl: "STEPS[5]", card: "Salvage Rights", field: "why", text: "Greywater has a barge over the wreck that shed the same tiles. First one down sets the buoy. Beat their divers to the bottom.", vars: [] }, { key: "c621bf5e3c9d", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 227, lines: [227], tpl: "STEPS[5]", card: "Salvage Rights", field: "details", text: "The wreck is {x1}. Nobody has ever seen a Greywater diver\u2019s face either. Rook will be watching from the coastguard launch.", vars: [{ label: "x1", expr: "seaName(sw)" }] }, { key: "8b78d86c2294", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 228, lines: [228], tpl: "STEPS[5]", card: "Salvage Rights", field: "caption", text: "Greywater\u2019s barge", vars: [] }, { key: "46bdcf2f565e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 229, lines: [229], tpl: "STEPS[5]", card: "Salvage Rights", field: "label", text: "Dive to the wreck first", vars: [] }, { key: "e95112347b39", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 242, lines: [242], tpl: "STEPS[5]", card: "Salvage Rights", field: "why", text: "A salvage firm called Greywater is after a wreck that shed the same tiles. First there sets the buoy. Beat their van.", vars: [] }, { key: "a55f1f6a62e7", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 243, lines: [243], tpl: "STEPS[5]", card: "Salvage Rights", field: "details", text: "Nobody has ever seen a Greywater driver\u2019s face. Rook will be watching from the coastguard launch.", vars: [] }, { key: "3f75a152701a", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 244, lines: [244], tpl: "STEPS[5]", card: "Salvage Rights", field: "caption", text: "Greywater\u2019s van", vars: [] }, { key: "a81eedd06c26", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 251, lines: [251], tpl: "STEPS[6].beat", card: null, field: "line", text: "The men on the rig say its legs hum at night. The coastguard has logged it.", vars: [] }, { key: "a7aa5792763e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 266, lines: [266, 279], tpl: "STEPS[6]", card: "Rig Supply", field: "title", text: "Rig Supply", vars: [] }, { key: "ca3af7dd0239", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 266, lines: [266], tpl: "STEPS[6]", card: "Rig Supply", field: "why", text: "The rig needs spares and the coastguard wants an excuse to be out there. Two loads by sea to the rig\u2019s landing.", vars: [] }, { key: "d11c55dc746c", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 267, lines: [267, 280], tpl: "STEPS[6]", card: "Rig Supply", field: "details", text: "The rig crew don\u2019t like the nights any more. They say the legs sing. Rook has filed it under weather.", vars: [] }, { key: "1fd3cf1f8a43", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 268, lines: [268, 281], tpl: "STEPS[6]", card: "Rig Supply", field: "caption", text: "The rig", vars: [] }, { key: "3b934754e938", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 279, lines: [279], tpl: "STEPS[6]", card: "Rig Supply", field: "why", text: "The rig needs spares and the coastguard wants an excuse to be out there. Two loads to the rig, and keep your ears open.", vars: [] }, { key: "5369339ae8bf", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 288, lines: [288], tpl: "STEPS[7].beat", card: null, field: "line", text: "A film crew is shooting at the harbour with the free-diver Lio Brandt.", vars: [] }, { key: "4ab48e615a52", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 296, lines: [296], tpl: "STEPS[7]", card: "Screen Test", field: "title", text: "Screen Test", vars: [] }, { key: "c6d341fb065b", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 296, lines: [296], tpl: "STEPS[7]", card: "Screen Test", field: "why", text: "Starlight Pictures is making a film about the hum. Rafe Castellanos needs his crew and his diver at the harbour.", vars: [] }, { key: "57e1c627e336", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 297, lines: [297], tpl: "STEPS[7]", card: "Screen Test", field: "details", text: "Rafe frames everything with his hands. His star, the free-diver Lio Brandt, says \u201Cdown\u201D the way other people say \u201Chome\u201D.", vars: [] }, { key: "a7da01536f60", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 298, lines: [298], tpl: "STEPS[7]", card: "Screen Test", field: "caption", text: "Starlight Pictures", vars: [] }, { key: "1a8a8dd757f8", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 306, lines: [306], tpl: "STEPS[8].beat", card: null, field: "line", text: "The power failed with the tide. The lamps came back flickering in sevens.", vars: [] }, { key: "f17c2461f137", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 317, lines: [317, 331], tpl: "STEPS[8]", card: "Blackout", field: "title", text: "Blackout", vars: [] }, { key: "e194bacfa93b", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 317, lines: [317], tpl: "STEPS[8]", card: "Blackout", field: "why", text: "The hum has blown the substation and an ambulance is crawling through the dark. Light its way to the hospital.", vars: [] }, { key: "62e855011d8b", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 318, lines: [318, 332], tpl: "STEPS[8]", card: "Blackout", field: "details", text: "Every lamp in the harbour town went out at once, and came back flickering. Seven, a pause, seven. Rook has stopped filing it under weather.", vars: [] }, { key: "4b5dddcbc637", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 319, lines: [319], tpl: "STEPS[8]", card: "Blackout", field: "caption", text: "The ambulance", vars: [] }, { key: "b404d32621df", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 331, lines: [331], tpl: "STEPS[8]", card: "Blackout", field: "why", text: "The hum has blown the town\u2019s substation. Rook needs new switchgear brought in before the hospital\u2019s generator runs dry.", vars: [] }, { key: "f9b2cd63c737", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 333, lines: [333], tpl: "STEPS[8]", card: "Blackout", field: "caption", text: "Switchgear", vars: [] }, { key: "f38a8d6d689d", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 340, lines: [340], tpl: "STEPS[9].beat", card: null, field: "line", text: "A warship has dropped anchor off the harbour. The Navy calls it an exercise.", vars: [] }, { key: "f0d316a98d46", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 356, lines: [356, 368], tpl: "STEPS[9]", card: "Dry Dock", field: "title", text: "Dry Dock", vars: [] }, { key: "0a8ea14015da", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 356, lines: [356], tpl: "STEPS[9]", card: "Dry Dock", field: "why", text: "Rook is raising the wreck, but its tiles fall off in the lift. Bring two up to the harbour by the dock for the Navy.", vars: [] }, { key: "3f3004af9153", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 357, lines: [357], tpl: "STEPS[9]", card: "Dry Dock", field: "details", text: "Its hull is studded with the tiles, hundreds of them, all humming. The Navy asked for them by name.", vars: [] }, { key: "ba27e9e1d3d8", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 358, lines: [358], tpl: "STEPS[9]", card: "Dry Dock", field: "caption", text: "The wreck, on the bottom", vars: [] }, { key: "90a3e37a39c5", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 369, lines: [369], tpl: "STEPS[9]", card: "Dry Dock", field: "why", text: "Rook has raised the wreck Greywater wanted. Tow it into the dry dock with two vehicles, where the Navy can look at it.", vars: [] }, { key: "ce105fa3b34a", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 370, lines: [370], tpl: "STEPS[9]", card: "Dry Dock", field: "why", text: "Rook has raised the wreck Greywater wanted and cut it up. Truck it to the dry dock, where the Navy can look at it.", vars: [] }, { key: "d1f818569509", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 371, lines: [371], tpl: "STEPS[9]", card: "Dry Dock", field: "details", text: "Its hull is studded with the tiles, hundreds of them, all humming. The Navy asked for it by name.", vars: [] }, { key: "49cf09562ec2", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 372, lines: [372], tpl: "STEPS[9]", card: "Dry Dock", field: "caption", text: "The wreck", vars: [] }, { key: "d68892a17cbc", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 384, lines: [384], tpl: "STEPS[10]", card: "Flag Officer", field: "title", text: "Flag Officer", vars: [] }, { key: "c35029f44ecc", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 384, lines: [384], tpl: "STEPS[10]", card: "Flag Officer", field: "why", text: "The Navy\u2019s Commander Adeyemi wants to meet the haulier who found the wreck. At the dock, after dark, quietly.", vars: [] }, { key: "51e4406ec9ff", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 385, lines: [385], tpl: "STEPS[10]", card: "Flag Officer", field: "details", text: "\u201CI need boats. You have boats. Good.\u201D Yusra Adeyemi hands you the keys to a hovercraft. \u201CIt doesn\u2019t care what it\u2019s on. You\u2019ll see why.\u201D", vars: [] }, { key: "9eb0bd0a4456", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 386, lines: [386], tpl: "STEPS[10]", card: "Flag Officer", field: "caption", text: "The Navy\u2019s Skimmer", vars: [] }, { key: "38713c70e9a9", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 410, lines: [410], tpl: "clue", card: null, field: "line", text: "Greywater Salvage are stealing tiles off the wreck and taking them to a yard inland.", vars: [] }, { key: "45aeaa9f2969", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 414, lines: [414, 420, 427], tpl: "STEPS[11]", card: "Night Van", field: "title", text: "Night Van", vars: [] }, { key: "47eb4c749558", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 414, lines: [414, 420], tpl: "STEPS[11]", card: "Night Van", field: "why", text: "Greywater\u2019s van has been at the harbour every night, and it always heads {x1}. Find where it unloads.", vars: [{ label: "x1", expr: "bearing(shed, yardSpot)" }] }, { key: "11f2b346363d", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 415, lines: [415, 421], tpl: "STEPS[11]", card: "Night Van", field: "details", text: "About {x1} tiles {x2} of the harbour, says Rook. A yard, he thinks. \u201CLogged. Noted. Found.\u201D", vars: [{ label: "x1", expr: "Math.round(Math.hypot(yardSpot.x - shed.x, yardSpot.z - shed.z) / 10) * 10" }, { label: "x2", expr: "bearing(shed, yardSpot)" }] }, { key: "6fa5a52b5c75", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 416, lines: [416, 422, 429, 453], tpl: "STEPS[11]", card: "Night Van", field: "caption", text: "The grey van", vars: [] }, { key: "7f352f58a54a", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 427, lines: [427], tpl: "STEPS[11]", card: "Night Van", field: "why", text: "Greywater\u2019s van has been at the harbour every night. Rook wants to know where it takes what it loads. Follow it.", vars: [] }, { key: "d4202def2615", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 428, lines: [428], tpl: "STEPS[11]", card: "Night Van", field: "details", text: "\u201CLogged,\u201D says Rook. \u201CNoted. Followed.\u201D The van is grey, and in no hurry.", vars: [] }, { key: "31c6dd4c36bb", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 438, lines: [438], tpl: "STEPS[12].beat", card: null, field: "line", text: "The coastguard has impounded a salvage firm\u2019s vans and what they carried.", vars: [] }, { key: "6acdbe93c29c", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 451, lines: [451, 464], tpl: "STEPS[12]", card: "Hot Pursuit", field: "title", text: "Hot Pursuit", vars: [] }, { key: "60c735b8e3cf", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 451, lines: [451], tpl: "STEPS[12]", card: "Hot Pursuit", field: "why", text: "Greywater is running the tiles out of the county tonight. Keep their van in your beam until the patrol stops it.", vars: [] }, { key: "19f7eed2d224", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 452, lines: [452], tpl: "STEPS[12]", card: "Hot Pursuit", field: "details", text: "Rook has rung ahead. Greywater\u2019s best driver is at the wheel, lights off. Lose the van in the dark and the tiles are gone.", vars: [] }, { key: "28bf8d8ee0b8", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 454, lines: [454], tpl: "STEPS[12]", card: "Hot Pursuit", field: "label", text: "Light the grey van", vars: [] }, { key: "be2fd981a4e3", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 464, lines: [464], tpl: "STEPS[12]", card: "Hot Pursuit", field: "why", text: "Greywater is running the tiles out of the county. Get to the border before their van does and the coastguard does the rest.", vars: [] }, { key: "295f608f222e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 465, lines: [465], tpl: "STEPS[12]", card: "Hot Pursuit", field: "details", text: "Rook has rung ahead. Greywater\u2019s best driver is at the wheel and has never lost a race. Shortcuts are allowed.", vars: [] }, { key: "a5f45e9bca28", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 466, lines: [466], tpl: "STEPS[12]", card: "Hot Pursuit", field: "caption", text: "Greywater\u2019s fastest", vars: [] }, { key: "8f6abb4e28f3", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 473, lines: [473], tpl: "STEPS[13].beat", card: null, field: "line", text: "An astronomer inland says the moon has been signalling for weeks.", vars: [] }, { key: "2646bb4326ce", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 481, lines: [481], tpl: "STEPS[13]", card: "Dead Calm", field: "title", text: "Dead Calm", vars: [] }, { key: "907e522204a4", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 481, lines: [481], tpl: "STEPS[13]", card: "Dead Calm", field: "why", text: "The fish have left the bay, every one. Holt\u2019s town has nothing to eat. Three loads of relief food to the harbour.", vars: [] }, { key: "5868c0eda168", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 482, lines: [482], tpl: "STEPS[13]", card: "Dead Calm", field: "details", text: "\u201CFlat calm,\u201D says Holt. \u201CNo wind, no fish, no gulls. Forty years and I have never seen the sea this quiet.\u201D", vars: [] }, { key: "3767288d7698", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 483, lines: [483], tpl: "STEPS[13]", card: "Dead Calm", field: "caption", text: "Relief food", vars: [] }, { key: "a529e7c80318", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 490, lines: [490], tpl: "STEPS[14].beat", card: null, field: "line", text: "Lio Brandt says she will dive to the hum, with a crew and whatever floats.", vars: [] }, { key: "61b96adec2a3", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 501, lines: [501], tpl: "STEPS[14]", card: "Premiere", field: "title", text: "Premiere", vars: [] }, { key: "7e62a70238fe", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 501, lines: [501], tpl: "STEPS[14]", card: "Premiere", field: "why", text: "Starlight\u2019s film is finished and the marquee reads THE HUM. Rafe needs his stars on the red carpet tonight.", vars: [] }, { key: "df2e19d40bc3", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 502, lines: [502], tpl: "STEPS[14]", card: "Premiere", field: "details", text: "On the carpet, Lio Brandt tells the cameras she will dive to the hum \u201Cwith a crew and whatever floats\u201D. The Navy declines to comment.", vars: [] }, { key: "996aa8e6e6e3", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 503, lines: [503], tpl: "STEPS[14]", card: "Premiere", field: "caption", text: "The premiere", vars: [] }, { key: "1c1898a96fd2", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 515, lines: [515], tpl: "STEPS[15]", card: "The Hum Answers", field: "title", text: "The Hum Answers", vars: [] }, { key: "f9c789f6f55f", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 515, lines: [515], tpl: "STEPS[15]", card: "The Hum Answers", field: "why", text: "Fen will flash the lamp in sevens at midnight, and Lind wants to see what answers. Be at the light and keep still.", vars: [] }, { key: "23130f81000e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 516, lines: [516], tpl: "STEPS[15]", card: "The Hum Answers", field: "details", text: "Fen works the lamp by hand. Out past the cape the sea lights up from underneath and answers in eights. \u201CIt\u2019s a door,\u201D says Lind. \u201CIt isn\u2019t ours.\u201D", vars: [] }, { key: "bd15aaac997e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 517, lines: [517], tpl: "STEPS[15]", card: "The Hum Answers", field: "caption", text: "The light", vars: [] }, { key: "61dc63663f63", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 519, lines: [519], tpl: "STEPS[15]", card: "The Hum Answers", field: "line", text: "Fen flashed sevens and the sea answered in eights. Lind says it is a door, and it isn\u2019t ours.", vars: [] }, { key: "f0f349c20ae6", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 534, lines: [534], tpl: "STEPS[16]", card: "Hull Plates", field: "title", text: "Hull Plates", vars: [] }, { key: "24861908e1a5", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 534, lines: [534], tpl: "STEPS[16]", card: "Hull Plates", field: "why", text: "The Navy is building something in the dry dock and needs a fleet that keeps quiet. Three loads of hull plate, and two vehicles.", vars: [] }, { key: "6acff4e1d73e", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 535, lines: [535], tpl: "STEPS[16]", card: "Hull Plates", field: "details", text: "\u201CPlates, sphere, people,\u201D says Adeyemi. \u201CThis is plates.\u201D They are curved, and very thick.", vars: [] }, { key: "6c89e94b8455", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 536, lines: [536], tpl: "STEPS[16]", card: "Hull Plates", field: "caption", text: "The dry dock", vars: [] }, { key: "bf1684e8110c", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 537, lines: [537], tpl: "STEPS[16]", card: "Hull Plates", field: "label", text: "Own 2 vehicles", vars: [] }, { key: "101df60ef51b", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 543, lines: [543], tpl: "STEPS[17].beat", card: null, field: "line", text: "A submarine is taking shape in the dry dock. The Navy calls it a research vessel.", vars: [] }, { key: "94766043bb78", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 553, lines: [553], tpl: "STEPS[17]", card: "Pressure Test", field: "title", text: "Pressure Test", vars: [] }, { key: "02f2ba12d4b0", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 554, lines: [554], tpl: "STEPS[17]", card: "Pressure Test", field: "why", text: "The pressure sphere is the heart of the boat, and too heavy for two. Tow it to the dock with three vehicles on the ropes.", vars: [] }, { key: "b8fcd8774d9b", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 555, lines: [555], tpl: "STEPS[17]", card: "Pressure Test", field: "why", text: "The pressure sphere is the heart of the boat. Bring it to the dock on the biggest truck you have, and gently.", vars: [] }, { key: "38f624af5d17", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 556, lines: [556], tpl: "STEPS[17]", card: "Pressure Test", field: "details", text: "Thick steel and four small windows. \u201CThe crew lives in that,\u201D says Adeyemi. \u201CAll the way down.\u201D", vars: [] }, { key: "bd69c91399c2", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 557, lines: [557], tpl: "STEPS[17]", card: "Pressure Test", field: "caption", text: "The pressure sphere", vars: [] }, { key: "2ced19cbdb40", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 572, lines: [572], tpl: "STEPS[18]", card: "Dive Crew", field: "title", text: "Dive Crew", vars: [] }, { key: "5e6b2b5d4567", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 572, lines: [572], tpl: "STEPS[18]", card: "Dive Crew", field: "why", text: "The Navy needs haulage on the bottom of the ocean, and Adeyemi wants your fleet. Show her four vehicles. Bring the divers.", vars: [] }, { key: "fc5ec4871134", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 573, lines: [573], tpl: "STEPS[18]", card: "Dive Crew", field: "details", text: "\u201CNot the surface. The bottom,\u201D says Adeyemi. \u201CThe door is on the floor of the trench, and doors need hauliers. Show me a fleet that floats.\u201D", vars: [] }, { key: "e7189f08e288", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 574, lines: [574], tpl: "STEPS[18]", card: "Dive Crew", field: "caption", text: "The submarine", vars: [] }, { key: "9d2837daee9f", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 575, lines: [575], tpl: "STEPS[18]", card: "Dive Crew", field: "label", text: "Own 4 vehicles", vars: [] }, { key: "ad8b882d4286", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 575, lines: [575], tpl: "STEPS[18]", card: "Dive Crew", field: "label", text: "Hire 2 drivers out", vars: [] }, { key: "0deb5e4769a6", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 582, lines: [582], tpl: "STEPS[19].beat", card: null, field: "line", text: "The Navy says she dives for real at the spring tide, and the fleet is going with her.", vars: [] }, { key: "2ae1e86c95db", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 589, lines: [589], tpl: "STEPS[19]", card: "Sea Trials", field: "title", text: "Sea Trials", vars: [] }, { key: "ddd5f1d40d61", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 589, lines: [589], tpl: "STEPS[19]", card: "Sea Trials", field: "why", text: "Dawn, the dock flooding, everyone on the quay. Lead three of your vehicles to the dock in formation and hold while she floats.", vars: [] }, { key: "e7f66a3bf29c", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 590, lines: [590], tpl: "STEPS[19]", card: "Sea Trials", field: "details", text: "Fen on the quay, Lind, Holt, Rook, Lio on camera. The gate opens and the water under her lights up in sevens. \u201CShe dives at the spring tide,\u201D says Adeyemi. \u201CBring everything that floats.\u201D", vars: [] }, { key: "8daecad91a09", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 591, lines: [591], tpl: "STEPS[19]", card: "Sea Trials", field: "caption", text: "Sea trials", vars: [] }, { key: "25d7a8d1d0b4", group: "Story chains", file: "src/game/missions/story/deep.ts", line: 594, lines: [594], tpl: "STEPS[19]", card: "Sea Trials", field: "line", text: "The submarine dives at the spring tide. The Navy wants your fleet on the ocean floor.", vars: [] }, { key: "eb1443a5dad6", group: "Story chains", file: "src/game/missions/story/kit.ts", line: 298, lines: [298], tpl: "race", card: null, field: "label", text: "Meet {short} at the start", vars: [{ label: "short", expr: "r.short" }] }, { key: "b9a58f21a0e8", group: "Story chains", file: "src/game/missions/story/kit.ts", line: 298, lines: [298], tpl: "race", card: null, field: "label", text: "Meet at the start line", vars: [] }, { key: "f5af6181ef49", group: "Story chains", file: "src/game/missions/story/kit.ts", line: 327, lines: [327], tpl: "tow", card: null, field: "label", text: "Bring {min} vehicles", vars: [{ label: "min", expr: "min" }] }, { key: "000171d8393a", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 119, lines: [119], tpl: "STEPS[0]", card: "Lens Delivery", field: "title", text: "Lens Delivery", vars: [] }, { key: "bebd251793de", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 119, lines: [119], tpl: "STEPS[0]", card: "Lens Delivery", field: "why", text: "Professor Halloway\u2019s new lens is waiting to be collected. Bring it up to her before the sky clears tonight.", vars: [] }, { key: "e5126929eb64", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 120, lines: [120], tpl: "STEPS[0]", card: "Lens Delivery", field: "details", text: "Wren Halloway has watched the same patch of the moon for thirty years, and something new has turned up on it. \u201CProbably nothing,\u201D she says. \u201CA hair over nothing.\u201D", vars: [] }, { key: "b35c7b78711d", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 132, lines: [132], tpl: "STEPS[1]", card: "Night Shift", field: "title", text: "Night Shift", vars: [] }, { key: "97a2fcdc3ca3", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 132, lines: [132], tpl: "STEPS[1]", card: "Night Shift", field: "why", text: "Halloway wants a second pair of eyes. Come up after dark and look through the telescope. She won\u2019t say at what.", vars: [] }, { key: "3ae7c0afb385", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 133, lines: [133], tpl: "STEPS[1]", card: "Night Shift", field: "details", text: "She has shown nobody else. \u201CTell me if you see it too,\u201D she says, \u201Cand then tell me I\u2019m not mad.\u201D", vars: [] }, { key: "458bf35de8bc", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 136, lines: [136], tpl: "STEPS[1]", card: "Night Shift", field: "line", text: "A light on the moon blinks in sevens: seven flashes, a pause, seven more. Every night.", vars: [] }, { key: "c298dfa59615", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 142, lines: [142], tpl: "STEPS[2].beat", card: null, field: "line", text: "A local stargazer says the moon is blinking at us. Film at six.", vars: [] }, { key: "29e00956413e", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 150, lines: [150], tpl: "STEPS[2]", card: "Hot Tape", field: "title", text: "Hot Tape", vars: [] }, { key: "f61114a126a6", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 150, lines: [150], tpl: "STEPS[2]", card: "Hot Tape", field: "why", text: "Halloway has filmed the light. Take her tapes to the newsroom, where a reporter called Cass Marlow is waiting.", vars: [] }, { key: "c88bf748680f", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 151, lines: [151], tpl: "STEPS[2]", card: "Hot Tape", field: "details", text: "Cass Marlow speaks in headlines. \u201CSTARGAZER SAYS MOON BLINKS,\u201D she says when you ring. \u201CBring me the tapes.\u201D", vars: [] }, { key: "53b0ab78e05e", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 152, lines: [152], tpl: "STEPS[2]", card: "Hot Tape", field: "caption", text: "Observation tapes", vars: [] }, { key: "4b6f8ee57d71", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 163, lines: [163], tpl: "reward[1]", card: null, field: "line", text: "The grey car that watches the observatory belongs to the Army.", vars: [] }, { key: "4c3a0a5ae027", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 167, lines: [167, 175], tpl: "STEPS[3]", card: "Grey Grandee", field: "title", text: "Grey Grandee", vars: [] }, { key: "c55a6cd5167d", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 167, lines: [167], tpl: "STEPS[3]", card: "Grey Grandee", field: "why", text: "A grey limousine has sat outside the observatory all week. Cass wants to know whose it is. Follow it, unseen.", vars: [] }, { key: "db59c01be8dc", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 168, lines: [168], tpl: "STEPS[3]", card: "Grey Grandee", field: "details", text: "\u201CNOBODY PARKS A LIMO OUTSIDE A TELESCOPE,\u201D says Cass. Find out where it goes.", vars: [] }, { key: "c0a790958f76", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 169, lines: [169, 177], tpl: "STEPS[3]", card: "Grey Grandee", field: "caption", text: "The grey Grandee", vars: [] }, { key: "ae0f061062b2", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 176, lines: [176], tpl: "STEPS[3]", card: "Grey Grandee", field: "details", text: "Cass lost it on the road out. It went {x1}, about {x2} tiles. Somewhere official.", vars: [{ label: "x1", expr: "bearing(o, b)" }, { label: "x2", expr: "Math.round(Math.hypot(b.x - o.x, b.z - o.z) / 10) * 10" }] }, { key: "5d70318c8ebe", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 193, lines: [193], tpl: "STEPS[4]", card: "Rations Run", field: "title", text: "Rations Run", vars: [] }, { key: "f82acf08155f", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 193, lines: [193], tpl: "STEPS[4]", card: "Rations Run", field: "why", text: "The base needs feeding and asks no questions of whoever does it. Two loads of mess supplies, and keep it to yourself.", vars: [] }, { key: "af1b72732e11", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 194, lines: [194], tpl: "STEPS[4]", card: "Rations Run", field: "details", text: "Colonel Ada Strand never asks a question. \u201CYou\u2019ll not talk about the sky,\u201D she says. \u201CYou\u2019ll be paid on time.\u201D The base stays lit all night now.", vars: [] }, { key: "4017efc499c1", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 195, lines: [195, 335], tpl: "STEPS[4]", card: "Rations Run", field: "caption", text: "The Army", vars: [] }, { key: "982fce7eec81", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 211, lines: [211], tpl: "STEPS[5]", card: "Old Ears", field: "title", text: "Old Ears", vars: [] }, { key: "43489d72c52a", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 211, lines: [211], tpl: "STEPS[5]", card: "Old Ears", field: "why", text: "Halloway needs a receiver, and there is one in a satellite that fell out of the sky years ago. Find it and bring it back.", vars: [] }, { key: "30a93a05b5df", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 212, lines: [212], tpl: "STEPS[5]", card: "Old Ears", field: "details", text: "It came down {x1} of the observatory, about {away} tiles off. The Army\u2019s grey car was there before you; mind they left the receiver.", vars: [{ label: "x1", expr: "bearing(o, sat)" }, { label: "away", expr: "away" }] }, { key: "ecb0e10cfa1a", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 213, lines: [213], tpl: "STEPS[5]", card: "Old Ears", field: "caption", text: "A satellite receiver", vars: [] }, { key: "a24eb0ebbd6e", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 218, lines: [218], tpl: "STEPS[5]", card: "Old Ears", field: "line", text: "The light on the moon rides a carrier wave. It is a transmission. Somebody is sending.", vars: [] }, { key: "8a566c3f4a76", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 236, lines: [236], tpl: "STEPS[6]", card: "First to the Pad", field: "title", text: "First to the Pad", vars: [] }, { key: "1ae153c16839", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 236, lines: [236], tpl: "STEPS[6]", card: "First to the Pad", field: "why", text: "The spaceport wants one haulier, and the first to its gate gets the contract. Oswin Pike wants it too. Beat him there.", vars: [] }, { key: "4f85797e1a4e", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 237, lines: [237], tpl: "STEPS[6]", card: "First to the Pad", field: "details", text: "Ilse Varga of Kestrel Launch will be at the gate with a stopwatch. Pike smiles at you the way a tow truck smiles at a ditch.", vars: [] }, { key: "97cb082df884", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 238, lines: [238], tpl: "STEPS[6]", card: "First to the Pad", field: "caption", text: "Pike\u2019s Pip", vars: [] }, { key: "63f2964aec66", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 245, lines: [245], tpl: "STEPS[7].beat", card: null, field: "line", text: "A commercial payload, says Kestrel Launch. Nobody will say what.", vars: [] }, { key: "f1ccd5ebac70", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 253, lines: [253], tpl: "STEPS[7]", card: "Pad Supplies", field: "title", text: "Pad Supplies", vars: [] }, { key: "f7ccdc93df18", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 253, lines: [253], tpl: "STEPS[7]", card: "Pad Supplies", field: "why", text: "Kestrel Launch has a client and a date. Ilse Varga needs three loads of supplies at the pad, and no questions asked.", vars: [] }, { key: "edbd39fe6580", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 254, lines: [254], tpl: "STEPS[7]", card: "Pad Supplies", field: "details", text: "Ilse Varga counts down in ordinary sentences. \u201CThree things. Valves, seals, cable. In that order.\u201D The pad\u2019s floodlights are on all night now.", vars: [] }, { key: "132a6c93e81c", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 255, lines: [255, 376, 436], tpl: "STEPS[7]", card: "Pad Supplies", field: "caption", text: "The launch pad", vars: [] }, { key: "12aff4c96bfd", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 263, lines: [263], tpl: "STEPS[8].beat", card: null, field: "line", text: "The pop star told a full stadium she is going to space.", vars: [] }, { key: "3ce8b4703dc8", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 273, lines: [273], tpl: "STEPS[8]", card: "Star Power", field: "title", text: "Star Power", vars: [] }, { key: "a999ec42e351", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 273, lines: [273], tpl: "STEPS[8]", card: "Star Power", field: "why", text: "Pop star Juno Vale plays the stadium tonight and wants the haulier the spaceport uses. Bring her gear, then her.", vars: [] }, { key: "9be31bffcc76", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 274, lines: [274], tpl: "STEPS[8]", card: "Star Power", field: "details", text: "Juno thinks everything is iconic. \u201CA haulier for a rocket. That\u2019s iconic.\u201D She has heard about the light on the moon, like everybody.", vars: [] }, { key: "7c9a3bfb8dbb", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 275, lines: [275], tpl: "STEPS[8]", card: "Star Power", field: "caption", text: "Tonight\u2019s show", vars: [] }, { key: "be0c146e8842", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 283, lines: [283], tpl: "STEPS[9].beat", card: null, field: "line", text: "Soldiers turned reporters away from the launch pad today. Kestrel says it was not asked.", vars: [] }, { key: "e51ba135fccb", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 291, lines: [291], tpl: "STEPS[9]", card: "Press Pool", field: "title", text: "Press Pool", vars: [] }, { key: "792f8a3c63cf", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 291, lines: [291], tpl: "STEPS[9]", card: "Press Pool", field: "why", text: "The Army has shut the spaceport to the press. Cass has a crew and a way in round the back. Get them to the pad.", vars: [] }, { key: "7361bc572eb6", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 292, lines: [292], tpl: "STEPS[9]", card: "Press Pool", field: "details", text: "\u201CARMY SHUTS GATE,\u201D says Cass. \u201CHAULIER OPENS IT.\u201D Ilse Varga will let a contractor\u2019s vehicle through. She and the colonel are no longer speaking.", vars: [] }, { key: "31ff8b731dd6", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 293, lines: [293], tpl: "STEPS[9]", card: "Press Pool", field: "caption", text: "Channel 6", vars: [] }, { key: "52a22ebda516", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 307, lines: [307], tpl: "STEPS[10]", card: "Quiet Word", field: "title", text: "Quiet Word", vars: [] }, { key: "c5f6db015be3", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 307, lines: [307], tpl: "STEPS[10]", card: "Quiet Word", field: "why", text: "Colonel Strand wants a word, somewhere quiet, after dark. She says to come alone. She doesn\u2019t say why.", vars: [] }, { key: "fa1d0a5b849c", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 308, lines: [308], tpl: "STEPS[10]", card: "Quiet Word", field: "details", text: "\u201CWe sent it sevens on Tuesday. It sent eight on Wednesday.\u201D The colonel tells you things; she never asks. \u201CYou\u2019ll want something that doesn\u2019t mind a dirt road.\u201D", vars: [] }, { key: "1d47d7c1075a", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 309, lines: [309], tpl: "STEPS[10]", card: "Quiet Word", field: "caption", text: "The colonel\u2019s Badger", vars: [] }, { key: "51a93a9ab5dc", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 317, lines: [317], tpl: "STEPS[11].beat", card: null, field: "line", text: "Tanks stand at the spaceport tonight. Kestrel calls them guests. Loud guests.", vars: [] }, { key: "b3e52c84bc84", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 327, lines: [327, 333], tpl: "STEPS[11]", card: "Convoy", field: "title", text: "Convoy", vars: [] }, { key: "14aa2fb6f835", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 327, lines: [327], tpl: "STEPS[11]", card: "Convoy", field: "why", text: "The Army is moving onto the pad. Lift two loads of soldiers from the base by air, before the press can count them.", vars: [] }, { key: "6f23e08862ca", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 328, lines: [328], tpl: "STEPS[11]", card: "Convoy", field: "details", text: "\u201CLow and quick,\u201D says the colonel. Ilse Varga will have to share her pad with tanks, and one of them is now yours: the Army is short of drivers.", vars: [] }, { key: "f3cb6ac71d6c", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 329, lines: [329], tpl: "STEPS[11]", card: "Convoy", field: "caption", text: "The Army by air", vars: [] }, { key: "4bfd77993d52", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 333, lines: [333], tpl: "STEPS[11]", card: "Convoy", field: "why", text: "The Army is moving onto the pad. Two loads of soldiers from the base, before the press can count them.", vars: [] }, { key: "470ef3fab4c4", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 334, lines: [334], tpl: "STEPS[11]", card: "Convoy", field: "details", text: "\u201CYou\u2019ll not stop on the way,\u201D says the colonel. Ilse Varga will have to share her pad with tanks, and one of them is now yours: the Army is short of drivers.", vars: [] }, { key: "cabc308627b6", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 352, lines: [352], tpl: "STEPS[12]", card: "The Big Dish", field: "title", text: "The Big Dish", vars: [] }, { key: "897c28527a72", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 353, lines: [353], tpl: "STEPS[12]", card: "The Big Dish", field: "why", text: "Halloway and the colonel agree on one thing: the pad needs a big dish to answer with. Tow it in with two vehicles.", vars: [] }, { key: "81b9fffa74c8", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 354, lines: [354], tpl: "STEPS[12]", card: "The Big Dish", field: "why", text: "Halloway and the colonel agree on one thing: the pad needs a big dish to answer with. Truck it over in sections.", vars: [] }, { key: "2e1b97599f99", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 355, lines: [355], tpl: "STEPS[12]", card: "The Big Dish", field: "details", text: "It came off the observatory on a low trailer. \u201CGently,\u201D says Halloway. \u201CIt\u2019s a hair over priceless.\u201D", vars: [] }, { key: "dcd44ae5de78", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 356, lines: [356], tpl: "STEPS[12]", card: "The Big Dish", field: "caption", text: "The radio dish", vars: [] }, { key: "69783c6412a6", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 363, lines: [363], tpl: "STEPS[13].beat", card: null, field: "line", text: "Out on the coast, the boats report a hum under the water. Nobody is listening.", vars: [] }, { key: "e708e47b21b9", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 374, lines: [374, 386], tpl: "STEPS[13]", card: "Dead Air", field: "title", text: "Dead Air", vars: [] }, { key: "f4620fb117a2", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 374, lines: [374], tpl: "STEPS[13]", card: "Dead Air", field: "why", text: "The signal drowns every radio in the county. Cass goes on air from the pad tonight. Hold it in your beam while she does.", vars: [] }, { key: "e55db336c90d", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 375, lines: [375], tpl: "STEPS[13]", card: "Dead Air", field: "details", text: "\u201CSIGNAL JAMS RADIO,\u201D says Cass, from the only camera still working. Keep the light on the pad and the county sees what she is talking about.", vars: [] }, { key: "dccd0ff5b8e5", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 377, lines: [377], tpl: "STEPS[13]", card: "Dead Air", field: "label", text: "Light the pad on air", vars: [] }, { key: "519679104f06", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 386, lines: [386], tpl: "STEPS[13]", card: "Dead Air", field: "why", text: "The signal is drowning out every radio in the county. Cass knows an engineer who can tune it out. Fetch them.", vars: [] }, { key: "2bbed0b11f54", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 387, lines: [387], tpl: "STEPS[13]", card: "Dead Air", field: "details", text: "\u201CSIGNAL JAMS RADIO,\u201D says Cass, on the one channel left. The engineer says the signal isn\u2019t only coming from the sky.", vars: [] }, { key: "a9036703349e", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 388, lines: [388], tpl: "STEPS[13]", card: "Dead Air", field: "caption", text: "The radio station", vars: [] }, { key: "3ade0408b6c0", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 395, lines: [395], tpl: "STEPS[14].beat", card: null, field: "line", text: "Fans camp at the spaceport gate as the pop star refuses to step down from the flight.", vars: [] }, { key: "a018a9c6c4cd", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 403, lines: [403], tpl: "STEPS[14]", card: "Fan Mail", field: "title", text: "Fan Mail", vars: [] }, { key: "17f78a20bb85", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 403, lines: [403], tpl: "STEPS[14]", card: "Fan Mail", field: "why", text: "Juno\u2019s manager wants her off the flight. Juno wants her fans at the gate. Two loads of them, banners and all.", vars: [] }, { key: "2afb4441af37", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 404, lines: [404], tpl: "STEPS[14]", card: "Fan Mail", field: "details", text: "\u201CIf they won\u2019t let me go up,\u201D says Juno, \u201Cthey can tell my fans why.\u201D The fans bring tents.", vars: [] }, { key: "63b5d30bbefd", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 405, lines: [405], tpl: "STEPS[14]", card: "Fan Mail", field: "caption", text: "The fan club", vars: [] }, { key: "06996fd5e91d", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 416, lines: [416], tpl: "STEPS[15]", card: "The Answer", field: "title", text: "The Answer", vars: [] }, { key: "7847251cd140", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 416, lines: [416], tpl: "STEPS[15]", card: "The Answer", field: "why", text: "The dish is up. At midnight Halloway will answer the signal, and she wants a witness. Be at the pad and keep still.", vars: [] }, { key: "72e4f655cc88", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 417, lines: [417], tpl: "STEPS[15]", card: "The Answer", field: "details", text: "The dish turns on its own. \u201CIt\u2019s counting in our count now,\u201D Halloway whispers. \u201CIt\u2019s sending a place. The far side. Nobody\u2019s been.\u201D", vars: [] }, { key: "c0def1ded6c9", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 418, lines: [418], tpl: "STEPS[15]", card: "The Answer", field: "caption", text: "The dish, listening", vars: [] }, { key: "838536b05e81", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 420, lines: [420], tpl: "STEPS[15]", card: "The Answer", field: "line", text: "The signal sent coordinates on the far side of the moon. Halloway said it: it isn\u2019t ours.", vars: [] }, { key: "3a8a198c474c", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 434, lines: [434], tpl: "STEPS[16]", card: "Rocket Parts", field: "title", text: "Rocket Parts", vars: [] }, { key: "bdf12862c617", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 434, lines: [434], tpl: "STEPS[16]", card: "Rocket Parts", field: "why", text: "Kestrel has a new client, and it isn\u2019t a satellite. Three rocket sections to the pad, and bring a second vehicle in.", vars: [] }, { key: "8616bc57e772", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 435, lines: [435], tpl: "STEPS[16]", card: "Rocket Parts", field: "details", text: "\u201CThree things,\u201D says Ilse Varga. \u201CParts, fuel, people. This is parts.\u201D The sections are bigger than anything Kestrel has flown.", vars: [] }, { key: "1ea4dc185785", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 437, lines: [437], tpl: "STEPS[16]", card: "Rocket Parts", field: "label", text: "Own 2 vehicles", vars: [] }, { key: "3b502ff2fc77", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 443, lines: [443], tpl: "STEPS[17].beat", card: null, field: "line", text: "Kestrel names a launch window. The Army says it will not stand in the way.", vars: [] }, { key: "64d1d102984c", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 451, lines: [451], tpl: "STEPS[17]", card: "Hot Load", field: "title", text: "Hot Load", vars: [] }, { key: "14b33352740a", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 451, lines: [451], tpl: "STEPS[17]", card: "Hot Load", field: "why", text: "The fuel boils off if it waits. Get the cryo tanks to the pad before they warm up. The Army will clear the road.", vars: [] }, { key: "0dd919477a01", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 452, lines: [452], tpl: "STEPS[17]", card: "Hot Load", field: "details", text: "\u201CYou\u2019ll not stop,\u201D says the colonel. \u201CWe\u2019ll not stop you.\u201D Two of her Badgers will be on the road. This is fuel.", vars: [] }, { key: "21644461e8c0", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 453, lines: [453], tpl: "STEPS[17]", card: "Hot Load", field: "caption", text: "Cryo fuel", vars: [] }, { key: "f94d1c387124", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 467, lines: [467], tpl: "STEPS[18]", card: "Flight Crew", field: "title", text: "Flight Crew", vars: [] }, { key: "7598d2c241a9", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 467, lines: [467], tpl: "STEPS[18]", card: "Flight Crew", field: "why", text: "Kestrel needs haulage on the Moon\u2019s surface, and Varga wants your fleet. Show her four vehicles that work. Bring the crew.", vars: [] }, { key: "6f4ab6c2191f", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 468, lines: [468], tpl: "STEPS[18]", card: "Flight Crew", field: "details", text: "\u201CRovers, cargo, people, on the surface,\u201D says Ilse Varga. \u201CThe Moon\u2019s surface. The coordinates are a landing site, and a landing site needs a haulier.\u201D", vars: [] }, { key: "bfd2bcd872d8", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 469, lines: [469], tpl: "STEPS[18]", card: "Flight Crew", field: "caption", text: "Kestrel Launch", vars: [] }, { key: "ee9aaee2f8e6", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 470, lines: [470], tpl: "STEPS[18]", card: "Flight Crew", field: "label", text: "Own 4 vehicles", vars: [] }, { key: "117847f07d9e", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 470, lines: [470], tpl: "STEPS[18]", card: "Flight Crew", field: "label", text: "Hire 2 drivers out", vars: [] }, { key: "f1dc8bb0be1e", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 477, lines: [477], tpl: "STEPS[19].beat", card: null, field: "line", text: "Kestrel Launch says the window opens at the next full moon, and the fleet is going.", vars: [] }, { key: "247f77d30a8b", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 485, lines: [485], tpl: "STEPS[19]", card: "T-Minus", field: "title", text: "T-Minus", vars: [] }, { key: "a468b6ce132d", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 485, lines: [485], tpl: "STEPS[19]", card: "T-Minus", field: "why", text: "Dawn, the count running, everyone watching. Lead three of your vehicles to the pad in formation and hold for the count.", vars: [] }, { key: "156124d10c4d", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 486, lines: [486], tpl: "STEPS[19]", card: "T-Minus", field: "details", text: "Halloway, the colonel, Cass on air, Juno in a flight suit and Pike in his lorry. The signal pulses once. \u201CThe window opens at the next full moon,\u201D says Varga. \u201CBring the fleet.\u201D", vars: [] }, { key: "5897f1db7eab", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 487, lines: [487], tpl: "STEPS[19]", card: "T-Minus", field: "caption", text: "The moon rocket", vars: [] }, { key: "ac5916c2bad0", group: "Story chains", file: "src/game/missions/story/moon.ts", line: 489, lines: [489], tpl: "STEPS[19]", card: "T-Minus", field: "line", text: "The launch window opens at the next full moon. Kestrel wants your fleet on the Moon.", vars: [] }, { key: "35dde787f17b", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 474, lines: [474], tpl: "bind \u203A treasure", card: null, field: "title", text: "Hidden Treasure", vars: [] }, { key: "1c8524cc33bd", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 478, lines: [478], tpl: "bind \u203A treasure", card: null, field: "why", text: "Find it from the clue alone. No marker until you\u2019re within {HIDDEN_REVEAL} tiles; then stop in the ring.", vars: [{ label: "HIDDEN_REVEAL", expr: "HIDDEN_REVEAL" }] }, { key: "7a48cec2608a", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 479, lines: [479], tpl: "bind \u203A treasure", card: null, field: "details", text: "{x1} at {name} in {t.t.name} says it\u2019s {say}. Nobody will point the way: not the map, not the tracker.", vars: [{ label: "x1", expr: "this.visit?.teller.name ?? 'Someone'" }, { label: "name", expr: "t.name" }, { label: "t.t.name", expr: "t.t.name" }, { label: "say", expr: "spot.say" }] }, { key: "f1c3030ebd01", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 480, lines: [480], tpl: "bind \u203A treasure", card: null, field: "caption", text: "A chest, if it\u2019s there", vars: [] }, { key: "19986c7e2bb7", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 481, lines: [481], tpl: "bind \u203A treasure", card: null, field: "label", text: "Find the spot", vars: [] }, { key: "f5dee149afc2", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 489, lines: [489], tpl: "bind \u203A smuggle", card: "A Quiet Load", field: "title", text: "A Quiet Load", vars: [] }, { key: "faa7fc69899a", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 503, lines: [503], tpl: "bind \u203A explore", card: null, field: "title", text: "See {name}", vars: [{ label: "name", expr: "spot.at.name" }] }, { key: "fbe69dd22abf", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 503, lines: [503], tpl: "bind \u203A explore", card: null, field: "title", text: "The Big City", vars: [] }, { key: "b5c89f546f58", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 503, lines: [503], tpl: "bind \u203A explore", card: null, field: "title", text: "Another Country", vars: [] }, { key: "a61e62d78708", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 503, lines: [503], tpl: "bind \u203A explore", card: null, field: "title", text: "Off the Map", vars: [] }, { key: "51c3331d5c59", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 507, lines: [507], tpl: "bind \u203A explore", card: null, field: "why", text: "Somewhere you\u2019ve never been: {name}, {x1} tiles {x2}. Get there and look.", vars: [{ label: "name", expr: "spot.at.name" }, { label: "x1", expr: "Math.round(d)" }, { label: "x2", expr: "way(t.x, t.z, spot.at.x, spot.at.z)" }] }, { key: "5ea8b91f18af", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 508, lines: [508], tpl: "bind \u203A explore", card: null, field: "details", text: "Told at {name} in {t.t.name}. Your map is dark over it: go and see it for yourself.", vars: [{ label: "name", expr: "t.name" }, { label: "t.t.name", expr: "t.t.name" }] }, { key: "dd7b1fa0829e", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 510, lines: [510, 527], tpl: "bind \u203A explore", card: null, field: "label", text: "Reach {x1}", vars: [{ label: "x1", expr: "short(spot.at.name)" }] }, { key: "3a5127e848ae", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 520, lines: [520], tpl: "bind \u203A timed", card: null, field: "title", text: "Against the Clock", vars: [] }, { key: "f29ef6fae591", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 524, lines: [524], tpl: "bind \u203A timed", card: null, field: "why", text: "{name}, {x1} tiles {x2}, inside {x3}. Stop in the ring there.", vars: [{ label: "name", expr: "to.name" }, { label: "x1", expr: "Math.round(d)" }, { label: "x2", expr: "way(t.x, t.z, to.x, to.z)" }, { label: "x3", expr: "minutes(secs)" }] }, { key: "064dd1d2d821", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 525, lines: [525], tpl: "bind \u203A timed", card: null, field: "details", text: "Asked at {name} in {t.t.name}. The clock started when you said yes.", vars: [{ label: "name", expr: "t.name" }, { label: "t.t.name", expr: "t.t.name" }] }, { key: "f6044cbafea2", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 526, lines: [526], tpl: "bind \u203A timed", card: null, field: "caption", text: "An envelope that can\u2019t be late", vars: [] }, { key: "e3d5309b4f5d", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 537, lines: [537], tpl: "bind \u203A fetch", card: null, field: "title", text: "There and Back", vars: [] }, { key: "cfbf62441ffb", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 541, lines: [541], tpl: "bind \u203A fetch", card: null, field: "why", text: "Collect it at {name} and bring it back to {t.name}\u2019s door, all inside {x1}.", vars: [{ label: "name", expr: "from.name" }, { label: "t.name", expr: "t.name" }, { label: "x1", expr: "minutes(secs)" }] }, { key: "d4c5bace6d68", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 542, lines: [542], tpl: "bind \u203A fetch", card: null, field: "details", text: "Asked at {name} in {t.t.name}. Stop in the ring at {from.name}, then in the tavern\u2019s ring and press Space.", vars: [{ label: "name", expr: "t.name" }, { label: "t.t.name", expr: "t.t.name" }, { label: "from.name", expr: "from.name" }] }, { key: "79b3579c4152", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 543, lines: [543], tpl: "bind \u203A fetch", card: null, field: "caption", text: "Handle with care", vars: [] }, { key: "dd9dbb775592", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 545, lines: [545], tpl: "bind \u203A fetch", card: null, field: "label", text: "Collect at {x1}", vars: [{ label: "x1", expr: "short(from.name)" }] }, { key: "a15476a56d8a", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 546, lines: [546], tpl: "bind \u203A fetch", card: null, field: "label", text: "Back to {x1}", vars: [{ label: "x1", expr: "short(t.name)" }] }, { key: "c112d8ab2446", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 563, lines: [563], tpl: "want.wrecker", card: null, field: "label", text: "a tow truck", vars: [] }, { key: "4b9f933083d0", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 564, lines: [564], tpl: "want.ambulance", card: null, field: "label", text: "an ambulance", vars: [] }, { key: "f25ba8466a8e", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 565, lines: [565], tpl: "want.bus", card: null, field: "label", text: "a bus", vars: [] }, { key: "3ffd193ba620", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 566, lines: [566], tpl: "want.limo", card: null, field: "label", text: "a limousine", vars: [] }, { key: "b877393dd9ae", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 567, lines: [567], tpl: "want.heli", card: null, field: "label", text: "a helicopter", vars: [] }, { key: "fbaa94da465e", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 568, lines: [568], tpl: "want.boat", card: null, field: "label", text: "a boat", vars: [] }, { key: "69b3d626b203", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 569, lines: [569], tpl: "want.quad", card: null, field: "label", text: "a quad bike", vars: [] }, { key: "0405778f15a8", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 638, lines: [638], tpl: "rideJob", card: null, field: "title", text: "A Particular Job", vars: [] }, { key: "551240d87ddb", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 644, lines: [644], tpl: "rideJob", card: null, field: "why", text: "It has to be done in {label}: {x1}{x2}. Stop in the ring each time.", vars: [{ label: "label", expr: "r.label" }, { label: "x1", expr: "a!.name" }, { label: "x2", expr: "b ? `, then ${b.name}` : ''" }] }, { key: "9f8e0801bb08", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 645, lines: [645], tpl: "rideJob", card: null, field: "details", text: "Asked at {name} in {t.t.name}. Arriving in anything but {label} doesn\u2019t count, so fetch one first if you have to.", vars: [{ label: "name", expr: "t.name" }, { label: "t.t.name", expr: "t.t.name" }, { label: "label", expr: "r.label" }] }, { key: "d0ea810ac2a7", group: "Tavern jobs", file: "src/game/tavern/tavern.ts", line: 646, lines: [646], tpl: "rideJob", card: null, field: "caption", text: "Only {label} will do", vars: [{ label: "label", expr: "r.label" }] }] };
 
 // server/missionText.ts
 var CATALOG = missionText_default;
@@ -13934,12 +15960,15 @@ var FUNNEL = [
   "vehicle",
   "driver",
   "roam",
+  "did:first:crew",
+  "hq",
+  "did:first:hq",
   "min15",
   "did:first:friend",
   "did:first:drift",
-  "tutorialEnd",
-  "hq"
+  "tutorialEnd"
 ];
+var SIDE_MARKS = ["keysAgain", "guide:hq", "guide:fleet", "guide:card", "guide:work", "quietEnd"];
 function mergeJourney(had, j, why, now) {
   const out = { marks: { ...had?.marks ?? {} }, visits: [...had?.visits ?? []] };
   const marks2 = j.marks && typeof j.marks === "object" ? j.marks : {};
@@ -14010,7 +16039,7 @@ function summary(gid, r) {
     low1: perf.frames?.low1 ?? null,
     wall: perf.frames?.seconds ?? null,
     quality: perf.quality?.label ?? null,
-    device: perf.device ? perf.device.mobile ? "mobile" : perf.device.touchPoints && !perf.device.fine ? "touch" : "desktop" : null,
+    device: deviceKind(perf.device),
     gpu: perf.device?.gpu ?? null,
     errors: Array.isArray(perf.errors) ? perf.errors.length : null,
     firstKey: perf.funnel?.firstDriveKeyAt ?? null,
@@ -14036,7 +16065,7 @@ function journeySummary(j) {
     doing,
     still: typeof n2?.still === "number" ? n2.still : null,
     // which milestones came inside the first fifteen minutes of play, for the funnel across games
-    by15: FUNNEL.filter((k) => Array.isArray(marks2[k]) && marks2[k][0] <= 900)
+    by15: [...FUNNEL, ...SIDE_MARKS].filter((k) => Array.isArray(marks2[k]) && marks2[k][0] <= 900)
   };
 }
 function summaryOf(e) {
@@ -14355,8 +16384,27 @@ async function adminHttp(req, res, path2, store3, hooks) {
       const r = e.value;
       if (testGame(r) || !Array.isArray(r.perfs)) return [];
       const days = r.daily && typeof r.daily === "object" ? Object.keys(r.daily).length : 0;
-      return r.perfs.map((v) => ({ g: e.key.slice("report:".length), pid: r.pid ?? null, first: r.first, ver0: r.ver0 ?? null, days, ...v }));
+      const dev = deviceKind(r.perf?.device);
+      return r.perfs.map((v) => ({
+        g: e.key.slice("report:".length),
+        pid: r.pid ?? null,
+        first: r.first,
+        ver0: r.ver0 ?? null,
+        days,
+        ...v,
+        dev: typeof v.dev === "string" && v.dev || (v.gpu === "mobile" ? "mobile" : dev)
+      }));
     });
+    const named = /* @__PURE__ */ new Map();
+    const at = (src, pos) => {
+      const k = `${src}:${pos}`;
+      if (!named.has(k)) named.set(k, sourceAt(src, pos));
+      return named.get(k) ?? null;
+    };
+    for (const v of rows) {
+      if (!Array.isArray(v.loaf)) continue;
+      v.loaf = v.loaf.map((l) => ({ ...l, scripts: (l.scripts ?? []).map((sc) => ({ ...sc, at: at(sc.src, sc.pos) })) }));
+    }
     json(res, 200, { ok: true, now: Date.now(), rows });
     return true;
   } catch (e) {
@@ -15819,7 +17867,7 @@ var REGION_KINDS = [
   "mangrove",
   "lavender"
 ];
-var DIRS = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+var DIRS2 = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 var EDGE_MINE = [[1, 2], [3, 2], [0, 3], [0, 1]];
 var EDGE_THEIRS = [[0, 3], [0, 1], [1, 2], [3, 2]];
 var World = class {
@@ -16017,7 +18065,7 @@ function waterDepth(w, i) {
 }
 function edgeMismatch(w, i, d) {
   const x = i % N3, z = (i - x) / N3;
-  const nx = x + DIRS[d][0], nz = z + DIRS[d][1];
+  const nx = x + DIRS2[d][0], nz = z + DIRS2[d][1];
   const m = EDGE_MINE[d], t = EDGE_THEIRS[d];
   const c = w.corners;
   if (inB(nx, nz)) {
@@ -16611,7 +18659,7 @@ function lapAt(p, x, z) {
   return c < 0 || p.sAt[c] < 0 ? null : { s: p.sAt[c], u: p.uAt[c] };
 }
 function frameOf(b) {
-  const yaw = Math.atan2(DIRS[b.facing][0], DIRS[b.facing][1]);
+  const yaw = Math.atan2(DIRS2[b.facing][0], DIRS2[b.facing][1]);
   return { ox: b.x + b.w / 2, oy: b.level * STEP, oz: b.z + b.d / 2, c: Math.cos(yaw), s: Math.sin(yaw), yaw };
 }
 function toModel(f, x, z) {
@@ -19013,6 +21061,694 @@ function eateryRoster(style, tier, rng) {
   if (tier === "city" && rng() < 0.5) out.push("bowlingAlley");
   return out;
 }
+
+// src/game/chains/made.ts
+var M = (t) => ({
+  ttl: [160, 240],
+  every: [99999, 99999],
+  max: 0,
+  madeOnly: true,
+  ...t
+});
+var MADE_CARGO = [
+  // 1 Books and boards
+  M({
+    id: "boundBooks",
+    name: "Bound Books",
+    icon: "\u{1F4DA}",
+    color: 9059118,
+    cls: "freight",
+    units: 6,
+    from: [],
+    to: ["library", "university", "school", "departmentStore", "museum"],
+    base: 900,
+    perTile: 3,
+    urgency: ["standard", "relaxed"],
+    blurb: "Crates of new books, cloth-bound and gilt-edged, from your own bindery."
+  }),
+  M({
+    id: "furniture",
+    name: "Furniture",
+    icon: "\u{1FA91}",
+    color: 10119738,
+    cls: "freight",
+    units: 8,
+    from: [],
+    to: ["departmentStore", "mall", "hotel", "mansion", "bigBox"],
+    base: 650,
+    perTile: 2.2,
+    urgency: ["standard", "relaxed"],
+    blurb: "Chairs, tables and a wardrobe, wrapped in blankets."
+  }),
+  // 2 Sweet tooth
+  M({
+    id: "iceCreamTubs",
+    name: "Ice Cream Tubs",
+    icon: "\u{1F368}",
+    color: 16182444,
+    cls: "freight",
+    units: 4,
+    from: [],
+    to: ["beachClub", "tikiBar", "pleasurePier", "lido", "grocery"],
+    base: 300,
+    perTile: 1.4,
+    urgency: ["timely", "standard"],
+    blurb: "Big tubs from the creamery, packed in ice."
+  }),
+  M({
+    id: "sundaes",
+    name: "Sundaes",
+    icon: "\u{1F367}",
+    color: 16238036,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["park", "school", "lido", "stadium", "pleasurePier", "house"],
+    base: 230,
+    perTile: 1,
+    urgency: ["urgent", "timely"],
+    ttl: [120, 180],
+    blurb: "Fruit, scoops and a wafer each. They will not wait."
+  }),
+  // 3 Daily bread
+  M({
+    id: "cakes",
+    name: "Celebration Cakes",
+    icon: "\u{1F382}",
+    color: 16046048,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["hotel", "church", "chapel", "cathedral", "mansion", "cafe"],
+    base: 330,
+    perTile: 1.2,
+    urgency: ["timely", "standard"],
+    blurb: "Three tiers and a ribbon. Mind the corners."
+  }),
+  // 4 The round
+  M({
+    id: "stationery",
+    name: "Stationery",
+    icon: "\u{1F58B}\uFE0F",
+    color: 4159680,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["postOffice", "office", "school", "university", "officePark"],
+    base: 140,
+    perTile: 1,
+    urgency: ["standard", "relaxed"],
+    blurb: "Envelopes, forms and headed paper by the ream."
+  }),
+  M({
+    id: "programmes",
+    name: "Programmes",
+    icon: "\u{1F5D2}\uFE0F",
+    color: 13777454,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["stadium", "arena", "racetrack", "theatre", "concertHall"],
+    base: 120,
+    perTile: 1,
+    urgency: ["timely", "standard"],
+    blurb: "Glossy match-day programmes, still smelling of ink."
+  }),
+  M({
+    id: "sortedPost",
+    name: "Sorted Post",
+    icon: "\u{1F4EC}",
+    color: 13111342,
+    cls: "parcel",
+    units: 4,
+    from: [],
+    to: ["cityStation", "townStation", "postOffice", "logisticsDepot"],
+    base: 380,
+    perTile: 1.3,
+    urgency: ["timely", "standard"],
+    blurb: "Sacks sorted by street, ready for the morning round."
+  }),
+  M({
+    id: "express",
+    name: "Express Consignment",
+    icon: "\u26A1",
+    color: 15909166,
+    cls: "parcel",
+    units: 3,
+    from: [],
+    to: ["bank", "courthouse", "exchange", "officePark", "techCampus", "cityHall"],
+    base: 800,
+    perTile: 2.6,
+    urgency: ["timely"],
+    blurb: "Signed for, sealed, and promised by noon."
+  }),
+  // 5 Concrete and steel
+  M({
+    id: "readyMix",
+    name: "Ready-mix",
+    icon: "\u{1F6A7}",
+    color: 10132114,
+    cls: "bulk",
+    units: 8,
+    from: [],
+    to: ["towerBlock", "skyscraper", "officePark", "dam", "condoTower", "parkingGarage"],
+    base: 500,
+    perTile: 1.6,
+    urgency: ["urgent", "timely"],
+    blurb: "Wet concrete turning in the drum. It sets whether you are there or not."
+  }),
+  M({
+    id: "asphalt",
+    name: "Asphalt",
+    icon: "\u2B1B",
+    color: 2763310,
+    cls: "bulk",
+    units: 8,
+    from: [],
+    to: ["motorwayServices", "truckStop", "parking", "parkingGarage", "logisticsDepot"],
+    base: 420,
+    perTile: 1.4,
+    urgency: ["timely", "standard"],
+    blurb: "Hot blacktop for a new road surface."
+  }),
+  M({
+    id: "scrapBales",
+    name: "Scrap Bales",
+    icon: "\u{1F9F2}",
+    color: 8022618,
+    cls: "bulk",
+    units: 8,
+    from: [],
+    to: ["steelworks", "factory", "majorPort"],
+    base: 160,
+    perTile: 1.2,
+    urgency: ["standard", "relaxed"],
+    blurb: "Crushed cars and old pipe, baled for the furnace."
+  }),
+  M({
+    id: "bitumen",
+    name: "Bitumen",
+    icon: "\u{1F6E2}\uFE0F",
+    color: 1907997,
+    cls: "freight",
+    units: 4,
+    from: [],
+    to: ["logisticsDepot", "majorPort", "truckStop"],
+    base: 110,
+    perTile: 1.1,
+    urgency: ["standard", "relaxed"],
+    blurb: "The heavy end of the barrel, kept warm in the tank."
+  }),
+  M({
+    id: "rubble",
+    name: "Rubble",
+    icon: "\u{1F9F1}",
+    color: 10129286,
+    cls: "bulk",
+    units: 6,
+    from: [],
+    to: ["recyclingCentre", "crusher"],
+    base: 40,
+    perTile: 0.8,
+    urgency: ["relaxed", "none"],
+    blurb: "What was a building, for the crusher."
+  }),
+  // 6 Cold chain
+  M({
+    id: "vaccine",
+    name: "Vaccine Batch",
+    icon: "\u{1F489}",
+    color: 5218255,
+    cls: "parcel",
+    units: 1,
+    from: [],
+    to: ["clinic", "hospital", "researchStation", "retirementHome", "school"],
+    base: 380,
+    perTile: 1.4,
+    urgency: ["urgent"],
+    ttl: [120, 180],
+    blurb: "Kept cold, signed for, and wanted today."
+  }),
+  // 7 Catch of the day
+  M({
+    id: "smokedFish",
+    name: "Smoked Fish",
+    icon: "\u{1F41F}",
+    color: 13207354,
+    cls: "freight",
+    units: 4,
+    from: [],
+    to: ["sushiBar", "chippy", "deli", "hotel", "marketHall"],
+    base: 420,
+    perTile: 1.4,
+    urgency: ["standard"],
+    blurb: "Oak-smoked sides in waxed paper."
+  }),
+  // 8 Vintage
+  M({
+    id: "hamper",
+    name: "Vintage Hamper",
+    icon: "\u{1F9FA}",
+    color: 9055050,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["casino", "marina", "mansion", "beachResort", "resortVillas"],
+    base: 600,
+    perTile: 1.7,
+    urgency: ["standard", "timely"],
+    blurb: "A good bottle, a good cheese and a wicker lid."
+  }),
+  // 10 Deep metal
+  M({
+    id: "alloys",
+    name: "Rare Alloys",
+    icon: "\u2697\uFE0F",
+    color: 7174794,
+    cls: "freight",
+    units: 6,
+    from: [],
+    to: ["techCampus", "dataCentre", "launchPad", "factory"],
+    base: 1300,
+    perTile: 3,
+    urgency: ["standard", "relaxed"],
+    blurb: "Ingots from the seabed, worth more than the van."
+  }),
+  // 11 Quartermaster
+  M({
+    id: "supplyDrop",
+    name: "Supply Drop",
+    icon: "\u{1FA82}",
+    color: 4936480,
+    cls: "freight",
+    units: 6,
+    from: [],
+    to: ["bunker", "borderFort", "mountainHut", "militaryBase"],
+    base: 1100,
+    perTile: 3,
+    urgency: ["timely", "standard"],
+    blurb: "Rations, kit and spare boots for a post at the end of the road."
+  }),
+  // 12 Front page
+  M({
+    id: "specialEdition",
+    name: "Special Edition",
+    icon: "\u{1F5DE}\uFE0F",
+    color: 1381914,
+    cls: "freight",
+    units: 3,
+    from: [],
+    to: ["busStation", "hotel", "townStation", "cityStation", "shop", "store"],
+    base: 200,
+    perTile: 1.1,
+    urgency: ["urgent", "timely"],
+    ttl: [120, 180],
+    blurb: "Extra! Extra! Still warm, and worthless by tonight."
+  }),
+  M({
+    id: "releasePrint",
+    name: "Release Print",
+    icon: "\u{1F39E}\uFE0F",
+    color: 15888288,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["cinema", "premiereTheatre", "driveIn", "theatre"],
+    base: 780,
+    perTile: 2.3,
+    urgency: ["timely", "standard"],
+    blurb: "The film itself, in a locked can, for opening night."
+  }),
+  M({
+    id: "gateReceipts",
+    name: "Gate Receipts",
+    icon: "\u{1F4B5}",
+    color: 7319383,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["bank", "casino", "exchange"],
+    base: 880,
+    perTile: 2.6,
+    urgency: ["standard"],
+    blurb: "The day\u2019s takings in canvas bags. An escort would be wise."
+  }),
+  // footnotes
+  M({
+    id: "sealedPapers",
+    name: "Sealed Papers",
+    icon: "\u{1F4DC}",
+    color: 2830186,
+    cls: "parcel",
+    units: 1,
+    from: [],
+    to: ["embassy", "parliament", "ministry", "courthouse", "cityHall"],
+    base: 360,
+    perTile: 1.2,
+    urgency: ["timely", "standard"],
+    blurb: "Signed, sealed and stamped twice."
+  }),
+  M({
+    id: "exhibit",
+    name: "Exhibit",
+    icon: "\u{1F3FA}",
+    color: 11569754,
+    cls: "freight",
+    units: 3,
+    from: [],
+    to: ["museum", "university", "observatory"],
+    base: 480,
+    perTile: 1.6,
+    urgency: ["standard", "relaxed"],
+    blurb: "Labelled, catalogued and in a crate marked This Way Up."
+  }),
+  // 13 Black gold
+  M({
+    id: "avgas",
+    name: "Aviation Fuel",
+    icon: "\u26FD",
+    color: 3828378,
+    cls: "freight",
+    units: 8,
+    from: [],
+    to: ["hangar", "controlTower", "truckStop", "motorwayServices"],
+    base: 520,
+    perTile: 1.6,
+    urgency: ["standard"],
+    blurb: "Clean fuel for the airfields\u2019 bowsers."
+  }),
+  // 14 Fleece and couture
+  M({
+    id: "couture",
+    name: "Couture",
+    icon: "\u{1F457}",
+    color: 11029130,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["departmentStore", "premiereTheatre", "mansion", "casino", "operaHouse"],
+    base: 540,
+    perTile: 1.8,
+    urgency: ["timely", "standard"],
+    blurb: "One of a kind, on a padded hanger, for tonight."
+  }),
+  // 15 Plantation
+  M({
+    id: "roastedCoffee",
+    name: "Roasted Coffee",
+    icon: "\u2615",
+    color: 5913130,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["cafe", "diner", "hotel", "socialClub", "marketHall"],
+    base: 290,
+    perTile: 1.4,
+    urgency: ["standard"],
+    blurb: "Fresh from the roaster, the whole van smells of it."
+  }),
+  M({
+    id: "blendedTea",
+    name: "Blended Tea",
+    icon: "\u{1F375}",
+    color: 7315051,
+    cls: "parcel",
+    units: 1,
+    from: [],
+    to: ["hotel", "ryokan", "bathhouse", "departmentStore", "cafe"],
+    base: 210,
+    perTile: 1,
+    urgency: ["standard", "relaxed"],
+    blurb: "A house blend in painted tins."
+  }),
+  // 16 Cask and peat
+  M({
+    id: "casks",
+    name: "Oak Casks",
+    icon: "\u{1F6E2}\uFE0F",
+    color: 9067054,
+    cls: "freight",
+    units: 4,
+    from: [],
+    to: ["customsPost", "distillery", "wineryBarn"],
+    base: 230,
+    perTile: 1,
+    urgency: ["relaxed", "standard"],
+    blurb: "New oak, toasted inside, hooped and ready."
+  }),
+  M({
+    id: "agedCask",
+    name: "Aged Cask",
+    icon: "\u{1F943}",
+    color: 12088362,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["casino", "hotel", "mansion", "pub"],
+    base: 1100,
+    perTile: 2.5,
+    urgency: ["standard", "relaxed"],
+    blurb: "Twelve years in bond. The angels took their share."
+  }),
+  // 17 Salt and silk
+  M({
+    id: "spiceBlend",
+    name: "Spice Blend",
+    icon: "\u{1F336}\uFE0F",
+    color: 12731690,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["curryHouse", "kebabShop", "taqueria", "hotel", "caravanserai"],
+    base: 400,
+    perTile: 1.6,
+    urgency: ["standard"],
+    blurb: "Ground that morning, by a recipe nobody writes down."
+  }),
+  M({
+    id: "tradeCaravan",
+    name: "Trade Caravan",
+    icon: "\u{1F42B}",
+    color: 14263648,
+    cls: "freight",
+    units: 6,
+    from: [],
+    to: ["majorPort", "departmentStore", "bazaar", "kasbah"],
+    base: 1e3,
+    perTile: 3,
+    urgency: ["standard", "relaxed"],
+    blurb: "Spice, carpets and dates, roped and tallied for the coast."
+  }),
+  // 18 Silicon
+  M({
+    id: "sand",
+    name: "Sand",
+    icon: "\u{1F3D6}\uFE0F",
+    color: 15126419,
+    cls: "bulk",
+    units: 6,
+    from: [],
+    to: ["cementPlant", "factory", "majorPort"],
+    base: 50,
+    perTile: 1,
+    urgency: ["relaxed", "none"],
+    blurb: "Fine white sand, washed and graded."
+  }),
+  M({
+    id: "glass",
+    name: "Glass",
+    icon: "\u{1FA9F}",
+    color: 10473696,
+    cls: "freight",
+    units: 4,
+    from: [],
+    to: ["techCampus", "greenhouse", "observatory", "skyscraper"],
+    base: 250,
+    perTile: 1.2,
+    urgency: ["standard"],
+    fragile: true,
+    blurb: "Sheets on an A-frame. Corners, gently."
+  }),
+  M({
+    id: "devices",
+    name: "Devices",
+    icon: "\u{1F4F1}",
+    color: 2763310,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["bigBox", "departmentStore", "dataCentre", "school", "observatory"],
+    base: 760,
+    perTile: 2,
+    urgency: ["timely", "standard"],
+    blurb: "Boxed, shrink-wrapped and wanted on launch day."
+  }),
+  // 19 Fireworks
+  M({
+    id: "fireworks",
+    name: "Fireworks",
+    icon: "\u{1F386}",
+    color: 14827823,
+    cls: "freight",
+    units: 3,
+    from: [],
+    to: ["festivalGrounds", "stadium", "plaza", "pleasurePier", "castle"],
+    base: 470,
+    perTile: 1.8,
+    urgency: ["timely"],
+    fragile: true,
+    blurb: "Rockets, wheels and a finale. Drive like it."
+  }),
+  // 20 Turf
+  M({
+    id: "racehorse",
+    name: "Racehorse",
+    icon: "\u{1F3C7}",
+    color: 8014378,
+    cls: "bulk",
+    units: 4,
+    from: [],
+    to: ["racetrack", "stables"],
+    base: 530,
+    perTile: 1.6,
+    urgency: ["standard"],
+    fragile: true,
+    blurb: "A thoroughbred in a padded box. Every bump costs."
+  }),
+  M({
+    id: "purse",
+    name: "Purse",
+    icon: "\u{1F4B0}",
+    color: 14267210,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["bank", "casino", "exchange"],
+    base: 820,
+    perTile: 2.3,
+    urgency: ["standard"],
+    blurb: "The winnings, in a locked box with a long receipt."
+  }),
+  // 21 Going, going
+  M({
+    id: "auctionLot",
+    name: "Auction Lot",
+    icon: "\u{1F528}",
+    color: 6965898,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["mansion", "casino", "exchange", "museum", "bossVilla"],
+    base: 1200,
+    perTile: 2.8,
+    urgency: ["standard", "relaxed"],
+    blurb: "Lot 47, sold to the gentleman in the hat."
+  }),
+  // 22 Encore
+  M({
+    id: "instruments",
+    name: "Instruments",
+    icon: "\u{1F3BB}",
+    color: 10115630,
+    cls: "freight",
+    units: 4,
+    from: [],
+    to: ["concertHall", "operaHouse", "theatre", "school", "university", "nightclub"],
+    base: 620,
+    perTile: 2.2,
+    urgency: ["standard"],
+    fragile: true,
+    blurb: "Hand-made, varnished, in fitted cases."
+  }),
+  M({
+    id: "recordings",
+    name: "Recordings",
+    icon: "\u{1F4BF}",
+    color: 2830186,
+    cls: "parcel",
+    units: 1,
+    from: [],
+    to: ["shop", "departmentStore", "radioStation", "broadcastCentre"],
+    base: 470,
+    perTile: 1.5,
+    urgency: ["standard"],
+    blurb: "The master and a box of pressings."
+  }),
+  // 23 Launch
+  M({
+    id: "satellite",
+    name: "Satellite",
+    icon: "\u{1F6F0}\uFE0F",
+    color: 13225684,
+    cls: "freight",
+    units: 6,
+    from: [],
+    to: ["launchPad", "researchDome"],
+    base: 1250,
+    perTile: 3,
+    urgency: ["standard", "relaxed"],
+    fragile: true,
+    blurb: "Folded panels and gold foil, under a clean sheet."
+  }),
+  M({
+    id: "telemetry",
+    name: "Telemetry",
+    icon: "\u{1F4E1}",
+    color: 4159680,
+    cls: "parcel",
+    units: 1,
+    from: [],
+    to: ["observatory", "dataCentre", "university", "researchDome"],
+    base: 1300,
+    perTile: 2.6,
+    urgency: ["timely", "standard"],
+    blurb: "Tapes of the first orbits, wanted by everyone with a dish."
+  }),
+  // 24 Snowline
+  M({
+    id: "expeditionKit",
+    name: "Expedition Kit",
+    icon: "\u{1F9E5}",
+    color: 3108764,
+    cls: "freight",
+    units: 4,
+    from: [],
+    to: ["researchStation", "mountainHut", "bothy", "iceHotel", "summitCafe", "lodge"],
+    base: 700,
+    perTile: 2.5,
+    urgency: ["standard"],
+    blurb: "Fur-lined parkas, rope and a stove, for the high places."
+  }),
+  // 25 Country fare
+  M({
+    id: "honey",
+    name: "Honey",
+    icon: "\u{1F36F}",
+    color: 15250218,
+    cls: "parcel",
+    units: 1,
+    from: [],
+    to: ["farmShop", "titheBarn", "guildhall", "bakery", "teaHouse", "grocery"],
+    base: 100,
+    perTile: 0.6,
+    urgency: ["standard", "relaxed"],
+    blurb: "Jars from the hives, still a bit sticky."
+  }),
+  M({
+    id: "preserves",
+    name: "Preserves",
+    icon: "\u{1FAD9}",
+    color: 12728880,
+    cls: "parcel",
+    units: 2,
+    from: [],
+    to: ["grocery", "cafe", "hotel", "marketHall", "deli"],
+    base: 290,
+    perTile: 1.2,
+    urgency: ["standard", "relaxed"],
+    blurb: "Jam, honey and marmalade with gingham lids."
+  })
+];
 
 // src/game/cargoTypes.ts
 var UB_STATIONS = ["goodsYard", "harbourDepot", "terminus", "cityStation", "townStation", "halt"];
@@ -24836,6 +27572,24 @@ var CARGO = [
   ...NEXT_080 ? WORKS_080_CARGO : []
 ];
 var SITE_LABEL = {
+  // the supply chains' plants (docs/supplychains.html, world/plants.ts, 0.8.0)
+  iceHouse: "Ice house",
+  creamery: "Creamery",
+  bindery: "Bindery",
+  joinery: "Joinery",
+  printShop: "Print shop",
+  parcelHub: "Parcel hub",
+  readyMix: "Concrete plant",
+  smokehouse: "Smokehouse",
+  winery: "Winery",
+  alloyWorks: "Alloy works",
+  atelier: "Atelier",
+  roastery: "Roastery",
+  cooperage: "Cooperage",
+  glassworks: "Glassworks",
+  auctionHouse: "Auction house",
+  luthier: "Luthier",
+  outfitter: "Outfitter",
   // the 0.8.0 works (world/railside.ts, world/undersea.ts)
   lumberSiding: "Lumber siding",
   coalLoader: "Coal loader",
@@ -26990,6 +29744,7 @@ var HOME_CONT = [4, 0];
 var HOME_CONT_R = 3.5;
 var HOME_ISLE = [0.5, 0.5];
 var HOME_ISLE_R = 1.25;
+var BOTH_LIFT = NEXT_080 ? 0.11 : 0;
 function contField(seedHash2, cx, cz) {
   const f = (cellNoise(seedHash2, cx, cz, 7, 21) + 0.5 * cellNoise(seedHash2, cx, cz, 3, 22)) / 1.5;
   if (MODE === "islands") return f - 1;
@@ -27005,7 +29760,7 @@ function contField(seedHash2, cx, cz) {
     const e2 = db <= 0.75 ? 0 : (db - 0.75) / 0.25;
     return Math.min(g2, CONT_THR - 0.12 + 0.8 * e2 * e2 * (3 - 2 * e2));
   }
-  let g = f;
+  let g = f + BOTH_LIFT;
   const d = Math.hypot(cx - HOME_CONT[0], cz - HOME_CONT[1]) / HOME_CONT_R;
   if (d < 1) {
     const t = 1 - d;
@@ -27356,11 +30111,11 @@ function candidate(seedHash2, cx, cz) {
   return best;
 }
 var anchorCache = /* @__PURE__ */ new Map();
-function cached2(cache, key2, make) {
-  if (cache.has(key2)) return cache.get(key2);
+function cached2(cache2, key2, make) {
+  if (cache2.has(key2)) return cache2.get(key2);
   const v = make();
-  cache.set(key2, v);
-  if (cache.size > 2e4) cache.delete(cache.keys().next().value);
+  cache2.set(key2, v);
+  if (cache2.size > 2e4) cache2.delete(cache2.keys().next().value);
   return v;
 }
 function regionAnchor(seedHash2, cx, cz) {
@@ -28541,7 +31296,8 @@ var NewsWire = class {
   frontier(by, ring2, prize, next) {
     const f = this.fleet(by);
     if (!f) return;
-    this.file({ ...f, w: 4, tag: "Frontier", icon: "\u{1F9ED}", title: `${f.who} reaches ${ring2} counties out`, detail: `first to the frontier \xB7 ${big2(prize)} bounty \xB7 next ${next} out` });
+    const tell = () => ({ title: `${f.who} reaches ${ring2} counties out`, detail: `first to the frontier \xB7 ${big2(prize)} bounty \xB7 next ${next} out` });
+    this.file({ ...f, w: 4, tag: "Frontier", icon: "\u{1F9ED}", ...tell() }, { key: `frontier|${by}`, tell });
   }
   /** The first fleet ever into a county (server/range.ts firstFooting); folded by fleet and day, never told for a hidden fleet. */
   first(by, cell, sea) {
@@ -31646,7 +34402,7 @@ function makePlan(seed, W2, D) {
   const trees = [];
   const treeOk = (x, z, gap, wetGap = 0.32) => {
     if (!inside(x, z, 0.25) || wet(x, z, wetGap) || roadDist(x, z) < 0.38 || taken(x, z)) return false;
-    for (let k = 0; k < 4; k++) if (taken(x + DIRS[k][0] * 0.22, z + DIRS[k][1] * 0.22)) return false;
+    for (let k = 0; k < 4; k++) if (taken(x + DIRS2[k][0] * 0.22, z + DIRS2[k][1] * 0.22)) return false;
     if (fields.some((f) => Math.abs(x - f.x) < (f.yaw ? f.d : f.w) / 2 + 0.35 && Math.abs(z - f.z) < (f.yaw ? f.w : f.d) / 2 + 0.35)) return false;
     if (features.some((f) => Math.hypot(f.x - x, f.z - z) < f.r + 0.3)) return false;
     return !trees.some(([tx, tz]) => Math.hypot(tx - x, tz - z) < gap);
@@ -31850,7 +34606,7 @@ function groundRate(w, i) {
 // src/world/roadGrade.ts
 var dirOf = (a, b) => {
   const dx = b % N3 - a % N3, dz = Math.floor(b / N3) - Math.floor(a / N3);
-  for (let d = 0; d < 4; d++) if (DIRS[d][0] === dx && DIRS[d][1] === dz) return d;
+  for (let d = 0; d < 4; d++) if (DIRS2[d][0] === dx && DIRS2[d][1] === dz) return d;
   return -1;
 };
 function movable(w, t) {
@@ -32086,7 +34842,7 @@ function blockSide(n2, d) {
 }
 function sideTiles(n2, d, wide) {
   if (wide === "tri") {
-    const fwd = DIRS[d][0] + DIRS[d][1] * N3, across = d % 2 === 0 ? N3 : 1;
+    const fwd = DIRS2[d][0] + DIRS2[d][1] * N3, across = d % 2 === 0 ? N3 : 1;
     return [n2 + fwd - across, n2 + fwd, n2 + fwd + across];
   }
   return wide ? blockSide(n2, d) : [n2];
@@ -32143,7 +34899,7 @@ function edgeLevel(w, n2, d, wide) {
 function deckTiles(a, b, d, wide) {
   const ax = a % N3, az = (a - ax) / N3, bx = b % N3, bz = (b - bx) / N3;
   const L = Math.abs(bx - ax) + Math.abs(bz - az) - 1 - blockExtra(wide);
-  const step2 = DIRS[d][0] + DIRS[d][1] * N3;
+  const step2 = DIRS2[d][0] + DIRS2[d][1] * N3;
   const out = [];
   if (L < 1) return out;
   for (const s of sideTiles(a, d, wide)) for (let j = 1; j <= L; j++) out.push({ tile: s + step2 * j, j, L });
@@ -32407,7 +35163,7 @@ function dirBetween(a, b) {
   return diff === 1 ? 0 : diff === N3 ? 1 : diff === -1 ? 2 : 3;
 }
 function link(w, a, d) {
-  const b = a + DIRS[d][0] + DIRS[d][1] * N3;
+  const b = a + DIRS2[d][0] + DIRS2[d][1] * N3;
   w.roadEdges[a] |= 1 << d;
   w.roadEdges[b] |= 1 << (d + 2 & 3);
 }
@@ -32516,6 +35272,25 @@ var WORKS_080_SPEC = {
   kelpFarm: { w: 5, d: 4, ...SEA_WORKS },
   salmonPens: { w: 5, d: 5, ...SEA_WORKS }
 };
+var PLANTS_080_SPEC = {
+  iceHouse: { w: 2, d: 2, zone: "edge", lot: 12 /* Gravel */, apart: 6 },
+  creamery: { w: 3, d: 2, zone: "edge", lot: 6 /* Asphalt */, apart: 6 },
+  bindery: { w: 2, d: 2, zone: "edge", lot: 2 /* Paved */, apart: 6 },
+  joinery: { w: 3, d: 2, zone: "edge", lot: 5 /* Yard */, apart: 6 },
+  printShop: { w: 2, d: 2, zone: "edge", lot: 2 /* Paved */, apart: 6 },
+  parcelHub: { w: 3, d: 3, zone: "edge", lot: 6 /* Asphalt */, apart: 6 },
+  readyMix: { w: 3, d: 3, zone: "edge", lot: 12 /* Gravel */, apart: 6 },
+  smokehouse: { w: 2, d: 2, zone: "edge", lot: 5 /* Yard */, apart: 6 },
+  winery: { w: 3, d: 2, zone: "edge", lot: 5 /* Yard */, apart: 6 },
+  alloyWorks: { w: 3, d: 3, zone: "edge", lot: 6 /* Asphalt */, apart: 6 },
+  atelier: { w: 2, d: 2, zone: "edge", lot: 2 /* Paved */, apart: 6 },
+  roastery: { w: 2, d: 2, zone: "edge", lot: 2 /* Paved */, apart: 6 },
+  cooperage: { w: 2, d: 2, zone: "edge", lot: 5 /* Yard */, apart: 6 },
+  glassworks: { w: 3, d: 2, zone: "edge", lot: 12 /* Gravel */, apart: 6 },
+  auctionHouse: { w: 2, d: 2, zone: "edge", lot: 2 /* Paved */, apart: 6 },
+  luthier: { w: 2, d: 1, zone: "edge", lot: 2 /* Paved */, apart: 6 },
+  outfitter: { w: 2, d: 2, zone: "edge", lot: 2 /* Paved */, apart: 6 }
+};
 var KIND_SPEC = {
   // the factions' town buildings (world/factionKinds.ts)
   ...FACTION_SPEC,
@@ -32525,6 +35300,7 @@ var KIND_SPEC = {
   ...NEXT_WORLD ? PLAY_SPEC : {},
   // (0.8.0 only, world/nextWorld.ts NEXT_080: the works by the line and out at sea)
   ...NEXT_080 ? WORKS_080_SPEC : {},
+  ...NEXT_080 ? PLANTS_080_SPEC : {},
   ...NEXT_WORLD ? RANCH_SPEC : {},
   // (and no onsen town's ryokan, baths, yubatake or hells: world/onsen.ts)
   ...NEXT_WORLD ? ONSEN_SPEC : {},
@@ -33097,7 +35873,7 @@ function greatParkFinish(c, s) {
     const joined = () => tiles2.some((i) => w.roadEdges[i] & 1 << side);
     if (joined()) continue;
     const mid2 = tiles2[tiles2.length >> 1], mx = mid2 % N3 + 0.5, mz = Math.floor(mid2 / N3) + 0.5;
-    const [ox, oz] = DIRS[side];
+    const [ox, oz] = DIRS2[side];
     for (const reach of [7, 10, 4]) {
       c.street(4 /* TwoLane */, [[mx, mz], c.clampPt(mx + ox * reach, mz + oz * reach)], STREET, 4);
       if (joined()) break;
@@ -33584,19 +36360,20 @@ var DECK_HALF = {
   [5 /* Truss */]: 0.27,
   [6 /* Sea */]: 0.29
 };
+var NEAR = { off: 0, y: 0, px: 0, pz: 0, u: 0 /* Ground */, dx: 0, dz: 1 };
 
 // src/world/plans/registry.ts
-var M = ["mega"];
+var M2 = ["mega"];
 var MM = ["mega", "metro"];
 var ALL = ["mega", "metro", "city"];
 var MC = ["metro", "city"];
 var PLAN_INFO = {
   // ---- today's, kept ----
-  channel: { id: "channel", label: "Channel city", after: "a grid either side of a dredged channel", tiers: [...M], fallback: ["grid"], styles: {} },
+  channel: { id: "channel", label: "Channel city", after: "a grid either side of a dredged channel", tiers: [...M2], fallback: ["grid"], styles: {} },
   grid: { id: "grid", label: "Avenue grid", after: "a grid of avenues", tiers: [...ALL], fallback: [], styles: { chicago: 1.5, newyork: 1.5, motherroad: 1.5, western: 1.5 } },
   strip: { id: "strip", label: "Strip", after: "Las Vegas", tiers: [...ALL], fallback: ["grid"], styles: { vegas: 4 } },
   // ---- grids with a twist ----
-  manhattan: { id: "manhattan", label: "Manhattan", after: "the Commissioners' Plan of 1811", tiers: [...M], wants: { sea: true }, fallback: ["lakefront", "grid"], styles: { newyork: 3, chicago: 1.5, deco: 1.5, postmodern: 1.5 } },
+  manhattan: { id: "manhattan", label: "Manhattan", after: "the Commissioners' Plan of 1811", tiers: [...M2], wants: { sea: true }, fallback: ["lakefront", "grid"], styles: { newyork: 3, chicago: 1.5, deco: 1.5, postmodern: 1.5 } },
   eixample: { id: "eixample", label: "Eixample", after: "Ildefons Cerd\xE0's Barcelona, 1859", tiers: [...MM], fallback: ["grid"], styles: { mediterranean: 2.5, moorish: 1.5, roman: 1.5, havana: 1.5, classic: 1.5 } },
   chessboard: { id: "chessboard", label: "Chessboard", after: "Chang'an, Heian-ky\u014D and Beijing", tiers: [...ALL], fallback: ["grid"], styles: { japanese: 3, chinese: 3, eastern: 1.5, spirit: 1.5, seasia: 1.5, roman: 1.5 } },
   hillsgrid: { id: "hillsgrid", label: "Hills grid", after: "San Francisco's 1850s survey", tiers: [...MM], wants: { relief: true }, keepRelief: 0.6, fallback: ["amphitheatre", "grid"], styles: { sanfran: 3, victorian: 1.5, pastel: 1.5, havana: 1.5, cycladic: 1.5 } },
@@ -33605,7 +36382,7 @@ var PLAN_INFO = {
   // ---- capitals and axes ----
   lenfant: { id: "lenfant", label: "L'Enfant", after: "Pierre L'Enfant's Washington, 1791", tiers: [...MM], fallback: ["etoiles", "grid"], styles: { capital: 4, classic: 1.5, colonial: 1.5, deco: 1.5 } },
   etoiles: { id: "etoiles", label: "\xC9toiles", after: "Haussmann's Paris, 1853\u201370", tiers: [...MM], wants: { river: true }, fallback: ["lenfant", "grid"], styles: { paris: 4, budapest: 1.5, classic: 1.5, london: 1.5, havana: 1.5 } },
-  planopiloto: { id: "planopiloto", label: "Plano Piloto", after: "L\xFAcio Costa's Bras\xEDlia, 1957", tiers: [...M], fallback: ["sectors", "grid"], styles: { modernist: 3, brutalist: 1.5, whitecity: 1.5, solarpunk: 1.5, cyberpunk: 1.5 } },
+  planopiloto: { id: "planopiloto", label: "Plano Piloto", after: "L\xFAcio Costa's Bras\xEDlia, 1957", tiers: [...M2], fallback: ["sectors", "grid"], styles: { modernist: 3, brutalist: 1.5, whitecity: 1.5, solarpunk: 1.5, cyberpunk: 1.5 } },
   sectors: { id: "sectors", label: "Sectors", after: "Le Corbusier's Chandigarh, 1951", tiers: [...MM], fallback: ["gridroads", "grid"], styles: { brutalist: 3, modernist: 2, mughal: 1.5, himalayan: 1.5 } },
   gardencapital: { id: "gardencapital", label: "Garden capital", after: "Putrajaya, 1995", tiers: [...MM], fallback: ["sectors", "grid"], styles: { mughal: 2, ottoman: 1.5, moorish: 1.5, seasia: 1.5, dubai: 1.5, solarpunk: 1.5 } },
   mandala: { id: "mandala", label: "Mandala", after: "Madurai, and Jaipur's nine squares", tiers: [...MC], fallback: ["chessboard", "grid"], styles: { mughal: 3, seasia: 1.5, himalayan: 1.5, eastern: 1.5, spirit: 1.5 } },
@@ -33619,16 +36396,16 @@ var PLAN_INFO = {
   // ---- water cities ----
   bridges: { id: "bridges", label: "River of bridges", after: "Budapest and Prague", tiers: [...MM], wants: { river: true }, fallback: ["channel", "grid"], styles: { budapest: 3, gothic: 1.5, russian: 1.5, london: 1.5, paris: 1.5 } },
   harbour: { id: "harbour", label: "Harbour regeneration", after: "D\xFCsseldorf's MedienHafen, Hamburg's HafenCity, London's Docklands", tiers: [...MM], wants: { river: true }, fallback: ["channel", "grid"], styles: { postmodern: 2, modernist: 1.5, london: 1.5, dutch: 1.5, norse: 1.5, steampunk: 1.5 } },
-  vertical: { id: "vertical", label: "Vertical harbour", after: "Hong Kong", tiers: [...M], keepRelief: 0.55, fallback: ["channel", "grid"], styles: { hongkong: 4, cyberpunk: 2, tokyo: 1.5, osaka: 1.5, chinese: 1.5 } },
+  vertical: { id: "vertical", label: "Vertical harbour", after: "Hong Kong", tiers: [...M2], keepRelief: 0.55, fallback: ["channel", "grid"], styles: { hongkong: 4, cyberpunk: 2, tokyo: 1.5, osaka: 1.5, chinese: 1.5 } },
   archipelago: { id: "archipelago", label: "Archipelago", after: "Stockholm", tiers: [...MM], wants: { sea: true }, fallback: ["canalring", "channel", "grid"], styles: { norse: 3, granite: 1.5, venice: 1.5, dutch: 1.5, seasia: 1.5 } },
   causeway: { id: "causeway", label: "Causeway lake", after: "Tenochtitlan, 1325", tiers: [...MM], fallback: ["gardencapital", "grid"], styles: { maya: 3, andean: 1.5, venice: 1.5, adobe: 1.5 } },
-  fronds: { id: "fronds", label: "Fronds", after: "Dubai's coast", tiers: [...M], wants: { sea: true }, fallback: ["grid"], styles: { dubai: 4, vegas: 1.5, postmodern: 1.5, cyberpunk: 1.5 } },
+  fronds: { id: "fronds", label: "Fronds", after: "Dubai's coast", tiers: [...M2], wants: { sea: true }, fallback: ["grid"], styles: { dubai: 4, vegas: 1.5, postmodern: 1.5, cyberpunk: 1.5 } },
   // ---- corridors and regions ----
-  fingers: { id: "fingers", label: "Finger plan", after: "Copenhagen's Finger Plan, 1947", tiers: [...M], wants: { arms: true }, fallback: ["rings", "grid"], styles: { norse: 2, dutch: 1.5, tudor: 1.5, modernist: 1.5, solarpunk: 1.5 } },
-  linear: { id: "linear", label: "Linear city", after: "Soria y Mata's Ciudad Lineal (1882) and The Line", tiers: [...M], wants: { arms: true }, fallback: ["fingers", "grid"], styles: { cyberpunk: 2, solarpunk: 2, steampunk: 1.5, brutalist: 1.5, motherroad: 1.5 } },
-  newtowns: { id: "newtowns", label: "New towns", after: "Singapore's URA master plans", tiers: [...M], fallback: ["polycentric", "grid"], styles: { solarpunk: 2, seasia: 1.5, hongkong: 1.5, chinese: 1.5, modernist: 1.5 } },
-  polycentric: { id: "polycentric", label: "Polycentric", after: "the Randstad and the Ruhr", tiers: [...M], fallback: ["grid"], styles: { dutch: 2, london: 1.5, gothic: 1.5, brutalist: 1.5 } },
-  freeway: { id: "freeway", label: "Freeway city", after: "Los Angeles", tiers: [...M], fallback: ["gridroads", "grid"], styles: { motherroad: 2, western: 1.5, postmodern: 1.5, vegas: 1.5, deco: 1.5 } },
+  fingers: { id: "fingers", label: "Finger plan", after: "Copenhagen's Finger Plan, 1947", tiers: [...M2], wants: { arms: true }, fallback: ["rings", "grid"], styles: { norse: 2, dutch: 1.5, tudor: 1.5, modernist: 1.5, solarpunk: 1.5 } },
+  linear: { id: "linear", label: "Linear city", after: "Soria y Mata's Ciudad Lineal (1882) and The Line", tiers: [...M2], wants: { arms: true }, fallback: ["fingers", "grid"], styles: { cyberpunk: 2, solarpunk: 2, steampunk: 1.5, brutalist: 1.5, motherroad: 1.5 } },
+  newtowns: { id: "newtowns", label: "New towns", after: "Singapore's URA master plans", tiers: [...M2], fallback: ["polycentric", "grid"], styles: { solarpunk: 2, seasia: 1.5, hongkong: 1.5, chinese: 1.5, modernist: 1.5 } },
+  polycentric: { id: "polycentric", label: "Polycentric", after: "the Randstad and the Ruhr", tiers: [...M2], fallback: ["grid"], styles: { dutch: 2, london: 1.5, gothic: 1.5, brutalist: 1.5 } },
+  freeway: { id: "freeway", label: "Freeway city", after: "Los Angeles", tiers: [...M2], fallback: ["gridroads", "grid"], styles: { motherroad: 2, western: 1.5, postmodern: 1.5, vegas: 1.5, deco: 1.5 } },
   // ---- hills kept ----
   hilltown: { id: "hilltown", label: "Hill town", after: "Siena, Assisi and Mont-Saint-Michel", tiers: [...MC], wants: { relief: true }, keepRelief: 0.6, fallback: ["medina", "grid"], styles: { medieval: 2, mediterranean: 2, roman: 1.5, tudor: 1.5, himalayan: 1.5, andean: 1.5 } },
   citadel: { id: "citadel", label: "Citadel and new town", after: "Edinburgh's Old and New Towns, 1767", tiers: [...MM], wants: { relief: true }, keepRelief: 0.5, fallback: ["hilltown", "grid"], styles: { gothic: 2, medieval: 1.5, granite: 1.5, london: 1.5, tudor: 1.5 } },
@@ -33760,19 +36537,19 @@ function sealedLake(p, ctx, tiles, level) {
   return true;
 }
 function seaRiver(dig, rng, o) {
-  const p = dig.p, S = p.size;
+  const p = dig.p, S2 = p.size;
   const s0 = o.axis === 0 ? p.x0 : p.z0;
   const ph = rng() * Math.PI * 2, turns = 0.6 + rng() * 0.5;
-  const centre2 = (s) => Math.round(o.at + o.amp * Math.sin(ph + s / S * Math.PI * 2 * turns));
+  const centre2 = (s) => Math.round(o.at + o.amp * Math.sin(ph + s / S2 * Math.PI * 2 * turns));
   const xy = (s, u) => o.axis === 0 ? [s0 + s, u] : [u, s0 + s];
   const head = new Dig(p, dig.ctx), tail = new Dig(p, dig.ctx);
-  const [hx, hz] = xy(0, centre2(0)), [tx, tz] = xy(S - 1, centre2(S - 1));
+  const [hx, hz] = xy(0, centre2(0)), [tx, tz] = xy(S2 - 1, centre2(S2 - 1));
   const back = o.axis === 0 ? 2 : 3, on = o.axis === 0 ? 0 : 1;
   const atHead = head.toSea(hx, hz, back, o.half), atTail = tail.toSea(tx, tz, on, o.half);
   if (!atHead && !atTail) return null;
-  const from = atHead ? 0 : Math.round(S * (1 - (o.end ?? 0.8))), to = atTail ? S - 1 : Math.round(S * (o.end ?? 0.8));
+  const from = atHead ? 0 : Math.round(S2 * (1 - (o.end ?? 0.8))), to = atTail ? S2 - 1 : Math.round(S2 * (o.end ?? 0.8));
   const line = [];
-  for (let s = 0; s < S; s++) {
+  for (let s = 0; s < S2; s++) {
     const c = centre2(s);
     line.push(c);
     if (s < from || s > to) continue;
@@ -34192,13 +36969,13 @@ function lakeOn(p, ctx, tiles) {
   return sealedLake(p, ctx, tiles, Math.floor(lo) - 1);
 }
 function riverThrough(p, ctx, rng, o = {}) {
-  const S = p.size;
+  const S2 = p.size;
   const first = o.axis ?? (rng() < 0.5 ? 0 : 1);
   for (const axis of o.axis !== void 0 ? [first] : [first, 1 - first]) {
     const dig = new Dig(p, ctx);
-    const at = Math.round((axis === 0 ? p.z0 : p.x0) + S * (0.5 + (o.off ?? (rng() - 0.5) * 0.16)));
+    const at = Math.round((axis === 0 ? p.z0 : p.x0) + S2 * (0.5 + (o.off ?? (rng() - 0.5) * 0.16)));
     const half = o.half ?? 2;
-    const line = seaRiver(dig, rng, { axis, at, half, amp: o.amp ?? S * 0.07, island: o.island ? { at: Math.round(S * 0.42), len: 7 } : void 0 });
+    const line = seaRiver(dig, rng, { axis, at, half, amp: o.amp ?? S2 * 0.07, island: o.island ? { at: Math.round(S2 * 0.42), len: 7 } : void 0 });
     if (!line || !dig.clear()) continue;
     dig.commit();
     (p.carved ??= {}).river = { axis, line, half };
@@ -34221,10 +36998,10 @@ function riverDist(p, x, z) {
 function bridgesOver(c, p, every, reach = 6, type = 4 /* TwoLane */) {
   const r = p.carved?.river;
   if (!r) return 0;
-  const S = p.size, s0 = r.axis === 0 ? p.x0 : p.z0;
+  const S2 = p.size, s0 = r.axis === 0 ? p.x0 : p.z0;
   let n2 = 0;
   for (let k = every / 2; k < 0.97; k += every) {
-    const s = s0 + Math.round(S * k);
+    const s = s0 + Math.round(S2 * k);
     const at = riverAt(p, s);
     const a = r.axis === 0 ? [s + 0.5, at - r.half - reach] : [at - r.half - reach, s + 0.5];
     const b = r.axis === 0 ? [s + 0.5, at + r.half + reach] : [at + r.half + reach, s + 0.5];
@@ -34235,7 +37012,7 @@ function bridgesOver(c, p, every, reach = 6, type = 4 /* TwoLane */) {
 
 // src/world/plans/families/grids.ts
 function gridAround(c, xs, zs, holes, type = 4 /* TwoLane */, opts = {}) {
-  const t = c.t, X0 = t.x0, Z0 = t.z0, S = t.size;
+  const t = c.t, X0 = t.x0, Z0 = t.z0, S2 = t.size;
   const inHole = (x, z) => holes.some(([a, b, cc, d]) => x >= a && x < cc && z >= b && z < d);
   const mx = xs[xs.length >> 1], mz = zs[zs.length >> 1];
   const run = (pts, main2) => {
@@ -34255,38 +37032,38 @@ function gridAround(c, xs, zs, holes, type = 4 /* TwoLane */, opts = {}) {
   };
   for (const x of xs) {
     const pts = [];
-    for (let z = Z0; z < Z0 + S; z++) pts.push([x + 0.5, z + 0.5]);
+    for (let z = Z0; z < Z0 + S2; z++) pts.push([x + 0.5, z + 0.5]);
     run(pts, x === mx);
   }
   for (const z of zs) {
     const pts = [];
-    for (let x = X0; x < X0 + S; x++) pts.push([x + 0.5, z + 0.5]);
+    for (let x = X0; x < X0 + S2; x++) pts.push([x + 0.5, z + 0.5]);
     run(pts, z === mz);
   }
 }
 CARVERS.manhattan = (p, ctx, rng) => {
-  const S = p.size;
+  const S2 = p.size;
   const side = nearestSeaSide(new Dig(p, ctx), 30);
   const axis = side === 1 || side === 3 ? 1 : 0;
   const dig = new Dig(p, ctx);
   const lo = axis === 0 ? p.z0 : p.x0;
-  const west = seaRiver(dig, rng, { axis, at: lo + Math.round(S * 0.12), half: 3, amp: 0, end: 0.97 });
-  const east = seaRiver(dig, rng, { axis, at: lo + Math.round(S * 0.86), half: 2, amp: 0, end: 0.97 });
+  const west = seaRiver(dig, rng, { axis, at: lo + Math.round(S2 * 0.12), half: 3, amp: 0, end: 0.97 });
+  const east = seaRiver(dig, rng, { axis, at: lo + Math.round(S2 * 0.86), half: 2, amp: 0, end: 0.97 });
   if (!west || !east || !dig.clear()) return false;
   dig.commit();
-  (p.carved ??= {}).note = { axis, west: lo + Math.round(S * 0.12), east: lo + Math.round(S * 0.86), tip: side };
+  (p.carved ??= {}).note = { axis, west: lo + Math.round(S2 * 0.12), east: lo + Math.round(S2 * 0.86), tip: side };
   return true;
 };
 LAYERS.manhattan = (c, p, rng) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0;
+  const S2 = p.size, x0 = p.x0, z0 = p.z0;
   const n2 = p.carved?.note;
   if (!n2) return false;
   const axis = n2.axis;
   const P2 = (s, u) => axis === 0 ? [s, u] : [u, s];
-  const s0 = axis === 0 ? x0 : z0, s1 = s0 + S, uW = n2.west + 4, uE = n2.east - 3;
+  const s0 = axis === 0 ? x0 : z0, s1 = s0 + S2, uW = n2.west + 4, uE = n2.east - 3;
   const tipAtEnd = n2.tip === 0 || n2.tip === 1;
   c.bridgeSpan = 10;
-  const parkU = Math.round(uW + (uE - uW) * 0.38), parkLen = Math.min(30, Math.round(S * 0.34)), parkS = tipAtEnd ? s0 + Math.round(S * 0.14) : s1 - Math.round(S * 0.14) - parkLen;
+  const parkU = Math.round(uW + (uE - uW) * 0.38), parkLen = Math.min(30, Math.round(S2 * 0.34)), parkS = tipAtEnd ? s0 + Math.round(S2 * 0.14) : s1 - Math.round(S2 * 0.14) - parkLen;
   const cp = axis === 0 ? parkAt(c, parkS, parkU, parkLen, 8, rng) : parkAt(c, parkU, parkS, 8, parkLen, rng);
   const avs = [];
   for (let u = uW; u <= uE; u += 8) avs.push(u);
@@ -34297,42 +37074,42 @@ LAYERS.manhattan = (c, p, rng) => {
   }
   for (let s = s0 + 2; s < s1 - 1; s += 3) avenue(c, 4 /* TwoLane */, P2(s + 0.5, uW + 0.5), P2(s + 0.5, uE + 0.5), { main: false, route: false });
   for (const f of [0.3, 0.55, 0.8]) {
-    const s = s0 + Math.round(S * f);
-    avenue(c, 4 /* TwoLane */, P2(s + 0.5, uE - 2), P2(s + 0.5, Math.min(n2.east + 6, (axis === 0 ? z0 : x0) + S - 1)), { bridge: true, main: false, route: false });
+    const s = s0 + Math.round(S2 * f);
+    avenue(c, 4 /* TwoLane */, P2(s + 0.5, uE - 2), P2(s + 0.5, Math.min(n2.east + 6, (axis === 0 ? z0 : x0) + S2 - 1)), { bridge: true, main: false, route: false });
   }
-  const sw = s0 + Math.round(S * (tipAtEnd ? 0.2 : 0.8));
+  const sw = s0 + Math.round(S2 * (tipAtEnd ? 0.2 : 0.8));
   c.ends(avenue(c, 5 /* FourLane */, P2(sw, uW + 1), P2(sw, Math.max(n2.west - 6, (axis === 0 ? z0 : x0) + 1)), { bridge: true, main: true, route: false }));
   const b0 = tipAtEnd ? s0 + 4 : s1 - 5, dir = tipAtEnd ? 1 : -1;
   const len = Math.floor((uE - uW) * 0.5);
-  const k1 = P2(b0 + dir * len + 0.5, uW + len + 0.5), k2 = P2(b0 + dir * (len + Math.round(S * 0.3)) + 0.5, uW + len + 0.5);
+  const k1 = P2(b0 + dir * len + 0.5, uW + len + 0.5), k2 = P2(b0 + dir * (len + Math.round(S2 * 0.3)) + 0.5, uW + len + 0.5);
   const tail = Math.min(len, Math.floor((uE - uW) * 0.45));
-  const broadway = path(c, 4 /* TwoLane */, [P2(b0 + 0.5, uW + 0.5), k1, k2, P2(b0 + dir * (len + Math.round(S * 0.3) + tail) + 0.5, uW + len - tail + 0.5)], { main: true });
+  const broadway = path(c, 4 /* TwoLane */, [P2(b0 + 0.5, uW + 0.5), k1, k2, P2(b0 + dir * (len + Math.round(S2 * 0.3) + tail) + 0.5, uW + len - tail + 0.5)], { main: true });
   for (const k of [k1, k2]) put(c, "fountainSquare", { near: k, maxDist: 3 });
-  const tipS = tipAtEnd ? s1 - 6 : s0 + 6, midS = s0 + Math.round(S * 0.55);
+  const tipS = tipAtEnd ? s1 - 6 : s0 + 6, midS = s0 + Math.round(S2 * 0.55);
   c.anchors.seat = P2(tipS, (uW + uE) / 2 - 3);
   c.anchors.landmark = P2(midS, (uW + uE) / 2);
   c.anchors.museum = P2(parkS + parkLen / 2, parkU + 10);
   c.anchors.arch = P2(tipS + dir * 2, uW - 1);
-  c.anchors.stadium = P2(s0 + Math.round(S * 0.3), uE - 3);
+  c.anchors.stadium = P2(s0 + Math.round(S2 * 0.3), uE - 3);
   put(c, "memorial", { near: P2(tipS + dir * 3, uW + 1), maxDist: 6, waterside: "prefer" });
-  c.dfAt = dfCores(c, [P2(midS, (uW + uE) / 2), P2(tipS, (uW + uE) / 2)], S * 0.42);
+  c.dfAt = dfCores(c, [P2(midS, (uW + uE) / 2), P2(tipS, (uW + uE) / 2)], S2 * 0.42);
   finishTown(c, { grow: 4, parks: cp ? [cp] : [], axis: broadway });
   return true;
 };
 LAYERS.eixample = (c, p, rng) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
   const g = mega ? 8 : 7;
-  const qs = Math.round(S * 0.32), corner = Math.floor(rng() * 4);
-  const qx0 = corner & 1 ? x0 + S - qs : x0, qz0 = corner & 2 ? z0 + S - qs : z0;
+  const qs = Math.round(S2 * 0.32), corner = Math.floor(rng() * 4);
+  const qx0 = corner & 1 ? x0 + S2 - qs : x0, qz0 = corner & 2 ? z0 + S2 - qs : z0;
   const hole = [qx0, qz0, qx0 + qs, qz0 + qs];
-  const xs = gridLines(x0, x0 + S, g), zs = gridLines(z0, z0 + S, g);
+  const xs = gridLines(x0, x0 + S2, g), zs = gridLines(z0, z0 + S2, g);
   gridAround(c, xs, zs, [hole]);
-  const gx = nearest(xs, x0 + S * (corner & 1 ? 0.36 : 0.64)), gz = nearest(zs, z0 + S * (corner & 2 ? 0.36 : 0.64));
+  const gx = nearest(xs, x0 + S2 * (corner & 1 ? 0.36 : 0.64)), gz = nearest(zs, z0 + S2 * (corner & 2 ? 0.36 : 0.64));
   const glo = [gx + 0.5, gz + 0.5];
-  const gran = avenue(c, 5 /* FourLane */, [x0 + 1, gz], [x0 + S - 1, gz], { main: true, route: false });
+  const gran = avenue(c, 5 /* FourLane */, [x0 + 1, gz], [x0 + S2 - 1, gz], { main: true, route: false });
   c.ends(gran);
   const edge = (from, dx, dz) => {
-    const ex = dx > 0 ? x0 + S - 1 - from[0] : from[0] - x0, ez = dz > 0 ? z0 + S - 1 - from[1] : from[1] - z0;
+    const ex = dx > 0 ? x0 + S2 - 1 - from[0] : from[0] - x0, ez = dz > 0 ? z0 + S2 - 1 - from[1] : from[1] - z0;
     const k = Math.floor(Math.min(ex, ez));
     return [from[0] + dx * k, from[1] + dz * k];
   };
@@ -34352,13 +37129,13 @@ LAYERS.eixample = (c, p, rng) => {
     }
   }
   reserve(c, cham);
-  c.anchors.temple = [nearest(xs, x0 + S * 0.5) + g / 2, nearest(zs, z0 + S * 0.5) - g / 2];
+  c.anchors.temple = [nearest(xs, x0 + S2 * 0.5) + g / 2, nearest(zs, z0 + S2 * 0.5) - g / 2];
   c.anchors.seat = sq;
   c.anchors.landmark = [gx + 2.5, gz + 2.5];
   c.anchors.arch = [qx0 + (corner & 1 ? -2 : qs + 2), qz0 + qs / 2];
   c.anchors.market = [ram[0][0] + 2, (ram[0][1] + ram[1][1]) / 2];
-  c.dfAt = dfFlat(0.5, { at: glo, r: S * 0.14 });
-  c.capAt = (x, z) => Math.hypot(x - glo[0], z - glo[1]) < S * 0.14 ? 0 : 8;
+  c.dfAt = dfFlat(0.5, { at: glo, r: S2 * 0.14 });
+  c.capAt = (x, z) => Math.hypot(x - glo[0], z - glo[1]) < S2 * 0.14 ? 0 : 8;
   const keep = c.t.surface;
   c.t.surface = "brick";
   grow(c, c.t.roads + (mega ? 10 : 6), 3 /* Paved */);
@@ -34368,12 +37145,12 @@ LAYERS.eixample = (c, p, rng) => {
   return true;
 };
 LAYERS.chessboard = (c, p, rng) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, kind = p.kind;
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, kind = p.kind;
   if (kind === "city") return castrum(c, p);
   const g = kind === "mega" ? 10 : 9;
-  const xs = gridLines(x0, x0 + S, g), zs = gridLines(z0, z0 + S, g);
-  const pw = Math.round(S * 0.26), pd = Math.round(S * 0.16);
-  const px0 = Math.round(x0 + S / 2 - pw / 2), pz0 = z0 + 1;
+  const xs = gridLines(x0, x0 + S2, g), zs = gridLines(z0, z0 + S2, g);
+  const pw = Math.round(S2 * 0.26), pd = Math.round(S2 * 0.16);
+  const px0 = Math.round(x0 + S2 / 2 - pw / 2), pz0 = z0 + 1;
   const garden = parkAt(c, px0 + 2, pz0 + 1, pw - 4, Math.min(8, pd - 6), rng);
   gridAround(c, xs, zs, [[px0, pz0, px0 + pw, pz0 + pd]]);
   for (let a = 0; a + 1 < xs.length; a++) for (let b = 0; b + 1 < zs.length; b++) {
@@ -34382,43 +37159,43 @@ LAYERS.chessboard = (c, p, rng) => {
     avenue(c, 3 /* Paved */, [mx + 0.5, zs[b] + 1.5], [mx + 0.5, zs[b + 1] - 0.5], { main: false });
     avenue(c, 3 /* Paved */, [xs[a] + 1.5, mz + 0.5], [xs[a + 1] - 0.5, mz + 0.5], { main: false });
   }
-  const ax = Math.round(x0 + S / 2);
-  const axis = avenue(c, 5 /* FourLane */, [ax, z0 + S - 1], [ax, pz0 + pd], { main: true });
+  const ax = Math.round(x0 + S2 / 2);
+  const axis = avenue(c, 5 /* FourLane */, [ax, z0 + S2 - 1], [ax, pz0 + pd], { main: true });
   c.ends(axis);
-  for (const [fx, fz] of [[0, 0], [1, 0], [0, 1], [1, 1], [0.5, 1], [0, 0.5], [1, 0.5]]) put(c, "watchtower", { near: [x0 + 1 + fx * (S - 3), z0 + 1 + fz * (S - 3)], maxDist: 3 });
+  for (const [fx, fz] of [[0, 0], [1, 0], [0, 1], [1, 1], [0.5, 1], [0, 0.5], [1, 0.5]]) put(c, "watchtower", { near: [x0 + 1 + fx * (S2 - 3), z0 + 1 + fz * (S2 - 3)], maxDist: 3 });
   c.anchors.seat = [ax + 0.5, pz0 + pd - 3];
   c.anchors.palace = [ax - 6, pz0 + pd - 3];
   c.anchors.garden = [ax + 6, pz0 + pd - 3];
-  for (const side of [-1, 1]) put(c, "marketHall", { near: [ax + side * S * 0.27, z0 + S * 0.6], maxDist: 5 });
-  for (let k = 0; k < 4; k++) put(c, "pagoda", { near: [x0 + S * (k & 1 ? 0.8 : 0.2), z0 + S * (k & 2 ? 0.82 : 0.42)], maxDist: 6 });
+  for (const side of [-1, 1]) put(c, "marketHall", { near: [ax + side * S2 * 0.27, z0 + S2 * 0.6], maxDist: 5 });
+  for (let k = 0; k < 4; k++) put(c, "pagoda", { near: [x0 + S2 * (k & 1 ? 0.8 : 0.2), z0 + S2 * (k & 2 ? 0.82 : 0.42)], maxDist: 6 });
   c.dfAt = dfFlat(0.6);
   c.maxFloors = 6;
   finishTown(c, { grow: 0, parks: garden ? [garden] : [], axis });
   return true;
 };
 function castrum(c, p) {
-  const S = p.size, x0 = p.x0, z0 = p.z0;
-  const xs = gridLines(x0 + 2, x0 + S - 2, 6), zs = gridLines(z0 + 2, z0 + S - 2, 6);
-  const fx = nearest(xs, x0 + S / 2), fz = nearest(zs, z0 + S / 2);
+  const S2 = p.size, x0 = p.x0, z0 = p.z0;
+  const xs = gridLines(x0 + 2, x0 + S2 - 2, 6), zs = gridLines(z0 + 2, z0 + S2 - 2, 6);
+  const fx = nearest(xs, x0 + S2 / 2), fz = nearest(zs, z0 + S2 / 2);
   gridAround(c, xs.filter((x) => x !== fx), zs.filter((z) => z !== fz), [[fx - 3, fz - 3, fx + 4, fz + 4]]);
-  const cardo = avenue(c, 4 /* TwoLane */, [fx + 0.5, z0 + 0.5], [fx + 0.5, z0 + S - 0.5], { main: true, route: false });
+  const cardo = avenue(c, 4 /* TwoLane */, [fx + 0.5, z0 + 0.5], [fx + 0.5, z0 + S2 - 0.5], { main: true, route: false });
   c.ends(cardo);
-  c.ends(avenue(c, 4 /* TwoLane */, [x0 + 0.5, fz + 0.5], [x0 + S - 0.5, fz + 0.5], { main: true, route: false }));
+  c.ends(avenue(c, 4 /* TwoLane */, [x0 + 0.5, fz + 0.5], [x0 + S2 - 0.5, fz + 0.5], { main: true, route: false }));
   c.anchors.seat = [fx + 3.5, fz + 3.5];
   c.anchors.market = [fx - 2.5, fz - 2.5];
   put(c, "forum", { near: [fx - 3, fz + 3], maxDist: 4 });
-  put(c, "colosseum", { near: [x0 + S - 4, z0 + S - 4], maxDist: 8 }) ?? put(c, "amphitheatre", { near: [x0 + S - 4, z0 + S - 4], maxDist: 8 });
-  for (const [ax, az] of [[0, 0], [1, 0], [0, 1], [1, 1]]) put(c, "watchtower", { near: [x0 + 1 + ax * (S - 3), z0 + 1 + az * (S - 3)], maxDist: 3 });
-  c.dfAt = dfCores(c, [[fx, fz]], S * 0.6);
+  put(c, "colosseum", { near: [x0 + S2 - 4, z0 + S2 - 4], maxDist: 8 }) ?? put(c, "amphitheatre", { near: [x0 + S2 - 4, z0 + S2 - 4], maxDist: 8 });
+  for (const [ax, az] of [[0, 0], [1, 0], [0, 1], [1, 1]]) put(c, "watchtower", { near: [x0 + 1 + ax * (S2 - 3), z0 + 1 + az * (S2 - 3)], maxDist: 3 });
+  c.dfAt = dfCores(c, [[fx, fz]], S2 * 0.6);
   c.maxFloors = 5;
   finishTown(c, { grow: 0, axis: cardo });
   return true;
 }
 LAYERS.hillsgrid = (c, p, rng) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
   const w = c.w;
-  let hx = x0 + S / 2, hz = z0 + S / 2, hh = -Infinity;
-  for (let z = z0 + 6; z < z0 + S - 6; z += 2) for (let x = x0 + 6; x < x0 + S - 6; x += 2) {
+  let hx = x0 + S2 / 2, hz = z0 + S2 / 2, hh = -Infinity;
+  for (let z = z0 + 6; z < z0 + S2 - 6; z += 2) for (let x = x0 + 6; x < x0 + S2 - 6; x += 2) {
     const e = w.elev[idx(x, z)];
     if (e > hh) {
       hh = e;
@@ -34426,31 +37203,31 @@ LAYERS.hillsgrid = (c, p, rng) => {
       hz = z;
     }
   }
-  const peak = discTiles(p, [[hx + 0.5, hz + 0.5, S * 0.07]], 2);
+  const peak = discTiles(p, [[hx + 0.5, hz + 0.5, S2 * 0.07]], 2);
   for (const i of peak) if (!w.road[i]) w.flags[i] |= 32 /* Poi */;
   const g = mega ? 6 : 5;
-  const xs = gridLines(x0, x0 + S, g), zs = gridLines(z0, z0 + S, g);
+  const xs = gridLines(x0, x0 + S2, g), zs = gridLines(z0, z0 + S2, g);
   const mxx = xs[xs.length >> 1], mzz = zs[zs.length >> 1];
   for (const x of xs) {
-    const n2 = avenue(c, 4 /* TwoLane */, [x + 0.5, z0 + 0.5], [x + 0.5, z0 + S - 0.5], { main: x === mxx, route: false });
+    const n2 = avenue(c, 4 /* TwoLane */, [x + 0.5, z0 + 0.5], [x + 0.5, z0 + S2 - 0.5], { main: x === mxx, route: false });
     if (x === mxx) c.ends(n2);
   }
   for (const z of zs) {
-    const n2 = avenue(c, 4 /* TwoLane */, [x0 + 0.5, z + 0.5], [x0 + S - 0.5, z + 0.5], { main: z === mzz, route: false });
+    const n2 = avenue(c, 4 /* TwoLane */, [x0 + 0.5, z + 0.5], [x0 + S2 - 0.5, z + 0.5], { main: z === mzz, route: false });
     if (z === mzz) c.ends(n2);
   }
   for (const i of peak) w.flags[i] &= ~32 /* Poi */;
   reserve(c, peak);
   const side = p.carved?.seaSide ?? Math.floor(rng() * 4);
-  const fromX = side === 0 ? x0 + S - 2 : side === 2 ? x0 + 1 : x0 + S * 0.8, fromZ = side === 1 ? z0 + S - 2 : side === 3 ? z0 + 1 : z0 + S * 0.8;
+  const fromX = side === 0 ? x0 + S2 - 2 : side === 2 ? x0 + 1 : x0 + S2 * 0.8, fromZ = side === 1 ? z0 + S2 - 2 : side === 3 ? z0 + 1 : z0 + S2 * 0.8;
   const towardX = hx > fromX ? 1 : -1, towardZ = hz > fromZ ? 1 : -1;
   const k = Math.floor(Math.min(Math.abs(hx - fromX), Math.abs(hz - fromZ)) * 0.8);
   const market = avenue(c, 4 /* TwoLane */, [fromX + 0.5, fromZ + 0.5], [fromX + 0.5 + towardX * k, fromZ + 0.5 + towardZ * k], { four: true });
-  const gp = parkAt(c, Math.max(x0 + 3, Math.min(x0 + S - 28, hx - 26)), Math.min(z0 + S - 12, hz + S * 0.12), Math.min(26, Math.round(S * 0.32)), 8, rng);
+  const gp = parkAt(c, Math.max(x0 + 3, Math.min(x0 + S2 - 28, hx - 26)), Math.min(z0 + S2 - 12, hz + S2 * 0.12), Math.min(26, Math.round(S2 * 0.32)), 8, rng);
   put(c, "observationTower", { highest: true, zone: "any" });
   c.anchors.seat = [fromX + towardX * 6, fromZ + towardZ * 3];
   c.anchors.landmark = [fromX + towardX * 3, fromZ + towardZ * 6];
-  c.dfAt = dfCores(c, [[fromX + towardX * 4, fromZ + towardZ * 4]], S * 0.5);
+  c.dfAt = dfCores(c, [[fromX + towardX * 4, fromZ + towardZ * 4]], S2 * 0.5);
   finishTown(c, { grow: 2, parks: gp ? [gp] : [], axis: market });
   return true;
 };
@@ -34460,14 +37237,14 @@ CARVERS.hillsgrid = (p, ctx) => {
 };
 CARVERS.gridroads = (p, ctx, rng) => {
   riverThrough(p, ctx, rng, { half: 1, amp: p.size * 0.1, off: 0.18 });
-  const S = p.size;
-  lakeOn(p, ctx, discTiles(p, [[p.x0 + S * 0.25, p.z0 + S * 0.25, S * 0.05]]));
+  const S2 = p.size;
+  lakeOn(p, ctx, discTiles(p, [[p.x0 + S2 * 0.25, p.z0 + S2 * 0.25, S2 * 0.05]]));
   return true;
 };
 LAYERS.gridroads = (c, p, rng) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
   const G = mega ? 21 : 19;
-  const xs = gridLines(x0, x0 + S, G), zs = gridLines(z0, z0 + S, G);
+  const xs = gridLines(x0, x0 + S2, G), zs = gridLines(z0, z0 + S2, G);
   if (xs.length < 3 || zs.length < 3) return false;
   c.bridgeSpan = 6;
   for (const x of xs) for (const z of zs) ring(c, 4 /* TwoLane */, x, z, 2, 0, { main: true });
@@ -34475,7 +37252,7 @@ LAYERS.gridroads = (c, p, rng) => {
   for (const z of zs) for (let a = 0; a + 1 < xs.length; a++) avenue(c, 4 /* TwoLane */, [xs[a] + 2.5, z + 0.5], [xs[a + 1] - 1.5, z + 0.5], { main: true, bridge: true });
   for (const x of [xs[0], xs[xs.length - 1]]) {
     c.ends(avenue(c, 4 /* TwoLane */, [x + 0.5, z0 + 0.5], [x + 0.5, zs[0] - 1.5], { main: true }));
-    c.ends(avenue(c, 4 /* TwoLane */, [x + 0.5, zs[zs.length - 1] + 2.5], [x + 0.5, z0 + S - 0.5], { main: true }));
+    c.ends(avenue(c, 4 /* TwoLane */, [x + 0.5, zs[zs.length - 1] + 2.5], [x + 0.5, z0 + S2 - 0.5], { main: true }));
   }
   const ca = xs.length >> 1, cb = zs.length >> 1;
   const cx0 = xs[ca - 1] ?? xs[0], cx1 = xs[ca], cz0 = zs[cb - 1] ?? zs[0], cz1 = zs[cb];
@@ -34486,7 +37263,7 @@ LAYERS.gridroads = (c, p, rng) => {
   if (r) {
     const band = [];
     const s0 = r.axis === 0 ? x0 : z0;
-    for (let s = s0; s < s0 + S; s++) {
+    for (let s = s0; s < s0 + S2; s++) {
       const at = riverAt(p, s);
       for (let u = at - r.half - 3; u <= at + r.half + 3; u++) {
         const [x, z] = r.axis === 0 ? [s, u] : [u, s];
@@ -34498,35 +37275,35 @@ LAYERS.gridroads = (c, p, rng) => {
   c.anchors.seat = [centre2[0] - 4, centre2[1] - 4];
   c.anchors.landmark = [centre2[0] + 3, centre2[1] + 2];
   c.anchors.stadium = [xs[xs.length - 1] - 8, zs[zs.length - 1] - 8];
-  put(c, "pagoda", { near: [x0 + S * 0.25, z0 + S * 0.32], maxDist: 6 });
-  c.dfAt = dfCores(c, [centre2], S * 0.32);
+  put(c, "pagoda", { near: [x0 + S2 * 0.25, z0 + S2 * 0.32], maxDist: 6 });
+  c.dfAt = dfCores(c, [centre2], S2 * 0.32);
   void rng;
   finishTown(c, { grow: mega ? 46 : 26, growType: 3 /* Paved */ });
   return true;
 };
 CARVERS.lakefront = (p, ctx, rng) => {
-  const S = p.size, dig = new Dig(p, ctx);
+  const S2 = p.size, dig = new Dig(p, ctx);
   const side = nearestSeaSide(dig, 30);
   if (side < 0) return false;
   const F = (s, u) => {
     switch (side) {
       case 0:
-        return [p.x0 + S - 1 - u, p.z0 + s];
+        return [p.x0 + S2 - 1 - u, p.z0 + s];
       case 1:
-        return [p.x0 + s, p.z0 + S - 1 - u];
+        return [p.x0 + s, p.z0 + S2 - 1 - u];
       case 2:
         return [p.x0 + u, p.z0 + s];
       default:
         return [p.x0 + s, p.z0 + u];
     }
   };
-  const stemS = Math.round(S * (0.45 + (rng() - 0.5) * 0.1)), fork = Math.round(S * 0.5);
+  const stemS = Math.round(S2 * (0.45 + (rng() - 0.5) * 0.1)), fork = Math.round(S2 * 0.5);
   for (let u = 0; u <= fork; u++) for (let o = -1; o <= 1; o++) {
     const [x, z] = F(stemS + o, u);
     dig.mark(x, z, 2);
   }
   for (const sgn of [-1, 1]) {
-    for (let s = 0; s < S * 0.42; s++) {
+    for (let s = 0; s < S2 * 0.42; s++) {
       const bend = Math.round(s * 0.18);
       for (let o = -1; o <= 0; o++) {
         const [x, z] = F(stemS + sgn * s, fork + bend + o);
@@ -34543,16 +37320,16 @@ CARVERS.lakefront = (p, ctx, rng) => {
   return true;
 };
 LAYERS.lakefront = (c, p, rng) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
   const side = p.carved?.seaSide;
   if (side === void 0) return false;
-  const stem = p.carved?.note?.stem ?? S / 2, fork = p.carved?.note?.fork ?? S / 2;
+  const stem = p.carved?.note?.stem ?? S2 / 2, fork = p.carved?.note?.fork ?? S2 / 2;
   const F = (s, u) => {
     switch (side) {
       case 0:
-        return [x0 + S - 1 - u + 0.5, z0 + s + 0.5];
+        return [x0 + S2 - 1 - u + 0.5, z0 + s + 0.5];
       case 1:
-        return [x0 + s + 0.5, z0 + S - 1 - u + 0.5];
+        return [x0 + s + 0.5, z0 + S2 - 1 - u + 0.5];
       case 2:
         return [x0 + u + 0.5, z0 + s + 0.5];
       default:
@@ -34561,44 +37338,44 @@ LAYERS.lakefront = (c, p, rng) => {
   };
   c.bridgeSpan = 6;
   const parks = [];
-  for (let s = 3; s + 14 < S - 3; s += 16) {
+  for (let s = 3; s + 14 < S2 - 3; s += 16) {
     if (Math.abs(s + 7 - stem) < 9) continue;
     const [ax, az] = F(s, 1), [bx, bz] = F(s + 13, 6);
     const pk = parkAt(c, Math.min(ax, bx) - 0.5, Math.min(az, bz) - 0.5, Math.abs(bx - ax) + 1, Math.abs(bz - az) + 1, rng);
     if (pk) parks.push(pk);
   }
   const g = mega ? 6 : 5;
-  const xs = gridLines(x0, x0 + S, g), zs = gridLines(z0, z0 + S, g);
+  const xs = gridLines(x0, x0 + S2, g), zs = gridLines(z0, z0 + S2, g);
   gridAround(c, xs, zs, [], 4 /* TwoLane */, { bridge: true });
-  const lsd = avenue(c, 5 /* FourLane */, F(1, 9), F(S - 2, 9), { main: true, bridge: true });
+  const lsd = avenue(c, 5 /* FourLane */, F(1, 9), F(S2 - 2, 9), { main: true, bridge: true });
   c.ends(lsd);
   const loop2 = F(stem + 6, fork - 6);
   c.anchors.landmark = loop2;
   c.anchors.seat = F(stem + 10, fork - 10);
   c.anchors.museum = F(stem - 10, 12);
-  c.anchors.stadium = F(Math.round(S * 0.85), 14);
+  c.anchors.stadium = F(Math.round(S2 * 0.85), 14);
   c.anchors.garden = F(stem + 12, 4);
-  c.dfAt = dfCores(c, [loop2], S * 0.45);
+  c.dfAt = dfCores(c, [loop2], S2 * 0.45);
   finishTown(c, { grow: 0, parks, axis: lsd });
   return true;
 };
 
 // src/world/plans/families/capitals.ts
 LAYERS.lenfant = (c, p, rng) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
   const g = mega ? 8 : 7;
-  const xs = gridLines(x0, x0 + S, g), zs = gridLines(z0, z0 + S, g);
+  const xs = gridLines(x0, x0 + S2, g), zs = gridLines(z0, z0 + S2, g);
   if (xs.length < 5 || zs.length < 5) return false;
-  const capX = nearest(xs, x0 + S * 0.64), capZ = nearest(zs, z0 + S * 0.56);
-  const monX = nearest(xs, x0 + S * 0.3), whZ = nearest(zs, z0 + S * 0.26);
+  const capX = nearest(xs, x0 + S2 * 0.64), capZ = nearest(zs, z0 + S2 * 0.56);
+  const monX = nearest(xs, x0 + S2 * 0.3), whZ = nearest(zs, z0 + S2 * 0.26);
   if (capX - monX < 2 * g || capZ - whZ < 2 * g) return false;
   const mall = parkAt(c, monX + 2, capZ - 3, capX - monX - 3, 6, rng);
   const ellipse = parkAt(c, monX - 3, whZ + 3, 6, capZ - whZ - 7, rng) ?? parkAt(c, monX - 2, whZ + 3, 4, capZ - whZ - 8, rng);
   plainGrid(c, xs, zs);
   const cap = [capX + 0.5, capZ + 0.5], wh = [monX + 0.5, whZ + 0.5];
   const reach = (from, dx, dz) => {
-    const ex = dx > 0 ? x0 + S - 1 - from[0] : from[0] - x0;
-    const ez = dz > 0 ? z0 + S - 1 - from[1] : from[1] - z0;
+    const ex = dx > 0 ? x0 + S2 - 1 - from[0] : from[0] - x0;
+    const ez = dz > 0 ? z0 + S2 - 1 - from[1] : from[1] - z0;
     const n2 = Math.floor(Math.min(ex, ez));
     return [from[0] + dx * n2, from[1] + dz * n2];
   };
@@ -34608,7 +37385,7 @@ LAYERS.lenfant = (c, p, rng) => {
   for (const [dx, dz] of [[1, -1], [1, 1], [-1, 1]]) avenue(c, 4 /* TwoLane */, cap, reach(cap, dx, dz), { four: true });
   for (const [dx, dz] of [[1, -1], [-1, -1]]) avenue(c, 4 /* TwoLane */, wh, reach(wh, dx, dz), { four: true });
   for (const [px, pz] of [[capX + 2 * g, capZ - 2 * g], [capX + 2 * g, capZ + 2 * g], [monX + 2 * g, whZ - 2 * g]]) {
-    if (px > x0 + 6 && px < x0 + S - 7 && pz > z0 + 6 && pz < z0 + S - 7) ring(c, 4 /* TwoLane */, px, pz, 3, 2, { main: false });
+    if (px > x0 + 6 && px < x0 + S2 - 7 && pz > z0 + 6 && pz < z0 + S2 - 7) ring(c, 4 /* TwoLane */, px, pz, 3, 2, { main: false });
   }
   c.anchors.seat = [capX + 2.5, capZ + 0.5];
   c.anchors.palace = [monX + 0.5, whZ - 1.5];
@@ -34617,7 +37394,7 @@ LAYERS.lenfant = (c, p, rng) => {
   c.anchors.garden = [monX + 0.5, capZ + 6.5];
   c.anchors.museum = [(monX + capX) / 2, capZ + 4.5];
   c.anchors.landmark = [capX - 1.5, whZ - 1.5];
-  c.dfAt = dfCores(c, [[(monX + capX) / 2, whZ + 0.5]], S * 0.5);
+  c.dfAt = dfCores(c, [[(monX + capX) / 2, whZ + 0.5]], S2 * 0.5);
   c.maxFloors = 12;
   finishTown(c, { grow: mega ? 10 : 6, parks: [mall, ellipse].filter((s) => !!s), axis });
   return true;
@@ -34627,29 +37404,29 @@ CARVERS.etoiles = (p, ctx, rng) => {
   return true;
 };
 LAYERS.etoiles = (c, p, rng) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
   const r = p.carved?.river;
   const ra = r?.axis ?? 0;
-  const P2 = (s, u) => ra === 0 ? [x0 + s * S, z0 + u * S] : [x0 + u * S, z0 + s * S];
+  const P2 = (s, u) => ra === 0 ? [x0 + s * S2, z0 + u * S2] : [x0 + u * S2, z0 + s * S2];
   const clear = (pt, need) => riverDist(p, pt[0], pt[1]) > need;
   c.bridgeSpan = 9;
-  const C2 = [x0 + S / 2, z0 + S / 2];
-  ring(c, 4 /* TwoLane */, C2[0], C2[1], Math.round(S * 0.3), Math.round(S * 0.12), { bridge: true });
-  const riverU = r ? (riverAt(p, (ra === 0 ? x0 : z0) + Math.round(S * 0.25)) - (ra === 0 ? z0 : x0)) / S : 0.5;
+  const C2 = [x0 + S2 / 2, z0 + S2 / 2];
+  ring(c, 4 /* TwoLane */, C2[0], C2[1], Math.round(S2 * 0.3), Math.round(S2 * 0.12), { bridge: true });
+  const riverU = r ? (riverAt(p, (ra === 0 ? x0 : z0) + Math.round(S2 * 0.25)) - (ra === 0 ? z0 : x0)) / S2 : 0.5;
   const sideU = riverU > 0.5 ? 0.28 : 0.72;
   const E1 = P2(0.22, sideU);
   if (!clear(E1, 7)) E1[ra === 0 ? 1 : 0] += (sideU < 0.5 ? -1 : 1) * 5;
   const axisU = Math.round(ra === 0 ? E1[1] : E1[0]);
-  const axis = ra === 0 ? avenue(c, 5 /* FourLane */, [x0 + 1, axisU], [x0 + S - 1, axisU], { main: true, bridge: true }) : avenue(c, 5 /* FourLane */, [axisU, z0 + 1], [axisU, z0 + S - 1], { main: true, bridge: true });
+  const axis = ra === 0 ? avenue(c, 5 /* FourLane */, [x0 + 1, axisU], [x0 + S2 - 1, axisU], { main: true, bridge: true }) : avenue(c, 5 /* FourLane */, [axisU, z0 + 1], [axisU, z0 + S2 - 1], { main: true, bridge: true });
   c.ends(axis);
-  etoile(c, 4 /* TwoLane */, E1[0], E1[1], 4, Math.round(S * 0.2), COMPASS, "arch");
+  etoile(c, 4 /* TwoLane */, E1[0], E1[1], 4, Math.round(S2 * 0.2), COMPASS, "arch");
   const stars = [P2(0.74, 1 - sideU), P2(0.62, sideU < 0.5 ? 0.16 : 0.84)];
   if (mega) stars.push(P2(0.4, 1 - sideU));
-  for (const s of stars) if (clear(s, 6)) etoile(c, 4 /* TwoLane */, s[0], s[1], 3, Math.round(S * 0.13), COMPASS);
+  for (const s of stars) if (clear(s, 6)) etoile(c, 4 /* TwoLane */, s[0], s[1], 3, Math.round(S2 * 0.13), COMPASS);
   bridgesOver(c, p, mega ? 0.11 : 0.16);
   const lw = 6, ll = mega ? 16 : 12;
-  const ls = (ra === 0 ? x0 : z0) + Math.round(S * 0.38);
-  const lr = r ? riverAt(p, ls) : (ra === 0 ? z0 : x0) + S * 0.5;
+  const ls = (ra === 0 ? x0 : z0) + Math.round(S2 * 0.38);
+  const lr = r ? riverAt(p, ls) : (ra === 0 ? z0 : x0) + S2 * 0.5;
   const toward = sideU < 0.5 ? 1 : -1;
   const near2 = lr + toward * ((r?.half ?? 0) + 4);
   const u0 = toward > 0 ? near2 : near2 - ll;
@@ -34658,41 +37435,41 @@ LAYERS.etoiles = (c, p, rng) => {
   const axisEnd = P2(0.6, sideU);
   c.anchors.museum = ra === 0 ? [axisEnd[0], axisU + 2.5] : [axisU + 2.5, axisEnd[1]];
   if (r) {
-    const s = (ra === 0 ? x0 : z0) + Math.round(S * 0.45), at = riverAt(p, s);
+    const s = (ra === 0 ? x0 : z0) + Math.round(S2 * 0.45), at = riverAt(p, s);
     c.anchors.temple = ra === 0 ? [s, at - toward * (r.half + 4)] : [at - toward * (r.half + 4), s];
   }
   const def = ra === 0 ? [x0 + 4, axisU + 3.5] : [axisU + 3.5, z0 + 4];
   c.anchors.landmark = def;
   c.anchors.seat = P2(0.5, sideU < 0.5 ? 0.4 : 0.6);
-  c.dfAt = dfFlat(0.5, { at: def, r: S * 0.16 });
-  c.capAt = (x, z) => Math.hypot(x - def[0], z - def[1]) < S * 0.16 ? 0 : 8;
+  c.dfAt = dfFlat(0.5, { at: def, r: S2 * 0.16 });
+  c.capAt = (x, z) => Math.hypot(x - def[0], z - def[1]) < S2 * 0.16 ? 0 : 8;
   finishTown(c, { grow: mega ? 64 : 36, parks: lawn ? [lawn] : [], axis });
   return true;
 };
 CARVERS.planopiloto = (p, ctx, rng) => {
-  const S = p.size, east = rng() < 0.5;
-  const cx = east ? p.x0 + S * 0.9 : p.x0 + S * 0.1;
+  const S2 = p.size, east = rng() < 0.5;
+  const cx = east ? p.x0 + S2 * 0.9 : p.x0 + S2 * 0.1;
   const discs = [];
   for (let k = 0; k <= 6; k++) {
     const a = -0.9 + k / 6 * 1.8;
-    discs.push([cx + (east ? -1 : 1) * Math.cos(a) * S * 0.06, p.z0 + S * 0.5 + Math.sin(a) * S * 0.36, S * 0.07]);
+    discs.push([cx + (east ? -1 : 1) * Math.cos(a) * S2 * 0.06, p.z0 + S2 * 0.5 + Math.sin(a) * S2 * 0.36, S2 * 0.07]);
   }
   (p.carved ??= {}).note = { east: east ? 1 : 0 };
   lakeOn(p, ctx, discTiles(p, discs));
   return true;
 };
 LAYERS.planopiloto = (c, p, rng) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0;
+  const S2 = p.size, x0 = p.x0, z0 = p.z0;
   const east = (p.carved?.note?.east ?? 1) === 1, sx = east ? 1 : -1;
-  const X = (f) => Math.round(east ? x0 + S * f : x0 + S * (1 - f)) + 0.5;
-  const Z = (f) => Math.round(z0 + S * f) + 0.5;
+  const X = (f) => Math.round(east ? x0 + S2 * f : x0 + S2 * (1 - f)) + 0.5;
+  const Z = (f) => Math.round(z0 + S2 * f) + 0.5;
   const axisZ = Z(0.5);
   const head = X(0.74), tail = X(0.04);
   const axis = avenue(c, 5 /* FourLane */, [Math.min(head, tail), axisZ], [Math.max(head, tail), axisZ], { main: true });
   c.ends(axis);
-  const espW = Math.round(S * 0.2);
+  const espW = Math.round(S2 * 0.2);
   const esp = parkAt(c, Math.min(X(0.46), X(0.46) + sx * espW) + (east ? 0 : 1), axisZ + 2, espW, 5, rng);
-  const top2 = Z(0.05), bot = Z(0.95), bow = Math.round(S * 0.16);
+  const top2 = Z(0.05), bot = Z(0.95), bow = Math.round(S2 * 0.16);
   const wx = X(0.3);
   const knee1 = [wx + sx * bow, top2 + bow], knee2 = [wx + sx * bow, bot - bow];
   const wings = path(c, 4 /* TwoLane */, [[wx, top2], knee1, knee2, [wx, bot]], { four: true, main: true });
@@ -34700,7 +37477,7 @@ LAYERS.planopiloto = (c, p, rng) => {
   for (let f = 0.13; f < 0.9; f += 0.105) {
     if (Math.abs(f - 0.5) < 0.07) continue;
     const z = Z(f);
-    const off = Math.max(0, Math.min(bow, f < 0.5 ? (f - 0.05) * S : (0.95 - f) * S));
+    const off = Math.max(0, Math.min(bow, f < 0.5 ? (f - 0.05) * S2 : (0.95 - f) * S2));
     const hx = wx + sx * off;
     for (const side of [-1, 1]) {
       const qx = hx + side * 7;
@@ -34721,23 +37498,23 @@ LAYERS.planopiloto = (c, p, rng) => {
   return true;
 };
 CARVERS.sectors = (p, ctx) => {
-  const S = p.size;
-  lakeOn(p, ctx, discTiles(p, [[p.x0 + S * 0.86, p.z0 + S * 0.1, S * 0.06], [p.x0 + S * 0.8, p.z0 + S * 0.12, S * 0.05]]));
+  const S2 = p.size;
+  lakeOn(p, ctx, discTiles(p, [[p.x0 + S2 * 0.86, p.z0 + S2 * 0.1, S2 * 0.06], [p.x0 + S2 * 0.8, p.z0 + S2 * 0.12, S2 * 0.05]]));
   return true;
 };
 LAYERS.sectors = (c, p) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
   const G = mega ? 20 : 17;
-  const capD = Math.round(S * 0.2);
-  const xs = gridLines(x0, x0 + S, G), zs = gridLines(z0 + capD, z0 + S, G);
+  const capD = Math.round(S2 * 0.2);
+  const xs = gridLines(x0, x0 + S2, G), zs = gridLines(z0 + capD, z0 + S2, G);
   if (xs.length < 3 || zs.length < 2) return false;
-  for (const x of xs) c.ends(avenue(c, 5 /* FourLane */, [x, z0 + capD - 1], [x, z0 + S - 1], { main: true, route: false }));
-  for (const z of zs) c.ends(avenue(c, 5 /* FourLane */, [x0 + 1, z], [x0 + S - 1, z], { main: true, route: false }));
-  const mx = nearest(xs, x0 + S * 0.5);
+  for (const x of xs) c.ends(avenue(c, 5 /* FourLane */, [x, z0 + capD - 1], [x, z0 + S2 - 1], { main: true, route: false }));
+  for (const z of zs) c.ends(avenue(c, 5 /* FourLane */, [x0 + 1, z], [x0 + S2 - 1, z], { main: true, route: false }));
+  const mx = nearest(xs, x0 + S2 * 0.5);
   c.ends(avenue(c, 5 /* FourLane */, [mx, z0 + 2], [mx, z0 + capD], { main: true }));
-  avenue(c, 4 /* TwoLane */, [x0 + S * 0.25, z0 + capD - 2.5], [x0 + S * 0.75, z0 + capD - 2.5], { main: false });
+  avenue(c, 4 /* TwoLane */, [x0 + S2 * 0.25, z0 + capD - 2.5], [x0 + S2 * 0.75, z0 + capD - 2.5], { main: false });
   const cells2 = [];
-  const xb = [x0, ...xs, x0 + S - 1], zb = [z0 + capD - 1, ...zs, z0 + S - 1];
+  const xb = [x0, ...xs, x0 + S2 - 1], zb = [z0 + capD - 1, ...zs, z0 + S2 - 1];
   for (let a = 0; a + 1 < xb.length; a++) for (let b = 0; b + 1 < zb.length; b++) {
     const sx0 = xb[a] + 1, sx1 = xb[a + 1] - 1, sz0 = zb[b] + 1, sz1 = zb[b + 1] - 1;
     if (sx1 - sx0 < 9 || sz1 - sz0 < 9) continue;
@@ -34747,28 +37524,28 @@ LAYERS.sectors = (c, p) => {
     avenue(c, 3 /* Paved */, [cx + 3.5, sz0 - 0.5], [cx + 3.5, sz1 + 0.5], { main: false });
     reserve(c, rect(cx - 4, sz0 + 1, 2, sz1 - sz0 - 1).filter((i) => !c.w.road[i]));
   }
-  const capX = x0 + S * 0.5;
+  const capX = x0 + S2 * 0.5;
   c.anchors.seat = [capX - 7, z0 + capD * 0.45];
   c.anchors.palace = [capX + 7, z0 + capD * 0.45];
   c.anchors.arch = [capX, z0 + capD * 0.3];
-  const want = [capX, z0 + S * 0.58];
+  const want = [capX, z0 + S2 * 0.58];
   const centre2 = cells2.reduce((b, q) => Math.hypot(q[0] - want[0], q[1] - want[1]) < Math.hypot(b[0] - want[0], b[1] - want[1]) ? q : b, cells2[0] ?? want);
   c.anchors.landmark = [centre2[0] + 2, centre2[1] - 3];
   c.anchors.museum = [centre2[0] - 5, centre2[1] + 4];
   put(c, "ministry", { near: [capX - 13, z0 + capD * 0.45], maxDist: 6 });
-  c.dfAt = dfCores(c, [centre2], S * 0.45);
+  c.dfAt = dfCores(c, [centre2], S2 * 0.45);
   finishTown(c, { grow: mega ? 24 : 14, growType: 3 /* Paved */ });
   return true;
 };
 CARVERS.gardencapital = (p, ctx, rng) => {
-  const S = p.size, cx = p.x0 + S * 0.5, cz = p.z0 + S * 0.6;
-  const discs = [[cx, cz, S * 0.17]];
+  const S2 = p.size, cx = p.x0 + S2 * 0.5, cz = p.z0 + S2 * 0.6;
+  const discs = [[cx, cz, S2 * 0.17]];
   for (let k = 0; k < 4; k++) {
     const a = rng() * Math.PI * 2;
-    discs.push([cx + Math.cos(a) * S * 0.16, cz + Math.sin(a) * S * 0.13, S * (0.07 + rng() * 0.04)]);
+    discs.push([cx + Math.cos(a) * S2 * 0.16, cz + Math.sin(a) * S2 * 0.13, S2 * (0.07 + rng() * 0.04)]);
   }
   const tiles = discTiles(p, discs, 4);
-  const isle = S * 0.075;
+  const isle = S2 * 0.075;
   for (const i of [...tiles]) {
     const x = i % N3, z = (i - x) / N3;
     if (Math.hypot(x + 0.5 - cx, z + 0.5 - cz) < isle) tiles.delete(i);
@@ -34777,50 +37554,50 @@ CARVERS.gardencapital = (p, ctx, rng) => {
   return lakeOn(p, ctx, tiles);
 };
 LAYERS.gardencapital = (c, p, rng) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
-  const [ix, iz] = p.carved?.pts?.isle ?? [x0 + S / 2, z0 + S * 0.6];
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
+  const [ix, iz] = p.carved?.pts?.isle ?? [x0 + S2 / 2, z0 + S2 * 0.6];
   c.bridgeSpan = 12;
   const bx = Math.round(ix);
-  const axis = avenue(c, 5 /* FourLane */, [bx, z0 + 2], [bx, z0 + S - 1], { main: true, bridge: true });
+  const axis = avenue(c, 5 /* FourLane */, [bx, z0 + 2], [bx, z0 + S2 - 1], { main: true, bridge: true });
   c.ends(axis);
-  c.ends(avenue(c, 4 /* TwoLane */, [x0 + 1, Math.round(iz) + 0.5], [x0 + S - 1, Math.round(iz) + 0.5], { main: true, bridge: true }));
-  ring(c, 4 /* TwoLane */, ix, iz, Math.round(S * 0.34), Math.round(S * 0.12), { bridge: true });
-  ring(c, 3 /* Paved */, ix, iz, Math.max(3, Math.round(S * 0.075) - 2), 2, { main: false });
+  c.ends(avenue(c, 4 /* TwoLane */, [x0 + 1, Math.round(iz) + 0.5], [x0 + S2 - 1, Math.round(iz) + 0.5], { main: true, bridge: true }));
+  ring(c, 4 /* TwoLane */, ix, iz, Math.round(S2 * 0.34), Math.round(S2 * 0.12), { bridge: true });
+  ring(c, 3 /* Paved */, ix, iz, Math.max(3, Math.round(S2 * 0.075) - 2), 2, { main: false });
   const wet = parkAt(c, x0 + 4, z0 + 4, mega ? 14 : 10, mega ? 9 : 7, rng);
   c.anchors.seat = [bx + 2.5, z0 + 4.5];
-  c.anchors.temple = [ix + S * 0.2, iz - S * 0.2];
+  c.anchors.temple = [ix + S2 * 0.2, iz - S2 * 0.2];
   c.anchors.landmark = [ix + 3, iz + 2];
   c.anchors.museum = [ix - 4, iz - 2];
   for (let k = 0; k < (mega ? 6 : 3); k++) {
     const a = k / (mega ? 6 : 3) * Math.PI * 2 + 0.3;
-    put(c, "ministry", { near: [ix + Math.cos(a) * S * 0.28, iz + Math.sin(a) * S * 0.24], maxDist: 5 });
+    put(c, "ministry", { near: [ix + Math.cos(a) * S2 * 0.28, iz + Math.sin(a) * S2 * 0.24], maxDist: 5 });
   }
-  c.dfAt = dfCores(c, [[ix, iz]], S * 0.6);
-  c.capAt = (x, z) => Math.hypot(x - ix, z - iz) < S * 0.1 ? 0 : 9;
+  c.dfAt = dfCores(c, [[ix, iz]], S2 * 0.6);
+  c.capAt = (x, z) => Math.hypot(x - ix, z - iz) < S2 * 0.1 ? 0 : 9;
   finishTown(c, { grow: mega ? 18 : 10, parks: wet ? [wet] : [], axis });
   return true;
 };
 CARVERS.mandala = (p, ctx) => {
-  const S = p.size, cx = p.x0 + Math.round(S * 0.5), cz = p.z0 + Math.round(S * 0.5);
+  const S2 = p.size, cx = p.x0 + Math.round(S2 * 0.5), cz = p.z0 + Math.round(S2 * 0.5);
   const t = /* @__PURE__ */ new Set();
   for (let z = cz + 4; z < cz + 7; z++) for (let x = cx + 4; x < cx + 7; x++) t.add(idx(x, z));
   lakeOn(p, ctx, t);
   return true;
 };
 LAYERS.mandala = (c, p) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, city = p.kind === "city";
-  const cx = x0 + Math.round(S * 0.5), cz = z0 + Math.round(S * 0.5);
-  for (const f of [0.42, 0.29, 0.15]) ring(c, 4 /* TwoLane */, cx, cz, Math.round(S * f), 0, { main: f > 0.3 });
-  const inner = Math.round(S * 0.15);
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, city = p.kind === "city";
+  const cx = x0 + Math.round(S2 * 0.5), cz = z0 + Math.round(S2 * 0.5);
+  for (const f of [0.42, 0.29, 0.15]) ring(c, 4 /* TwoLane */, cx, cz, Math.round(S2 * f), 0, { main: f > 0.3 });
+  const inner = Math.round(S2 * 0.15);
   for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-    c.ends(avenue(c, 4 /* TwoLane */, [cx + dx * inner + 0.5, cz + dz * inner + 0.5], [cx + dx * Math.floor(S / 2 - 1) + 0.5, cz + dz * Math.floor(S / 2 - 1) + 0.5], { main: true }));
+    c.ends(avenue(c, 4 /* TwoLane */, [cx + dx * inner + 0.5, cz + dz * inner + 0.5], [cx + dx * Math.floor(S2 / 2 - 1) + 0.5, cz + dz * Math.floor(S2 / 2 - 1) + 0.5], { main: true }));
   }
   c.anchors.temple = [cx + 0.5, cz + 0.5];
-  c.anchors.seat = [cx - S * 0.22, cz - S * 0.22];
-  c.anchors.market = [cx + S * 0.22, cz - S * 0.22];
+  c.anchors.seat = [cx - S2 * 0.22, cz - S2 * 0.22];
+  c.anchors.market = [cx + S2 * 0.22, cz - S2 * 0.22];
   put(c, city ? "temple" : "cathedral", { near: [cx + 0.5, cz + 0.5], maxDist: 4 }) ?? put(c, "temple", { near: [cx + 0.5, cz + 0.5], maxDist: 6 });
-  for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) put(c, "watchtower", { near: [cx + dx * (S / 2 - 2) + 0.5 + dz * 2, cz + dz * (S / 2 - 2) + 0.5 + dx * 2], maxDist: 3 });
-  c.dfAt = dfCores(c, [[cx, cz]], S * 0.55);
+  for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) put(c, "watchtower", { near: [cx + dx * (S2 / 2 - 2) + 0.5 + dz * 2, cz + dz * (S2 / 2 - 2) + 0.5 + dx * 2], maxDist: 3 });
+  c.dfAt = dfCores(c, [[cx, cz]], S2 * 0.55);
   c.maxFloors = city ? 4 : 6;
   finishTown(c, { grow: city ? 4 : 8 });
   return true;
@@ -34832,36 +37609,36 @@ CARVERS.rings = (p, ctx, rng) => {
   return true;
 };
 LAYERS.rings = (c, p) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
-  const cx = x0 + S / 2, cz = z0 + S / 2;
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
+  const cx = x0 + S2 / 2, cz = z0 + S2 / 2;
   c.bridgeSpan = 9;
-  ring(c, 4 /* TwoLane */, cx, cz, Math.round(S * 0.13), Math.round(S * 0.05), { bridge: true });
-  ring(c, 4 /* TwoLane */, cx, cz, Math.round(S * 0.25), Math.round(S * 0.1), { bridge: true });
-  ring(c, 5 /* FourLane */, cx, cz, Math.round(S * 0.37), 0, { bridge: true });
-  if (mega) ring(c, 5 /* FourLane */, cx, cz, Math.round(S * 0.47), 0, { bridge: true });
-  const sq = spokes(c, 5 /* FourLane */, cx, cz, Math.round(S * 0.06), Math.round(S * 0.5), COMPASS.slice(0, 4), { bridge: true });
+  ring(c, 4 /* TwoLane */, cx, cz, Math.round(S2 * 0.13), Math.round(S2 * 0.05), { bridge: true });
+  ring(c, 4 /* TwoLane */, cx, cz, Math.round(S2 * 0.25), Math.round(S2 * 0.1), { bridge: true });
+  ring(c, 5 /* FourLane */, cx, cz, Math.round(S2 * 0.37), 0, { bridge: true });
+  if (mega) ring(c, 5 /* FourLane */, cx, cz, Math.round(S2 * 0.47), 0, { bridge: true });
+  const sq = spokes(c, 5 /* FourLane */, cx, cz, Math.round(S2 * 0.06), Math.round(S2 * 0.5), COMPASS.slice(0, 4), { bridge: true });
   for (const n2 of sq) c.ends(n2);
-  spokes(c, 4 /* TwoLane */, cx, cz, Math.round(S * 0.08), Math.round(S * 0.5), COMPASS.slice(4), { bridge: true });
+  spokes(c, 4 /* TwoLane */, cx, cz, Math.round(S2 * 0.08), Math.round(S2 * 0.5), COMPASS.slice(4), { bridge: true });
   bridgesOver(c, p, 0.2);
   c.anchors.seat = [cx + 0.5, cz + 0.5];
   c.anchors.palace = [cx - 4, cz - 4];
   c.anchors.temple = [cx + 4, cz - 4];
   c.anchors.arch = [cx + 0.5, cz + 6];
-  c.anchors.landmark = [cx + S * 0.37 * 0.7, cz - S * 0.37 * 0.7];
-  c.anchors.stadium = [cx - S * 0.3, cz + S * 0.3];
+  c.anchors.landmark = [cx + S2 * 0.37 * 0.7, cz - S2 * 0.37 * 0.7];
+  c.anchors.stadium = [cx - S2 * 0.3, cz + S2 * 0.3];
   if (c.t.style === "russian") put(c, "kremlin", { near: [cx + 0.5, cz + 0.5], maxDist: 5 });
-  const third = S * 0.37;
+  const third = S2 * 0.37;
   c.dfAt = (x, z) => {
     const d = Math.hypot(x - cx, z - cz);
-    return d < S * 0.15 ? 0.5 : Math.min(1, Math.abs(d - third) / (S * 0.26));
+    return d < S2 * 0.15 ? 0.5 : Math.min(1, Math.abs(d - third) / (S2 * 0.26));
   };
   finishTown(c, { grow: mega ? 40 : 22 });
   return true;
 };
 function fortOf(p) {
-  const S = p.size;
-  const R = p.kind === "mega" ? S * 0.26 : p.kind === "metro" ? S * 0.36 : S * 0.44;
-  return { cx: p.x0 + S / 2, cz: p.z0 + S / 2, R };
+  const S2 = p.size;
+  const R = p.kind === "mega" ? S2 * 0.26 : p.kind === "metro" ? S2 * 0.36 : S2 * 0.44;
+  return { cx: p.x0 + S2 / 2, cz: p.z0 + S2 / 2, R };
 }
 function inStar(x, z, cx, cz, R, k = 0.72) {
   const dx = x - cx, dz = z - cz, d = Math.hypot(dx, dz);
@@ -34883,18 +37660,18 @@ CARVERS.starfort = (p, ctx) => {
 };
 LAYERS.starfort = (c, p) => {
   const { cx, cz, R } = fortOf(p);
-  const S = p.size, x0 = p.x0, z0 = p.z0, small = p.kind === "city";
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, small = p.kind === "city";
   c.bridgeSpan = 6;
   ring(c, 4 /* TwoLane */, cx, cz, 4, 2, { main: false });
   spokes(c, 4 /* TwoLane */, cx, cz, 5, Math.round(R * 0.62), COMPASS, { main: false });
   ring(c, 4 /* TwoLane */, cx, cz, Math.round(R * 0.48), Math.round(R * 0.2), { main: false });
   for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1]]) {
-    const a = [cx + dx * (R * 0.5), cz + dz * (R * 0.5)], b = [cx + dx * (S / 2 - 1), cz + dz * (S / 2 - 1)];
+    const a = [cx + dx * (R * 0.5), cz + dz * (R * 0.5)], b = [cx + dx * (S2 / 2 - 1), cz + dz * (S2 / 2 - 1)];
     c.ends(avenue(c, 4 /* TwoLane */, c.clampPt(...a), c.clampPt(...b), { main: true, bridge: true }));
   }
   if (!small) {
     const h = [Math.floor(cx - R - 4), Math.floor(cz - R - 4), Math.ceil(cx + R + 5), Math.ceil(cz + R + 5)];
-    gridAround(c, gridLines(x0, x0 + S, 7), gridLines(z0, z0 + S, 7), [h]);
+    gridAround(c, gridLines(x0, x0 + S2, 7), gridLines(z0, z0 + S2, 7), [h]);
   }
   for (const [dx, dz] of COMPASS) {
     const f = dx && dz ? Math.SQRT1_2 : 1;
@@ -34903,19 +37680,19 @@ LAYERS.starfort = (c, p) => {
   c.anchors.temple = [cx + 0.5, cz - 6];
   c.anchors.seat = [cx + 6, cz + 0.5];
   c.anchors.market = [cx - 6, cz + 0.5];
-  c.dfAt = (x, z) => Math.hypot(x - cx, z - cz) < R ? 0.6 : Math.min(1, 0.2 + (Math.hypot(x - cx, z - cz) - R) / (S * 0.4));
+  c.dfAt = (x, z) => Math.hypot(x - cx, z - cz) < R ? 0.6 : Math.min(1, 0.2 + (Math.hypot(x - cx, z - cz) - R) / (S2 * 0.4));
   c.capAt = (x, z) => Math.hypot(x - cx, z - cz) < R + 3 ? 4 : 0;
   finishTown(c, { grow: small ? 3 : 10 });
   return true;
 };
 function seaFrame(p, side) {
-  const S = p.size;
+  const S2 = p.size;
   return (s, u) => {
     switch (side) {
       case 0:
-        return [p.x0 + S - 1 - u, p.z0 + s];
+        return [p.x0 + S2 - 1 - u, p.z0 + s];
       case 1:
-        return [p.x0 + s, p.z0 + S - 1 - u];
+        return [p.x0 + s, p.z0 + S2 - 1 - u];
       case 2:
         return [p.x0 + u, p.z0 + s];
       default:
@@ -34927,24 +37704,24 @@ CARVERS.canalring = (p, ctx, rng) => {
   const dig = new Dig(p, ctx);
   const side = nearestSeaSide(dig, 26);
   if (side < 0) return false;
-  const S = p.size, F = seaFrame(p, side);
-  const cs = S / 2 + (rng() - 0.5) * S * 0.1, cu = -S * 0.06;
-  const radii = (p.kind === "city" ? [0.3, 0.46, 0.62] : [0.26, 0.38, 0.5, 0.62]).map((f) => S * f);
-  for (let u = 1; u < S - 1; u++) for (let s = 1; s < S - 1; s++) {
+  const S2 = p.size, F = seaFrame(p, side);
+  const cs = S2 / 2 + (rng() - 0.5) * S2 * 0.1, cu = -S2 * 0.06;
+  const radii = (p.kind === "city" ? [0.3, 0.46, 0.62] : [0.26, 0.38, 0.5, 0.62]).map((f) => S2 * f);
+  for (let u = 1; u < S2 - 1; u++) for (let s = 1; s < S2 - 1; s++) {
     const d = Math.hypot(s - cs, u - cu);
     for (const R of radii) if (d >= R - 1 && d < R + 1) {
       const [x, z] = F(s, u);
       dig.mark(x, z, 2);
     }
   }
-  for (let u = 0; u < S - 1; u++) for (const o of [-1, 0, 1]) {
+  for (let u = 0; u < S2 - 1; u++) for (const o of [-1, 0, 1]) {
     const [x, z] = F(Math.round(cs) + o, u);
     dig.mark(x, z, 3);
   }
   for (const a of [0.55, 1.1, 2.05, 2.6]) {
     for (let t = radii[0]; t <= radii[radii.length - 1]; t += 0.5) {
       const s = Math.round(cs + Math.cos(a) * t), u = Math.round(cu + Math.sin(a) * t);
-      if (s < 1 || u < 1 || s >= S - 1 || u >= S - 1) continue;
+      if (s < 1 || u < 1 || s >= S2 - 1 || u >= S2 - 1) continue;
       const [x, z] = F(s, u);
       dig.mark(x, z, 2);
     }
@@ -34960,7 +37737,7 @@ CARVERS.canalring = (p, ctx, rng) => {
 LAYERS.canalring = (c, p) => {
   const n2 = p.carved?.note, side = p.carved?.seaSide;
   if (!n2 || side === void 0) return false;
-  const S = p.size, F = seaFrame(p, side);
+  const S2 = p.size, F = seaFrame(p, side);
   const P2 = (s, u) => {
     const [x, z] = F(Math.round(s), Math.round(u));
     return [x + 0.5, z + 0.5];
@@ -34985,7 +37762,7 @@ LAYERS.canalring = (c, p) => {
   avenue(c, 4 /* TwoLane */, P2(n2.cs - n2.r1, 2), P2(n2.cs + n2.r1, 2), { main: true, bridge: true });
   if (c.t.kind !== "city") {
     const g = c.t.kind === "mega" ? 7 : 6;
-    const xs = gridLines(p.x0, p.x0 + S, g), zs = gridLines(p.z0, p.z0 + S, g);
+    const xs = gridLines(p.x0, p.x0 + S2, g), zs = gridLines(p.z0, p.z0 + S2, g);
     const [ax, az] = P2(n2.cs - n2.r1 - 3, 0), [bx, bz] = P2(n2.cs + n2.r1 + 3, n2.r1 + 3);
     gridAround(c, xs, zs, [[Math.min(ax, bx), Math.min(az, bz), Math.max(ax, bx), Math.max(az, bz)]]);
   }
@@ -34996,7 +37773,7 @@ LAYERS.canalring = (c, p) => {
   c.dfAt = (x, z) => {
     const [hx, hz] = P2(n2.cs, n2.cu);
     const d = Math.hypot(x - hx, z - hz);
-    return d < n2.r1 + 2 ? 0.7 : Math.max(0.1, 1 - (d - n2.r1) / (S * 0.5));
+    return d < n2.r1 + 2 ? 0.7 : Math.max(0.1, 1 - (d - n2.r1) / (S2 * 0.5));
   };
   c.capAt = (x, z) => {
     const [hx, hz] = P2(n2.cs, n2.cu);
@@ -35009,10 +37786,10 @@ CARVERS.spiral = (p, ctx) => {
   const dig = new Dig(p, ctx);
   const side = nearestSeaSide(dig, 26);
   if (side < 0) return false;
-  const S = p.size, cx = p.x0 + S / 2, cz = p.z0 + S / 2;
-  const step2 = S * 0.055;
-  let r = S * 0.07, a0 = -Math.PI / 2, end = [cx, cz];
-  for (let k = 0; k < 7 && r < S * 0.44; k++) {
+  const S2 = p.size, cx = p.x0 + S2 / 2, cz = p.z0 + S2 / 2;
+  const step2 = S2 * 0.055;
+  let r = S2 * 0.07, a0 = -Math.PI / 2, end = [cx, cz];
+  for (let k = 0; k < 7 && r < S2 * 0.44; k++) {
     const ccz = cz + (k % 2 ? -step2 / 2 : step2 / 2);
     for (let a = a0; a <= a0 + Math.PI + 0.01; a += 0.02) {
       const x = cx + Math.cos(a) * r, z = ccz + Math.sin(a) * r;
@@ -35029,46 +37806,46 @@ CARVERS.spiral = (p, ctx) => {
   return true;
 };
 LAYERS.spiral = (c, p) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
-  const cx = x0 + S / 2, cz = z0 + S / 2, side = p.carved?.seaSide ?? 1;
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
+  const cx = x0 + S2 / 2, cz = z0 + S2 / 2, side = p.carved?.seaSide ?? 1;
   c.bridgeSpan = 5;
   const g = mega ? 8 : 7;
-  gridAround(c, gridLines(x0, x0 + S, g), gridLines(z0, z0 + S, g), [[Math.floor(cx - 4), Math.floor(cz - 4), Math.ceil(cx + 5), Math.ceil(cz + 5)]], 4 /* TwoLane */, { bridge: true });
+  gridAround(c, gridLines(x0, x0 + S2, g), gridLines(z0, z0 + S2, g), [[Math.floor(cx - 4), Math.floor(cz - 4), Math.ceil(cx + 5), Math.ceil(cz + 5)]], 4 /* TwoLane */, { bridge: true });
   ring(c, 4 /* TwoLane */, cx, cz, 5, 2, { main: false, bridge: true });
   const toward = [side === 0 ? 1 : side === 2 ? -1 : 0, side === 1 ? 1 : side === 3 ? -1 : 0];
-  const bay = [cx + toward[0] * S * 0.4, cz + toward[1] * S * 0.4];
+  const bay = [cx + toward[0] * S2 * 0.4, cz + toward[1] * S2 * 0.4];
   c.anchors.seat = [cx + 0.5, cz + 0.5];
   c.anchors.palace = [cx - 6, cz + 0.5];
   c.anchors.market = bay;
   c.anchors.landmark = [bay[0] - toward[1] * 6, bay[1] - toward[0] * 6];
   for (let k = 0; k < 6; k++) {
     const a = k / 6 * Math.PI * 2;
-    put(c, k % 2 ? "pagoda" : "temple", { near: [cx + Math.cos(a) * S * 0.3, cz + Math.sin(a) * S * 0.3], maxDist: 6 });
+    put(c, k % 2 ? "pagoda" : "temple", { near: [cx + Math.cos(a) * S2 * 0.3, cz + Math.sin(a) * S2 * 0.3], maxDist: 6 });
   }
-  c.dfAt = dfCores(c, [bay], S * 0.6);
-  c.capAt = (x, z) => Math.hypot(x - cx, z - cz) < S * 0.22 ? 3 : 0;
+  c.dfAt = dfCores(c, [bay], S2 * 0.6);
+  c.capAt = (x, z) => Math.hypot(x - cx, z - cz) < S2 * 0.22 ? 3 : 0;
   finishTown(c, { grow: mega ? 14 : 8 });
   return true;
 };
 LAYERS.gardencity = (c, p, rng) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
-  const cx = x0 + S / 2, cz = z0 + S / 2;
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
+  const cx = x0 + S2 / 2, cz = z0 + S2 / 2;
   const gs = mega ? 14 : 11;
   const garden = parkAt(c, cx - gs / 2, cz - gs / 2, gs, gs, rng);
   ring(c, 4 /* TwoLane */, cx, cz, Math.round(gs / 2 + 6), 3, { main: false });
-  const ga = Math.round(S * 0.28);
+  const ga = Math.round(S2 * 0.28);
   ring(c, 4 /* TwoLane */, cx, cz, ga - 3, Math.round((ga - 3) * 0.4), { main: false });
   ring(c, 4 /* TwoLane */, cx, cz, ga + 3, Math.round((ga + 3) * 0.4), { main: false });
-  ring(c, 5 /* FourLane */, cx, cz, Math.round(S * 0.42), 0, { main: true });
-  const b = spokes(c, 4 /* TwoLane */, cx, cz, Math.round(gs / 2 + 2), Math.round(S * 0.5), COMPASS, { main: true });
+  ring(c, 5 /* FourLane */, cx, cz, Math.round(S2 * 0.42), 0, { main: true });
+  const b = spokes(c, 4 /* TwoLane */, cx, cz, Math.round(gs / 2 + 2), Math.round(S2 * 0.5), COMPASS, { main: true });
   for (const n2 of b.slice(0, 4)) c.ends(n2);
   const keep = [];
-  for (let z = z0; z < z0 + S; z++) for (let x = x0; x < x0 + S; x++) {
+  for (let z = z0; z < z0 + S2; z++) for (let x = x0; x < x0 + S2; x++) {
     const i = idx(x, z);
     if (c.w.road[i]) continue;
     const d = Math.max(Math.abs(x + 0.5 - cx), Math.abs(z + 0.5 - cz));
     const oct = Math.max(d, (Math.abs(x + 0.5 - cx) + Math.abs(z + 0.5 - cz)) * 0.72);
-    if (oct > ga - 2 && oct < ga + 2 || d > S * 0.44) keep.push(i);
+    if (oct > ga - 2 && oct < ga + 2 || d > S2 * 0.44) keep.push(i);
   }
   reserve(c, keep);
   const R = gs / 2 + 4;
@@ -35086,11 +37863,11 @@ LAYERS.gardencity = (c, p, rng) => {
   return true;
 };
 LAYERS.medina = (c, p, rng) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, kind = p.kind;
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, kind = p.kind;
   const newSide = kind === "city" ? -1 : Math.floor(rng() * 4);
-  const nw = kind === "mega" ? Math.round(S * 0.38) : Math.round(S * 0.32);
-  const mx0 = newSide === 2 ? x0 + nw : x0, mx1 = newSide === 0 ? x0 + S - nw : x0 + S;
-  const mz0 = newSide === 3 ? z0 + nw : z0, mz1 = newSide === 1 ? z0 + S - nw : z0 + S;
+  const nw = kind === "mega" ? Math.round(S2 * 0.38) : Math.round(S2 * 0.32);
+  const mx0 = newSide === 2 ? x0 + nw : x0, mx1 = newSide === 0 ? x0 + S2 - nw : x0 + S2;
+  const mz0 = newSide === 3 ? z0 + nw : z0, mz1 = newSide === 1 ? z0 + S2 - nw : z0 + S2;
   const mcx = (mx0 + mx1) / 2, mcz = (mz0 + mz1) / 2, mw = mx1 - mx0, md = mz1 - mz0;
   const pts = [];
   const along2 = mw >= md;
@@ -35106,8 +37883,8 @@ LAYERS.medina = (c, p, rng) => {
   grow(c, c.t.roads + (kind === "mega" ? 70 : kind === "metro" ? 46 : 24), 2 /* Brick */);
   c.t.surface = keep;
   if (newSide >= 0) {
-    const nx0 = newSide === 0 ? x0 + S - nw : x0, nx1 = newSide === 2 ? x0 + nw : x0 + S;
-    const nz0 = newSide === 1 ? z0 + S - nw : z0, nz1 = newSide === 3 ? z0 + nw : z0 + S;
+    const nx0 = newSide === 0 ? x0 + S2 - nw : x0, nx1 = newSide === 2 ? x0 + nw : x0 + S2;
+    const nz0 = newSide === 1 ? z0 + S2 - nw : z0, nz1 = newSide === 3 ? z0 + nw : z0 + S2;
     const g = 6;
     const xs = gridLines(nx0, nx1, g), zs = gridLines(nz0, nz1, g);
     for (const x of xs) c.ends(avenue(c, 4 /* TwoLane */, [x + 0.5, nz0 + 0.5], [x + 0.5, nz1 - 0.5], { main: true, route: false }));
@@ -35122,7 +37899,7 @@ LAYERS.medina = (c, p, rng) => {
   put(c, "bazaar", { near: pts[4], maxDist: 6 }) ?? put(c, "souk", { near: pts[4], maxDist: 6 });
   put(c, "mosque", { near: mid2, maxDist: 6 });
   const inMedina = (x, z) => x >= mx0 && x < mx1 && z >= mz0 && z < mz1;
-  c.dfAt = (x, z) => inMedina(x, z) ? 0.6 : Math.max(0.1, Math.hypot(x - mcx, z - mcz) / S - 0.2);
+  c.dfAt = (x, z) => inMedina(x, z) ? 0.6 : Math.max(0.1, Math.hypot(x - mcx, z - mcz) / S2 - 0.2);
   c.capAt = (x, z) => inMedina(x, z) ? 4 : 0;
   finishTown(c, { grow: 0 });
   return true;
@@ -35137,11 +37914,11 @@ function riverFrame(p) {
   };
 }
 function highBank(p, ctx) {
-  const r = p.carved.river, S = p.size, s0 = r.axis === 0 ? p.x0 : p.z0;
+  const r = p.carved.river, S2 = p.size, s0 = r.axis === 0 ? p.x0 : p.z0;
   let plus = 0, minus = 0;
-  for (let s = s0 + 4; s < s0 + S - 4; s += 3) {
+  for (let s = s0 + 4; s < s0 + S2 - 4; s += 3) {
     const at = riverAt(p, s);
-    for (let d = r.half + 4; d < S * 0.35; d += 3) {
+    for (let d = r.half + 4; d < S2 * 0.35; d += 3) {
       const a = r.axis === 0 ? idx(s, at + d) : idx(at + d, s), b = r.axis === 0 ? idx(s, at - d) : idx(at - d, s);
       if (a >= 0 && a < N3 * N3) plus += ctx.w.elev[a];
       if (b >= 0 && b < N3 * N3) minus += ctx.w.elev[b];
@@ -35157,14 +37934,14 @@ CARVERS.bridges = (p, ctx, rng) => {
 LAYERS.bridges = (c, p) => {
   const r = p.carved?.river;
   if (!r) return false;
-  const S = p.size, mega = p.kind === "mega", s0 = r.axis === 0 ? p.x0 : p.z0;
+  const S2 = p.size, mega = p.kind === "mega", s0 = r.axis === 0 ? p.x0 : p.z0;
   const F = riverFrame(p), hi = p.carved?.note?.high ?? 1;
   c.bridgeSpan = 12;
   bridgesOver(c, p, mega ? 0.15 : 0.19, 8, 5 /* FourLane */);
-  const mid2 = s0 + Math.round(S * 0.5);
+  const mid2 = s0 + Math.round(S2 * 0.5);
   const [ox, oz] = F(mid2, -hi * (r.half + 2));
   for (const f of [0.22, 0.38]) {
-    const R = Math.round(S * f), pts = [];
+    const R = Math.round(S2 * f), pts = [];
     for (let a = 0; a <= Math.PI + 0.01; a += Math.PI / 8) {
       const along2 = Math.cos(a) * R, out = Math.sin(a) * R;
       pts.push(c.clampPt(...r.axis === 0 ? [ox + along2, oz - hi * out] : [ox - hi * out, oz + along2]));
@@ -35172,11 +37949,11 @@ LAYERS.bridges = (c, p) => {
     c.ends(c.street(4 /* TwoLane */, pts));
   }
   const ad = r.axis === 0 ? [1, -hi] : [-hi, 1];
-  const len = Math.round(S * 0.3);
+  const len = Math.round(S2 * 0.3);
   const rad = avenue(c, 4 /* TwoLane */, [ox + ad[0] * 3, oz + ad[1] * 3], c.clampPt(ox + ad[0] * len, oz + ad[1] * len), { four: true, main: true });
-  for (const side of [-1, 1]) c.ends(c.street(4 /* TwoLane */, [F(s0 + 1, side * (r.half + 2)), F(s0 + Math.round(S / 2), side * (r.half + 2)), F(s0 + S - 2, side * (r.half + 2))]));
+  for (const side of [-1, 1]) c.ends(c.street(4 /* TwoLane */, [F(s0 + 1, side * (r.half + 2)), F(s0 + Math.round(S2 / 2), side * (r.half + 2)), F(s0 + S2 - 2, side * (r.half + 2))]));
   let best = F(mid2, hi * (r.half + 10)), bestH = -Infinity;
-  for (let s = s0 + 6; s < s0 + S - 6; s += 2) for (let d = r.half + 6; d < S * 0.4; d += 2) {
+  for (let s = s0 + 6; s < s0 + S2 - 6; s += 2) for (let d = r.half + 6; d < S2 * 0.4; d += 2) {
     const [x, z] = F(s, hi * d);
     if (!inB(Math.floor(x), Math.floor(z))) continue;
     const e = c.w.elev[idx(Math.floor(x), Math.floor(z))];
@@ -35187,14 +37964,14 @@ LAYERS.bridges = (c, p) => {
   }
   c.street(4 /* TwoLane */, [F(mid2, hi * (r.half + 2)), between(F(mid2, hi * (r.half + 2)), best, 0.5), best]);
   c.anchors.palace = best;
-  c.anchors.temple = [ox + ad[0] * S * 0.2, oz + ad[1] * S * 0.2];
+  c.anchors.temple = [ox + ad[0] * S2 * 0.2, oz + ad[1] * S2 * 0.2];
   c.anchors.seat = F(mid2 + 6, -hi * (r.half + 4));
   put(c, "parliament", { near: F(mid2 - 6, -hi * (r.half + 4)), maxDist: 6, waterside: "prefer" });
-  put(c, "thermalBath", { near: F(s0 + Math.round(S * 0.3), hi * (r.half + 4)), maxDist: 8 });
-  c.anchors.landmark = [ox + ad[0] * S * 0.32, oz + ad[1] * S * 0.32];
+  put(c, "thermalBath", { near: F(s0 + Math.round(S2 * 0.3), hi * (r.half + 4)), maxDist: 8 });
+  c.anchors.landmark = [ox + ad[0] * S2 * 0.32, oz + ad[1] * S2 * 0.32];
   c.dfAt = (x, z) => {
     const d = Math.abs((r.axis === 0 ? z : x) - riverAt(p, r.axis === 0 ? x : z));
-    return d < S * 0.15 ? 0.5 : Math.max(0, 0.5 - (d - S * 0.15) / (S * 0.5));
+    return d < S2 * 0.15 ? 0.5 : Math.max(0, 0.5 - (d - S2 * 0.15) / (S2 * 0.5));
   };
   finishTown(c, { grow: mega ? 40 : 24, axis: rad });
   return true;
@@ -35203,12 +37980,12 @@ var DEBUG2 = !!globalThis.process?.env?.PLAN_DEBUG;
 var between = (a, b, f) => [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
 CARVERS.harbour = (p, ctx, rng) => {
   if (!riverThrough(p, ctx, rng, { half: 3, amp: p.size * 0.04 })) return false;
-  const r = p.carved.river, S = p.size, s0 = r.axis === 0 ? p.x0 : p.z0;
+  const r = p.carved.river, S2 = p.size, s0 = r.axis === 0 ? p.x0 : p.z0;
   const side = rng() < 0.5 ? 1 : -1, dig = new Dig(p, ctx);
-  const first = s0 + Math.round(S * 0.52), n2 = p.kind === "mega" ? 4 : 3, L = Math.round(S * 0.24);
+  const first = s0 + Math.round(S2 * 0.52), n2 = p.kind === "mega" ? 4 : 3, L = Math.round(S2 * 0.24);
   for (let k = 0; k < n2; k++) {
     const s = first + k * 8;
-    if (s + 3 >= s0 + S - 3) break;
+    if (s + 3 >= s0 + S2 - 3) break;
     const at = riverAt(p, s);
     for (let u = r.half; u <= r.half + L; u++) for (let o = 0; o < 3; o++) {
       const [x, z] = r.axis === 0 ? [s + o, at + side * u] : [at + side * u, s + o];
@@ -35226,12 +38003,12 @@ CARVERS.harbour = (p, ctx, rng) => {
 LAYERS.harbour = (c, p) => {
   const r = p.carved?.river;
   if (!r) return false;
-  const S = p.size, mega = p.kind === "mega", s0 = r.axis === 0 ? p.x0 : p.z0;
+  const S2 = p.size, mega = p.kind === "mega", s0 = r.axis === 0 ? p.x0 : p.z0;
   const F = riverFrame(p), note = p.carved?.note ?? {};
-  const side = note.side ?? 1, first = note.first ?? s0 + S / 2, n2 = note.n ?? 0, L = note.L ?? 0;
+  const side = note.side ?? 1, first = note.first ?? s0 + S2 / 2, n2 = note.n ?? 0, L = note.L ?? 0;
   c.bridgeSpan = 9;
   bridgesOver(c, p, 0.3, 7, 5 /* FourLane */);
-  const prom = c.street(4 /* TwoLane */, [F(s0 + 1, side * (r.half + 1)), F(s0 + Math.round(S / 2), side * (r.half + 1)), F(s0 + S - 2, side * (r.half + 1))]);
+  const prom = c.street(4 /* TwoLane */, [F(s0 + 1, side * (r.half + 1)), F(s0 + Math.round(S2 / 2), side * (r.half + 1)), F(s0 + S2 - 2, side * (r.half + 1))]);
   c.ends(prom);
   for (let k = 0; k < n2 - 1; k++) {
     const s = first + k * 8 + 5;
@@ -35241,23 +38018,23 @@ LAYERS.harbour = (c, p) => {
   const pier = first + 5;
   const keep = c.t.surface;
   c.t.surface = "brick";
-  c.street(4 /* TwoLane */, [F(s0 + 1, -side * (r.half + 2)), F(s0 + Math.round(S / 2), -side * (r.half + 2)), F(s0 + S - 2, -side * (r.half + 2))]);
+  c.street(4 /* TwoLane */, [F(s0 + 1, -side * (r.half + 2)), F(s0 + Math.round(S2 / 2), -side * (r.half + 2)), F(s0 + S2 - 2, -side * (r.half + 2))]);
   grow(c, c.t.roads + (mega ? 18 : 10), 2 /* Brick */);
   c.t.surface = keep;
   put(c, "commsTower", { near: F(first - 6, side * (r.half + 3)), maxDist: 4, zone: "any" });
   c.anchors.landmark = F(pier, side * (r.half + L * 0.5));
-  c.anchors.seat = F(s0 + Math.round(S * 0.35), -side * (r.half + 6));
+  c.anchors.seat = F(s0 + Math.round(S2 * 0.35), -side * (r.half + 6));
   c.anchors.museum = F(pier + 8, side * (r.half + L * 0.4));
-  c.anchors.temple = F(s0 + Math.round(S * 0.25), -side * (r.half + 10));
-  c.dfAt = dfCores(c, [F(pier + 4, side * (r.half + L * 0.5))], S * 0.5);
+  c.anchors.temple = F(s0 + Math.round(S2 * 0.25), -side * (r.half + 10));
+  c.dfAt = dfCores(c, [F(pier + 4, side * (r.half + L * 0.5))], S2 * 0.5);
   finishTown(c, { grow: mega ? 22 : 12, axis: prom });
   return true;
 };
 CARVERS.vertical = (p, ctx, rng) => {
-  const dig = new Dig(p, ctx), S = p.size;
+  const dig = new Dig(p, ctx), S2 = p.size;
   const axis = rng() < 0.5 ? 0 : 1;
-  const at = (axis === 0 ? p.z0 : p.x0) + Math.round(S * 0.42);
-  const line = seaRiver(dig, rng, { axis, at, half: 5, amp: S * 0.02 });
+  const at = (axis === 0 ? p.z0 : p.x0) + Math.round(S2 * 0.42);
+  const line = seaRiver(dig, rng, { axis, at, half: 5, amp: S2 * 0.02 });
   if (!line || !dig.clear()) return false;
   dig.commit();
   (p.carved ??= {}).river = { axis, line, half: 5 };
@@ -35266,43 +38043,43 @@ CARVERS.vertical = (p, ctx, rng) => {
 LAYERS.vertical = (c, p) => {
   const r = p.carved?.river;
   if (!r) return false;
-  const S = p.size, x0 = p.x0, z0 = p.z0, s0 = r.axis === 0 ? x0 : z0, F = riverFrame(p);
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, s0 = r.axis === 0 ? x0 : z0, F = riverFrame(p);
   c.bridgeSpan = 14;
   let a = 0, b = 0;
-  for (let s = s0 + 4; s < s0 + S - 4; s += 4) for (let d = r.half + 4; d < S * 0.4; d += 4) {
+  for (let s = s0 + 4; s < s0 + S2 - 4; s += 4) for (let d = r.half + 4; d < S2 * 0.4; d += 4) {
     const [ax, az] = F(s, d), [bx, bz] = F(s, -d);
     if (inB(Math.floor(ax), Math.floor(az))) a += c.w.elev[idx(Math.floor(ax), Math.floor(az))];
     if (inB(Math.floor(bx), Math.floor(bz))) b += c.w.elev[idx(Math.floor(bx), Math.floor(bz))];
   }
   const isle = a >= b ? 1 : -1;
   const g = 4;
-  const xs = gridLines(x0, x0 + S, g), zs = gridLines(z0, z0 + S, g);
-  const flatHole = r.axis === 0 ? isle > 0 ? [x0, Math.min(...r.line) - 1, x0 + S, z0 + S] : [x0, z0, x0 + S, Math.max(...r.line) + 2] : isle > 0 ? [Math.min(...r.line) - 1, z0, x0 + S, z0 + S] : [x0, z0, Math.max(...r.line) + 2, z0 + S];
+  const xs = gridLines(x0, x0 + S2, g), zs = gridLines(z0, z0 + S2, g);
+  const flatHole = r.axis === 0 ? isle > 0 ? [x0, Math.min(...r.line) - 1, x0 + S2, z0 + S2] : [x0, z0, x0 + S2, Math.max(...r.line) + 2] : isle > 0 ? [Math.min(...r.line) - 1, z0, x0 + S2, z0 + S2] : [x0, z0, Math.max(...r.line) + 2, z0 + S2];
   gridAround(c, xs, zs, [flatHole]);
-  const shore = c.street(5 /* FourLane */, [F(s0 + 1, isle * (r.half + 3)), F(s0 + Math.round(S / 2), isle * (r.half + 3)), F(s0 + S - 2, isle * (r.half + 3))]);
+  const shore = c.street(5 /* FourLane */, [F(s0 + 1, isle * (r.half + 3)), F(s0 + Math.round(S2 / 2), isle * (r.half + 3)), F(s0 + S2 - 2, isle * (r.half + 3))]);
   c.ends(shore);
-  for (let s = s0 + 6; s < s0 + S - 6; s += 9) c.street(4 /* TwoLane */, [F(s, isle * (r.half + 3)), F(s + 3, isle * (r.half + 12)), F(s - 1, isle * (r.half + 20))]);
+  for (let s = s0 + 6; s < s0 + S2 - 6; s += 9) c.street(4 /* TwoLane */, [F(s, isle * (r.half + 3)), F(s + 3, isle * (r.half + 12)), F(s - 1, isle * (r.half + 20))]);
   bridgesOver(c, p, 0.5, 6, 5 /* FourLane */);
   put(c, "observationTower", { highest: true, zone: "any" });
-  c.anchors.landmark = F(s0 + Math.round(S * 0.5), isle * (r.half + 4));
-  c.anchors.seat = F(s0 + Math.round(S * 0.4), isle * (r.half + 5));
-  c.anchors.museum = F(s0 + Math.round(S * 0.6), -isle * (r.half + 4));
-  c.dfAt = (x, z) => Math.min(1, Math.abs((r.axis === 0 ? z : x) - riverAt(p, r.axis === 0 ? x : z)) / (S * 0.32));
+  c.anchors.landmark = F(s0 + Math.round(S2 * 0.5), isle * (r.half + 4));
+  c.anchors.seat = F(s0 + Math.round(S2 * 0.4), isle * (r.half + 5));
+  c.anchors.museum = F(s0 + Math.round(S2 * 0.6), -isle * (r.half + 4));
+  c.dfAt = (x, z) => Math.min(1, Math.abs((r.axis === 0 ? z : x) - riverAt(p, r.axis === 0 ? x : z)) / (S2 * 0.32));
   finishTown(c, { grow: 20, axis: shore });
   return true;
 };
 CARVERS.archipelago = (p, ctx, rng) => {
-  const dig = new Dig(p, ctx), S = p.size;
+  const dig = new Dig(p, ctx), S2 = p.size;
   let any = false;
   for (const [axis, f] of [[0, 0.32], [0, 0.68], [1, 0.4], [1, 0.74]]) {
     const d2 = new Dig(p, ctx);
-    const line = seaRiver(d2, rng, { axis, at: (axis === 0 ? p.z0 : p.x0) + Math.round(S * f), half: 2, amp: S * 0.05, end: 0.95 });
+    const line = seaRiver(d2, rng, { axis, at: (axis === 0 ? p.z0 : p.x0) + Math.round(S2 * f), half: 2, amp: S2 * 0.05, end: 0.95 });
     if (!line) continue;
     any = true;
     for (const [i, d] of d2.want) dig.want.set(i, Math.max(dig.want.get(i) ?? 0, d));
   }
   if (!any) return false;
-  const cx = p.x0 + Math.round(S * 0.4), cz = p.z0 + Math.round(S * 0.32);
+  const cx = p.x0 + Math.round(S2 * 0.4), cz = p.z0 + Math.round(S2 * 0.32);
   for (let z = cz - 10; z <= cz + 10; z++) for (let x = cx - 10; x <= cx + 10; x++) {
     const d = Math.hypot(x + 0.5 - cx, z + 0.5 - cz);
     if (d >= 6 && d < 8.5) dig.mark(x, z, 2);
@@ -35313,11 +38090,11 @@ CARVERS.archipelago = (p, ctx, rng) => {
   return true;
 };
 LAYERS.archipelago = (c, p) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
-  const [ox, oz] = p.carved?.pts?.old ?? [x0 + S * 0.4, z0 + S * 0.32];
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
+  const [ox, oz] = p.carved?.pts?.old ?? [x0 + S2 * 0.4, z0 + S2 * 0.32];
   c.bridgeSpan = 8;
   const g = mega ? 7 : 6;
-  gridAround(c, gridLines(x0, x0 + S, g), gridLines(z0, z0 + S, g), [[ox - 9, oz - 9, ox + 10, oz + 10]], 4 /* TwoLane */, { bridge: true });
+  gridAround(c, gridLines(x0, x0 + S2, g), gridLines(z0, z0 + S2, g), [[ox - 9, oz - 9, ox + 10, oz + 10]], 4 /* TwoLane */, { bridge: true });
   const keep = c.t.surface;
   c.t.surface = "brick";
   ring(c, 4 /* TwoLane */, ox, oz, 4, 2, { main: false });
@@ -35325,16 +38102,16 @@ LAYERS.archipelago = (c, p) => {
   c.t.surface = keep;
   c.anchors.palace = [ox + 2, oz - 1];
   c.anchors.temple = [ox - 2, oz + 1];
-  c.anchors.seat = [ox + S * 0.25, oz + S * 0.2];
-  c.anchors.museum = [x0 + S * 0.75, z0 + S * 0.75];
-  c.dfAt = dfCores(c, [[x0 + S * 0.6, z0 + S * 0.55]], S * 0.55);
+  c.anchors.seat = [ox + S2 * 0.25, oz + S2 * 0.2];
+  c.anchors.museum = [x0 + S2 * 0.75, z0 + S2 * 0.75];
+  c.dfAt = dfCores(c, [[x0 + S2 * 0.6, z0 + S2 * 0.55]], S2 * 0.55);
   c.capAt = (x, z) => Math.hypot(x - ox, z - oz) < 9 ? 5 : 0;
   finishTown(c, { grow: mega ? 20 : 12 });
   return true;
 };
 CARVERS.causeway = (p, ctx) => {
-  const S = p.size, cx = p.x0 + S / 2, cz = p.z0 + S / 2;
-  const R = S * 0.47, r = S * 0.27;
+  const S2 = p.size, cx = p.x0 + S2 / 2, cz = p.z0 + S2 / 2;
+  const R = S2 * 0.47, r = S2 * 0.27;
   const tiles = discTiles(p, [[cx, cz, R]], 2);
   for (const i of [...tiles]) {
     const x = i % N3, z = (i - x) / N3, d = Math.hypot(x + 0.5 - cx, z + 0.5 - cz);
@@ -35349,13 +38126,13 @@ CARVERS.causeway = (p, ctx) => {
   return lakeOn(p, ctx, tiles);
 };
 LAYERS.causeway = (c, p) => {
-  const S = p.size, mega = p.kind === "mega";
-  const [cx, cz] = p.carved?.pts?.isle ?? [p.x0 + S / 2, p.z0 + S / 2];
-  const r = p.carved?.note?.r ?? S * 0.27;
+  const S2 = p.size, mega = p.kind === "mega";
+  const [cx, cz] = p.carved?.pts?.isle ?? [p.x0 + S2 / 2, p.z0 + S2 / 2];
+  const r = p.carved?.note?.r ?? S2 * 0.27;
   c.bridgeSpan = 30;
   const axis = [];
   for (const [dx, dz] of [[0, -1], [-1, 0], [0, 1]]) {
-    const n2 = avenue(c, 5 /* FourLane */, [Math.round(cx + dx * 4), Math.round(cz + dz * 4)], [Math.round(cx + dx * (S / 2 - 1)), Math.round(cz + dz * (S / 2 - 1))], { main: true, bridge: true });
+    const n2 = avenue(c, 5 /* FourLane */, [Math.round(cx + dx * 4), Math.round(cz + dz * 4)], [Math.round(cx + dx * (S2 / 2 - 1)), Math.round(cz + dz * (S2 / 2 - 1))], { main: true, bridge: true });
     c.ends(n2);
     axis.push(...n2);
   }
@@ -35368,23 +38145,23 @@ LAYERS.causeway = (c, p) => {
   put(c, "stepPyramid", { near: [cx + 0.5, cz + 0.5], maxDist: 3 }) ?? put(c, "temple", { near: [cx + 0.5, cz + 0.5], maxDist: 3 });
   c.anchors.seat = [cx + 7, cz + 0.5];
   c.anchors.market = [cx + 0.5, cz - 8];
-  put(c, "aqueduct", { near: [p.x0 + S * 0.12, cz - S * 0.2], maxDist: 8, zone: "any" });
+  put(c, "aqueduct", { near: [p.x0 + S2 * 0.12, cz - S2 * 0.2], maxDist: 8, zone: "any" });
   c.dfAt = dfCores(c, [[cx, cz]], r * 1.6);
   c.maxFloors = 5;
   finishTown(c, { grow: mega ? 8 : 4, axis });
   return true;
 };
 CARVERS.fronds = (p, ctx, rng) => {
-  const dig = new Dig(p, ctx), S = p.size, { w, land } = ctx;
+  const dig = new Dig(p, ctx), S2 = p.size, { w, land } = ctx;
   const side = nearestSeaSide(dig, 30);
   if (DEBUG2) console.log(`fronds: sea side ${side}`);
   if (side < 0) return false;
   const F = (s, u) => {
     switch (side) {
       case 0:
-        return [p.x0 + S - 1 + u, p.z0 + s];
+        return [p.x0 + S2 - 1 + u, p.z0 + s];
       case 1:
-        return [p.x0 + s, p.z0 + S - 1 + u];
+        return [p.x0 + s, p.z0 + S2 - 1 + u];
       case 2:
         return [p.x0 - u, p.z0 + s];
       default:
@@ -35416,7 +38193,7 @@ CARVERS.fronds = (p, ctx, rng) => {
     let sea = 0;
     for (const i of palm) {
       const x = i % N3, z = (i - x) / N3;
-      if (x >= p.x0 && z >= p.z0 && x < p.x0 + S && z < p.z0 + S) continue;
+      if (x >= p.x0 && z >= p.z0 && x < p.x0 + S2 && z < p.z0 + S2) continue;
       const why = x < ctx.band + 2 || z < ctx.band + 2 || x >= N3 - ctx.band - 2 || z >= N3 - ctx.band - 2 ? "the seam band" : ctx.causeway?.[i] ? "a causeway" : w.biome[i] === 11 /* Town */ ? "another town" : "";
       if (why) {
         if (DEBUG2) console.log(`fronds: palm runs into ${why} at ${x},${z} (shore ${d02} out)`);
@@ -35438,7 +38215,7 @@ CARVERS.fronds = (p, ctx, rng) => {
     return Infinity;
   };
   const cands = [];
-  for (let s = Math.round(S * 0.18); s <= Math.round(S * 0.82); s += 3) {
+  for (let s = Math.round(S2 * 0.18); s <= Math.round(S2 * 0.82); s += 3) {
     const d = seaAt(s);
     if (Number.isFinite(d)) cands.push([s, d + rng() * 0.5]);
   }
@@ -35477,8 +38254,8 @@ CARVERS.fronds = (p, ctx, rng) => {
     const t = Math.min(1, u / Math.max(1, d0));
     w.elev[i] = top2 + (SEA + 2 - top2) * t;
   }
-  const cs = Math.round(S * 0.82);
-  for (let u = 0; u >= -Math.round(S * 0.35); u--) for (let o = -1; o <= 1; o++) {
+  const cs = Math.round(S2 * 0.82);
+  for (let u = 0; u >= -Math.round(S2 * 0.35); u--) for (let o = -1; o <= 1; o++) {
     const [x, z] = F(cs + o + Math.round(Math.sin(u * 0.2) * 2), u);
     dig.mark(x, z, 2);
   }
@@ -35494,14 +38271,14 @@ CARVERS.fronds = (p, ctx, rng) => {
   return true;
 };
 LAYERS.fronds = (c, p) => {
-  const S = p.size, side = p.carved?.seaSide, note = p.carved?.note;
+  const S2 = p.size, side = p.carved?.seaSide, note = p.carved?.note;
   if (side === void 0 || !note) return false;
   const F = (s, u) => {
     switch (side) {
       case 0:
-        return [p.x0 + S - 1 + u + 0.5, p.z0 + s + 0.5];
+        return [p.x0 + S2 - 1 + u + 0.5, p.z0 + s + 0.5];
       case 1:
-        return [p.x0 + s + 0.5, p.z0 + S - 1 + u + 0.5];
+        return [p.x0 + s + 0.5, p.z0 + S2 - 1 + u + 0.5];
       case 2:
         return [p.x0 - u + 0.5, p.z0 + s + 0.5];
       default:
@@ -35510,13 +38287,13 @@ LAYERS.fronds = (c, p) => {
   };
   const { ps, reach, cs } = note, d0 = note.d0 ?? 0;
   c.bridgeSpan = 6;
-  const hwU = -Math.round(S * 0.22);
-  const hw = avenue(c, 5 /* FourLane */, F(1, hwU), F(S - 2, hwU), { main: true, bridge: true });
+  const hwU = -Math.round(S2 * 0.22);
+  const hw = avenue(c, 5 /* FourLane */, F(1, hwU), F(S2 - 2, hwU), { main: true, bridge: true });
   c.ends(hw);
-  for (const du of [-5, 5]) avenue(c, 4 /* TwoLane */, F(1, hwU + du), F(S - 2, hwU + du), { main: false, bridge: true });
-  avenue(c, 4 /* TwoLane */, F(1, -2), F(S - 2, -2), { main: false, bridge: true });
-  for (let s = 4; s < S - 3; s += 8) avenue(c, 4 /* TwoLane */, F(s, -(S - 2)), F(s, -2), { main: false, bridge: true, route: false });
-  for (let u = hwU - 13; u > -(S - 3); u -= 9) avenue(c, 3 /* Paved */, F(1, u), F(S - 2, u), { main: false, route: false });
+  for (const du of [-5, 5]) avenue(c, 4 /* TwoLane */, F(1, hwU + du), F(S2 - 2, hwU + du), { main: false, bridge: true });
+  avenue(c, 4 /* TwoLane */, F(1, -2), F(S2 - 2, -2), { main: false, bridge: true });
+  for (let s = 4; s < S2 - 3; s += 8) avenue(c, 4 /* TwoLane */, F(s, -(S2 - 2)), F(s, -2), { main: false, bridge: true, route: false });
+  for (let u = hwU - 13; u > -(S2 - 3); u -= 9) avenue(c, 3 /* Paved */, F(1, u), F(S2 - 2, u), { main: false, route: false });
   avenue(c, 4 /* TwoLane */, F(ps, -2), F(ps, d0 + reach), { main: true });
   for (let u = 8; u <= reach - 10; u += 4) {
     const len = Math.floor(9 - Math.abs(u - (reach - 8) / 2) * 0.3);
@@ -35525,12 +38302,12 @@ LAYERS.fronds = (c, p) => {
   const cres = [];
   for (let a = 0.15; a <= Math.PI - 0.15; a += Math.PI / 10) cres.push(F(Math.round(ps + Math.cos(a) * 14), Math.round(d0 + reach - 14 + Math.sin(a) * 14)));
   c.street(3 /* Paved */, cres);
-  c.anchors.landmark = F(Math.round(S * 0.45), hwU - 3);
-  c.anchors.seat = F(Math.round(S * 0.6), hwU + 3);
-  c.anchors.market = F(cs - 4, -Math.round(S * 0.15));
+  c.anchors.landmark = F(Math.round(S2 * 0.45), hwU - 3);
+  c.anchors.seat = F(Math.round(S2 * 0.6), hwU + 3);
+  c.anchors.market = F(cs - 4, -Math.round(S2 * 0.15));
   put(c, "hotel", { near: F(ps + 14, d0 + reach - 14), maxDist: 6, floors: 30 });
   const along2 = (x, z) => side % 2 === 0 ? Math.abs(x - F(0, hwU)[0]) : Math.abs(z - F(0, hwU)[1]);
-  c.dfAt = (x, z) => Math.min(1, along2(x, z) / (S * 0.25));
+  c.dfAt = (x, z) => Math.min(1, along2(x, z) / (S2 * 0.25));
   finishTown(c, { grow: 10, axis: hw });
   return true;
 };
@@ -35593,10 +38370,10 @@ function takeArms(p, ctx, tiles) {
   }
 }
 CARVERS.fingers = (p, ctx, rng) => {
-  const S = p.size, cx = p.x0 + S / 2, cz = p.z0 + S / 2;
+  const S2 = p.size, cx = p.x0 + S2 / 2, cz = p.z0 + S2 / 2;
   const sea = nearestSeaSide(new Dig(p, ctx), 40);
   const away = sea < 0 ? -1 : [0, 1, 2, 3].indexOf(sea);
-  const len = Math.round(S * 0.6), half = p.kind === "mega" ? 6 : 5;
+  const len = Math.round(S2 * 0.6), half = p.kind === "mega" ? 6 : 5;
   const want = COMPASS.filter(([dx, dz]) => {
     if (away < 0) return true;
     const [sx, sz] = [[1, 0], [0, 1], [-1, 0], [0, -1]][away];
@@ -35607,7 +38384,7 @@ CARVERS.fingers = (p, ctx, rng) => {
   for (const [dx, dz] of order) {
     if (taken.length >= 5) break;
     const f = dx && dz ? Math.SQRT1_2 : 1;
-    const ax = Math.round(cx + dx * (S / 2) * (dx && dz ? 1 : 1)), az = Math.round(cz + dz * (S / 2));
+    const ax = Math.round(cx + dx * (S2 / 2) * (dx && dz ? 1 : 1)), az = Math.round(cz + dz * (S2 / 2));
     for (const L of [len, Math.round(len * 0.7), Math.round(len * 0.45)]) {
       const tiles = bandTiles(ax, az, dx, dz, Math.round(L * f), half);
       if (!armClear(p, ctx, tiles)) continue;
@@ -35627,23 +38404,23 @@ CARVERS.fingers = (p, ctx, rng) => {
   return true;
 };
 LAYERS.fingers = (c, p) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, n2 = p.carved?.note?.n ?? 0;
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, n2 = p.carved?.note?.n ?? 0;
   if (!n2) return false;
-  const cx = x0 + S / 2, cz = z0 + S / 2;
-  gridAround(c, gridLines(x0, x0 + S, 6), gridLines(z0, z0 + S, 6), []);
+  const cx = x0 + S2 / 2, cz = z0 + S2 / 2;
+  gridAround(c, gridLines(x0, x0 + S2, 6), gridLines(z0, z0 + S2, 6), []);
   const stations = [[cx, cz]];
   const axes = [];
   for (let k = 0; k < n2; k++) {
     const code = p.carved.note[`f${k}`];
     const [dx, dz] = COMPASS[Math.floor(code / 1e3)], L = code % 1e3;
     const diag = dx !== 0 && dz !== 0;
-    const a = [cx + dx * (S / 2 - 6), cz + dz * (S / 2 - 6)], b = [cx + dx * (S / 2 + L - 2), cz + dz * (S / 2 + L - 2)];
+    const a = [cx + dx * (S2 / 2 - 6), cz + dz * (S2 / 2 - 6)], b = [cx + dx * (S2 / 2 + L - 2), cz + dz * (S2 / 2 + L - 2)];
     const spine = avenue(c, diag ? 4 /* TwoLane */ : 5 /* FourLane */, a, b, { main: true, four: diag });
     c.ends(spine);
     axes.push(...spine);
     if (!diag) for (const o of [-4, 4]) avenue(c, 4 /* TwoLane */, [a[0] - dz * o, a[1] + dx * o], [b[0] - dz * o, b[1] + dx * o], { main: false });
     for (let s = 14; s < L; s += 16) {
-      const at = [cx + dx * (S / 2 + s), cz + dz * (S / 2 + s)];
+      const at = [cx + dx * (S2 / 2 + s), cz + dz * (S2 / 2 + s)];
       stations.push(at);
       put(c, "busStation", { near: at, maxDist: 4 });
       if (!diag) avenue(c, 4 /* TwoLane */, [at[0] - dz * 5, at[1] + dx * 5], [at[0] + dz * 5, at[1] - dx * 5], { main: false });
@@ -35653,7 +38430,7 @@ LAYERS.fingers = (c, p) => {
   c.anchors.palace = [cx - 4, cz + 3];
   c.anchors.landmark = [cx + 2, cz - 3];
   c.dfAt = (x, z) => {
-    const palm = Math.hypot(x - cx, z - cz) / (S * 0.6);
+    const palm = Math.hypot(x - cx, z - cz) / (S2 * 0.6);
     let st = Infinity;
     for (const [sx, sz] of stations.slice(1)) st = Math.min(st, Math.hypot(x - sx, z - sz) / 14);
     return Math.min(palm, 0.3 + st * 0.5);
@@ -35662,7 +38439,7 @@ LAYERS.fingers = (c, p) => {
   return true;
 };
 CARVERS.linear = (p, ctx, rng) => {
-  const S = p.size, cx = p.x0 + S / 2, cz = p.z0 + S / 2;
+  const S2 = p.size, cx = p.x0 + S2 / 2, cz = p.z0 + S2 / 2;
   const half = p.kind === "mega" ? 9 : 7;
   const first = rng() < 0.5 ? 0 : 1;
   for (const axis of [first, 1 - first]) {
@@ -35671,7 +38448,7 @@ CARVERS.linear = (p, ctx, rng) => {
     for (const sgn of [-1, 1]) {
       let L = 0;
       for (const tryL of [100, 80, 64, 48, 36, 24]) {
-        const t = bandTiles(Math.round(cx + sgn * dx * (S / 2)), Math.round(cz + sgn * dz * (S / 2)), sgn * dx, sgn * dz, tryL, half);
+        const t = bandTiles(Math.round(cx + sgn * dx * (S2 / 2)), Math.round(cz + sgn * dz * (S2 / 2)), sgn * dx, sgn * dz, tryL, half);
         if (armClear(p, ctx, t)) {
           got.push(t);
           L = tryL;
@@ -35691,13 +38468,13 @@ CARVERS.linear = (p, ctx, rng) => {
   return false;
 };
 LAYERS.linear = (c, p) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, note = p.carved?.note;
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, note = p.carved?.note;
   if (!note) return false;
   const axis = note.axis, back = note.back ?? 0, fwd = note.fwd ?? 0;
-  const cx = x0 + S / 2, cz = z0 + S / 2;
+  const cx = x0 + S2 / 2, cz = z0 + S2 / 2;
   const P2 = (s, u) => axis === 0 ? [s + 0.5, u + 0.5] : [u + 0.5, s + 0.5];
   const sMid = axis === 0 ? cx : cz, uMid = Math.round(axis === 0 ? cz : cx);
-  const sA = Math.round(sMid - S / 2 - back + 1), sB = Math.round(sMid + S / 2 + fwd - 2);
+  const sA = Math.round(sMid - S2 / 2 - back + 1), sB = Math.round(sMid + S2 / 2 + fwd - 2);
   const half = c.t.kind === "mega" ? 9 : 7;
   const spine = avenue(c, 5 /* FourLane */, P2(sA, uMid), P2(sB, uMid), { main: true });
   c.ends(spine);
@@ -35705,7 +38482,7 @@ LAYERS.linear = (c, p) => {
   for (const o of [-half + 2, half - 2]) avenue(c, 4 /* TwoLane */, P2(sA, uMid + o), P2(sB, uMid + o), { main: false });
   for (let s = sA + 3; s < sB - 2; s += 6) avenue(c, 4 /* TwoLane */, P2(s, uMid - half + 2), P2(s, uMid + half - 2), { main: false, route: false });
   const strip = [];
-  for (let z = z0; z < z0 + S; z++) for (let x = x0; x < x0 + S; x++) {
+  for (let z = z0; z < z0 + S2; z++) for (let x = x0; x < x0 + S2; x++) {
     const u = axis === 0 ? z : x;
     if (Math.abs(u - uMid) > half) strip.push(idx(x, z));
   }
@@ -35720,26 +38497,26 @@ LAYERS.linear = (c, p) => {
   return true;
 };
 CARVERS.newtowns = (p, ctx) => {
-  const S = p.size;
-  lakeOn(p, ctx, discTiles(p, [[p.x0 + S * 0.5, p.z0 + S * 0.46, S * 0.08], [p.x0 + S * 0.56, p.z0 + S * 0.4, S * 0.05]]));
+  const S2 = p.size;
+  lakeOn(p, ctx, discTiles(p, [[p.x0 + S2 * 0.5, p.z0 + S2 * 0.46, S2 * 0.08], [p.x0 + S2 * 0.56, p.z0 + S2 * 0.4, S2 * 0.05]]));
   (p.carved ??= {}).seaSide = nearestSeaSide(new Dig(p, ctx), 30);
   return true;
 };
 LAYERS.newtowns = (c, p) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0;
-  const cx = x0 + S / 2, cz = z0 + S / 2, side = p.carved?.seaSide ?? 1;
+  const S2 = p.size, x0 = p.x0, z0 = p.z0;
+  const cx = x0 + S2 / 2, cz = z0 + S2 / 2, side = p.carved?.seaSide ?? 1;
   const toward = [side === 0 ? 1 : side === 2 ? -1 : 0, side === 1 || side < 0 ? 1 : side === 3 ? -1 : 0];
-  const core = [cx + toward[0] * S * 0.36, cz + toward[1] * S * 0.36];
-  const cs = Math.round(S * 0.2);
+  const core = [cx + toward[0] * S2 * 0.36, cz + toward[1] * S2 * 0.36];
+  const cs = Math.round(S2 * 0.2);
   for (let k = -cs; k <= cs; k += 5) {
     avenue(c, 4 /* TwoLane */, c.clampPt(core[0] + k, core[1] - cs / 2), c.clampPt(core[0] + k, core[1] + cs / 2), { main: false });
     avenue(c, 4 /* TwoLane */, c.clampPt(core[0] - cs, core[1] + k / 2), c.clampPt(core[0] + cs, core[1] + k / 2), { main: false });
   }
-  reserve(c, [...discTiles(p, [[cx, cz - S * 0.04, S * 0.17]], 2)]);
+  reserve(c, [...discTiles(p, [[cx, cz - S2 * 0.04, S2 * 0.17]], 2)]);
   const hubs = [];
   for (let k = 0; k < 5; k++) {
     const a = Math.atan2(toward[1], toward[0]) + Math.PI * (0.45 + k * 0.275);
-    const hub = [cx + Math.cos(a) * S * 0.33, cz + Math.sin(a) * S * 0.33];
+    const hub = [cx + Math.cos(a) * S2 * 0.33, cz + Math.sin(a) * S2 * 0.33];
     hubs.push(hub);
     ring(c, 4 /* TwoLane */, hub[0], hub[1], 6, 3, { main: false });
     spokes(c, 4 /* TwoLane */, hub[0], hub[1], 1, 6, COMPASS.slice(0, 4), { main: false });
@@ -35752,16 +38529,16 @@ LAYERS.newtowns = (c, p) => {
   c.anchors.seat = [core[0] + toward[1] * 6, core[1] + toward[0] * 6];
   c.anchors.garden = [core[0] + toward[0] * 6, core[1] + toward[1] * 6];
   put(c, "botanicalGarden", { near: [core[0] + toward[0] * 8, core[1] + toward[1] * 8], maxDist: 8 });
-  c.dfAt = dfCores(c, [core, ...hubs], S * 0.22);
+  c.dfAt = dfCores(c, [core, ...hubs], S2 * 0.22);
   finishTown(c, { grow: 26 });
   return true;
 };
 LAYERS.polycentric = (c, p) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0;
-  const q = Math.round(S * 0.36);
-  const cores = [[x0 + q / 2 + 1, z0 + q / 2 + 1], [x0 + S - q / 2 - 1, z0 + q / 2 + 1], [x0 + q / 2 + 1, z0 + S - q / 2 - 1], [x0 + S - q / 2 - 1, z0 + S - q / 2 - 1]];
+  const S2 = p.size, x0 = p.x0, z0 = p.z0;
+  const q = Math.round(S2 * 0.36);
+  const cores = [[x0 + q / 2 + 1, z0 + q / 2 + 1], [x0 + S2 - q / 2 - 1, z0 + q / 2 + 1], [x0 + q / 2 + 1, z0 + S2 - q / 2 - 1], [x0 + S2 - q / 2 - 1, z0 + S2 - q / 2 - 1]];
   const [A2, B2, C2, D] = cores;
-  gridAround(c, gridLines(A2[0] - q / 2, A2[0] + q / 2, 5), gridLines(A2[1] - q / 2, A2[1] + q / 2, 5), [[x0 + q, z0, x0 + S, z0 + S], [x0, z0 + q, x0 + S, z0 + S]]);
+  gridAround(c, gridLines(A2[0] - q / 2, A2[0] + q / 2, 5), gridLines(A2[1] - q / 2, A2[1] + q / 2, 5), [[x0 + q, z0, x0 + S2, z0 + S2], [x0, z0 + q, x0 + S2, z0 + S2]]);
   etoile(c, 4 /* TwoLane */, B2[0], B2[1], 3, Math.round(q * 0.45), COMPASS);
   ring(c, 4 /* TwoLane */, C2[0], C2[1], Math.round(q * 0.3), Math.round(q * 0.12));
   ring(c, 4 /* TwoLane */, C2[0], C2[1], Math.round(q * 0.15), 3);
@@ -35771,9 +38548,9 @@ LAYERS.polycentric = (c, p) => {
     avenue(c, 4 /* TwoLane */, [D[0] - q / 2 + 1, D[1] + k], [D[0] + q / 2 - 1, D[1] + k], { main: false, route: false });
   }
   avenue(c, 4 /* TwoLane */, [D[0] - q / 2 + 1, D[1] - q / 2 + 1], [D[0] + q / 2 - 2, D[1] + q / 2 - 2], { four: true });
-  const ring4 = ring(c, 5 /* FourLane */, x0 + S / 2, z0 + S / 2, Math.round(S * 0.3), 0, { main: true });
-  for (const k of cores) c.ends(c.street(4 /* TwoLane */, [k, [x0 + S / 2 + (k[0] - x0 - S / 2) * 0.6, z0 + S / 2 + (k[1] - z0 - S / 2) * 0.6]]));
-  reserve(c, rect(x0 + S * 0.3, z0 + S * 0.3, Math.round(S * 0.4), Math.round(S * 0.4)).filter((i) => !c.w.road[i]));
+  const ring4 = ring(c, 5 /* FourLane */, x0 + S2 / 2, z0 + S2 / 2, Math.round(S2 * 0.3), 0, { main: true });
+  for (const k of cores) c.ends(c.street(4 /* TwoLane */, [k, [x0 + S2 / 2 + (k[0] - x0 - S2 / 2) * 0.6, z0 + S2 / 2 + (k[1] - z0 - S2 / 2) * 0.6]]));
+  reserve(c, rect(x0 + S2 * 0.3, z0 + S2 * 0.3, Math.round(S2 * 0.4), Math.round(S2 * 0.4)).filter((i) => !c.w.road[i]));
   c.anchors.seat = [A2[0] + 2, A2[1] + 2];
   c.anchors.palace = [B2[0] + 5, B2[1] + 5];
   c.anchors.landmark = [D[0] + 2, D[1] - 2];
@@ -35785,20 +38562,20 @@ LAYERS.polycentric = (c, p) => {
   return true;
 };
 LAYERS.freeway = (c, p) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0;
-  const F = Math.round(S * 0.32);
-  const xs = gridLines(x0, x0 + S, F), zs = gridLines(z0, z0 + S, F);
-  gridAround(c, gridLines(x0, x0 + S, 6), gridLines(z0, z0 + S, 6), []);
-  for (const x of xs) c.ends(avenue(c, 5 /* FourLane */, [x, z0 + 1], [x, z0 + S - 1], { main: true }));
-  for (const z of zs) c.ends(avenue(c, 5 /* FourLane */, [x0 + 1, z], [x0 + S - 1, z], { main: true }));
-  const diag = avenue(c, 4 /* TwoLane */, [x0 + 2.5, z0 + S - 2.5], [x0 + S * 0.6, z0 + S - S * 0.6 + 2], { four: true, main: true });
+  const S2 = p.size, x0 = p.x0, z0 = p.z0;
+  const F = Math.round(S2 * 0.32);
+  const xs = gridLines(x0, x0 + S2, F), zs = gridLines(z0, z0 + S2, F);
+  gridAround(c, gridLines(x0, x0 + S2, 6), gridLines(z0, z0 + S2, 6), []);
+  for (const x of xs) c.ends(avenue(c, 5 /* FourLane */, [x, z0 + 1], [x, z0 + S2 - 1], { main: true }));
+  for (const z of zs) c.ends(avenue(c, 5 /* FourLane */, [x0 + 1, z], [x0 + S2 - 1, z], { main: true }));
+  const diag = avenue(c, 4 /* TwoLane */, [x0 + 2.5, z0 + S2 - 2.5], [x0 + S2 * 0.6, z0 + S2 - S2 * 0.6 + 2], { four: true, main: true });
   for (const x of xs) for (const z of zs) ring(c, 4 /* TwoLane */, x - 0.5, z - 0.5, 4, 2, { main: false });
-  const towns = [[x0 + S * 0.55, z0 + S * 0.5], [x0 + S * 0.2, z0 + S * 0.55], [x0 + S * 0.75, z0 + S * 0.2], [x0 + S * 0.8, z0 + S * 0.82]];
+  const towns = [[x0 + S2 * 0.55, z0 + S2 * 0.5], [x0 + S2 * 0.2, z0 + S2 * 0.55], [x0 + S2 * 0.75, z0 + S2 * 0.2], [x0 + S2 * 0.8, z0 + S2 * 0.82]];
   c.anchors.seat = [towns[0][0] + 3, towns[0][1] + 3];
   c.anchors.landmark = towns[0];
-  c.anchors.stadium = [x0 + S * 0.4, z0 + S * 0.2];
+  c.anchors.stadium = [x0 + S2 * 0.4, z0 + S2 * 0.2];
   put(c, "observatory", { highest: true, zone: "any" });
-  c.dfAt = dfCores(c, towns, S * 0.2);
+  c.dfAt = dfCores(c, towns, S2 * 0.2);
   finishTown(c, { grow: 10, axis: diag });
   return true;
 };
@@ -35824,25 +38601,25 @@ function loop(c, at, r, n2, phase = 0) {
   return out;
 }
 LAYERS.hilltown = (c, p, rng) => {
-  const S = p.size, top2 = summit(c, p, Math.round(S * 0.25));
+  const S2 = p.size, top2 = summit(c, p, Math.round(S2 * 0.25));
   const keep = c.t.surface;
   c.t.surface = c.t.surface === "dirt" ? "dirt" : "cobble";
   const a0 = rng() * Math.PI * 2;
   const ridges = [];
   for (let k = 0; k < 3; k++) {
     const a = a0 + k * Math.PI * 2 / 3;
-    const out = c.clampPt(top2[0] + Math.cos(a) * S * 0.6, top2[1] + Math.sin(a) * S * 0.6);
-    const r = c.street(4 /* TwoLane */, [top2, [top2[0] + Math.cos(a) * S * 0.2, top2[1] + Math.sin(a) * S * 0.2], out]);
+    const out = c.clampPt(top2[0] + Math.cos(a) * S2 * 0.6, top2[1] + Math.sin(a) * S2 * 0.6);
+    const r = c.street(4 /* TwoLane */, [top2, [top2[0] + Math.cos(a) * S2 * 0.2, top2[1] + Math.sin(a) * S2 * 0.2], out]);
     c.ends(r);
     ridges.push(r);
   }
-  for (const f of [0.14, 0.26, 0.38]) c.street(4 /* TwoLane */, loop(c, top2, S * f, 10, a0));
+  for (const f of [0.14, 0.26, 0.38]) c.street(4 /* TwoLane */, loop(c, top2, S2 * f, 10, a0));
   c.t.surface = keep;
   let low = 0, lowH = Infinity;
   for (let d = 0; d < 4; d++) {
     let s = 0;
-    for (let k = 4; k < S - 4; k += 4) {
-      const x = d === 0 ? p.x0 + S - 3 : d === 2 ? p.x0 + 2 : p.x0 + k, z = d === 1 ? p.z0 + S - 3 : d === 3 ? p.z0 + 2 : p.z0 + k;
+    for (let k = 4; k < S2 - 4; k += 4) {
+      const x = d === 0 ? p.x0 + S2 - 3 : d === 2 ? p.x0 + 2 : p.x0 + k, z = d === 1 ? p.z0 + S2 - 3 : d === 3 ? p.z0 + 2 : p.z0 + k;
       s += c.w.elev[idx(x, z)];
     }
     if (s < lowH) {
@@ -35850,27 +38627,27 @@ LAYERS.hilltown = (c, p, rng) => {
       low = d;
     }
   }
-  const v = (u) => low % 2 === 0 ? [[low === 0 ? p.x0 + S - 1.5 - u : p.x0 + 1.5 + u, p.z0 + 1], [low === 0 ? p.x0 + S - 1.5 - u : p.x0 + 1.5 + u, p.z0 + S - 1]] : [[p.x0 + 1, low === 1 ? p.z0 + S - 1.5 - u : p.z0 + 1.5 + u], [p.x0 + S - 1, low === 1 ? p.z0 + S - 1.5 - u : p.z0 + 1.5 + u]];
+  const v = (u) => low % 2 === 0 ? [[low === 0 ? p.x0 + S2 - 1.5 - u : p.x0 + 1.5 + u, p.z0 + 1], [low === 0 ? p.x0 + S2 - 1.5 - u : p.x0 + 1.5 + u, p.z0 + S2 - 1]] : [[p.x0 + 1, low === 1 ? p.z0 + S2 - 1.5 - u : p.z0 + 1.5 + u], [p.x0 + S2 - 1, low === 1 ? p.z0 + S2 - 1.5 - u : p.z0 + 1.5 + u]];
   const [va, vb] = v(1);
   c.ends(c.street(4 /* TwoLane */, [va, vb]));
-  for (const pt of loop(c, top2, S * 0.44, 8, a0 + 0.3).slice(0, 8)) put(c, "watchtower", { near: pt, maxDist: 3, zone: "any" });
+  for (const pt of loop(c, top2, S2 * 0.44, 8, a0 + 0.3).slice(0, 8)) put(c, "watchtower", { near: pt, maxDist: 3, zone: "any" });
   c.anchors.temple = [top2[0] + 3, top2[1] - 3];
   c.anchors.seat = [top2[0] - 3, top2[1] + 3];
   c.anchors.tower = [top2[0] + 3, top2[1] + 3];
   c.anchors.market = top2;
   put(c, "marketSquare", { near: top2, maxDist: 4 });
-  c.dfAt = dfCores(c, [top2], S * 0.6);
+  c.dfAt = dfCores(c, [top2], S2 * 0.6);
   c.maxFloors = 4;
   finishTown(c, { grow: c.t.kind === "city" ? 6 : 12, growType: 7 /* Cobble */, axis: ridges[0] });
   return true;
 };
 LAYERS.citadel = (c, p, rng) => {
-  const S = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
-  const rock = summit(c, p, Math.round(S * 0.15));
-  const ax = Math.abs(rock[0] - (x0 + S / 2)) >= Math.abs(rock[1] - (z0 + S / 2)) ? 0 : 1;
-  const dir = (ax === 0 ? rock[0] < x0 + S / 2 : rock[1] < z0 + S / 2) ? 1 : -1;
+  const S2 = p.size, x0 = p.x0, z0 = p.z0, mega = p.kind === "mega";
+  const rock = summit(c, p, Math.round(S2 * 0.15));
+  const ax = Math.abs(rock[0] - (x0 + S2 / 2)) >= Math.abs(rock[1] - (z0 + S2 / 2)) ? 0 : 1;
+  const dir = (ax === 0 ? rock[0] < x0 + S2 / 2 : rock[1] < z0 + S2 / 2) ? 1 : -1;
   const P2 = (s, u) => ax === 0 ? [rock[0] + dir * s, rock[1] + u] : [rock[0] + u, rock[1] + dir * s];
-  const mile = Math.round(S * 0.55);
+  const mile = Math.round(S2 * 0.55);
   const keep = c.t.surface;
   c.t.surface = "cobble";
   const royal = avenue(c, 4 /* TwoLane */, P2(3, 0), P2(mile, 0), { main: true });
@@ -35887,14 +38664,14 @@ LAYERS.citadel = (c, p, rng) => {
   c.ends(streets[1]);
   for (const s of [12, 22]) c.street(4 /* TwoLane */, [P2(s, 0), P2(s, nu)]);
   const hole = [P2(-4, -6), P2(mile + 2, nu + Math.sign(gU) * 12)];
-  gridAround(c, gridLines(x0, x0 + S, 7), gridLines(z0, z0 + S, 7), [[Math.min(hole[0][0], hole[1][0]), Math.min(hole[0][1], hole[1][1]), Math.max(hole[0][0], hole[1][0]), Math.max(hole[0][1], hole[1][1])]]);
+  gridAround(c, gridLines(x0, x0 + S2, 7), gridLines(z0, z0 + S2, 7), [[Math.min(hole[0][0], hole[1][0]), Math.min(hole[0][1], hole[1][1]), Math.max(hole[0][0], hole[1][0]), Math.max(hole[0][1], hole[1][1])]]);
   c.anchors.palace = P2(1, 2);
   c.anchors.seat = P2(mile - 2, -3);
   c.anchors.temple = P2(Math.round(mile * 0.45), -3);
   c.anchors.tower = garden ? [garden.x + garden.w / 2, garden.z - 1] : P2(15, gU);
   c.anchors.museum = P2(16, nu + Math.sign(gU) * 3);
   put(c, "moatedCastle", { near: P2(0, 0), maxDist: 5, zone: "any" }) ?? put(c, "watchtower", { near: P2(0, 0), maxDist: 4, zone: "any" });
-  c.dfAt = dfCores(c, [P2(mile * 0.5, 0), P2(16, nu + Math.sign(gU) * 5)], S * 0.5);
+  c.dfAt = dfCores(c, [P2(mile * 0.5, 0), P2(16, nu + Math.sign(gU) * 5)], S2 * 0.5);
   c.capAt = (x, z) => Math.hypot(x - rock[0], z - rock[1]) < mile ? 7 : 0;
   finishTown(c, { grow: mega ? 14 : 8, parks: garden ? [garden] : [], axis: royal });
   return true;
@@ -35903,20 +38680,20 @@ CARVERS.amphitheatre = (p, ctx) => {
   const dig = new Dig(p, ctx);
   const side = nearestSeaSide(dig, 30);
   if (side < 0) return false;
-  const S = p.size;
+  const S2 = p.size;
   const F = (s, u) => {
     switch (side) {
       case 0:
-        return [p.x0 + S - 1 - u, p.z0 + s];
+        return [p.x0 + S2 - 1 - u, p.z0 + s];
       case 1:
-        return [p.x0 + s, p.z0 + S - 1 - u];
+        return [p.x0 + s, p.z0 + S2 - 1 - u];
       case 2:
         return [p.x0 + u, p.z0 + s];
       default:
         return [p.x0 + s, p.z0 + u];
     }
   };
-  for (let s = 3; s < S - 3; s++) for (let u = 0; u < 3; u++) {
+  for (let s = 3; s < S2 - 3; s++) for (let u = 0; u < 3; u++) {
     const [x, z] = F(s, u);
     dig.mark(x, z, 2);
   }
@@ -35931,7 +38708,7 @@ CARVERS.amphitheatre = (p, ctx) => {
     return Infinity;
   };
   const mouths = [];
-  for (let s = 6; s < S - 6; s += 3) mouths.push([s, seaAt(s)]);
+  for (let s = 6; s < S2 - 6; s += 3) mouths.push([s, seaAt(s)]);
   mouths.sort((q, r) => q[1] - r[1]);
   const low = p.level <= SEA + 9;
   let clear = false;
@@ -35952,45 +38729,45 @@ CARVERS.amphitheatre = (p, ctx) => {
   return true;
 };
 LAYERS.amphitheatre = (c, p) => {
-  const S = p.size, side = p.carved?.seaSide;
+  const S2 = p.size, side = p.carved?.seaSide;
   if (side === void 0) return false;
   const P2 = (s, u) => {
     switch (side) {
       case 0:
-        return [p.x0 + S - 1.5 - u, p.z0 + s + 0.5];
+        return [p.x0 + S2 - 1.5 - u, p.z0 + s + 0.5];
       case 1:
-        return [p.x0 + s + 0.5, p.z0 + S - 1.5 - u];
+        return [p.x0 + s + 0.5, p.z0 + S2 - 1.5 - u];
       case 2:
         return [p.x0 + 1.5 + u, p.z0 + s + 0.5];
       default:
         return [p.x0 + s + 0.5, p.z0 + 1.5 + u];
     }
   };
-  const quay = avenue(c, 5 /* FourLane */, P2(1, 4), P2(S - 2, 4), { main: true });
+  const quay = avenue(c, 5 /* FourLane */, P2(1, 4), P2(S2 - 2, 4), { main: true });
   c.ends(quay);
-  const strip = Math.round(S * 0.2);
-  for (const u of [8, 12, strip]) avenue(c, 4 /* TwoLane */, P2(1, u), P2(S - 2, u), { main: false });
-  for (let s = 3; s < S - 2; s += 6) avenue(c, 4 /* TwoLane */, P2(s, 4), P2(s, strip), { main: false });
-  const rim = Math.round(S * 0.85);
-  c.ends(c.street(4 /* TwoLane */, [P2(1, rim), P2(S / 2, rim + 2), P2(S - 2, rim)]));
-  for (let s = 6; s < S - 6; s += 14) {
+  const strip = Math.round(S2 * 0.2);
+  for (const u of [8, 12, strip]) avenue(c, 4 /* TwoLane */, P2(1, u), P2(S2 - 2, u), { main: false });
+  for (let s = 3; s < S2 - 2; s += 6) avenue(c, 4 /* TwoLane */, P2(s, 4), P2(s, strip), { main: false });
+  const rim = Math.round(S2 * 0.85);
+  c.ends(c.street(4 /* TwoLane */, [P2(1, rim), P2(S2 / 2, rim + 2), P2(S2 - 2, rim)]));
+  for (let s = 6; s < S2 - 6; s += 14) {
     const pts = [];
     for (let u = strip, k = 0; u <= rim; u += 6, k++) pts.push(P2(s + (k % 2 ? 6 : 0), u));
     c.street(4 /* TwoLane */, pts);
   }
-  for (const f of [0.38, 0.55, 0.7]) c.street(3 /* Paved */, [P2(2, S * f), P2(S / 2, S * f + 1), P2(S - 3, S * f)]);
-  c.anchors.seat = P2(S * 0.5, 7);
-  c.anchors.temple = P2(S * 0.3, 7);
-  c.anchors.market = P2(S * 0.65, 3);
-  put(c, "canalWarehouse", { near: P2(S * 0.2, 2), maxDist: 4, waterside: "prefer" });
+  for (const f of [0.38, 0.55, 0.7]) c.street(3 /* Paved */, [P2(2, S2 * f), P2(S2 / 2, S2 * f + 1), P2(S2 - 3, S2 * f)]);
+  c.anchors.seat = P2(S2 * 0.5, 7);
+  c.anchors.temple = P2(S2 * 0.3, 7);
+  c.anchors.market = P2(S2 * 0.65, 3);
+  put(c, "canalWarehouse", { near: P2(S2 * 0.2, 2), maxDist: 4, waterside: "prefer" });
   put(c, "observationTower", { highest: true, zone: "any" });
   c.dfAt = (x, z) => {
-    const u = side === 0 ? p.x0 + S - x : side === 2 ? x - p.x0 : side === 1 ? p.z0 + S - z : z - p.z0;
-    return 0.25 + 0.6 * (u / S);
+    const u = side === 0 ? p.x0 + S2 - x : side === 2 ? x - p.x0 : side === 1 ? p.z0 + S2 - z : z - p.z0;
+    return 0.25 + 0.6 * (u / S2);
   };
   c.capAt = (x, z) => {
-    const u = side === 0 ? p.x0 + S - x : side === 2 ? x - p.x0 : side === 1 ? p.z0 + S - z : z - p.z0;
-    return u < S * 0.2 ? 0 : 8;
+    const u = side === 0 ? p.x0 + S2 - x : side === 2 ? x - p.x0 : side === 1 ? p.z0 + S2 - z : z - p.z0;
+    return u < S2 * 0.2 ? 0 : 8;
   };
   finishTown(c, { grow: 14, axis: quay });
   return true;
@@ -36324,15 +39101,15 @@ function distanceFrom(tiles, x0, z0, W2, H, reach) {
 }
 var D42 = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 function shoreRuns(c, near2) {
-  const { x0, z0, S } = c;
-  const inSq = (x2, z2) => x2 >= x0 && z2 >= z0 && x2 < x0 + S && z2 < z0 + S;
+  const { x0, z0, S: S2 } = c;
+  const inSq = (x2, z2) => x2 >= x0 && z2 >= z0 && x2 < x0 + S2 && z2 < z0 + S2;
   const free = (x2, z2) => inSq(x2, z2) && !near2(x2, z2);
   const touches = (x2, z2) => {
     for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) if ((dx || dz) && inSq(x2 + dx, z2 + dz) && near2(x2 + dx, z2 + dz)) return true;
     return false;
   };
   let sx = -1, sz = -1, sh = 0;
-  find: for (let z2 = z0; z2 < z0 + S; z2++) for (let x2 = x0; x2 < x0 + S; x2++) {
+  find: for (let z2 = z0; z2 < z0 + S2; z2++) for (let x2 = x0; x2 < x0 + S2; x2++) {
     if (!free(x2, z2)) continue;
     for (let d = 0; d < 4; d++) {
       const nx = x2 + D42[d][0], nz = z2 + D42[d][1];
@@ -36348,7 +39125,7 @@ function shoreRuns(c, near2) {
   const seq = [];
   let x = sx, z = sz, h = sh;
   seq.push([idx(x, z), touches(x, z)]);
-  for (let step2 = 0; step2 < S * S * 8; step2++) {
+  for (let step2 = 0; step2 < S2 * S2 * 8; step2++) {
     const r = (h + 1) % 4;
     if (free(x + D42[r][0], z + D42[r][1])) h = r;
     else if (!free(x + D42[h][0], z + D42[h][1])) {
@@ -36402,9 +39179,9 @@ function lakeTown(c, p) {
   if (!lakes?.length) return false;
   const water = new Set(lakes[lakes.length - 1].tiles);
   c.t.lake = LAKE_AFTER[fl];
-  const k = SHORE[fl], S = c.S;
-  const D = distanceFrom(water, c.x0, c.z0, S, S, 40);
-  const dAt = (x, z) => D[(z - c.z0) * S + x - c.x0];
+  const k = SHORE[fl], S2 = c.S;
+  const D = distanceFrom(water, c.x0, c.z0, S2, S2, 40);
+  const dAt = (x, z) => D[(z - c.z0) * S2 + x - c.x0];
   const runs = shoreRuns(c, (x, z) => dAt(x, z) < k);
   if (!runs.length) return false;
   const shore = [];
@@ -36416,11 +39193,11 @@ function lakeTown(c, p) {
   if (shore.length < 8) return false;
   const out = p.carved?.note?.out ?? -1;
   const lakeMid = centroid(water, c);
-  const headward = out < 0 ? lakeMid : [lakeMid[0] - D42[out][0] * S, lakeMid[1] - D42[out][1] * S];
+  const headward = out < 0 ? lakeMid : [lakeMid[0] - D42[out][0] * S2, lakeMid[1] - D42[out][1] * S2];
   let C2 = mid(shore[0]), best = -Infinity;
   for (const n2 of shore) {
     const q = mid(n2);
-    const score = out < 0 ? Math.min(q[0] - c.x0, q[1] - c.z0, c.x0 + S - q[0], c.z0 + S - q[1]) - Math.hypot(q[0] - lakeMid[0], q[1] - lakeMid[1]) * 0.1 : -Math.hypot(q[0] - headward[0], q[1] - headward[1]);
+    const score = out < 0 ? Math.min(q[0] - c.x0, q[1] - c.z0, c.x0 + S2 - q[0], c.z0 + S2 - q[1]) - Math.hypot(q[0] - lakeMid[0], q[1] - lakeMid[1]) * 0.1 : -Math.hypot(q[0] - headward[0], q[1] - headward[1]);
     if (score > best) {
       best = score;
       C2 = q;
@@ -36428,7 +39205,7 @@ function lakeTown(c, p) {
   }
   c.cx = C2[0];
   c.cz = C2[1];
-  c.dfAt = (x, z) => Math.hypot(x - C2[0], z - C2[1]) / (S * 0.6);
+  c.dfAt = (x, z) => Math.hypot(x - C2[0], z - C2[1]) / (S2 * 0.6);
   for (let d = 0; d < 4; d++) {
     if (d === out) continue;
     if (kind === "rural" && out >= 0 && d !== (out + 2) % 4) continue;
@@ -36482,7 +39259,7 @@ function lakeTown(c, p) {
   if (fl === "okoboji") by("lakeCottage", n3(3, 5, 6), { floors: c.int(1, 2) });
   const walk = fl === "leman" || fl === "como" ? 7 /* Plaza */ : 1 /* Lawn */;
   const keep = [];
-  for (let z = c.z0; z < c.z0 + S; z++) for (let x = c.x0; x < c.x0 + S; x++) {
+  for (let z = c.z0; z < c.z0 + S2; z++) for (let x = c.x0; x < c.x0 + S2; x++) {
     const d = dAt(x, z);
     if (d > 0 && d < k && c.free(x, z)) keep.push(idx(x, z));
   }
@@ -36714,6 +39491,20 @@ var FENCE_RULES = [null, ...REGION_KINDS.map((k) => {
   const c = REGIONS[k].clutter;
   return { lantern: (c.stoneLantern ?? 0) * 12, snowFence: (c.snowFence ?? 0) * 12, drystone: c.drystoneWall !== void 0 };
 })];
+
+// src/world/plants.ts
+var S = (...k) => new Set(k);
+var DAIRY = S("dairy", "farmhouse", "barn", "ranchHouse");
+var BOOKISH = S("library", "university", "school", "museum");
+var TIMBER = S("sawmill", "lumberYard", "lumberSiding", "loggingCamp");
+var QUARRY = S("crusher", "mineHeadframe", "gravelPlant", "cementPlant", "oreMill", "quarry");
+var VINES = S("vineyard", "wineryBarn", "orchard");
+var SEABED = S("noduleField", "ventField", "seaHabitat");
+var FASHION = S("departmentStore", "operaHouse", "premiereTheatre", "theatre", "mall");
+var PLANTATION = S("plantation", "plantationManor", "teaHouse", "tradingPost");
+var SPIRITS = S("distillery", "wineryBarn", "vineyard", "brewery", "pub");
+var FINE = S("museum", "exchange", "bank", "mansion", "casino");
+var MUSIC = S("concertHall", "operaHouse", "theatre", "nightclub");
 
 // src/world/geology.ts
 var SOURCE_MIN = SEA + 13;
@@ -36984,16 +39775,16 @@ var SEED = process.env.WORLD_SEED || "online";
 var PEPPER = process.env.PIN_PEPPER || "tinyfleet";
 var OLD_PEPPERS = [...new Set([...(process.env.PIN_PEPPER_OLD ?? "").split(","), "tinyfleet"].map((s) => s.trim()))].filter((s) => s && s !== PEPPER);
 var MAX_PLAYERS = Number(process.env.MAX_PLAYERS) || 100;
-var HERE = fileURLToPath(new URL(".", import.meta.url));
-var SITE = existsSync(join2(HERE, "play", "index.html")) && !process.env.PUBLIC_DIR ? HERE : null;
+var HERE2 = fileURLToPath2(new URL(".", import.meta.url));
+var SITE = existsSync2(join3(HERE2, "play", "index.html")) && !process.env.PUBLIC_DIR ? HERE2 : null;
 var RELEASE = (() => {
   try {
-    return SITE ? JSON.parse(readFileSync2(join2(SITE, "version.json"), "utf8")) : {};
+    return SITE ? JSON.parse(readFileSync3(join3(SITE, "version.json"), "utf8")) : {};
   } catch {
     return {};
   }
 })();
-var PUBLIC = SITE ? join2(HERE, "play") : resolve(process.env.PUBLIC_DIR || [join2(HERE, "public"), join2(HERE, "..", "..", "dist"), join2(process.cwd(), "dist")].find((d) => existsSync(join2(d, "index.html"))) || join2(HERE, "public"));
+var PUBLIC = SITE ? join3(HERE2, "play") : resolve(process.env.PUBLIC_DIR || [join3(HERE2, "public"), join3(HERE2, "..", "..", "dist"), join3(process.cwd(), "dist")].find((d) => existsSync2(join3(d, "index.html"))) || join3(HERE2, "public"));
 var guests = /* @__PURE__ */ new Set();
 var MAX_GUESTS = Number(process.env.MAX_GUESTS) || GUEST.max;
 var AUTO_PER_HOUR = 3;
@@ -38907,7 +41698,7 @@ function sendFile(req, res, file, head) {
     createReadStream(file, { start: from, end: to }).pipe(res);
     return;
   }
-  res.writeHead(200, { ...head, "accept-ranges": "bytes", "content-length": size, ...existsSync(file + ".gz") ? { vary: "accept-encoding" } : {} });
+  res.writeHead(200, { ...head, "accept-ranges": "bytes", "content-length": size, ...existsSync2(file + ".gz") ? { vary: "accept-encoding" } : {} });
   if (req.method === "HEAD") {
     res.end();
     return;
@@ -39017,7 +41808,7 @@ function http(req, res) {
     }
     if (!path2.startsWith("/play/")) {
       if (path2 === "/") path2 = "/index.html";
-      const file2 = normalize(join2(SITE, path2));
+      const file2 = normalize(join3(SITE, path2));
       if (!SITE_FILES.test(path2) || !file2.startsWith(SITE)) {
         res.writeHead(404, { "content-type": "text/plain" }).end("Not found");
         return;
@@ -39031,7 +41822,7 @@ function http(req, res) {
     path2 = path2.slice("/play".length);
   }
   if (path2 === "/") path2 = "/index.html";
-  const file = normalize(join2(PUBLIC, path2));
+  const file = normalize(join3(PUBLIC, path2));
   if (!file.startsWith(PUBLIC)) {
     res.writeHead(404).end("Not found");
     return;
@@ -39044,7 +41835,7 @@ function checkGame() {
   console.log(`world GEN ${GEN_VERSION}: NEXT_WORLD ${NEXT_WORLD ? "on" : "off"}${envFlag ? " (from the NEXT_WORLD environment variable)" : ""}`);
   let built = null;
   try {
-    built = JSON.parse(readFileSync2(join2(PUBLIC, "build.json"), "utf8"));
+    built = JSON.parse(readFileSync3(join3(PUBLIC, "build.json"), "utf8"));
   } catch {
   }
   if (!built || typeof built.gen !== "number") {

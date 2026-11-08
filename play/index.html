@@ -45,8 +45,8 @@
      */
     body.dark-ui > :not(#game):not(#loading):not(script) { filter: invert(1) hue-rotate(180deg); }
     /* a full-screen card's veil blurs the world behind it: the veil is darkened, and only the card inside is turned */
-    body.dark-ui > :is(.worldmap, #vehicles, #cashmenu, #settings, #music, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq, #social, #townreg) { filter: none !important; background: rgba(8,12,16,.55) !important; }
-    body.dark-ui > :is(.worldmap, #vehicles, #cashmenu, #settings, #music, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq, #social, #townreg) > * { filter: invert(1) hue-rotate(180deg); }
+    body.dark-ui > :is(.worldmap, #vehicles, #cashmenu, #settings, #music, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq, #social, #townreg, #fee-card, #net-lost) { filter: none !important; background: rgba(8,12,16,.55) !important; }
+    body.dark-ui > :is(.worldmap, #vehicles, #cashmenu, #settings, #music, #mayor, #requests, #tavern-card, #night-card, #mission, #journal, #welcome, #hq, #social, #townreg, #fee-card, #net-lost) > * { filter: invert(1) hue-rotate(180deg); }
     body.dark-ui > :not(#game):not(#loading) :is(img, canvas, video, .dk-canvas, .sw, .rb-sw, .terr-legend .tl-row i) { filter: invert(1) hue-rotate(180deg); }
     /* the fleets' names over the overview are their own colours, with halos picked for them */
     body.dark-ui > #terr-labels { filter: none !important; }
@@ -103,6 +103,10 @@
     #bl #speed.nos { color: #2f7fd8; text-shadow: 0 0 10px rgba(47,127,216,.45); }
     #bl .nos { flex: none; display: inline-flex; align-items: center; gap: 4px; align-self: center; margin-left: 10px; padding-left: 10px; border-left: 1px solid #dfe6ea; font-size: 12px; font-weight: 600; color: #7d8a92; font-variant-numeric: tabular-nums; }
     #bl .nos[hidden] { display: none; }
+    /* a stopped train's driver can walk to the other cab (TrainState.changeEnds): shown only while it stands */
+    #bl #ends { flex: none; align-self: center; margin-left: 10px; height: 28px; padding: 0 11px; border: 0; border-radius: 9px; background: #eef2ea; color: #1f2b33; font: 600 12.5px/1 "IBM Plex Sans", "Segoe UI", sans-serif; white-space: nowrap; cursor: pointer; pointer-events: auto; }
+    #bl #ends:hover { background: #e2e9dc; }
+    #bl #ends[hidden] { display: none; }
     #bl .nos .bottle { position: relative; display: inline-block; width: 9px; height: 18px; border: 1.5px solid #9aa7b0; border-radius: 4px 4px 3px 3px; overflow: hidden; background: #fff; }
     #bl .nos .bottle > i { position: absolute; left: 0; right: 0; bottom: 0; background: #9ec5ef; }
     #bl .nos .bottle.full { border-color: #2f7fd8; }
@@ -322,6 +326,16 @@
     #loading .ld-bar::after { content: ""; position: absolute; top: 0; bottom: 0; width: 30%; left: -30%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.45), transparent); animation: ld-shine 1.6s ease-in-out infinite; }
     @keyframes ld-shine { to { left: 100%; } }
     @media (prefers-reduced-motion: reduce) { #loading .ld-rays, #loading .ld-bar::after { animation: none; } #loading.zap .ld-streaks, #loading.zap .ld-flash { animation: none; } }
+    /* the first road (render/firstRoad.ts, docs/firstroad.html): a new player's loading screen is a black void with one lit road; the
+       caption slot carries the lesson's key cap and line, swapped in place, black whatever the UI theme */
+    #loading.road { --ld-bg: #000; --ld-bg2: #000; --ld-ink: #fff; --ld-sub: rgba(255,255,255,.68); --ld-track: rgba(255,255,255,.12); background: #000; }
+    #loading.road :is(.ld-rays, .ld-streaks, .ld-flash) { display: none; }
+    #loading.road .ld-cap { opacity: 1; animation: none; display: flex; align-items: center; justify-content: center; gap: 14px; left: 16px; right: 16px; bottom: calc(max(24px, 4vh) + 104px); }
+    #loading.road .ld-key { font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: clamp(16px, 2vw, 24px); line-height: 1; color: #1f2b33; background: #ffd24a; border-radius: 8px; border-bottom: 4px solid #c9a030; padding: .35em .6em; white-space: nowrap; }
+    #loading.road .ld-key.ok { background: #8fdca4; border-bottom-color: #5bb97a; }
+    #loading.road .ld-line { text-align: left; max-width: min(70vw, 560px); }
+    #loading.road .ld-line b { display: block; font-size: clamp(16px, 2.2vw, 26px); font-weight: 700; color: #fff; line-height: 1.15; }
+    #loading.road .ld-line small { display: block; margin-top: 3px; font-size: clamp(11px, 1.2vw, 14px); color: rgba(255,255,255,.68); }
     @keyframes bounce { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-5px) } }
     /* the fleet dock beside the speedo (game/fleetDock.ts): YOU, then a square per fleet slot */
     #dock { z-index: 2; bottom: 16px; display: flex; gap: 10px; align-items: flex-end; }
@@ -1259,6 +1273,46 @@
     :is(#inspect .deed, #hq .hq-pane.deed) ul.notes li { font-size: 11px; color: #7d8a92; line-height: 1.4; padding-left: 10px; position: relative; margin-top: 2px; }
     :is(#inspect .deed, #hq .hq-pane.deed) ul.notes li::before { content: "·"; position: absolute; left: 2px; color: #b8c2c8; }
     :is(#inspect .deed, #hq .hq-pane.deed) ul.notes li b { color: #1f2b33; }
+    /* a plant on its deed card (docs/supplychains.html, game/chains/plantCard.ts): recipe, bins, the run's bar, the kerb, Set */
+    :is(#inspect, #hq) .plant { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: #f2f6f0; border: 1px solid #dfe8da; font-size: 12px; color: #1f2b33; }
+    :is(#inspect, #hq) .plant.ask { background: #f6f7f4; border-style: dashed; color: #4c5a63; }
+    :is(#inspect, #hq) .plant small { color: #7d8a92; font-size: 10.5px; }
+    :is(#inspect, #hq) .plant .ph { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 3px; }
+    :is(#inspect, #hq) .plant .ph b { font-size: 12.5px; }
+    :is(#inspect, #hq) .plant .pr { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; letter-spacing: .02em; }
+    :is(#inspect, #hq) .plant :is(.bin, .run) { display: grid; grid-template-columns: 1fr auto; gap: 0 8px; margin-top: 5px; }
+    :is(#inspect, #hq) .plant :is(.bin, .run) b { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; }
+    :is(#inspect, #hq) .plant :is(.bin, .run) .bar { grid-column: 1 / -1; margin-top: 3px; }
+    :is(#inspect, #hq) .plant .bin .bar i { background: #6faf57; }
+    :is(#inspect, #hq) .plant .bin.short span { color: #b06a00; }
+    :is(#inspect, #hq) .plant .bin button.fetch { font: inherit; font-size: 10.5px; margin-left: 6px; padding: 0 6px; border-radius: 999px; border: 1px solid #cfd8d3; background: #fff; cursor: pointer; vertical-align: 1px; }
+    :is(#inspect, #hq) .plant .bin button.fetch.on { background: #1f2b33; color: #fff; border-color: #1f2b33; }
+    :is(#inspect, #hq) .plant .run .bar i { background: var(--owner, #3f78c0); }
+    :is(#inspect, #hq) .plant .run.wait span { color: #7d8a92; font-style: italic; }
+    :is(#inspect, #hq) .plant .kerb { display: flex; align-items: center; gap: 4px; margin-top: 6px; }
+    :is(#inspect, #hq) .plant .kerb > span:first-child { color: #4c5a63; margin-right: 2px; }
+    :is(#inspect, #hq) .plant .kerb .st { font-size: 15px; padding: 0 2px; border-radius: 4px; background: #fff; border: 1px solid #dfe8da; }
+    :is(#inspect, #hq) .plant .kerb .st.open { opacity: .55; border-style: dashed; }
+    :is(#inspect, #hq) .plant .kerb small { margin-left: auto; }
+    :is(#inspect, #hq) .plant .pset { display: flex; align-items: center; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+    :is(#inspect, #hq) .plant .pset button { font: inherit; font-size: 12px; padding: 1px 7px; border-radius: 999px; border: 1px solid #cfd8d3; background: #fff; cursor: pointer; }
+    :is(#inspect, #hq) .plant .pset button.on { background: #1f2b33; color: #fff; border-color: #1f2b33; }
+    :is(#inspect, #hq) .plant .pn { margin-top: 6px; font-size: 10.5px; color: #7d8a92; line-height: 1.4; }
+    /* the world bar over the fleet's plants (render/plantBars.ts): what it makes and how far along */
+    #plant-bars { position: fixed; inset: 0; pointer-events: none; z-index: 6; }
+    #plant-bars .pbar { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 3px; padding: 1px 4px 1px 2px; border-radius: 8px; background: rgba(255,255,255,.88); box-shadow: 0 1px 3px rgba(31,43,51,.25); font-size: 12px; line-height: 1; }
+    #plant-bars .pbar i { display: block; width: 26px; height: 5px; border-radius: 3px; background: #dfe5e8; overflow: hidden; }
+    #plant-bars .pbar i b { display: block; height: 100%; background: #3f78c0; }
+    #plant-bars .pbar.ready i b { background: #6faf57; }
+    /* the route tool's strip (game/chains/routeTool.ts): who it is for, the stops so far, Undo / Loop / Done / Cancel */
+    #route-strip { position: fixed; top: 64px; left: 50%; transform: translateX(-50%); z-index: 40; max-width: min(720px, calc(100vw - 32px)); padding: 10px 14px; border-radius: 12px; background: rgba(255,255,255,.96); box-shadow: 0 6px 24px rgba(31,43,51,.18); font-size: 13px; color: #1f2b33; display: grid; gap: 4px; }
+    #route-strip small { color: #6b777e; }
+    #route-strip .rl { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+    #route-strip .rl i { color: #9aa6ad; font-style: normal; }
+    #route-strip .rs { padding: 1px 8px; border-radius: 999px; background: #eef2ea; border: 1px solid #dfe8da; font-size: 12px; }
+    #route-strip .rb { display: flex; gap: 6px; justify-content: flex-end; }
+    #route-strip button { font: inherit; font-size: 12px; padding: 3px 10px; border-radius: 8px; border: 1px solid #cfd8d3; background: #fff; cursor: pointer; }
+    #route-strip button.main { background: #1f2b33; color: #fff; border-color: #1f2b33; }
     :is(#inspect .deed, #hq .hq-pane.deed) ul.notes .perk { color: #b98a12; font-weight: 600; }
     :is(#inspect .deed, #hq .hq-pane.deed) p.why { margin: 5px 0 0; color: #9aa6ad; font-size: 11px; }
     :is(#inspect .deed, #hq .hq-pane.deed) .btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
@@ -2509,6 +2563,7 @@
     /* the camera card: docked at the right with the world still running and clickable (game/tutorial.ts showCamera) */
     #welcome.dock { background: none; backdrop-filter: none; pointer-events: none; place-items: center end; padding: 16px 20px; }
     #welcome.dock .mc { pointer-events: auto; width: min(380px, 100%); grid-template-columns: 1fr; }
+    #welcome.dock .mc-hero { min-height: 150px; }
     #welcome .cam-rows { display: grid; grid-template-columns: 108px 1fr; gap: 9px 12px; align-items: center; font-size: 14.5px; color: #3f4b52; }
     #welcome .cam-rows .k { display: flex; align-items: center; gap: 4px; }
     #welcome .cam-rows .d b { color: #1f2b33; }
@@ -2614,6 +2669,8 @@
     /* ---- online (src/net): the chat, who is signed in and the leaderboard, name tags, the lost-connection card ---- */
     #net-chat { position: fixed; left: 16px; bottom: 100px; width: 360px; max-width: calc(100vw - 32px); z-index: 5; font-size: 13px; color: #1f2b33; pointer-events: none; }
     #net-chat[hidden], body.title-mode #net-chat { display: none; }
+    /* the world map (M) has its own column down the bottom left: chat's lines and hint stand aside unless typing (7 Nov 2026) */
+    body:has(.worldmap:not([hidden])) #net-chat:not(.typing) { display: none; }
     /* a night-op strip (.race-strip, bottom 86px) takes the corner: the chat steps up over it */
     body:has(.race-strip:not([hidden])) #net-chat { bottom: 142px; }
     #net-chat .lines { display: flex; flex-direction: column; gap: 3px; max-height: 172px; overflow: hidden; }
@@ -3094,14 +3151,15 @@
     #title-menu .gz-dateline { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; letter-spacing: .04em; color: #4a3e2a; border-top: 2.5px solid #2a2010; border-bottom: .5px solid #2a2010; padding: 2px 0; font-style: italic; }
     #title-menu .gz-body { transition: opacity .35s ease; }
     #title-menu .tm-gazette.out .gz-body { opacity: 0; }
-    #title-menu .gz-story { display: grid; grid-template-columns: 92px 1fr; gap: 12px; align-items: center; padding: 9px 0 3px; min-height: 84px; }
+    #title-menu .gz-story { display: grid; grid-template-columns: 92px 1fr; gap: 12px; align-items: center; padding: 9px 0 3px; min-height: 98px; }
     #title-menu .gz-photo { width: 92px; height: 66px; display: grid; place-items: center; font-size: 30px; background: #e6dcc0; border: .5px solid #2a2010; box-shadow: inset 0 0 18px rgba(90,70,30,.25); filter: sepia(.35) contrast(1.05); overflow: hidden; }
     #title-menu .gz-photo canvas { width: 88px; height: 60px; }
     #title-menu .gz-shield { width: 40px; height: 40px; }
     #title-menu .gz-text { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
     #title-menu .gz-kicker { font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: #8a2a1c; font-weight: 700; }
     #title-menu .gz-head { margin: 0; font-family: "Playfair Display", Georgia, serif; font-weight: 900; font-size: 17px; line-height: 1.12; letter-spacing: -.01em; color: #1a1208; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; text-wrap: balance; overflow-wrap: anywhere; }
-    #title-menu .gz-by { font-size: 11px; font-style: italic; color: #4a3e2a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    /* the byline and its detail on two lines before it is cut short (the user, 7 Nov 2026); the story stands 14 px taller for it */
+    #title-menu .gz-by { font-size: 11px; line-height: 1.3; font-style: italic; color: #4a3e2a; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow-wrap: anywhere; }
     #title-menu .gz-by .pk-mini { width: 12px; height: 12px; vertical-align: -2px; margin-right: 4px; }
     #title-menu .gz-by .dot { margin-right: 4px; }
     #title-menu .gz-fly { all: unset; align-self: flex-start; margin-top: 3px; cursor: pointer; font-size: 11.5px; font-weight: 700; color: #1a1208; border-bottom: 1px solid #1a1208; }
@@ -3341,6 +3399,7 @@
     #hq .dia-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 16px; margin-top: 8px; }
     #hq .dia-col h4 { margin: 0 0 3px; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: #7d8a92; }
     #hq .dia-col ul { list-style: none; margin: 0; padding: 0; }
+    #hq .dia-col ul.all { max-height: calc(3 * 24px); overflow-y: auto; overscroll-behavior: contain; }
     #hq .dia-col li { display: flex; align-items: baseline; gap: 8px; padding: 3px 2px; border-bottom: 1px solid #eef2f4; font-size: 12.5px; color: #1f2b33; }
     #hq .dia-col li .w { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     #hq .dia-col li .w small { color: #8a969d; font-size: 11px; margin-left: 3px; }
@@ -3480,6 +3539,9 @@
     /* the first drive's tour of the Fleet tab (game/fleetBoard.ts tour): one bubble at a time, over the HQ window */
     .hq-tour { position: fixed; z-index: 21; width: 260px; box-sizing: border-box; padding: 11px 13px 11px; border-radius: 13px; background: #1f2b33; color: #e9efe8; font-size: 13px; line-height: 1.45; box-shadow: 0 12px 32px rgba(31,43,51,.35), 0 0 0 3px #ffd36b; opacity: 0; transform: translateY(6px); transition: opacity .25s, transform .25s cubic-bezier(.2,.9,.3,1.3), left .25s, top .25s; }
     .hq-tour.on { opacity: 1; transform: none; }
+    /* "Put her to Work" walked through by click (game/workGuide.ts): the next thing to click glows, anywhere on screen */
+    .guide-tour { z-index: 60; pointer-events: none; }
+    .guide-glow { box-shadow: 0 0 0 3px #ffd36b, 0 0 22px 4px rgba(255,211,107,.55) !important; border-radius: 10px; }
     .hq-tour .n { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #9fb0b8; margin-bottom: 2px; }
     .hq-tour b { display: block; color: #ffd36b; font-size: 14px; margin-bottom: 3px; }
     .hq-tour em { font-style: normal; font-weight: 700; color: #fff; }
@@ -3684,6 +3746,13 @@
     #hq .hq-totals em { font-style: normal; font-weight: 700; color: #1e9e4a; }
     #hq .hq-totals b.big { font-size: 18px; color: #1f2b33; }
     #hq .hq-filters { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 10px 0; }
+    /* the chains strip (docs/supplychains.html): a row a chain the fleet has a plant in, its kinds as pips */
+    #hq .hq-chains { display: grid; gap: 3px; margin: 8px 0 2px; padding: 6px 8px; border-radius: 8px; background: #f2f6f0; border: 1px solid #dfe8da; }
+    #hq .hq-chain { display: grid; grid-template-columns: 150px auto 1fr; gap: 8px; align-items: center; font-size: 12px; }
+    #hq .hq-chain small { color: #7d8a92; text-align: right; }
+    #hq .hq-chain .pips { display: flex; gap: 3px; }
+    #hq .hq-chain .pips i { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid #9aa6ad; }
+    #hq .hq-chain .pips i.on { background: #6faf57; border-color: #4f8f3a; }
     #hq .hq-filters .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #7d8a92; margin: 0 2px 0 8px; }
     #hq .hq-filters .lbl:first-child { margin-left: 0; }
     #hq .hq-filters .sort { margin-left: auto; font-size: 12px; color: #6b777e; }
@@ -3899,7 +3968,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-ByaowLyx.js"></script>
+  <script type="module" crossorigin src="./assets/index-BvUdE2lr.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-B97_EtTR.js">
   <link rel="stylesheet" crossorigin href="./assets/index-BV6iPe3q.css">
 </head>
@@ -3974,6 +4043,7 @@
     <span id="speed">0</span><span class="unit">km/h</span>
     <span id="grade">— flat</span>
     <span id="nos" class="nos" hidden></span>
+    <button id="ends" type="button" tabindex="-1" hidden title="Walk to the other end of the train: ahead becomes the other way">⇄ Change ends</button>
     <span id="wind" hidden><svg id="wind-arrow" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2 L15.5 13 L10 10.2 L4.5 13 Z" fill="#2f7fb5"/><rect x="9" y="10" width="2" height="8" rx="1" fill="#2f7fb5"/></svg>wind</span>
     <span id="hold" class="hold empty"><i><i></i></i><span>Empty</span></span>
   </div>
