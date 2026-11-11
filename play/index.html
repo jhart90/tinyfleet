@@ -1645,7 +1645,7 @@
     :is(:is(#vehicles, #hq) .gpane, #hq .hq-pane) .gcam { padding: 0 12px; }
     :is(#vehicles, #hq) .dwatch { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
     /* click to inspect (src/game/inspect.ts) */
-    #inspect { top: 104px; left: 16px; width: 310px; max-width: calc(100vw - 32px); max-height: calc(100vh - 220px); overflow: auto; box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 5; padding: 11px 14px 12px; }
+    #inspect { top: var(--tl-below, 104px); left: 16px; width: 310px; max-width: calc(100vw - 32px); max-height: calc(100vh - var(--tl-below, 104px) - 116px); overflow: auto; box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 5; padding: 11px 14px 12px; }
     #inspect .x { position: absolute; top: 6px; right: 8px; border: 0; background: none; font: inherit; font-size: 20px; line-height: 1; color: #9aa6ad; cursor: pointer; padding: 2px 5px; border-radius: 6px; }
     #inspect .x:hover { color: #1f2b33; background: rgba(31,43,51,.07); }
     #inspect header { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: center; padding-right: 22px; }
@@ -1776,7 +1776,7 @@
     #town .lob li.no .why { color: #9aa6ad; font-size: 11px; }
     #town .lob button.pill { font: inherit; font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px; border: 0; background: #1f2b33; color: #fff; cursor: pointer; }
     #town .lob button.pill:disabled { background: #cfd6da; cursor: default; }
-    #town { top: 104px; left: 16px; width: 400px; max-width: calc(100vw - 32px); max-height: calc(100vh - 220px); overflow: auto; box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 5; padding: 11px 14px 12px; }
+    #town { top: var(--tl-below, 104px); left: 16px; width: 400px; max-width: calc(100vw - 32px); max-height: calc(100vh - var(--tl-below, 104px) - 116px); overflow: auto; box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 5; padding: 11px 14px 12px; }
     #town .x { position: absolute; top: 6px; right: 8px; border: 0; background: none; font: inherit; font-size: 20px; line-height: 1; color: #9aa6ad; cursor: pointer; padding: 2px 5px; border-radius: 6px; }
     #town .x:hover { color: #1f2b33; background: rgba(31,43,51,.07); }
     #town header { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: center; padding-right: 22px; }
@@ -3048,7 +3048,7 @@
     #social .friends .none { margin: 8px 0 0; color: #7d8a92; }
     /* Community (net/community.ts, docs/community.html): a work's card, the hearts prompt, the overview's pins, the World tab */
     .hrt { color: #e0457b; font-weight: 700; }
-    #work-card { top: 104px; left: 16px; width: 300px; max-width: calc(100vw - 32px); box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 5; padding: 11px 14px 12px; }
+    #work-card { top: var(--tl-below, 104px); left: 16px; width: 300px; max-width: calc(100vw - 32px); box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 5; padding: 11px 14px 12px; }
     #work-card[hidden] { display: none; }
     #work-card .x { position: absolute; top: 6px; right: 8px; border: 0; background: none; font: inherit; font-size: 20px; line-height: 1; color: #9aa6ad; cursor: pointer; padding: 2px 5px; border-radius: 6px; }
     #work-card .x:hover { color: #1f2b33; background: rgba(31,43,51,.07); }
@@ -3097,7 +3097,7 @@
     #mark-towntags .mk-tt span { display: flex; flex-direction: column; line-height: 1.15; }
     #mark-towntags .mk-tt b { font-size: 12.5px; font-weight: 700; }
     #mark-towntags .mk-tt small { font-size: 10.5px; color: #5b676e; }
-    #mark-card { position: fixed; top: 104px; left: 16px; width: 300px; max-width: calc(100vw - 32px); box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 5; padding: 11px 14px 12px; }
+    #mark-card { position: fixed; top: var(--tl-below, 104px); left: 16px; width: 300px; max-width: calc(100vw - 32px); box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 5; padding: 11px 14px 12px; }
     #mark-card[hidden] { display: none; }
     #mark-card .x { position: absolute; top: 6px; right: 8px; border: 0; background: none; font: inherit; font-size: 20px; line-height: 1; color: #9aa6ad; cursor: pointer; padding: 2px 5px; border-radius: 6px; }
     #mark-card .x:hover { color: #1f2b33; background: rgba(31,43,51,.07); }
@@ -4002,7 +4002,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-CXputKtL.js"></script>
+  <script type="module" crossorigin src="./assets/index-BLvJ0JZQ.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-Dv0uXxgI.js">
   <link rel="stylesheet" crossorigin href="./assets/index-BV6iPe3q.css">
 </head>
