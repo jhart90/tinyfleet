@@ -6,6 +6,7 @@ Play it at https://tinyfleet.online/play/ . The home page, with screenshots and 
 
 ## Facts
 
+- Official site: https://tinyfleet.online (this site). The same game is on itch.io at https://tinyfleet.itch.io/tinyfleet, by the same developer.
 - Name: TinyFleet (sometimes written "Tiny Fleet"; the online world is "TinyFleet Online"). It was called Pocket Roads during early development.
 - Genre: driving game, delivery and logistics game, transport tycoon, open world.
 - Price: free.
@@ -45,4 +46,5 @@ People looking for a free browser game with no download, a relaxed driving or tr
 - [Vehicles](https://tinyfleet.online/wiki/vehicles), [cargo](https://tinyfleet.online/wiki/cargo), [factions](https://tinyfleet.online/wiki/factions), [town styles](https://tinyfleet.online/wiki/town-styles), [controls](https://tinyfleet.online/wiki/controls)
 - [Devlog](https://tinyfleet.online/devlog): patch notes for every release
 - [Press kit](https://tinyfleet.online/press): fact sheet, trailers, screenshots, GIFs and logos
+- [TinyFleet on itch.io](https://tinyfleet.itch.io/tinyfleet): the same game, by the same developer, with its devlog and downloads
 - [Trailer (video, 66 seconds)](https://tinyfleet.online/media/trailer-best-of.mp4)
