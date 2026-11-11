@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TinyFleet 0.7.0: A Whole New World (patch notes)</title>
+<meta name="description" content="TinyFleet 0.7.0 patch notes, 26 October 2026. Hi! This is TinyFleet's first devlog, and the biggest update the game has ever had. So this post does two jobs.…">
+<link rel="canonical" href="https://tinyfleet.online/devlog/0.7.0">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="theme-color" content="#141b20">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="TinyFleet">
+<meta property="og:title" content="TinyFleet 0.7.0: A Whole New World (patch notes)">
+<meta property="og:description" content="TinyFleet 0.7.0 patch notes, 26 October 2026. Hi! This is TinyFleet's first devlog, and the biggest update the game has ever had. So this post does two jobs.…">
+<meta property="og:url" content="https://tinyfleet.online/devlog/0.7.0">
+<meta property="og:image" content="https://tinyfleet.online/media/og-card-after-dark.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TinyFleet 0.7.0: A Whole New World (patch notes)">
+<meta name="twitter:description" content="TinyFleet 0.7.0 patch notes, 26 October 2026. Hi! This is TinyFleet's first devlog, and the biggest update the game has ever had. So this post does two jobs.…">
+<meta name="twitter:image" content="https://tinyfleet.online/media/og-card-after-dark.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://tinyfleet.online/devlog/0.7.0#page","url":"https://tinyfleet.online/devlog/0.7.0","name":"TinyFleet 0.7.0: A Whole New World (patch notes)","description":"TinyFleet 0.7.0 patch notes, 26 October 2026. Hi! This is TinyFleet's first devlog, and the biggest update the game has ever had. So this post does two jobs.…","inLanguage":"en","dateModified":"2026-10-26","isPartOf":{"@id":"https://tinyfleet.online/#site"},"about":{"@id":"https://tinyfleet.online/#game"},"primaryImageOfPage":"https://tinyfleet.online/media/og-card-after-dark.jpg"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TinyFleet","item":"https://tinyfleet.online/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://tinyfleet.online/devlog"},{"@type":"ListItem","position":3,"name":"TinyFleet 0.7.0: A Whole New World","item":"https://tinyfleet.online/devlog/0.7.0"}]},{"@type":"BlogPosting","headline":"TinyFleet 0.7.0: A Whole New World","datePublished":"2026-10-26","dateModified":"2026-10-26","url":"https://tinyfleet.online/devlog/0.7.0","description":"Hi! This is TinyFleet's first devlog, and the biggest update the game has ever had. So this post does two jobs. First, everything new in 0.7.0 . Then a tour of everything else in TinyFleet , for anyone who has just found the game, or who has been playing for a while and never knew half of this was in there.","author":{"@type":"Organization","name":"TinyFleet","url":"https://tinyfleet.online/"},"publisher":{"@type":"Organization","name":"TinyFleet","url":"https://tinyfleet.online/"},"about":{"@id":"https://tinyfleet.online/#game"}}]}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  :root { color-scheme: dark; --ground: #141b20; --panel: #1d262c; --panel-2: #243037; --line: #33414a; --ink: #e9efe8; --ink-2: #b7c2bb; --ink-3: #85938c;
+    --car: #f0604e; --car-2: #e2412f; --water: #4f9fcf; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35); }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; background: var(--ground); }
+  body { margin: 0; color: var(--ink); font: 16px/1.6 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; }
+  a { color: #ff8a7a; }
+  .top { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; justify-content: space-between; }
+  .top .brand { font-family: Fredoka, sans-serif; font-weight: 700; font-size: 26px; color: #fff; text-decoration: none; }
+  .top .brand span { color: #ff5a45; }
+  .top nav { font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .top nav a { color: var(--ink-2); text-decoration: none; }
+  .top nav a:hover, .top nav a[aria-current] { color: #fff; }
+  .top nav a.go { color: #ff8a7a; font-weight: 600; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 72px; }
+  .crumbs { font-size: 13.5px; color: var(--ink-3); margin: 8px 0 0; }
+  .crumbs a { color: var(--ink-2); }
+  h1 { font-family: Fredoka, sans-serif; font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.08; margin: 10px 0 0; text-wrap: balance; }
+  .lead { font-size: clamp(16.5px, 2vw, 18.5px); color: var(--ink-2); margin: 14px 0 0; max-width: 68ch; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); padding: 22px; margin-top: 16px; }
+  h2 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 23px; line-height: 1.2; margin: 0 0 12px; }
+  h3 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 18px; margin: 18px 0 8px; }
+  section p { margin: 0 0 12px; color: var(--ink-2); max-width: 72ch; }
+  section ul, section ol { margin: 0 0 12px; padding-left: 20px; color: var(--ink-2); max-width: 72ch; }
+  section li { margin-bottom: 6px; }
+  section > :last-child { margin-bottom: 0; }
+  section b { color: var(--ink); font-weight: 600; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+  thead th { font-family: Fredoka, sans-serif; font-weight: 600; color: var(--ink); white-space: nowrap; }
+  tbody th { color: var(--ink); font-weight: 600; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  thead th.n { text-align: right; }
+  table.facts th { width: 11em; white-space: nowrap; }
+  table.wide { min-width: 560px; }
+  .pic { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; background: #1b2a33; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+  .cardlink { display: block; text-decoration: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; color: var(--ink); }
+  .cardlink:hover { border-color: var(--ink-3); }
+  .cardlink img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: #1b2a33; }
+  .cardlink span { display: block; padding: 10px 14px 4px; font-weight: 600; }
+  .cardlink small { display: block; padding: 0 14px 12px; color: var(--ink-2); font-size: 13.5px; line-height: 1.45; }
+  .cardlink span:last-child { padding-bottom: 12px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+  .tags li { margin: 0; font-size: 13px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; color: var(--ink-2); }
+  kbd { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; color: var(--ink); white-space: nowrap; }
+  video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+  .media { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .media figure { margin: 0; }
+  .media img { display: block; width: 100%; height: auto; border-radius: 12px; background: #1b2a33; }
+  .media figcaption { font-size: 13.5px; color: var(--ink-2); margin-top: 6px; }
+  .logo-tile { background: #f4f2ec; border-radius: 12px; padding: 14px; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; padding: 11px 18px; border-radius: 12px; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn:hover { background: var(--panel-2); border-color: var(--ink-3); }
+  .play { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 19px; padding: 11px 22px; border-radius: 14px; background: var(--car); color: #fff; border: 1px solid var(--car-2); }
+  .play:hover { background: #f4705f; }
+  .post h2 { margin-top: 26px; } .post > h2:first-child, .post > p:first-child { margin-top: 0; }
+  .when { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; color: var(--ink-3); }
+  .posts { list-style: none; padding: 0; max-width: none; }
+  .posts li { padding: 14px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .posts li:last-child { border-bottom: 0; padding-bottom: 0; } .posts li:first-child { padding-top: 0; }
+  .posts a { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 19px; text-decoration: none; color: var(--ink); }
+  .posts a:hover { color: #ff8a7a; }
+  .posts p { margin: 4px 0 0; }
+  footer { margin-top: 18px; padding: 4px 6px; color: var(--ink-3); font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  footer a { color: var(--ink-2); }
+  @media (max-width: 760px) { section { padding: 18px 16px; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/">TinyFleet<span>.</span></a>
+  <nav aria-label="Site"><a href="/wiki">Guide</a><a href="/devlog" aria-current="page">Devlog</a><a href="/press">Press</a><a class="go" href="/play/">Play free</a></nav>
+</header>
+<main class="wrap">
+  <p class="crumbs"><a href="/">TinyFleet</a> › <a href="/devlog">Devlog</a></p>
+  <h1>TinyFleet 0.7.0: A Whole New World</h1>
+  <p class="lead"><span class="when">Version 0.7.0 · 26 October 2026</span></p>
+  <section class="post">
+<p>Hi! This is TinyFleet's first devlog, and the biggest update the game has ever had. So this post does two jobs. First, everything new in <b>0.7.0</b>. Then a tour of <b>everything else in TinyFleet</b>, for anyone who has just found the game, or who has been playing for a while and never knew half of this was in there.</p>
+
+<p><b>TinyFleet</b> is a tilt-shift driving and logistics game. You start with one little car and a house in the outskirts of town. You pick up cargo, deliver it and get paid, then buy more vehicles, hire drivers and grow a fleet that works road, sea, air and rail across an endless, hand-crafted-feeling world. You share that world with other players online. It's free, it plays in your browser, and there are downloads for Windows and Mac.</p>
+
+<h2>🌍 0.7.0: the world begins again</h2>
+
+<p>0.7.0 brings a brand-new online world, generated with dozens of new kinds of places. Because the world itself is new, everyone starts in a fresh spot on it, but <b>your career comes with you</b>:</p>
+<ul>
+  <li><b>Your fleet</b> keeps its vehicles, workshop parts, names and cash. Property you held is refunded.</li>
+  <li><b>Your HQ</b> moves to the most similar building near where it stood.</li>
+  <li><b>Your achievements and Passport stamps</b> all carry over.</li>
+</ul>
+
+<h3>New places to find</h3>
+<ul>
+  <li><b>The Seven Wonders of the Ancient World.</b> The Colossus astride its harbour, the Pharos lighthouse, the Hanging Gardens, the Temple of Artemis, the Statue of Zeus and the Mausoleum join the Great Pyramid. They're huge and they're rare.</li>
+  <li><b>Lake towns.</b> Resort towns wrapped round a big inland lake, in four flavours:
+    <ul>
+      <li><b>Okoboji:</b> clapboard cottages, pontoon docks and a lakeside amusement park with a working wooden coaster.</li>
+      <li><b>Geneva Lake:</b> Gilded Age estates with lawns down to the shore path.</li>
+      <li><b>Lac Léman:</b> palace hotels, the Jet d'Eau, a flower clock that tells the time, and the Château de Chillon.</li>
+      <li><b>Lake Como:</b> pastel villas stepping down to stone landings and Riva launches.</li>
+    </ul>
+    Each town has a road right round the lake, and steamers and small boats out on the water.</li>
+  <li><b>Japanese onsen towns.</b> Hot-spring towns after Hakone, Kusatsu, Kinosaki, Ginzan, Beppu and Dōgo:
+    <ul>
+      <li>a willow-lined stream through the middle, crossed by stone bridges;</li>
+      <li>ryokan inns, including one modelled on Hakone's Fukuzumirō;</li>
+      <li>Dōgo's grand bathhouse, Kusatsu's steaming hot-water field, Beppu's "hells", the Hakone ropeway, and a torii standing in the lake;</li>
+      <li>steam rising everywhere.</li>
+    </ul></li>
+  <li><b>Adriatic harbour towns.</b> Rovinj-style towns climbing a hill above a harbour dug in from the sea, with a bell tower, a stone town gate, laundry strung between the houses and a waterfront promenade.</li>
+  <li><b>City plans.</b> Big cities are now laid out after 35 real city plans:
+    <ul>
+      <li>Barcelona's Eixample blocks;</li>
+      <li>L'Enfant's Washington and Haussmann's Paris with its star junctions;</li>
+      <li>Edo's spiral, Chandigarh's sectors, Brasília's Plano Piloto, Amsterdam's canal rings, Manhattan's grid;</li>
+      <li>and more.</li>
+    </ul>
+    The town card tells you which plan a city follows.</li>
+  <li><b>Ranches.</b> Huge fenced pastures in the open grassland, with a named arch at the gate, a homestead yard, and herds of cattle or horses penned inside with riders among them.</li>
+  <li><b>Mines and quarries at work.</b> Quarries now have excavators loading haul trucks, dozers, loaders and conveyors working the benches. Rarer, bigger sites appear too: open-pit mines with spiral haul roads, quarry faces cut into mountainsides, gravel pits with dredges, and strip mines with walking draglines.</li>
+  <li><b>Big ski resorts.</b> In the highest mountains: named runs cut through the forest, skiers riding the lifts and skiing down to the bottom, and lodges at the base, plus sometimes one mid-mountain or at the summit.</li>
+  <li><b>Beach resorts.</b> Rare all-inclusive complexes on warm sandy coasts, with guest wings curved round pools and hot tubs, a swim-up bar, and restaurants and bars by the water.</li>
+  <li><b>Outdoor malls.</b> Big open-air shopping centres, after Old Orchard in Skokie, with department stores, shops, restaurants and a cinema round landscaped walks.</li>
+  <li><b>Two-runway airports.</b> Some international airports now have crossing runways, laid out as an X or an L.</li>
+  <li><b>The countryside.</b>
+    <ul>
+      <li>Fields of maize, pumpkins, rice paddies and Dutch-style bands of flowers, plus the odd corn maze.</li>
+      <li>Mule trails zigzagging down into canyons, canyon-floor ranches, cable cars, barges on the rivers, and stone walls holding up the high villages.</li>
+    </ul></li>
+  <li><b>Places to play.</b> Elementary schools with recess on the playground, go-kart tracks and archery ranges.</li>
+  <li><b>Better buildings everywhere.</b> Dozens of new models give the new towns their own look: Japanese machiya townhouses and public bathhouses, Queen Anne houses, Okoboji cottages, Venetian palazzi, ski lodges and ranch houses by region. Temples in Japanese and Chinese towns are now pagodas, not Greek temples.</li>
+</ul>
+
+<h3>New things to do</h3>
+<ul>
+  <li><b>PvP Challenges.</b> Rare chequered start lines on roads, at airports and between buoys at sea. Stop at one and press Space to try one of two challenges:
+    <ul>
+      <li><b>Sixty:</b> how far can you get in 60 seconds?</li>
+      <li><b>Dash:</b> a timed race to a destination.</li>
+    </ul>
+    Only your best run counts on each line's leaderboard. Holding the top spot earns you <b>+1 ◆ a day</b>, until someone beats you.</li>
+  <li><b>Hired jet pilots.</b> Your drivers can now fly the Swift, Stinger and Jumbo between airports.</li>
+  <li><b>The Surveyor's Commission.</b> A new eight-step story, plus repeatable trips, that sends you further from home than you've ever been.</li>
+  <li><b>Story chains by air and sea.</b> Steps in the Stargazers and Still Waters stories now have helicopter and boat versions, so you can play them in whatever you're flying or sailing.</li>
+  <li><b>Transit authorities.</b> Rare city bus operators and commuter railways with names like "Chicago Transit Authority", running their own liveried buses and trains.</li>
+  <li><b>Barnstormer banners.</b> Tow an advertising banner with your fleet's name behind your biplane. CPU pilots sometimes fly one too.</li>
+  <li><b>Farmers' and Christmas markets.</b> Farmers' markets take over a street, crossroads or square on Saturday mornings. Christmas markets fill the main square for weeks each winter. Traffic re-routes round both.</li>
+  <li><b>Special trains.</b> Watch out for the Christmas train in winter, the rave train with its lasers and disco-ball car, and the Army's all-black stealth train. None of them are announced.</li>
+  <li><b>32 new achievements</b>, including a whole Factions shelf.</li>
+</ul>
+
+<h3>Under the hood</h3>
+<ul>
+  <li><b>Downloads stay up to date.</b> The Windows and Mac apps now play the newest version straight from the server, so there's nothing to re-download. They fall back to their own copy when you're offline. Your settings and sign-in move across on the first launch.</li>
+  <li><b>An out-of-date copy tells you so.</b> If a copy can't join the online world because it's too old, it says so the moment it opens and tells you how to get the new one.</li>
+  <li><b>Saves are confirmed.</b> The server confirms every save. If your game stops hearing back, it warns you and reconnects by itself.</li>
+</ul>
+
+<h2>🚚 Everything else in TinyFleet</h2>
+
+<h3>The world</h3>
+<ul>
+  <li>An endless world of islands and continents, every county generated from the world's seed.</li>
+  <li><b>Eleven biomes</b>, from the Golden Hills to the frozen north.</li>
+  <li><b>Great geology:</b> mountain ranges, great rivers, canyons, mesas, volcanoes, fjords, glaciers, sand seas, karst towers, badlands, salt flats and more. A Landmark Hunter achievement counts every kind you find.</li>
+  <li><b>Waterfalls</b> in seven shapes, giant groves of trees, and 30 odd things out in the wilds.</li>
+  <li><b>Seasons and weather.</b>
+    <ul>
+      <li>Cherry blossom in spring, vivid autumns and bare winter boughs.</li>
+      <li>Fog, rain, thunderstorms, snow and blizzards, aurora, rainbows and fireflies.</li>
+      <li>A full day and night cycle.</li>
+    </ul></li>
+  <li><b>Wonders</b> such as the Great Pyramid, highland and moated castles, cliff temples, the lavender abbey, Monument Buttes and the old mission.</li>
+  <li><b>Infrastructure:</b> railways with stations and tunnels, international airports with runways, harbours and car ferries, bridges in five famous designs, toll bridges, roundabouts, flyovers and road tunnels.</li>
+</ul>
+
+<h3>Towns and cities</h3>
+<ul>
+  <li><b>More than 50 town styles.</b>
+    <ul>
+      <li>Paris, New York, Washington, Tokyo and Osaka, Chicago, San Francisco, Las Vegas (with its Strip), London, Venice and Amsterdam's canal rings, Budapest, Rome, Dubai and Hong Kong, New Orleans and Havana.</li>
+      <li>Medieval walled towns, Tudor villages, the Old West, Russian, Ottoman, Maya, Moorish, Mughal, Andean, Norse, Sahel and Himalayan towns.</li>
+      <li>A steampunk, a solarpunk and a cyberpunk city.</li>
+    </ul></li>
+  <li><b>Towns that live and grow.</b>
+    <ul>
+      <li>Every town keeps its own economy, and your deliveries help it graduate from village to suburb, to small city, to big city and megalopolis.</li>
+      <li>You can watch new buildings go up on real construction sites, with climbing cranes.</li>
+    </ul></li>
+  <li><b>Hundreds of kinds of building</b>, many with variants: stadiums with live games and concerts, theme parks with working coasters, race circuits, zoos, botanical gardens, aquariums with sea life past the glass, public pools with swim meets, golf courses, taverns, eateries in ten cuisines, arcades, cinemas and opera houses, radio stations and much more.</li>
+  <li><b>Click any town</b> to see its border traced, its stats and the history of who has hauled for it.</li>
+</ul>
+
+<h3>Driving</h3>
+<ul>
+  <li><b>More than 60 vehicles</b> across road, sea, air and rail.
+    <ul>
+      <li><b>Road:</b> the plucky Tomato, the Mule pickup, the Sunny convertible, the Wasabi sports car, buses, tippers, a monster truck, an ice-cream van, a limo, a tow truck, a Humvee and a tank.</li>
+      <li><b>Sea:</b> rowboats, jet skis, a galleon, a paddle steamer, a yacht, a hovercraft and submarines.</li>
+      <li><b>Air:</b> a hot air balloon, a biplane, helicopters, jets, a Jumbo and a fighter.</li>
+      <li><b>Military:</b> an aircraft carrier with a working flight deck.</li>
+    </ul></li>
+  <li><b>Handling to play with:</b> nitrous, handbrake drifts, jumps and boost pads, tyre tracks, and fences you can knock flat.</li>
+  <li><b>A workshop</b> where you fit engines, gearboxes, tyres, paint and more to each vehicle.</li>
+  <li><b>Race circuits</b> with race meetings, lap records and ghost cars, plus off-road rallies and drift meets.</li>
+  <li><b>Night runs:</b> smuggling contraband past police patrols whose headlight cones you have to dodge.</li>
+  <li><b>Helicopter searchlight missions</b> after dark.</li>
+</ul>
+
+<h3>Your fleet and your company</h3>
+<ul>
+  <li><b>Hire drivers</b> who work your vehicles while you drive. They have moods, ranks and skills; skilled ones fire nitrous on the straights and drift the bends.</li>
+  <li><b>Work and Follow modes.</b> Set drivers to haul for your HQ's county, or to follow you across the world in formation.</li>
+  <li><b>Smart hauling:</b> multi-load runs, tow trucks that rescue stuck vehicles, and a depot board you drag drivers and vehicles around on.</li>
+  <li><b>Your HQ</b> sets how many vehicles you can run, from a starter house up to a grand tower, through seven grades. The HQ window has your books, estate and tech tree.</li>
+  <li><b>Tech trees</b> for land, sea and air that unlock vehicles in order.</li>
+  <li><b>Property:</b> buy buildings and take a cut of every delivery at their door, CPU hauls included.</li>
+  <li><b>Lobbying:</b> ask towns for the buildings you want and watch them get built.</li>
+  <li><b>Territory:</b> become a town's preferred carrier, win its trade and earn ◆ diamonds every day for the towns you hold.</li>
+  <li><b>Your own brand:</b> a fleet name, colours and a logo on every vehicle and building you own.</li>
+</ul>
+
+<h3>Rivals and factions</h3>
+<ul>
+  <li><b>CPU rival firms</b> (taxis, freight and general carriers) compete for towns. There are local start-ups in every county.</li>
+  <li><b>Ten factions with reputations:</b> the Constabulary, the Family, the Ministry, the Visitors (yes, aliens), the Brotherhood, the Post, the Army, the Studios, the Guild and the Press.
+    <ul>
+      <li>Work for one and its rivals take note.</li>
+      <li>Climb from Friend to Honoured to Sworn to earn their vehicles, paintjobs and perks, from a police siren to a flying saucer's tractor beam.</li>
+    </ul></li>
+  <li><b>Standings:</b> a leaderboard of you against every firm you've met, across fourteen metrics.</li>
+</ul>
+
+<h3>Missions and stories</h3>
+<ul>
+  <li><b>Missions</b> wait at diamonds out in the world: deliveries, races, rescues at sea, film shoots and more.</li>
+  <li><b>Town requests:</b> multi-step chains that really change the town when you finish them.</li>
+  <li><b>Story chains:</b> Stargazers (a moon rocket) and Still Waters (a submarine), forty missions between them.</li>
+  <li><b>Faction Oaths</b> and introductions to each faction's leader.</li>
+  <li><b>A first-drive tutorial</b> that teaches the controls as you go.</li>
+</ul>
+
+<h3>Exploring and collecting</h3>
+<ul>
+  <li><b>The Passport:</b> a real flip-through booklet of stamps for every town style, biome, wonder, landform, building and event you've seen. You can also carry culture home to your town in import crates.</li>
+  <li><b>Achievements:</b> 135 of them, on five tiers from Bronze to Diamond.</li>
+  <li><b>Range records:</b> how far you've taken each vehicle from home, with cash for every place you're first to reach.</li>
+  <li><b>Maps:</b> a world map you can zoom and pan, and a 3D region map with Fleet, Terrain, Territory and Economy views.</li>
+  <li><b>A yearly local newspaper</b> written about what you did.</li>
+  <li><b>Postcards:</b> take a photo or a short clip anywhere and share it as a link that anyone can open and look around.</li>
+</ul>
+
+<h3>Life in the world</h3>
+<ul>
+  <li><b>More than 50 in-world events</b>: ticker-tape parades, motorcades, regattas, boat parades, New Year's Eve ball drops, military flyovers, car shows, Mardi Gras, Lunar New Year dragons, marathons, eclipses and more.</li>
+  <li><b>Sport and shows:</b> stadium leagues with tables and results, and touring bands whose trucks drive from stadium to stadium.</li>
+  <li><b>Busy streets:</b> traffic, pedestrians, herds, horse-drawn carriages, ferries, trains and planes overhead.</li>
+</ul>
+
+<h3>Online, together</h3>
+<ul>
+  <li><b>One shared online world.</b> See other players' vehicles, click and follow them, and visit their HQs.</li>
+  <li><b>Shared fleets:</b> invite friends to run one company together.</li>
+  <li><b>Friends lists, hearts</b> for things people have built, guestbooks at HQs, and signs and cairns you can leave.</li>
+  <li><b>Leave your mark:</b> roads you build get named and credited to you, and well-used routes wear real paths into the grass.</li>
+</ul>
+
+<h3>Build it yourself</h3>
+<ul>
+  <li><b>A road builder</b> for dirt to four-lane highways, bridges, viaducts, tunnels, roundabouts, 45° diagonals and boost pads.</li>
+  <li><b>Earthworks:</b> raise and lower land and water, RollerCoaster Tycoon style.</li>
+  <li><b>Scenery:</b> place dozens of decorative pieces.</li>
+</ul>
+
+<h2>💬 Thanks!</h2>
+<p>TinyFleet has grown from one tomato-red car into all of this over the past couple of months, and it keeps growing. If you play, I'd love to hear what you think: leave a comment here, or use Feedback in the pause menu. See you on the road.</p>
+  </section>
+  <section>
+    <h2>More releases</h2>
+    <p>Newer: <a href="/devlog/0.7.1">TinyFleet 0.7.1: Every Vehicle Has a Job</a> · <a href="/devlog">All releases</a></p>
+    <p><a class="play" href="/play/">Play TinyFleet free</a></p>
+  </section>
+  <footer><span>TinyFleet is a free online driving and logistics game, played in the browser.</span><a href="/play/">Play now</a><a href="/">Home</a><a href="/wiki">Guide</a><a href="/devlog">Devlog</a><a href="/press">Press kit</a></footer>
+</main>
+</body>
+</html>

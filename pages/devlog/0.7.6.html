@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TinyFleet 0.7.6: Towns and Tidings (patch notes)</title>
+<meta name="description" content="TinyFleet 0.7.6 patch notes, 5 November 2026. 0.7.6 gives every town a proper card and a register to rank them in, makes the Tribune a fresh paper every day…">
+<link rel="canonical" href="https://tinyfleet.online/devlog/0.7.6">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="theme-color" content="#141b20">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="TinyFleet">
+<meta property="og:title" content="TinyFleet 0.7.6: Towns and Tidings (patch notes)">
+<meta property="og:description" content="TinyFleet 0.7.6 patch notes, 5 November 2026. 0.7.6 gives every town a proper card and a register to rank them in, makes the Tribune a fresh paper every day…">
+<meta property="og:url" content="https://tinyfleet.online/devlog/0.7.6">
+<meta property="og:image" content="https://tinyfleet.online/media/og-card-after-dark.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TinyFleet 0.7.6: Towns and Tidings (patch notes)">
+<meta name="twitter:description" content="TinyFleet 0.7.6 patch notes, 5 November 2026. 0.7.6 gives every town a proper card and a register to rank them in, makes the Tribune a fresh paper every day…">
+<meta name="twitter:image" content="https://tinyfleet.online/media/og-card-after-dark.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://tinyfleet.online/devlog/0.7.6#page","url":"https://tinyfleet.online/devlog/0.7.6","name":"TinyFleet 0.7.6: Towns and Tidings (patch notes)","description":"TinyFleet 0.7.6 patch notes, 5 November 2026. 0.7.6 gives every town a proper card and a register to rank them in, makes the Tribune a fresh paper every day…","inLanguage":"en","dateModified":"2026-11-05","isPartOf":{"@id":"https://tinyfleet.online/#site"},"about":{"@id":"https://tinyfleet.online/#game"},"primaryImageOfPage":"https://tinyfleet.online/media/og-card-after-dark.jpg"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TinyFleet","item":"https://tinyfleet.online/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://tinyfleet.online/devlog"},{"@type":"ListItem","position":3,"name":"TinyFleet 0.7.6: Towns and Tidings","item":"https://tinyfleet.online/devlog/0.7.6"}]},{"@type":"BlogPosting","headline":"TinyFleet 0.7.6: Towns and Tidings","datePublished":"2026-11-05","dateModified":"2026-11-05","url":"https://tinyfleet.online/devlog/0.7.6","description":"0.7.6 gives every town a proper card and a register to rank them in, makes the Tribune a fresh paper every day with news from every fleet, and lets the builder and the earthworks tool reach over county lines. As always, the world stays exactly as it is : your fleet, your HQ and everything you've built are right where you left them.","author":{"@type":"Organization","name":"TinyFleet","url":"https://tinyfleet.online/"},"publisher":{"@type":"Organization","name":"TinyFleet","url":"https://tinyfleet.online/"},"about":{"@id":"https://tinyfleet.online/#game"}}]}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  :root { color-scheme: dark; --ground: #141b20; --panel: #1d262c; --panel-2: #243037; --line: #33414a; --ink: #e9efe8; --ink-2: #b7c2bb; --ink-3: #85938c;
+    --car: #f0604e; --car-2: #e2412f; --water: #4f9fcf; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35); }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; background: var(--ground); }
+  body { margin: 0; color: var(--ink); font: 16px/1.6 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; }
+  a { color: #ff8a7a; }
+  .top { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; justify-content: space-between; }
+  .top .brand { font-family: Fredoka, sans-serif; font-weight: 700; font-size: 26px; color: #fff; text-decoration: none; }
+  .top .brand span { color: #ff5a45; }
+  .top nav { font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .top nav a { color: var(--ink-2); text-decoration: none; }
+  .top nav a:hover, .top nav a[aria-current] { color: #fff; }
+  .top nav a.go { color: #ff8a7a; font-weight: 600; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 72px; }
+  .crumbs { font-size: 13.5px; color: var(--ink-3); margin: 8px 0 0; }
+  .crumbs a { color: var(--ink-2); }
+  h1 { font-family: Fredoka, sans-serif; font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.08; margin: 10px 0 0; text-wrap: balance; }
+  .lead { font-size: clamp(16.5px, 2vw, 18.5px); color: var(--ink-2); margin: 14px 0 0; max-width: 68ch; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); padding: 22px; margin-top: 16px; }
+  h2 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 23px; line-height: 1.2; margin: 0 0 12px; }
+  h3 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 18px; margin: 18px 0 8px; }
+  section p { margin: 0 0 12px; color: var(--ink-2); max-width: 72ch; }
+  section ul, section ol { margin: 0 0 12px; padding-left: 20px; color: var(--ink-2); max-width: 72ch; }
+  section li { margin-bottom: 6px; }
+  section > :last-child { margin-bottom: 0; }
+  section b { color: var(--ink); font-weight: 600; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+  thead th { font-family: Fredoka, sans-serif; font-weight: 600; color: var(--ink); white-space: nowrap; }
+  tbody th { color: var(--ink); font-weight: 600; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  thead th.n { text-align: right; }
+  table.facts th { width: 11em; white-space: nowrap; }
+  table.wide { min-width: 560px; }
+  .pic { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; background: #1b2a33; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+  .cardlink { display: block; text-decoration: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; color: var(--ink); }
+  .cardlink:hover { border-color: var(--ink-3); }
+  .cardlink img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: #1b2a33; }
+  .cardlink span { display: block; padding: 10px 14px 4px; font-weight: 600; }
+  .cardlink small { display: block; padding: 0 14px 12px; color: var(--ink-2); font-size: 13.5px; line-height: 1.45; }
+  .cardlink span:last-child { padding-bottom: 12px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+  .tags li { margin: 0; font-size: 13px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; color: var(--ink-2); }
+  kbd { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; color: var(--ink); white-space: nowrap; }
+  video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+  .media { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .media figure { margin: 0; }
+  .media img { display: block; width: 100%; height: auto; border-radius: 12px; background: #1b2a33; }
+  .media figcaption { font-size: 13.5px; color: var(--ink-2); margin-top: 6px; }
+  .logo-tile { background: #f4f2ec; border-radius: 12px; padding: 14px; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; padding: 11px 18px; border-radius: 12px; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn:hover { background: var(--panel-2); border-color: var(--ink-3); }
+  .play { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 19px; padding: 11px 22px; border-radius: 14px; background: var(--car); color: #fff; border: 1px solid var(--car-2); }
+  .play:hover { background: #f4705f; }
+  .post h2 { margin-top: 26px; } .post > h2:first-child, .post > p:first-child { margin-top: 0; }
+  .when { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; color: var(--ink-3); }
+  .posts { list-style: none; padding: 0; max-width: none; }
+  .posts li { padding: 14px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .posts li:last-child { border-bottom: 0; padding-bottom: 0; } .posts li:first-child { padding-top: 0; }
+  .posts a { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 19px; text-decoration: none; color: var(--ink); }
+  .posts a:hover { color: #ff8a7a; }
+  .posts p { margin: 4px 0 0; }
+  footer { margin-top: 18px; padding: 4px 6px; color: var(--ink-3); font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  footer a { color: var(--ink-2); }
+  @media (max-width: 760px) { section { padding: 18px 16px; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/">TinyFleet<span>.</span></a>
+  <nav aria-label="Site"><a href="/wiki">Guide</a><a href="/devlog" aria-current="page">Devlog</a><a href="/press">Press</a><a class="go" href="/play/">Play free</a></nav>
+</header>
+<main class="wrap">
+  <p class="crumbs"><a href="/">TinyFleet</a> › <a href="/devlog">Devlog</a></p>
+  <h1>TinyFleet 0.7.6: Towns and Tidings</h1>
+  <p class="lead"><span class="when">Version 0.7.6 · 5 November 2026</span></p>
+  <section class="post">
+<p>0.7.6 gives every town a proper card and a register to rank them in, makes the Tribune a fresh paper every day with news from every fleet, and lets the builder and the earthworks tool reach over county lines. As always, <b>the world stays exactly as it is</b>: your fleet, your HQ and everything you've built are right where you left them.</p>
+
+<h2>🏙️ The town register</h2>
+<ul>
+  <li>Click a town for its new <b>town card</b>: tabs for its trade, standing, works, culture and what's on there.</li>
+  <li>A <b>register of towns</b> to rank and filter, with a <b>World</b> scope over every town any player has seen.</li>
+  <li>The world map names fewer towns, more clearly: the big ones first and boldest, smaller ones as you zoom in, and no names written over each other.</li>
+</ul>
+
+<h2>📰 The news wire</h2>
+<ul>
+  <li><b>A new Tribune every day</b>: crowns, rush boards and challenge lines changing hands, lap and drift records taken, towns' trade won, world records, the frontier bounty, league wins and fleets passing big marks, from all of us.</li>
+  <li>The annual paper hears it all too, and the stories near you come first.</li>
+  <li><b>Vehicle boards</b>: which fleet has delivered the most loads, and earned the most, in each vehicle.</li>
+  <li>Rival firms no longer pop up a "rivals nearby" card. Instead you hear what they do near you: a vehicle bought, a building bought, an HQ upgraded.</li>
+</ul>
+
+<h2>⛏️ Building over the border</h2>
+<ul>
+  <li>The <b>earthworks tool</b> now works on any county in memory, and a hill raised by a county line carries on over it smoothly instead of ending in a cliff.</li>
+  <li>Water thins round the brush while you dig, so you can see the seabed you're working on and how deep it is.</li>
+  <li>Roads can be <b>started in the county next door</b> without driving there first.</li>
+  <li>Track carried on from a viaduct's end over the sea no longer ties itself in a knot, and two raised ends either side of a strait join in two clicks.</li>
+  <li>Works built in parts (an L of two roads, land joining two islands) read as one project, with one name and their hearts together.</li>
+</ul>
+
+<h2>📐 Blueprints and lots</h2>
+<ul>
+  <li>A blueprint copy now goes up in a style native to where it stands: the town's own, any culture it is Influenced by, or in open country those of the county. Pick from the chips under the squares.</li>
+  <li>Lot prices: each lot you hold in a town adds a flat <b>+5%</b> to the next, capped at <b>+100%</b> (it used to compound without end).</li>
+  <li>The building card shows a build's progress, phase and time left, and only that building's own trade.</li>
+  <li>Dealers with nothing to sell stay hidden until you unlock something they stock.</li>
+</ul>
+
+<h2>👥 Fleets and friends</h2>
+<ul>
+  <li>The social window's Online list shows every player, those signed in first.</li>
+  <li>Fleet cards draw a far-away HQ instead of saying its county isn't loaded, and lead with a big <b>Follow</b> button.</li>
+  <li>A vehicle's details show its last 30 days of earnings and the cargo it delivers most.</li>
+  <li>Fixed: a new account on a browser someone else had played on could pick up their unlocks. Each name now has its own player.</li>
+</ul>
+
+<h2>🔧 Smaller changes and fixes</h2>
+<ul>
+  <li>Every new game starts with the camera locked behind the car. With the lock on, turning the camera by hand is a look round that eases back after five seconds.</li>
+  <li>A new player's first drive is quiet: no sports, events or rival news until the tutorial is done.</li>
+  <li>Your Helping Hand gets a card of her own when she joins the fleet.</li>
+  <li>The workshop's first opening no longer shows an empty stage.</li>
+  <li>Toppers sit properly on train cab roofs, and the Wonder Ball is four times the size.</li>
+  <li>Typing in a text box no longer drives the car.</li>
+  <li>A town's name shows at most once a minute when you drive along its border.</li>
+  <li>The builder's Buildings strip keeps its scroll, and its dock no longer sits under the corner buttons.</li>
+  <li>No more flashing headlights on Big Bertha and the dump truck, or flashing on the boat flat's boat.</li>
+</ul>
+
+<p>Thanks for playing, and for all the feedback (the pause menu's Feedback button comes straight to me). See you on the road! 🚗</p>
+  </section>
+  <section>
+    <h2>More releases</h2>
+    <p>Newer: <a href="/devlog/0.7.7">TinyFleet 0.7.7: Guests Welcome</a> · Older: <a href="/devlog/0.7.5">TinyFleet 0.7.5: Crowns and Culture</a> · <a href="/devlog">All releases</a></p>
+    <p><a class="play" href="/play/">Play TinyFleet free</a></p>
+  </section>
+  <footer><span>TinyFleet is a free online driving and logistics game, played in the browser.</span><a href="/play/">Play now</a><a href="/">Home</a><a href="/wiki">Guide</a><a href="/devlog">Devlog</a><a href="/press">Press kit</a></footer>
+</main>
+</body>
+</html>

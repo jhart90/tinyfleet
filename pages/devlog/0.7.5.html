@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TinyFleet 0.7.5: Crowns and Culture (patch notes)</title>
+<meta name="description" content="TinyFleet 0.7.5 patch notes, 4 November 2026. 0.7.5 is the biggest update since the new world: toppers and crowns for your vehicles, blueprints, a culture you…">
+<link rel="canonical" href="https://tinyfleet.online/devlog/0.7.5">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="theme-color" content="#141b20">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="TinyFleet">
+<meta property="og:title" content="TinyFleet 0.7.5: Crowns and Culture (patch notes)">
+<meta property="og:description" content="TinyFleet 0.7.5 patch notes, 4 November 2026. 0.7.5 is the biggest update since the new world: toppers and crowns for your vehicles, blueprints, a culture you…">
+<meta property="og:url" content="https://tinyfleet.online/devlog/0.7.5">
+<meta property="og:image" content="https://tinyfleet.online/media/og-card-after-dark.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TinyFleet 0.7.5: Crowns and Culture (patch notes)">
+<meta name="twitter:description" content="TinyFleet 0.7.5 patch notes, 4 November 2026. 0.7.5 is the biggest update since the new world: toppers and crowns for your vehicles, blueprints, a culture you…">
+<meta name="twitter:image" content="https://tinyfleet.online/media/og-card-after-dark.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://tinyfleet.online/devlog/0.7.5#page","url":"https://tinyfleet.online/devlog/0.7.5","name":"TinyFleet 0.7.5: Crowns and Culture (patch notes)","description":"TinyFleet 0.7.5 patch notes, 4 November 2026. 0.7.5 is the biggest update since the new world: toppers and crowns for your vehicles, blueprints, a culture you…","inLanguage":"en","dateModified":"2026-11-04","isPartOf":{"@id":"https://tinyfleet.online/#site"},"about":{"@id":"https://tinyfleet.online/#game"},"primaryImageOfPage":"https://tinyfleet.online/media/og-card-after-dark.jpg"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TinyFleet","item":"https://tinyfleet.online/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://tinyfleet.online/devlog"},{"@type":"ListItem","position":3,"name":"TinyFleet 0.7.5: Crowns and Culture","item":"https://tinyfleet.online/devlog/0.7.5"}]},{"@type":"BlogPosting","headline":"TinyFleet 0.7.5: Crowns and Culture","datePublished":"2026-11-04","dateModified":"2026-11-04","url":"https://tinyfleet.online/devlog/0.7.5","description":"0.7.5 is the biggest update since the new world: toppers and crowns for your vehicles, blueprints, a culture you share with every player, a new social window, hired train drivers and a reworked Rush. As always, the world stays exactly as it is : your fleet, your HQ and everything you've built are right where you left them.","author":{"@type":"Organization","name":"TinyFleet","url":"https://tinyfleet.online/"},"publisher":{"@type":"Organization","name":"TinyFleet","url":"https://tinyfleet.online/"},"about":{"@id":"https://tinyfleet.online/#game"}}]}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  :root { color-scheme: dark; --ground: #141b20; --panel: #1d262c; --panel-2: #243037; --line: #33414a; --ink: #e9efe8; --ink-2: #b7c2bb; --ink-3: #85938c;
+    --car: #f0604e; --car-2: #e2412f; --water: #4f9fcf; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35); }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; background: var(--ground); }
+  body { margin: 0; color: var(--ink); font: 16px/1.6 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; }
+  a { color: #ff8a7a; }
+  .top { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; justify-content: space-between; }
+  .top .brand { font-family: Fredoka, sans-serif; font-weight: 700; font-size: 26px; color: #fff; text-decoration: none; }
+  .top .brand span { color: #ff5a45; }
+  .top nav { font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .top nav a { color: var(--ink-2); text-decoration: none; }
+  .top nav a:hover, .top nav a[aria-current] { color: #fff; }
+  .top nav a.go { color: #ff8a7a; font-weight: 600; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 72px; }
+  .crumbs { font-size: 13.5px; color: var(--ink-3); margin: 8px 0 0; }
+  .crumbs a { color: var(--ink-2); }
+  h1 { font-family: Fredoka, sans-serif; font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.08; margin: 10px 0 0; text-wrap: balance; }
+  .lead { font-size: clamp(16.5px, 2vw, 18.5px); color: var(--ink-2); margin: 14px 0 0; max-width: 68ch; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); padding: 22px; margin-top: 16px; }
+  h2 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 23px; line-height: 1.2; margin: 0 0 12px; }
+  h3 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 18px; margin: 18px 0 8px; }
+  section p { margin: 0 0 12px; color: var(--ink-2); max-width: 72ch; }
+  section ul, section ol { margin: 0 0 12px; padding-left: 20px; color: var(--ink-2); max-width: 72ch; }
+  section li { margin-bottom: 6px; }
+  section > :last-child { margin-bottom: 0; }
+  section b { color: var(--ink); font-weight: 600; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+  thead th { font-family: Fredoka, sans-serif; font-weight: 600; color: var(--ink); white-space: nowrap; }
+  tbody th { color: var(--ink); font-weight: 600; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  thead th.n { text-align: right; }
+  table.facts th { width: 11em; white-space: nowrap; }
+  table.wide { min-width: 560px; }
+  .pic { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; background: #1b2a33; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+  .cardlink { display: block; text-decoration: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; color: var(--ink); }
+  .cardlink:hover { border-color: var(--ink-3); }
+  .cardlink img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: #1b2a33; }
+  .cardlink span { display: block; padding: 10px 14px 4px; font-weight: 600; }
+  .cardlink small { display: block; padding: 0 14px 12px; color: var(--ink-2); font-size: 13.5px; line-height: 1.45; }
+  .cardlink span:last-child { padding-bottom: 12px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+  .tags li { margin: 0; font-size: 13px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; color: var(--ink-2); }
+  kbd { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; color: var(--ink); white-space: nowrap; }
+  video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+  .media { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .media figure { margin: 0; }
+  .media img { display: block; width: 100%; height: auto; border-radius: 12px; background: #1b2a33; }
+  .media figcaption { font-size: 13.5px; color: var(--ink-2); margin-top: 6px; }
+  .logo-tile { background: #f4f2ec; border-radius: 12px; padding: 14px; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; padding: 11px 18px; border-radius: 12px; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn:hover { background: var(--panel-2); border-color: var(--ink-3); }
+  .play { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 19px; padding: 11px 22px; border-radius: 14px; background: var(--car); color: #fff; border: 1px solid var(--car-2); }
+  .play:hover { background: #f4705f; }
+  .post h2 { margin-top: 26px; } .post > h2:first-child, .post > p:first-child { margin-top: 0; }
+  .when { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; color: var(--ink-3); }
+  .posts { list-style: none; padding: 0; max-width: none; }
+  .posts li { padding: 14px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .posts li:last-child { border-bottom: 0; padding-bottom: 0; } .posts li:first-child { padding-top: 0; }
+  .posts a { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 19px; text-decoration: none; color: var(--ink); }
+  .posts a:hover { color: #ff8a7a; }
+  .posts p { margin: 4px 0 0; }
+  footer { margin-top: 18px; padding: 4px 6px; color: var(--ink-3); font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  footer a { color: var(--ink-2); }
+  @media (max-width: 760px) { section { padding: 18px 16px; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/">TinyFleet<span>.</span></a>
+  <nav aria-label="Site"><a href="/wiki">Guide</a><a href="/devlog" aria-current="page">Devlog</a><a href="/press">Press</a><a class="go" href="/play/">Play free</a></nav>
+</header>
+<main class="wrap">
+  <p class="crumbs"><a href="/">TinyFleet</a> › <a href="/devlog">Devlog</a></p>
+  <h1>TinyFleet 0.7.5: Crowns and Culture</h1>
+  <p class="lead"><span class="when">Version 0.7.5 · 4 November 2026</span></p>
+  <section class="post">
+<p>0.7.5 is the biggest update since the new world: toppers and crowns for your vehicles, blueprints, a culture you share with every player, a new social window, hired train drivers and a reworked Rush. As always, <b>the world stays exactly as it is</b>: your fleet, your HQ and everything you've built are right where you left them.</p>
+
+<h2>👑 Toppers and crowns</h2>
+<ul>
+  <li>Every vehicle now has a <b>topper slot</b>: a little roof ornament earned over a long career, and every player sees it.</li>
+  <li><b>Over 240 kept toppers</b>: Sworn faction badges, Knack Badges, bronze-to-platinum ladders, a landmark for each of the 60 town styles (and its gold Patron's edition), a mascot of every vehicle you deliver 1,000 loads in, souvenirs from events, curios from wild things, After Dark and seasons.</li>
+  <li><b>Crowns</b> are held, not kept: gold, silver and bronze for the top three fleets on every cargo and culture board, plus rush pennants, challenge flags, Range Trophies and Track Trophies. Lose the spot and the crown goes to whoever took it.</li>
+  <li><b>The world's records</b>: highest ground, deepest dive, longest jump and longest delivery, held by one fleet each.</li>
+  <li>Find them all in the HQ window's new <b>Toppers</b> tab, and dress the whole fleet at once.</li>
+</ul>
+
+<h2>📐 Blueprints</h2>
+<ul>
+  <li>Own a building and you hold its plans. The builder's <b>Buildings</b> side (B) is your blueprint book: put up a copy in open country or in a town you hold, and it rises under cranes in your colours.</li>
+  <li>Copies cost the county's going price and half again. Cancel early and get some back.</li>
+</ul>
+
+<h2>🎎 Culture, shared with everyone</h2>
+<ul>
+  <li><b>A town's culture is now the same for every player online.</b> Bring Tokyo goods into Port Alder and every fleet sees Port Alder grow more Tokyo.</li>
+  <li>The rungs have new names: <b>Curiosity, Influenced and Infatuated</b>.</li>
+  <li>Building in a foreign style needs the town (or, out in the country, some town in the county) to be Influenced by it.</li>
+  <li>Cultural goods now go to any town you hold, not only your HQ.</li>
+</ul>
+
+<h2>👥 The social window</h2>
+<ul>
+  <li>I opens a new window with six tabs: Standings, Fleets, Neighbours, Shared Fleet, World and an <b>Inbox</b>.</li>
+  <li>Click any name for that fleet's card: their shield, motto, vehicles, best goods and a fortnight's chart. Edit your own.</li>
+  <li>A ledger of everything two fleets have done to each other, notes, mute, asking to join a shared fleet, officers, nine <b>weekly titles</b>, fleet hearts, and leaderboards for every cargo and culture.</li>
+  <li><b>One set of stadium leagues</b> for everyone online: the same teams, the same standings.</li>
+  <li><b>The World This Week</b> in the Tribune and the paper: what all of us did together.</li>
+</ul>
+
+<h2>🚆 Trains</h2>
+<ul>
+  <li><b>Hired train drivers</b>: now and then a candidate holds a rail licence. Give them a train and a beat (the whole line, or two stations you pick) and they run it on their own.</li>
+  <li>CPU trains <b>clear their own jams</b>: stuck trains went from most of the time to almost never.</li>
+  <li>A throttle lever (W/S set it, it stays put), A/D the right way round, cleaner hover cards, and only train cargo shown from a train, each card saying how many stops away.</li>
+  <li>Track building: a ghost of the first piece, carrying on from buffers with no gap, track across county lines and straits, and <b>rails out over the sea</b> on viaducts boats pass under.</li>
+  <li><b>On the Line</b>: a new Rail deed for linking towns with your own track.</li>
+</ul>
+
+<h2>⏱️ Rushes, reworked</h2>
+<ul>
+  <li>About a hundred tiles A to B. Press Space in the cargo ring at A to fill up from a pile that never runs out, and drop at the green disc at B.</li>
+  <li>Followers loop A to B on their own and fall back in at the bell. An offer card first, Enter or Backspace.</li>
+</ul>
+
+<h2>🗺️ Maps and fleets</h2>
+<ul>
+  <li>Four new region map views: <b>Rails, Traffic, Demand and Culture</b> (keys 6 to 9).</li>
+  <li><b>Far fleets</b>: drivers working far from you keep earning. Their counties stay in memory without being drawn, and a county that has to go waits for them to finish what they're carrying.</li>
+  <li>Airports now belong to the town they serve.</li>
+</ul>
+
+<h2>🔧 Smaller changes and fixes</h2>
+<ul>
+  <li>Bringing a vehicle out of the garage far from where it went in now costs a tow (asked first). Within 60 tiles it's free.</li>
+  <li>Town standing needs loads as well as a share: 5 for Regular, 10 for Trusted, 15 to hold a town.</li>
+  <li>Two-way boost pads (hold Shift in Boost pad mode).</li>
+  <li>Crew orders keep what you set, with a new Custom pill. Hired jets keep their orders, and Long haul really flies long-haul work.</li>
+  <li>The sign-in card shows the world's year and season, and says Sign Up for a new name. Fleet renames are spaced out after the first free one.</li>
+  <li>Entering a place shows as words in the middle of the screen, camera changes show quietly under the car, and the HUD is tidier.</li>
+  <li>The night shoot's Enter prompt only shows over the start line, and your car no longer drives through house walls.</li>
+  <li>The first drive teaches each control once, and the handbrake lesson waits fifteen minutes.</li>
+</ul>
+
+<p>Thanks for playing, and for all the feedback (the pause menu's Feedback button comes straight to me). See you on the road! 🚗</p>
+  </section>
+  <section>
+    <h2>More releases</h2>
+    <p>Newer: <a href="/devlog/0.7.6">TinyFleet 0.7.6: Towns and Tidings</a> · Older: <a href="/devlog/0.7.4">TinyFleet 0.7.4: Stadium Card Fix</a> · <a href="/devlog">All releases</a></p>
+    <p><a class="play" href="/play/">Play TinyFleet free</a></p>
+  </section>
+  <footer><span>TinyFleet is a free online driving and logistics game, played in the browser.</span><a href="/play/">Play now</a><a href="/">Home</a><a href="/wiki">Guide</a><a href="/devlog">Devlog</a><a href="/press">Press kit</a></footer>
+</main>
+</body>
+</html>

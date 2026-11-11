@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>All 286 kinds of cargo in TinyFleet</title>
+<meta name="description" content="Every kind of cargo in TinyFleet: 286 loads from passengers and parcels to freight, bulk and containers, with where each comes from and where it is wanted.">
+<link rel="canonical" href="https://tinyfleet.online/wiki/cargo">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="theme-color" content="#141b20">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TinyFleet">
+<meta property="og:title" content="All 286 kinds of cargo in TinyFleet">
+<meta property="og:description" content="Every kind of cargo in TinyFleet: 286 loads from passengers and parcels to freight, bulk and containers, with where each comes from and where it is wanted.">
+<meta property="og:url" content="https://tinyfleet.online/wiki/cargo">
+<meta property="og:image" content="https://tinyfleet.online/media/shot-delivery-hud.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="All 286 kinds of cargo in TinyFleet">
+<meta name="twitter:description" content="Every kind of cargo in TinyFleet: 286 loads from passengers and parcels to freight, bulk and containers, with where each comes from and where it is wanted.">
+<meta name="twitter:image" content="https://tinyfleet.online/media/shot-delivery-hud.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://tinyfleet.online/wiki/cargo#page","url":"https://tinyfleet.online/wiki/cargo","name":"All 286 kinds of cargo in TinyFleet","description":"Every kind of cargo in TinyFleet: 286 loads from passengers and parcels to freight, bulk and containers, with where each comes from and where it is wanted.","inLanguage":"en","dateModified":"2026-11-11","isPartOf":{"@id":"https://tinyfleet.online/#site"},"about":{"@id":"https://tinyfleet.online/#game"},"primaryImageOfPage":"https://tinyfleet.online/media/shot-delivery-hud.jpg"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TinyFleet","item":"https://tinyfleet.online/"},{"@type":"ListItem","position":2,"name":"Guide","item":"https://tinyfleet.online/wiki"},{"@type":"ListItem","position":3,"name":"Cargo","item":"https://tinyfleet.online/wiki/cargo"}]}]}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  :root { color-scheme: dark; --ground: #141b20; --panel: #1d262c; --panel-2: #243037; --line: #33414a; --ink: #e9efe8; --ink-2: #b7c2bb; --ink-3: #85938c;
+    --car: #f0604e; --car-2: #e2412f; --water: #4f9fcf; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35); }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; background: var(--ground); }
+  body { margin: 0; color: var(--ink); font: 16px/1.6 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; }
+  a { color: #ff8a7a; }
+  .top { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; justify-content: space-between; }
+  .top .brand { font-family: Fredoka, sans-serif; font-weight: 700; font-size: 26px; color: #fff; text-decoration: none; }
+  .top .brand span { color: #ff5a45; }
+  .top nav { font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .top nav a { color: var(--ink-2); text-decoration: none; }
+  .top nav a:hover, .top nav a[aria-current] { color: #fff; }
+  .top nav a.go { color: #ff8a7a; font-weight: 600; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 72px; }
+  .crumbs { font-size: 13.5px; color: var(--ink-3); margin: 8px 0 0; }
+  .crumbs a { color: var(--ink-2); }
+  h1 { font-family: Fredoka, sans-serif; font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.08; margin: 10px 0 0; text-wrap: balance; }
+  .lead { font-size: clamp(16.5px, 2vw, 18.5px); color: var(--ink-2); margin: 14px 0 0; max-width: 68ch; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); padding: 22px; margin-top: 16px; }
+  h2 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 23px; line-height: 1.2; margin: 0 0 12px; }
+  h3 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 18px; margin: 18px 0 8px; }
+  section p { margin: 0 0 12px; color: var(--ink-2); max-width: 72ch; }
+  section ul, section ol { margin: 0 0 12px; padding-left: 20px; color: var(--ink-2); max-width: 72ch; }
+  section li { margin-bottom: 6px; }
+  section > :last-child { margin-bottom: 0; }
+  section b { color: var(--ink); font-weight: 600; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+  thead th { font-family: Fredoka, sans-serif; font-weight: 600; color: var(--ink); white-space: nowrap; }
+  tbody th { color: var(--ink); font-weight: 600; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  thead th.n { text-align: right; }
+  table.facts th { width: 11em; white-space: nowrap; }
+  table.wide { min-width: 560px; }
+  .pic { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; background: #1b2a33; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+  .cardlink { display: block; text-decoration: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; color: var(--ink); }
+  .cardlink:hover { border-color: var(--ink-3); }
+  .cardlink img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: #1b2a33; }
+  .cardlink span { display: block; padding: 10px 14px 4px; font-weight: 600; }
+  .cardlink small { display: block; padding: 0 14px 12px; color: var(--ink-2); font-size: 13.5px; line-height: 1.45; }
+  .cardlink span:last-child { padding-bottom: 12px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+  .tags li { margin: 0; font-size: 13px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; color: var(--ink-2); }
+  kbd { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; color: var(--ink); white-space: nowrap; }
+  video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+  .media { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .media figure { margin: 0; }
+  .media img { display: block; width: 100%; height: auto; border-radius: 12px; background: #1b2a33; }
+  .media figcaption { font-size: 13.5px; color: var(--ink-2); margin-top: 6px; }
+  .logo-tile { background: #f4f2ec; border-radius: 12px; padding: 14px; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; padding: 11px 18px; border-radius: 12px; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn:hover { background: var(--panel-2); border-color: var(--ink-3); }
+  .play { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 19px; padding: 11px 22px; border-radius: 14px; background: var(--car); color: #fff; border: 1px solid var(--car-2); }
+  .play:hover { background: #f4705f; }
+  .post h2 { margin-top: 26px; } .post > h2:first-child, .post > p:first-child { margin-top: 0; }
+  .when { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; color: var(--ink-3); }
+  .posts { list-style: none; padding: 0; max-width: none; }
+  .posts li { padding: 14px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .posts li:last-child { border-bottom: 0; padding-bottom: 0; } .posts li:first-child { padding-top: 0; }
+  .posts a { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 19px; text-decoration: none; color: var(--ink); }
+  .posts a:hover { color: #ff8a7a; }
+  .posts p { margin: 4px 0 0; }
+  footer { margin-top: 18px; padding: 4px 6px; color: var(--ink-3); font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  footer a { color: var(--ink-2); }
+  @media (max-width: 760px) { section { padding: 18px 16px; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/">TinyFleet<span>.</span></a>
+  <nav aria-label="Site"><a href="/wiki" aria-current="page">Guide</a><a href="/devlog">Devlog</a><a href="/press">Press</a><a class="go" href="/play/">Play free</a></nav>
+</header>
+<main class="wrap">
+  <p class="crumbs"><a href="/">TinyFleet</a> › <a href="/wiki">Guide</a></p>
+  <h1>Cargo</h1>
+  <p class="lead">There are 286 kinds of load to carry in TinyFleet. Each belongs to one of five kinds of hold, takes up a number of units, turns up at certain places and is wanted at others.</p>
+  <section id="people">
+    <h2>Passengers (80)</h2>
+    <div class="scroll"><table class="wide">
+      <thead><tr><th scope="col">Load</th><th scope="col">What it is</th><th scope="col">From</th><th scope="col" class="n">Units</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">🚁 <a href="/wiki/cargo/air-ambulance">Air Ambulance</a></th><td>Someone is hurt far from the road. Fly them straight onto the hospital roof.</td><td>Forest cabin and Lighthouse…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🛫 <a href="/wiki/cargo/airport-run">Airport Run</a></th><td>Bags by the door since six. The gate closes whatever the traffic does.</td><td>House and Townhouse…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🛬 <a href="/wiki/cargo/airport-transfer">Airport Transfer</a></th><td>Off the plane and straight onto a helicopter.</td><td>Airport helipad</td><td class="n">2</td></tr>
+        <tr><th scope="row">🧑‍🔬 <a href="/wiki/cargo/aquanauts">Aquanauts</a></th><td>The next shift for the habitat, a month on the bottom.</td><td>Minor port and Major port</td><td class="n">2</td></tr>
+        <tr><th scope="row">♨️ <a href="/wiki/cargo/bathers">Bathers</a></th><td>Towel over the shoulder, off for a long soak.</td><td>Hotel and Beach resort…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🌸 <a href="/wiki/cargo/blossom">Blossom Viewers</a></th><td>Blankets, boxed lunches and a week when the trees are worth the drive.</td><td>Station and City station…</td><td class="n">3</td></tr>
+        <tr><th scope="row">👷 <a href="/wiki/cargo/cable-crew">Cable Crew</a></th><td>Splicers to the junction before the country notices the line is down.</td><td>Major port</td><td class="n">3</td></tr>
+        <tr><th scope="row">👮 <a href="/wiki/cargo/cadets">Cadets</a></th><td>First day at the station. They have ironed everything.</td><td>Bus station and University…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🛩️ <a href="/wiki/cargo/charter">Charter Flight</a></th><td>A party with somewhere to be, and no patience for the ferry.</td><td>Airport</td><td class="n">2</td></tr>
+        <tr><th scope="row">🎶 <a href="/wiki/cargo/choir">Choir</a></th><td>Robes over their arms, singing in the back all the way there.</td><td>Cathedral and Church…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🎫 <a href="/wiki/cargo/coach-party">Coach Party</a></th><td>A full coach with the itinerary read out twice.</td><td>Bus station and Hotel…</td><td class="n">8</td></tr>
+        <tr><th scope="row">💼 <a href="/wiki/cargo/commuters">Commuters</a></th><td>Heading in to work.</td><td>House and Townhouse…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🪧 <a href="/wiki/cargo/delegates">Conference Delegates</a></th><td>Lanyards, tote bags, and a keynote nobody wants to miss.</td><td>Hotel and Beach resort…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🛳️ <a href="/wiki/cargo/cruise">Cruise Passengers</a></th><td>Ashore for six hours and determined to see everything.</td><td>Major port</td><td class="n">3</td></tr>
+        <tr><th scope="row">👽 <a href="/wiki/cargo/delegation">Delegation</a></th><td>Two tall figures in long coats. They would like to meet your leaders.</td><td>Landing ring</td><td class="n">2</td></tr>
+        <tr><th scope="row">🍽️ <a href="/wiki/cargo/eating-out">Diners Out</a></th><td>A table booked for eight. It is ten to.</td><td>House and Townhouse…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🎩 <a href="/wiki/cargo/diplomats">Diplomats</a></th><td>Black paint, dark glass, and a meeting nobody will admit to.</td><td>Ministry and City hall…</td><td class="n">2</td></tr>
+        <tr><th scope="row">💼 <a href="/wiki/cargo/executive">Executive Shuttle</a></th><td>A board meeting across the island, and the traffic is terrible.</td><td>Rooftop helipad</td><td class="n">1</td></tr>
+        <tr><th scope="row">🧭 <a href="/wiki/cargo/explorers">Explorers</a></th><td>Hat, machete, very confident about the map.</td><td>Hotel and Beach resort…</td><td class="n">1</td></tr>
+        <tr><th scope="row">⛴️ <a href="/wiki/cargo/ferry">Ferry Passengers</a></th><td>Waiting on the jetty for a ride round the coast.</td><td>Minor port</td><td class="n">1</td></tr>
+        <tr><th scope="row">🎪 <a href="/wiki/cargo/festival-goers">Festival-Goers</a></th><td>Wellies, a tent and a wristband.</td><td>House and Townhouse…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🧑‍🔬 <a href="/wiki/cargo/field-science">Field Scientists</a></th><td>Three people and far too many instrument cases.</td><td>University and Research station…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🛩️ <a href="/wiki/cargo/float-plane">Float-Plane Passengers</a></th><td>Off the pontoon with their boots still wet.</td><td>Seaplane base and Minor port</td><td class="n">2</td></tr>
+        <tr><th scope="row">💹 <a href="/wiki/cargo/traders">Floor Traders</a></th><td>The bell goes in four minutes and they are still in traffic.</td><td>Stock exchange and Bank…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🕹️ <a href="/wiki/cargo/gamers">Gamers</a></th><td>Pockets full of coins and a high score to beat.</td><td>House and Townhouse…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🥾 <a href="/wiki/cargo/hikers">Hikers</a></th><td>Poles, packs and a flask of tea.</td><td>Hotel and Beach resort…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🏖️ <a href="/wiki/cargo/holidaymakers">Holidaymakers</a></th><td>Sunburnt, flip-flops, one inflatable flamingo.</td><td>Hotel and Beach resort…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🌆 <a href="/wiki/cargo/homeward">Homeward Crowd</a></th><td>Tired, happy and a long walk from home.</td><td>Stadium and Mall…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🧣 <a href="/wiki/cargo/ice-guests">Ice Hotel Guests</a></th><td>Booked a year ago to sleep on a block of ice, and thrilled about it.</td><td>Major port and Minor port…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🎷 <a href="/wiki/cargo/jazz-band">Jazz Band</a></th><td>Double bass across the back seat. They are on at eleven.</td><td>Hotel and Beach resort…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🌃 <a href="/wiki/cargo/late-fares">Late Fares</a></th><td>Turning-out time, and everyone wants the same cab.</td><td>Nightclub and Pub…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🎥 <a href="/wiki/cargo/location-crew">Location Crew</a></th><td>They have the light for two hours and the location is an hour away.</td><td>Film studio and Hotel…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🧳 <a href="/wiki/cargo/long-haul">Long-Haul Passengers</a></th><td>A full cabin, bags checked, bound for the other side of the sea.</td><td>International</td><td class="n">14</td></tr>
+        <tr><th scope="row">🥂 <a href="/wiki/cargo/lh-charter">Long-Range Charter</a></th><td>A board flying out to close a deal on the far side of the country. Champagne aboard.</td><td>Airport and International</td><td class="n">4</td></tr>
+        <tr><th scope="row">⛑️ <a href="/wiki/cargo/lost-walkers">Lost Walkers</a></th><td>Off the path, out of daylight, and a long way from any road.</td><td>Cairns and Bothy…</td><td class="n">2</td></tr>
+        <tr><th scope="row">📣 <a href="/wiki/cargo/match-crowd">Match Crowd</a></th><td>Scarves up, singing already, and kick-off is in ten minutes.</td><td>Bus station and Pub…</td><td class="n">8</td></tr>
+        <tr><th scope="row">🎥 <a href="/wiki/cargo/news-crew">News Crew</a></th><td>Breaking news. Get the camera there first.</td><td>News station helipad</td><td class="n">2</td></tr>
+        <tr><th scope="row">👔 <a href="/wiki/cargo/workers">Office Workers</a></th><td>Clocked off and ready for home.</td><td>Office and Tower…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🎭 <a href="/wiki/cargo/pageant">Pageant Players</a></th><td>Costumes, a hobby horse and one very nervous dragon.</td><td>Guildhall and Market square…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🧍 <a href="/wiki/cargo/passengers">Passengers</a></th><td>Off out for the day.</td><td>House and Townhouse…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🚑 <a href="/wiki/cargo/patients">Patients</a></th><td>Feeling poorly. Hurry, but gently.</td><td>House and Townhouse…</td><td class="n">1</td></tr>
+        <tr><th scope="row">👵 <a href="/wiki/cargo/outing">Pensioners’ Outing</a></th><td>Flask, cardigan, and strong views on the driving.</td><td>Retirement home and Community centre…</td><td class="n">6</td></tr>
+        <tr><th scope="row">🧕 <a href="/wiki/cargo/pilgrims">Pilgrims</a></th><td>Come a long way to stand in front of it.</td><td>Kasbah and Caravanserai…</td><td class="n">1</td></tr>
+        <tr><th scope="row">👷 <a href="/wiki/cargo/plant-crew">Plant Engineers</a></th><td>A shift change, and the day crew cannot leave until they arrive.</td><td>Hotel and Beach resort…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🚓 <a href="/wiki/cargo/air-support">Police Air Support</a></th><td>Officers needed out there, fast.</td><td>Police helipad</td><td class="n">2</td></tr>
+        <tr><th scope="row">⚽ <a href="/wiki/cargo/practice-run">Practice</a></th><td>Boots, bags, oranges for half time, and four kids who all want the front seat.</td><td>School and Elementary school…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🌟 <a href="/wiki/cargo/premiere">Premiere</a></th><td>The star of the night. The crowd is waiting, and so are the cameras.</td><td>Star’s mansion and Hotel…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🚔 <a href="/wiki/cargo/prisoners">Prisoner Transfer</a></th><td>Two officers, one passenger, and a route nobody publishes.</td><td>Prison and Police station…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🕺 <a href="/wiki/cargo/prom">Prom Night</a></th><td>Corsages on, hair done, and the whole street watching them leave.</td><td>House and Townhouse…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🧰 <a href="/wiki/cargo/race-crew">Race Crew</a></th><td>Scrutineering closes in an hour and the crew chief is still at the hotel.</td><td>Garage and Car dealer…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🏁 <a href="/wiki/cargo/race-fans">Race Fans</a></th><td>Flags, ear defenders and a cool box: they want to see the start.</td><td>Bus station and Hotel…</td><td class="n">1</td></tr>
+        <tr><th scope="row">💼 <a href="/wiki/cargo/rail-commuters">Rail Commuters</a></th><td>Running late for the 8:15.</td><td>House and Townhouse…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🧳 <a href="/wiki/cargo/rail-travellers">Rail Travellers</a></th><td>Off the train with their luggage, or bound for the next city by rail.</td><td>Terminus and City station…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🎒 <a href="/wiki/cargo/recruits">Recruits</a></th><td>Fresh haircuts and one bag each. Their mothers waved them off.</td><td>Bus station and Station…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🎞️ <a href="/wiki/cargo/red-carpet">Red Carpet</a></th><td>Photographers at the other end. Arrive late and they go home.</td><td>Hotel and Beach resort…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🤿 <a href="/wiki/cargo/reef-tourists">Reef Visitors</a></th><td>A morning under the reef, behind the glass.</td><td>Minor port and Major port</td><td class="n">2</td></tr>
+        <tr><th scope="row">🧓 <a href="/wiki/cargo/residents">Residents</a></th><td>Visiting Gran. Drive gently.</td><td>House and Townhouse…</td><td class="n">1</td></tr>
+        <tr><th scope="row">😵 <a href="/wiki/cargo/returnees">Returnees</a></th><td>Found standing in a field at dawn. They’d like to go home and not talk about it.</td><td>Landing ring and Crop circle…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🤿 <a href="/wiki/cargo/reef-return">Returning Visitors</a></th><td>Back to the harbour, talking about the turtles.</td><td>Reef observatory</td><td class="n">2</td></tr>
+        <tr><th scope="row">🔦 <a href="/wiki/cargo/ruin-hunters">Ruin Hunters</a></th><td>They read about it somewhere and they want to see it before it falls down.</td><td>Hotel and Beach resort…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🦒 <a href="/wiki/cargo/safari">Safari Tourists</a></th><td>Binoculars ready. Very quiet, very excited.</td><td>Hotel and Beach resort…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🎒 <a href="/wiki/cargo/school-run">School Run</a></th><td>Three kids, one bell, and somebody has lost a shoe.</td><td>House and Townhouse…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🚌 <a href="/wiki/cargo/school-trip">School Trip</a></th><td>Thirty children, one clipboard, and a packed lunch each.</td><td>School and Elementary school…</td><td class="n">8</td></tr>
+        <tr><th scope="row">🔬 <a href="/wiki/cargo/scientists">Scientists</a></th><td>Parka, clipboard, an unreasonable amount of luggage.</td><td>Major port and Minor port…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🗺️ <a href="/wiki/cargo/sightseers">Sightseers</a></th><td>Want to see the thing on the map everyone talks about.</td><td>Hotel and Beach resort…</td><td class="n">1</td></tr>
+        <tr><th scope="row">👷 <a href="/wiki/cargo/site-crew">Site Crew</a></th><td>A crew for the morning shift. Hard hats on, flasks full.</td><td>Union hall and Bus station…</td><td class="n">3</td></tr>
+        <tr><th scope="row">⛷️ <a href="/wiki/cargo/skiers">Skiers</a></th><td>Skis over the shoulder, boots already on. The first lift is at eight.</td><td>Hotel and Beach resort…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🛏️ <a href="/wiki/cargo/lh-sleeper">Sleeper Tour Party</a></th><td>A party booked through to the end of the line, cabins and dining car and all.</td><td>Terminus and City station…</td><td class="n">8</td></tr>
+        <tr><th scope="row">🪖 <a href="/wiki/cargo/on-leave">Soldiers on Leave</a></th><td>Forty-eight hours, and they started counting at the gate.</td><td>Army base and Fort…</td><td class="n">3</td></tr>
+        <tr><th scope="row">♨️ <a href="/wiki/cargo/spa-guests">Spa Guests</a></th><td>In dressing gowns already, some of them.</td><td>Hotel and Beach resort…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🏟️ <a href="/wiki/cargo/fans">Sports Fans</a></th><td>Hoarse from cheering, wanting a lift.</td><td>Stadium and Race circuit</td><td class="n">1</td></tr>
+        <tr><th scope="row">🎌 <a href="/wiki/cargo/state-visit">State Visit</a></th><td>A head of state and an aide. Smooth, on time, and no knocks.</td><td>Airport and International…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🚌 <a href="/wiki/cargo/stranded-coach">Stranded Coach Party</a></th><td>Their coach has gone without them.</td><td>Services and Truck stop…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🎒 <a href="/wiki/cargo/students">Students</a></th><td>Late for class again.</td><td>House and Townhouse…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🧵 <a href="/wiki/cargo/tailor">The Tailor</a></th><td>A fitting at the villa. The tailor asks no questions about the pockets.</td><td>Shop and Department store…</td><td class="n">1</td></tr>
+        <tr><th scope="row">📸 <a href="/wiki/cargo/tourists">Tourists</a></th><td>Want to see the real island.</td><td>Museum and Plaza…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🎫 <a href="/wiki/cargo/travellers">Travellers</a></th><td>Off the boat and looking for a bed.</td><td>Major port and Minor port…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🪖 <a href="/wiki/cargo/troop-lift">Troop Lift</a></th><td>A squad on exercise, to be set down where no road goes.</td><td>Army base and Fort…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🥂 <a href="/wiki/cargo/vip-pickup">VIP Pickup</a></th><td>Collected from the door, set down on a roof.</td><td>Mansion and Estate…</td><td class="n">1</td></tr>
+        <tr><th scope="row">💒 <a href="/wiki/cargo/wedding">Wedding Party</a></th><td>Confetti in the footwells. Drive as though the cake were aboard.</td><td>Church and Chapel…</td><td class="n">4</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <section id="parcel">
+    <h2>Parcels (81)</h2>
+    <div class="scroll"><table class="wide">
+      <thead><tr><th scope="col">Load</th><th scope="col">What it is</th><th scope="col">From</th><th scope="col" class="n">Units</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">📮 <a href="/wiki/cargo/air-mail">Air Mail</a></th><td>First-class sacks, flown overnight.</td><td>Airport</td><td class="n">1</td></tr>
+        <tr><th scope="row">🪱 <a href="/wiki/cargo/bait">Bait</a></th><td>A cool box of wriggling bait for the evening boats.</td><td>Net loft and Farm shop…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🩸 <a href="/wiki/cargo/blood-run">Blood Run</a></th><td>Cross-matched and packed in ice. Blue lights all the way.</td><td>Hospital and Clinic</td><td class="n">1</td></tr>
+        <tr><th scope="row">🧵 <a href="/wiki/cargo/cloth">Bolts of Cloth</a></th><td>Off the looms in every colour the dye house has.</td><td>Textile mill</td><td class="n">2</td></tr>
+        <tr><th scope="row">🥖 <a href="/wiki/cargo/bread">Bread</a></th><td>Still warm from the oven.</td><td>Bakery</td><td class="n">1</td></tr>
+        <tr><th scope="row">🔧 <a href="/wiki/cargo/car-parts">Car Parts</a></th><td>Spark plugs, a fan belt and a box of bolts for the mechanic.</td><td>Car dealer and Factory</td><td class="n">1</td></tr>
+        <tr><th scope="row">💰 <a href="/wiki/cargo/cash">Cash</a></th><td>Sealed bags for the vault. Do not stop.</td><td>Bank and Casino</td><td class="n">1</td></tr>
+        <tr><th scope="row">🎰 <a href="/wiki/cargo/chips">Casino Chips</a></th><td>A locked case of chips for the tables. The house always gets its float.</td><td>Bank and Stock exchange</td><td class="n">1</td></tr>
+        <tr><th scope="row">🍹 <a href="/wiki/cargo/cocktails">Cocktails</a></th><td>Shaken, with little umbrellas. Do not spill.</td><td>Marina and Tiki bar…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🌾 <a href="/wiki/cargo/crop-samples">Crop Samples</a></th><td>Stalks from a pressed field, bent at every node. Nobody can say how.</td><td>Crop circle and Farmhouse…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🎞️ <a href="/wiki/cargo/dailies">Dailies</a></th><td>Yesterday’s film, wanted in the screening room before the director wakes up.</td><td>Backlot and Film studio…</td><td class="n">1</td></tr>
+        <tr><th scope="row">💾 <a href="/wiki/cargo/data-core">Data Core</a></th><td>A year of the deep, recorded. The university is waiting on it.</td><td>Sea beacon</td><td class="n">1</td></tr>
+        <tr><th scope="row">🧪 <a href="/wiki/cargo/habitat-samples">Deep Samples</a></th><td>Cores and jars, kept cold and kept upright.</td><td>Research habitat and Vent field</td><td class="n">1</td></tr>
+        <tr><th scope="row">✉️ <a href="/wiki/cargo/diplomatic-bag">Diplomatic Bag</a></th><td>A sealed bag from the General Post Office. It may not be opened, weighed or late.</td><td>General Post Office</td><td class="n">1</td></tr>
+        <tr><th scope="row">💼 <a href="/wiki/cargo/lh-diplomatic">Diplomatic Pouch</a></th><td>Sealed, handcuffed to the seat, and wanted at an embassy a long way off.</td><td>Airport and International</td><td class="n">1</td></tr>
+        <tr><th scope="row">🏺 <a href="/wiki/cargo/drowned-relics">Drowned Relics</a></th><td>A church bell, a font, a doorknocker: the village before the flood.</td><td>Drowned village</td><td class="n">1</td></tr>
+        <tr><th scope="row">💻 <a href="/wiki/cargo/electronics">Electronics</a></th><td>Fragile, expensive, and well insured.</td><td>Tech campus and Factory</td><td class="n">2</td></tr>
+        <tr><th scope="row">☕ <a href="/wiki/cargo/espresso">Espresso Beans</a></th><td>The good beans, the ones the club won’t do without.</td><td>Grocery and Major port…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🗃️ <a href="/wiki/cargo/evidence">Evidence</a></th><td>Sealed bags for the court, before the hearing sits.</td><td>Police station and Highway patrol…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🐟 <a href="/wiki/cargo/salmon">Farmed Salmon</a></th><td>On ice from the pens. It will not keep.</td><td>Fish farm and Boat shed…</td><td class="n">2</td></tr>
+        <tr><th scope="row">👗 <a href="/wiki/cargo/fashion">Fashion Samples</a></th><td>The rail for tonight’s show. One crease and it is a disaster.</td><td>Department store and Factory…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🏮 <a href="/wiki/cargo/lanterns">Festival Lanterns</a></th><td>Paper and cane, packed loose. They light them at dusk.</td><td>Shrine and Market hall…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🐟 <a href="/wiki/cargo/fish">Fish</a></th><td>Today’s catch, still flapping.</td><td>Minor port</td><td class="n">2</td></tr>
+        <tr><th scope="row">📼 <a href="/wiki/cargo/footage">Footage</a></th><td>Tape from the scene, wanted for the six o’clock news.</td><td>Stadium and Arena…</td><td class="n">1</td></tr>
+        <tr><th scope="row">💐 <a href="/wiki/cargo/flowers">Funeral Flowers</a></th><td>Wreaths for eleven o’clock. Do not be late for this one.</td><td>Church and Chapel…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🛒 <a href="/wiki/cargo/groceries">Groceries</a></th><td>A home delivery, eggs on top.</td><td>Grocery</td><td class="n">1</td></tr>
+        <tr><th scope="row">🥫 <a href="/wiki/cargo/habitat-stores">Habitat Stores</a></th><td>Food, filters and the post, down the hatch.</td><td>Minor port and Major port</td><td class="n">2</td></tr>
+        <tr><th scope="row">🧊 <a href="/wiki/cargo/ice-cores">Ice Cores</a></th><td>Ten thousand years of weather. Do not let them thaw.</td><td>Research station</td><td class="n">1</td></tr>
+        <tr><th scope="row">🍦 <a href="/wiki/cargo/ice-cream">Ice Cream</a></th><td>Melting as we speak.</td><td>Beach club and Tiki bar</td><td class="n">1</td></tr>
+        <tr><th scope="row">✉️ <a href="/wiki/cargo/island-post">Island Post</a></th><td>Mailbags for the little harbours.</td><td>Major port</td><td class="n">1</td></tr>
+        <tr><th scope="row">🥫 <a href="/wiki/cargo/keeper-supplies">Keeper’s Supplies</a></th><td>Tins, paraffin and a month of newspapers, for someone a long way from a shop.</td><td>Grocery and General store…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🧺 <a href="/wiki/cargo/laundry">Laundry</a></th><td>Bags of cash that need to come out clean on the other side.</td><td>Casino and Nightclub</td><td class="n">2</td></tr>
+        <tr><th scope="row">🗃️ <a href="/wiki/cargo/leaked-dossier">Leaked Dossier</a></th><td>A dossier somebody should not have copied, for Hollis Vane’s desk.</td><td>Ministry and Embassy…</td><td class="n">1</td></tr>
+        <tr><th scope="row">📚 <a href="/wiki/cargo/books">Library Books</a></th><td>A stack of loans, due back never.</td><td>Library</td><td class="n">1</td></tr>
+        <tr><th scope="row">🧳 <a href="/wiki/cargo/lost-property">Lost Property</a></th><td>Umbrellas, a briefcase and one very surprised parrot, for the front desk.</td><td>Bus station and Airport…</td><td class="n">1</td></tr>
+        <tr><th scope="row">✉️ <a href="/wiki/cargo/mail">Mail Bags</a></th><td>The afternoon collection, sorted for the next town.</td><td>Post office</td><td class="n">1</td></tr>
+        <tr><th scope="row">🥭 <a href="/wiki/cargo/market-produce">Market Produce</a></th><td>Bought off a boat at first light.</td><td>Floating market and Stilt village…</td><td class="n">2</td></tr>
+        <tr><th scope="row">📡 <a href="/wiki/cargo/radio-engineer">Mast Engineer</a></th><td>The transmitter is off the air. Parts for the top of the mast.</td><td>Radio station helipad and News station helipad</td><td class="n">1</td></tr>
+        <tr><th scope="row">🎞️ <a href="/wiki/cargo/master-reels">Master Reels</a></th><td>The only finished print of the picture, out of the Lot for the premiere.</td><td>Lark Studios</td><td class="n">1</td></tr>
+        <tr><th scope="row">💊 <a href="/wiki/cargo/medical">Medical Supplies</a></th><td>Urgent. The ward is waiting.</td><td>Major port</td><td class="n">1</td></tr>
+        <tr><th scope="row">🪙 <a href="/wiki/cargo/lh-mint">Mint Shipment</a></th><td>New coin for a far city’s banks, in a locked van behind the engine.</td><td>Terminus and City station…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🌅 <a href="/wiki/cargo/morning-post">Morning Post</a></th><td>The morning letters, sorted and wanted before the first round goes out.</td><td>Sorting office</td><td class="n">2</td></tr>
+        <tr><th scope="row">🧊 <a href="/wiki/cargo/organ">Organ Transfer</a></th><td>Roof to roof, and the clock is running.</td><td>Hospital helipad</td><td class="n">1</td></tr>
+        <tr><th scope="row">🦪 <a href="/wiki/cargo/oysters">Oysters</a></th><td>Fresh off the beds, packed in weed and ice.</td><td>Pearl beds</td><td class="n">2</td></tr>
+        <tr><th scope="row">📮 <a href="/wiki/cargo/parcels">Parcels</a></th><td>Signed for at the door.</td><td>Mall and Outdoor mall…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🦪 <a href="/wiki/cargo/pearls">Pearls</a></th><td>A small box that the buyer will count twice.</td><td>Floating village and Junk mooring…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🧴 <a href="/wiki/cargo/perfume">Perfume</a></th><td>A case of small bottles worth more than the van.</td><td>Perfumery and Distillery</td><td class="n">1</td></tr>
+        <tr><th scope="row">📰 <a href="/wiki/cargo/scoop">Press Scoop</a></th><td>The tape has to be on air by the hour. Nothing else will get there in time.</td><td>News station and Radio station…</td><td class="n">1</td></tr>
+        <tr><th scope="row">💼 <a href="/wiki/cargo/protection">Protection</a></th><td>A friendly envelope for the shopkeepers. Nobody asks what it is for.</td><td>Social club</td><td class="n">1</td></tr>
+        <tr><th scope="row">✉️ <a href="/wiki/cargo/rail-mail">Rail Mail</a></th><td>Sorted overnight, and the first post waits on it.</td><td>Mail depot and Post office</td><td class="n">4</td></tr>
+        <tr><th scope="row">🔦 <a href="/wiki/cargo/ranger-kit">Ranger Kit</a></th><td>Radios, tags and a spare kettle for the post out in the reserve.</td><td>Ranger post and Reserve gate…</td><td class="n">2</td></tr>
+        <tr><th scope="row">💼 <a href="/wiki/cargo/red-boxes">Red Boxes</a></th><td>Dispatch boxes from the Citadel, locked, for a minister’s eyes only.</td><td>The Citadel</td><td class="n">1</td></tr>
+        <tr><th scope="row">📑 <a href="/wiki/cargo/red-tape">Red Tape</a></th><td>Forms in triplicate. Somebody, somewhere, will be unhappy to sign them.</td><td>Ministry and City hall…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🪸 <a href="/wiki/cargo/specimens">Reef Specimens</a></th><td>Living samples in a cold box, for the aquarium’s new tank.</td><td>Sea reef</td><td class="n">1</td></tr>
+        <tr><th scope="row">🔏 <a href="/wiki/cargo/registered">Registered Mail</a></th><td>Signed for, insured, and not to be dropped.</td><td>Sorting office and Post office…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🥇 <a href="/wiki/cargo/reserve-gold">Reserve Gold</a></th><td>The nation’s reserve, moved under seal into the Citadel’s vault.</td><td>The Mint and Bank</td><td class="n">2</td></tr>
+        <tr><th scope="row">🧪 <a href="/wiki/cargo/samples">Samples</a></th><td>Labelled, sealed and not to be shaken.</td><td>Research dome and Fossil dig…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🦪 <a href="/wiki/cargo/bed-pearls">Seabed Pearls</a></th><td>A pouch of them, graded on the bottom. The jeweller is waiting.</td><td>Pearl beds</td><td class="n">1</td></tr>
+        <tr><th scope="row">🗂️ <a href="/wiki/cargo/case-files">Sealed Case Files</a></th><td>Files from the Yard, sealed in red wax. The court wants them unread.</td><td>Constabulary College</td><td class="n">1</td></tr>
+        <tr><th scope="row">📜 <a href="/wiki/cargo/sealed-orders">Sealed Orders</a></th><td>Orders from the Colonel’s desk, sealed, to be opened only on arrival.</td><td>Base cantonment</td><td class="n">1</td></tr>
+        <tr><th scope="row">🧪 <a href="/wiki/cargo/sealed-specimens">Sealed Specimens</a></th><td>Jars from the quarantine domes. Something in one of them is still humming.</td><td>Site Null</td><td class="n">1</td></tr>
+        <tr><th scope="row">🪙 <a href="/wiki/cargo/seized-bullion">Seized Bullion</a></th><td>Gold bars from a raid, logged and counted twice, bound for the Yard’s strongroom.</td><td>Impound yard and Police station</td><td class="n">2</td></tr>
+        <tr><th scope="row">🦐 <a href="/wiki/cargo/shrimp">Shrimp</a></th><td>Crawfish and shrimp on ice. The ice is winning, for now.</td><td>Shrimp shack and Airboat dock…</td><td class="n">2</td></tr>
+        <tr><th scope="row">💾 <a href="/wiki/cargo/sonar-logs">Sonar Logs</a></th><td>A week of what passed overhead, sealed. Nobody asks what.</td><td>Listening post</td><td class="n">1</td></tr>
+        <tr><th scope="row">📸 <a href="/wiki/cargo/speed-film">Speed Camera Film</a></th><td>A roll of film full of number plates. Some of them yours, perhaps.</td><td>Highway patrol and Weighbridge…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🌶️ <a href="/wiki/cargo/spices">Spices</a></th><td>Sacks of chilli, cumin and cardamom. The whole van will smell of it for a week.</td><td>Major port and Customs post…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🖼️ <a href="/wiki/cargo/stamp-plates">Stamp Plates</a></th><td>The engraved plates for the next stamp, for the GPO’s vault and nobody else’s.</td><td>Sorting office and The Mint</td><td class="n">1</td></tr>
+        <tr><th scope="row">📼 <a href="/wiki/cargo/strange-signal">Strange Signal</a></th><td>A tape of a signal from nowhere, repeating in sevens.</td><td>Radio tower and Radio mast…</td><td class="n">1</td></tr>
+        <tr><th scope="row">💵 <a href="/wiki/cargo/strike-fund">Strike Fund</a></th><td>The members’ fund from Federation House, counted, for a hall standing firm.</td><td>Federation House</td><td class="n">1</td></tr>
+        <tr><th scope="row">🧰 <a href="/wiki/cargo/strongbox">Sunken Strongbox</a></th><td>Still locked, and the bank wants it before the salvage men do.</td><td>Sea wreck</td><td class="n">1</td></tr>
+        <tr><th scope="row">🧪 <a href="/wiki/cargo/survey-kit">Survey Kit</a></th><td>Sensors and sample jars, set down on the bottom by hand.</td><td>Minor port and Major port</td><td class="n">1</td></tr>
+        <tr><th scope="row">🍕 <a href="/wiki/cargo/takeout">Takeout</a></th><td>Hot now, cold soon.</td><td>Diner and Drive-thru…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🍵 <a href="/wiki/cargo/tea">Tea</a></th><td>First flush, carefully boxed.</td><td>Tea house and Plantation</td><td class="n">1</td></tr>
+        <tr><th scope="row">🔭 <a href="/wiki/cargo/telescope">Telescope Parts</a></th><td>A mirror cell and a box of shims, for the dome up the hill.</td><td>University and Tech campus…</td><td class="n">2</td></tr>
+        <tr><th scope="row">⚫ <a href="/wiki/cargo/black-pearl">The Black Pearl</a></th><td>One pearl the size of a thumb, for Mother Corran herself.</td><td>Fish market and Cannery…</td><td class="n">1</td></tr>
+        <tr><th scope="row">🎁 <a href="/wiki/cargo/dons-gift">The Don’s Gift</a></th><td>A box from the villa, ribboned. Whoever opens it knows exactly who sent it.</td><td>Villa Caruso</td><td class="n">1</td></tr>
+        <tr><th scope="row">📰 <a href="/wiki/cargo/the-exclusive">The Exclusive</a></th><td>Tomorrow’s front page, from Vane House to the presses before anyone else has it.</td><td>Vane House</td><td class="n">1</td></tr>
+        <tr><th scope="row">🥃 <a href="/wiki/cargo/whisky">Whisky</a></th><td>Twelve years in the cask. Handle like a baby.</td><td>Distillery</td><td class="n">2</td></tr>
+        <tr><th scope="row">🍷 <a href="/wiki/cargo/wine">Wine</a></th><td>A good year. Mind the corners.</td><td>Vineyard and Winery</td><td class="n">2</td></tr>
+        <tr><th scope="row">🥕 <a href="/wiki/cargo/winter-feed">Winter Feed</a></th><td>The beasts up the hill are waiting, and the track is not a road.</td><td>Barn and Croft…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🏺 <a href="/wiki/cargo/wreck-finds">Wreck Finds</a></th><td>Brass, china and a ship’s bell, brought up for the museum.</td><td>Sea wreck</td><td class="n">1</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <section id="freight">
+    <h2>Freight (77)</h2>
+    <div class="scroll"><table class="wide">
+      <thead><tr><th scope="col">Load</th><th scope="col">What it is</th><th scope="col">From</th><th scope="col" class="n">Units</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">📦 <a href="/wiki/cargo/air-freight">Air Freight</a></th><td>Pallets in the hold: flowers, phones and fresh fish.</td><td>International</td><td class="n">18</td></tr>
+        <tr><th scope="row">🪞 <a href="/wiki/cargo/antiques">Antiques</a></th><td>A clock, a glass case and a stuffed owl nobody wanted.</td><td>Mansion and Estate…</td><td class="n">3</td></tr>
+        <tr><th scope="row">👾 <a href="/wiki/cargo/cabinets">Arcade Cabinets</a></th><td>Two new machines and a crate of spare joysticks. Upright, please.</td><td>Tech campus and Factory…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🥫 <a href="/wiki/cargo/rations">Army Rations</a></th><td>Signed for at the gate, in triplicate.</td><td>Cannery and Grocery…</td><td class="n">5</td></tr>
+        <tr><th scope="row">⚙️ <a href="/wiki/cargo/auto-parts">Auto Parts</a></th><td>Gearboxes and wiring looms, wanted at the line side just in time.</td><td>Factory and Logistics depot…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🗳️ <a href="/wiki/cargo/ballots">Ballot Boxes</a></th><td>Sealed and counted. The polls open whether they are there or not.</td><td>Ministry and City hall…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🍺 <a href="/wiki/cargo/beer">Beer</a></th><td>Kegs for the cellar. Keep them upright.</td><td>Brewery</td><td class="n">3</td></tr>
+        <tr><th scope="row">🛂 <a href="/wiki/cargo/bonded">Bonded Load</a></th><td>Cleared at the county line and free to run.</td><td>Customs post</td><td class="n">4</td></tr>
+        <tr><th scope="row">🍺 <a href="/wiki/cargo/rail-beer">Brewery Barrels</a></th><td>Barrels off the brewery dock, for the weekend.</td><td>Brewery siding</td><td class="n">6</td></tr>
+        <tr><th scope="row">🪙 <a href="/wiki/cargo/lh-bullion">Bullion by Air</a></th><td>Gold bars for a vault a long way off, insured for more than the plane.</td><td>International and Airport</td><td class="n">6</td></tr>
+        <tr><th scope="row">🔧 <a href="/wiki/cargo/repair-kit">Cable Repair Kit</a></th><td>Splice, sleeve and clamps, for the break on the bottom.</td><td>Major port</td><td class="n">6</td></tr>
+        <tr><th scope="row">🧵 <a href="/wiki/cargo/cable-spool">Cable Spool</a></th><td>A new run of armoured cable for the junction box.</td><td>Major port</td><td class="n">8</td></tr>
+        <tr><th scope="row">🧶 <a href="/wiki/cargo/carpets">Carpets</a></th><td>Hand-knotted, rolled tight. Worth a small fortune.</td><td>Souk and Caravanserai</td><td class="n">3</td></tr>
+        <tr><th scope="row">🍻 <a href="/wiki/cargo/cask-ale">Cask Ale</a></th><td>Wooden casks, settled and ready. Roll them, never drop them.</td><td>Brewery and Pub</td><td class="n">3</td></tr>
+        <tr><th scope="row">🧀 <a href="/wiki/cargo/cheese">Cheese</a></th><td>Great wheels of alpine cheese.</td><td>Dairy</td><td class="n">2</td></tr>
+        <tr><th scope="row">☕ <a href="/wiki/cargo/coffee">Coffee Beans</a></th><td>Sun-dried, sacked, smelling wonderful.</td><td>Plantation</td><td class="n">3</td></tr>
+        <tr><th scope="row">🌴 <a href="/wiki/cargo/dates">Dates</a></th><td>Sticky, sweet and piled in palm baskets.</td><td>Date grove</td><td class="n">3</td></tr>
+        <tr><th scope="row">🐠 <a href="/wiki/cargo/dried-fish">Dried Fish</a></th><td>Wind-dried on the racks all winter.</td><td>Fish racks</td><td class="n">3</td></tr>
+        <tr><th scope="row">🍴 <a href="/wiki/cargo/family-silver">Family Silver</a></th><td>Heirloom silver going home to Villa Caruso. Nobody asks where it has been.</td><td>Villa and Chop shop</td><td class="n">2</td></tr>
+        <tr><th scope="row">⛺ <a href="/wiki/cargo/field-kit">Field Kit</a></th><td>Tents, radios and a field kitchen, wanted out where the road gives up.</td><td>Army base and Fort…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🎬 <a href="/wiki/cargo/film-crew">Film Crew</a></th><td>Lights, cable drums and a camera worth more than the truck.</td><td>Tech campus and Office park…</td><td class="n">5</td></tr>
+        <tr><th scope="row">🎬 <a href="/wiki/cargo/film-props">Film Props</a></th><td>A suit of armour, a fake bank vault and nine rubber swords.</td><td>Film studio and Warehouse…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🌾 <a href="/wiki/cargo/fish-feed">Fish Feed</a></th><td>Pellets for the pens, by the tonne.</td><td>Minor port and Major port</td><td class="n">6</td></tr>
+        <tr><th scope="row">🌾 <a href="/wiki/cargo/flour">Flour</a></th><td>Stone-ground sacks for the bakery.</td><td>Windmill</td><td class="n">3</td></tr>
+        <tr><th scope="row">🥬 <a href="/wiki/cargo/fresh-produce">Fresh Produce</a></th><td>Packed cold this morning: it is worth less with every hour.</td><td>Produce shed</td><td class="n">8</td></tr>
+        <tr><th scope="row">⛽ <a href="/wiki/cargo/fuel">Fuel</a></th><td>A tank of petrol for the pumps.</td><td>Major port and Fuel depot…</td><td class="n">6</td></tr>
+        <tr><th scope="row">☢️ <a href="/wiki/cargo/fuel-rods">Fuel Flask</a></th><td>Sealed flask, escorted, no stops on the way.</td><td>Major port</td><td class="n">6</td></tr>
+        <tr><th scope="row">🛢️ <a href="/wiki/cargo/rail-fuel">Fuel Tankers</a></th><td>Diesel and aviation fuel off the tank farm racks.</td><td>Tank farm</td><td class="n">12</td></tr>
+        <tr><th scope="row">🦊 <a href="/wiki/cargo/furs">Furs</a></th><td>Pelts bundled for the boat south.</td><td>Sled kennels and Croft</td><td class="n">2</td></tr>
+        <tr><th scope="row">🏆 <a href="/wiki/cargo/golden-statuettes">Golden Statuettes</a></th><td>This year’s awards, polished, in velvet, for the executive tower’s cabinet.</td><td>Film studio and Backlot</td><td class="n">1</td></tr>
+        <tr><th scope="row">🏗️ <a href="/wiki/cargo/lh-heavy">Heavy Haul Consignment</a></th><td>Turbine sections on well wagons, cleared to run the length of the country.</td><td>Goods yard and Harbour depot</td><td class="n">16</td></tr>
+        <tr><th scope="row">📺 <a href="/wiki/cargo/stolen-goods">Hot Goods</a></th><td>Fell off the back of a lorry. The chop shop wants it, and so do the police.</td><td>Warehouse and Logistics depot…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🛳️ <a href="/wiki/cargo/ship-steel">Hull Plate</a></th><td>Cut plate for the hull standing up on the blocks.</td><td>Factory and Major port</td><td class="n">8</td></tr>
+        <tr><th scope="row">🧳 <a href="/wiki/cargo/imports">Imported Goods</a></th><td>Pallets fresh off the container ship.</td><td>Major port and Customs post</td><td class="n">4</td></tr>
+        <tr><th scope="row">🌿 <a href="/wiki/cargo/kelp">Kelp</a></th><td>Cut off the lines this morning, for food and fertiliser.</td><td>Kelp farm</td><td class="n">6</td></tr>
+        <tr><th scope="row">📦 <a href="/wiki/cargo/lost-container">Lost Container</a></th><td>Gone over the side in the swell. Its owners want it back, dry or not.</td><td>Sea lost</td><td class="n">10</td></tr>
+        <tr><th scope="row">🛰️ <a href="/wiki/cargo/probe">Lost Probe</a></th><td>It hums, it is warm, and it seems to want to go somewhere.</td><td>Crash site and Crashed satellite…</td><td class="n">2</td></tr>
+        <tr><th scope="row">⚫ <a href="/wiki/cargo/nodules">Manganese Nodules</a></th><td>Black lumps from the ooze, worth more than they look.</td><td>Nodule field</td><td class="n">10</td></tr>
+        <tr><th scope="row">📦 <a href="/wiki/cargo/goods">Manufactured Goods</a></th><td>Pallets from the works for the shop floor.</td><td>Factory and Logistics depot</td><td class="n">4</td></tr>
+        <tr><th scope="row">🍯 <a href="/wiki/cargo/mead">Mead</a></th><td>Honey wine in stoneware, for the hall’s long tables.</td><td>Guildhall and Tithe barn…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🥛 <a href="/wiki/cargo/milk">Milk Churns</a></th><td>This morning’s milking. Keep it cool.</td><td>Farmhouse and Ranch…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🗞️ <a href="/wiki/cargo/morning-edition">Morning Edition</a></th><td>Bundles still warm from the press. Yesterday’s news sells for nothing.</td><td>Printworks</td><td class="n">3</td></tr>
+        <tr><th scope="row">🏺 <a href="/wiki/cargo/artifacts">Museum Artifacts</a></th><td>Priceless and fragile. Mind the bumps.</td><td>Major port</td><td class="n">3</td></tr>
+        <tr><th scope="row">🚗 <a href="/wiki/cargo/cars">New Cars</a></th><td>Shiny, unregistered, and not a scratch on them yet.</td><td>Major port and Car plant</td><td class="n">6</td></tr>
+        <tr><th scope="row">🫒 <a href="/wiki/cargo/olives">Olive Oil</a></th><td>Cold-pressed, green-gold, in stone jars.</td><td>Vineyard and Windmills</td><td class="n">2</td></tr>
+        <tr><th scope="row">🎻 <a href="/wiki/cargo/orchestra">Orchestra</a></th><td>Cellos in cases, a harp on its side, and nothing that likes a pothole.</td><td>Concert hall and Theatre…</td><td class="n">3</td></tr>
+        <tr><th scope="row">💣 <a href="/wiki/cargo/ordnance">Ordnance</a></th><td>Crates stencilled DO NOT DROP. Take the bumps slowly.</td><td>Army depot and Army base…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🌴 <a href="/wiki/cargo/palm-oil">Palm Oil</a></th><td>Red-orange oil pressed from the fruit bunches, in drums.</td><td>Plantation and Plantation house</td><td class="n">4</td></tr>
+        <tr><th scope="row">🧻 <a href="/wiki/cargo/paper">Paper Reels</a></th><td>Newsprint for tonight’s edition.</td><td>Paper mill and Major port</td><td class="n">5</td></tr>
+        <tr><th scope="row">🎖️ <a href="/wiki/cargo/parade-day">Parade Day</a></th><td>The band, the flags and the bunting, and the town wants the tank at the head of the parade.</td><td>Army base and Fort…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🦪 <a href="/wiki/cargo/pearl-casket">Pearl Casket</a></th><td>A casket of the Guild’s pearls from Corran Harbour, for a hall that earned them.</td><td>Corran Harbour</td><td class="n">1</td></tr>
+        <tr><th scope="row">🐟 <a href="/wiki/cargo/farm-salmon">Pen Salmon</a></th><td>Out of the pens and on ice, for the morning market.</td><td>Salmon pens</td><td class="n">4</td></tr>
+        <tr><th scope="row">📦 <a href="/wiki/cargo/post-stores">Post Supplies</a></th><td>Batteries, hydrophones and tinned peaches for the post.</td><td>Major port</td><td class="n">6</td></tr>
+        <tr><th scope="row">🏎️ <a href="/wiki/cargo/prototype">Prototype Car</a></th><td>Under a sheet, in dazzle paint, and nobody is to photograph it.</td><td>Car plant and Tech campus…</td><td class="n">6</td></tr>
+        <tr><th scope="row">🛩️ <a href="/wiki/cargo/prototype-jet">Prototype Jet</a></th><td>Something under a tarpaulin with wings. The base has been waiting for it.</td><td>Hangar 18 and Factory</td><td class="n">3</td></tr>
+        <tr><th scope="row">🏎️ <a href="/wiki/cargo/race-car">Race Car</a></th><td>A race car on a transporter, fresh from the workshop, not a scratch on it.</td><td>Car dealer and Factory…</td><td class="n">6</td></tr>
+        <tr><th scope="row">🛢️ <a href="/wiki/cargo/race-fuel">Race Fuel</a></th><td>Drums of high-octane for the fuel rig, sealed and signed for.</td><td>Fuel depot and Major port…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🛞 <a href="/wiki/cargo/race-tyres">Racing Slicks</a></th><td>Four sets of soft slicks in their warmers. The team is waiting in the pit lane.</td><td>Factory and Car dealer…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🚃 <a href="/wiki/cargo/rail-freight">Rail Consignment</a></th><td>Unloaded off the goods train, for the last miles by road.</td><td>Goods yard</td><td class="n">6</td></tr>
+        <tr><th scope="row">🏗️ <a href="/wiki/cargo/rebar">Rebar</a></th><td>Steel bars for the pour. The concrete will not wait for them.</td><td>Steelworks and Builders’ yard…</td><td class="n">5</td></tr>
+        <tr><th scope="row">☄️ <a href="/wiki/cargo/recovered-fragment">Recovered Fragment</a></th><td>A piece of something that fell, warm to the touch, for the hangar at Site Null.</td><td>Crash site and Crashed satellite…</td><td class="n">2</td></tr>
+        <tr><th scope="row">🧰 <a href="/wiki/cargo/rig-supply">Rig Supplies</a></th><td>Pipe, mud and a fortnight of groceries for the crew out on the platform.</td><td>Major port and Logistics depot</td><td class="n">5</td></tr>
+        <tr><th scope="row">🛡️ <a href="/wiki/cargo/riot-gear">Riot Gear</a></th><td>Shields and helmets for match day. Everyone hopes they stay in the van.</td><td>Police station and Highway patrol</td><td class="n">3</td></tr>
+        <tr><th scope="row">🍳 <a href="/wiki/cargo/road-supplies">Roadhouse Supplies</a></th><td>Bacon, beer and coffee, for the only kitchen in a hundred miles.</td><td>Grocery and Brewery…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🚀 <a href="/wiki/cargo/rocket-parts">Rocket Stage</a></th><td>One stage of the stack, wide load, and they are counting down.</td><td>Factory and Tech campus…</td><td class="n">10</td></tr>
+        <tr><th scope="row">🧲 <a href="/wiki/cargo/salvage">Salvage</a></th><td>Cut out of the wreck with a torch. Someone will pay for it.</td><td>Shipwreck and Plane wreck…</td><td class="n">5</td></tr>
+        <tr><th scope="row">🖥️ <a href="/wiki/cargo/server-racks">Server Racks</a></th><td>Blinking, humming and heavier than they look. Keep them upright.</td><td>Major port and Tech campus…</td><td class="n">6</td></tr>
+        <tr><th scope="row">🎛️ <a href="/wiki/cargo/stage-rig">Stage Rig</a></th><td>Truss, speakers and a lighting desk. Doors are at six.</td><td>Logistics depot and Warehouse…</td><td class="n">6</td></tr>
+        <tr><th scope="row">🔩 <a href="/wiki/cargo/steel">Steel Coil</a></th><td>Rolled this morning and still warm. The line stops without it.</td><td>Steelworks and Major port</td><td class="n">8</td></tr>
+        <tr><th scope="row">⚓ <a href="/wiki/cargo/sea-salvage">Sunken Salvage</a></th><td>Plate, chain and an engine block, for the breaker’s yard.</td><td>Sea wreck and Sea lost</td><td class="n">6</td></tr>
+        <tr><th scope="row">🚩 <a href="/wiki/cargo/founders-banner">The Founders’ Banner</a></th><td>The first union banner, rolled and wrapped, carried home to the great hall.</td><td>Builders’ yard and Cement works</td><td class="n">2</td></tr>
+        <tr><th scope="row">🥫 <a href="/wiki/cargo/tinned">Tinned Fish</a></th><td>Packed and sealed this morning, bound for the shelves.</td><td>Cannery</td><td class="n">3</td></tr>
+        <tr><th scope="row">⚙️ <a href="/wiki/cargo/turbine-parts">Turbine Parts</a></th><td>A runner blade on a cradle, for the machine hall inside the wall.</td><td>Factory and Major port…</td><td class="n">6</td></tr>
+        <tr><th scope="row">🥕 <a href="/wiki/cargo/vegetables">Vegetables</a></th><td>Muddy, knobbly and delicious.</td><td>Glasshouses and Allotments</td><td class="n">2</td></tr>
+        <tr><th scope="row">🪨 <a href="/wiki/cargo/vent-minerals">Vent Minerals</a></th><td>Copper, zinc and gold crust, broken off the smokers.</td><td>Vent field</td><td class="n">6</td></tr>
+        <tr><th scope="row">🚰 <a href="/wiki/cargo/pipes">Water Pipes</a></th><td>Lengths of main for the works. Half the town is on standpipes.</td><td>Factory and Major port…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🛸 <a href="/wiki/cargo/wreckage">Wreckage</a></th><td>A curved panel that weighs nothing and is not from here. Everyone wants it.</td><td>Crash site</td><td class="n">3</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <section id="bulk">
+    <h2>Bulk loads (44)</h2>
+    <div class="scroll"><table class="wide">
+      <thead><tr><th scope="col">Load</th><th scope="col">What it is</th><th scope="col">From</th><th scope="col" class="n">Units</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">🍌 <a href="/wiki/cargo/bananas">Bananas</a></th><td>Green now. Yellow by the time you get there.</td><td>Plantation</td><td class="n">4</td></tr>
+        <tr><th scope="row">🐂 <a href="/wiki/cargo/cattle">Cattle</a></th><td>A lowing herd of longhorns bound for market.</td><td>Kraal</td><td class="n">6</td></tr>
+        <tr><th scope="row">🐄 <a href="/wiki/cargo/rail-cattle">Cattle Cars</a></th><td>Lowing and shuffling, loaded up the chute at the stockyard.</td><td>Stockyard</td><td class="n">8</td></tr>
+        <tr><th scope="row">🌾 <a href="/wiki/cargo/cattle-feed">Cattle Feed</a></th><td>Feed for the pens while the herd waits for its train.</td><td>Grain elevator and Silo</td><td class="n">8</td></tr>
+        <tr><th scope="row">🧱 <a href="/wiki/cargo/cement">Cement</a></th><td>A full tanker, and the pour is booked for today.</td><td>Cement works and Quarry…</td><td class="n">7</td></tr>
+        <tr><th scope="row">🏗️ <a href="/wiki/cargo/rail-cement">Cement Hoppers</a></th><td>Dry cement, sealed in hoppers so the rain can’t set it.</td><td>Cement loadout</td><td class="n">12</td></tr>
+        <tr><th scope="row">🍊 <a href="/wiki/cargo/citrus">Citrus</a></th><td>Lemons and oranges picked warm off the tree.</td><td>Orchard and Farm shop…</td><td class="n">3</td></tr>
+        <tr><th scope="row">⚫ <a href="/wiki/cargo/coal">Coal</a></th><td>Black, heavy and filthy. The lights depend on it.</td><td>Major port and Coal tipple</td><td class="n">8</td></tr>
+        <tr><th scope="row">⚫ <a href="/wiki/cargo/rail-coal">Coal Wagons</a></th><td>Straight out of the bunker, black to the brim.</td><td>Coal loader</td><td class="n">16</td></tr>
+        <tr><th scope="row">☁️ <a href="/wiki/cargo/cotton">Cotton Bales</a></th><td>Baled and strapped, for the mill’s carding room.</td><td>Farm field and Plantation…</td><td class="n">5</td></tr>
+        <tr><th scope="row">🌽 <a href="/wiki/cargo/crops">Crops</a></th><td>Freshly harvested, for the shelves or for export.</td><td>Farm field</td><td class="n">4</td></tr>
+        <tr><th scope="row">🛢️ <a href="/wiki/cargo/crude">Crude Oil</a></th><td>Black and heavy, straight off the rig, for the refinery’s columns.</td><td>Oil rig and Major port</td><td class="n">8</td></tr>
+        <tr><th scope="row">🪻 <a href="/wiki/cargo/lavender-cut">Cut Lavender</a></th><td>Cut at dawn. The oil goes with the heat of the day.</td><td>Lavender field and Farmhouse…</td><td class="n">3</td></tr>
+        <tr><th scope="row">🍎 <a href="/wiki/cargo/fruit">Fruit</a></th><td>Crates picked this morning.</td><td>Orchard</td><td class="n">3</td></tr>
+        <tr><th scope="row">🌾 <a href="/wiki/cargo/grain">Grain</a></th><td>Sacks of wheat from the silo.</td><td>Silo and Tithe barn…</td><td class="n">5</td></tr>
+        <tr><th scope="row">🍇 <a href="/wiki/cargo/grapes">Grapes</a></th><td>Picked at dawn and pressed by dusk, or not worth pressing at all.</td><td>Vineyard</td><td class="n">4</td></tr>
+        <tr><th scope="row">🪵 <a href="/wiki/cargo/hardwood">Hardwood</a></th><td>Mahogany logs, heavy as sin.</td><td>Plantation and Stilt house</td><td class="n">6</td></tr>
+        <tr><th scope="row">🌿 <a href="/wiki/cargo/hay">Hay</a></th><td>Round bales for the horses.</td><td>Farm field</td><td class="n">4</td></tr>
+        <tr><th scope="row">🐎 <a href="/wiki/cargo/horses">Horses</a></th><td>Boxed, haltered and entirely unimpressed by your gear changes.</td><td>Ranch and Stables…</td><td class="n">4</td></tr>
+        <tr><th scope="row">🧊 <a href="/wiki/cargo/ice">Ice</a></th><td>Crushed ice for the boxes. It will not wait long.</td><td>Cannery and Logistics depot…</td><td class="n">4</td></tr>
+        <tr><th scope="row">❄️ <a href="/wiki/cargo/ice-blocks">Ice Blocks</a></th><td>Sawn clear from the lake. Every minute costs you a corner of it.</td><td>Ice hotel and Research station</td><td class="n">4</td></tr>
+        <tr><th scope="row">🪨 <a href="/wiki/cargo/iron-ore">Iron Ore</a></th><td>Red rock for the blast furnace.</td><td>Mine and Quarry…</td><td class="n">8</td></tr>
+        <tr><th scope="row">🐄 <a href="/wiki/cargo/livestock">Livestock</a></th><td>A lowing load bound for new pasture or the ferry out.</td><td>Barn and Ranch…</td><td class="n">6</td></tr>
+        <tr><th scope="row">🪵 <a href="/wiki/cargo/rail-logs">Log Train</a></th><td>Logs off the siding deck, chained down for the mill.</td><td>Lumber siding</td><td class="n">12</td></tr>
+        <tr><th scope="row">🪚 <a href="/wiki/cargo/lumber">Lumber</a></th><td>Planks sawn and stacked, still smelling of pine.</td><td>Sawmill and Lumber yard</td><td class="n">5</td></tr>
+        <tr><th scope="row">🌾 <a href="/wiki/cargo/malt">Malt</a></th><td>Malted barley for the brewhouse.</td><td>Grain elevator and Silo</td><td class="n">8</td></tr>
+        <tr><th scope="row">🪨 <a href="/wiki/cargo/obsidian">Obsidian</a></th><td>Volcanic glass, sharp as anything. Pack it in straw.</td><td>Volcano</td><td class="n">5</td></tr>
+        <tr><th scope="row">⛏️ <a href="/wiki/cargo/ore">Ore</a></th><td>Skipped up the shaft and tipped into the bins.</td><td>Mine and Ore processing plant</td><td class="n">8</td></tr>
+        <tr><th scope="row">⛏️ <a href="/wiki/cargo/lh-ore">Ore Contract</a></th><td>A whole rake of ore for a smelter at the far end of the line.</td><td>Goods yard and Harbour depot</td><td class="n">24</td></tr>
+        <tr><th scope="row">🟫 <a href="/wiki/cargo/peat">Peat</a></th><td>Cut turves for the fire and the kiln.</td><td>Bothy and Croft</td><td class="n">5</td></tr>
+        <tr><th scope="row">🏗️ <a href="/wiki/cargo/panels">Precast Panels</a></th><td>Grey slabs with the shuttering marks still on them.</td><td>Factory and Quarry</td><td class="n">8</td></tr>
+        <tr><th scope="row">🪵 <a href="/wiki/cargo/pulpwood">Pulpwood</a></th><td>The thin stuff the sawmill will not take, for the digester.</td><td>Forest cabin and Logging camp…</td><td class="n">6</td></tr>
+        <tr><th scope="row">🍚 <a href="/wiki/cargo/rice">Rice</a></th><td>Threshed and sacked from the paddies.</td><td>Rice terraces</td><td class="n">5</td></tr>
+        <tr><th scope="row">🚧 <a href="/wiki/cargo/roadstone">Roadstone</a></th><td>Loose chippings for the works. Tip it, do not carry it.</td><td>Quarry and Recycling centre</td><td class="n">8</td></tr>
+        <tr><th scope="row">🧂 <a href="/wiki/cargo/salt">Salt</a></th><td>Raked off the pan and bagged in the sun.</td><td>Salt flat and Salt works</td><td class="n">5</td></tr>
+        <tr><th scope="row">♻️ <a href="/wiki/cargo/scrap">Scrap</a></th><td>Crushed cans and old radiators. Worth more than it looks.</td><td>Recycling centre and Garage…</td><td class="n">6</td></tr>
+        <tr><th scope="row">🪨 <a href="/wiki/cargo/stone">Stone</a></th><td>Crushed stone for the goods yard, where the next freight takes it on.</td><td>Quarry and Mine…</td><td class="n">8</td></tr>
+        <tr><th scope="row">🎋 <a href="/wiki/cargo/sugar">Sugar Cane</a></th><td>Cut cane for the mill and the rum.</td><td>Plantation house and Plantation…</td><td class="n">5</td></tr>
+        <tr><th scope="row">🟡 <a href="/wiki/cargo/sulphur">Sulphur</a></th><td>Yellow crust scraped off the fumaroles. It smells.</td><td>Volcano</td><td class="n">4</td></tr>
+        <tr><th scope="row">🛢️ <a href="/wiki/cargo/crude-in">Tanker Crude</a></th><td>Crude for the tank farm, to be stored until the price is right.</td><td>Major port and Oil rig…</td><td class="n">12</td></tr>
+        <tr><th scope="row">🪵 <a href="/wiki/cargo/timber">Timber</a></th><td>Logs felled up by the forest cabins.</td><td>Forest cabin</td><td class="n">6</td></tr>
+        <tr><th scope="row">🪨 <a href="/wiki/cargo/ballast">Track Ballast</a></th><td>Crushed stone for the track gang, a wagon per mile.</td><td>Ballast pit</td><td class="n">14</td></tr>
+        <tr><th scope="row">💧 <a href="/wiki/cargo/water">Water</a></th><td>Out here it is worth more than fuel.</td><td>Wind tower and Windpump</td><td class="n">5</td></tr>
+        <tr><th scope="row">🐑 <a href="/wiki/cargo/wool">Wool</a></th><td>Bales of fleece off the hill.</td><td>Croft and Herders’ camp…</td><td class="n">4</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <section id="container">
+    <h2>Containers (4)</h2>
+    <div class="scroll"><table class="wide">
+      <thead><tr><th scope="col">Load</th><th scope="col">What it is</th><th scope="col">From</th><th scope="col" class="n">Units</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">📦 <a href="/wiki/cargo/inland-box">Inland Container</a></th><td>A box between the inland port and the sea, no lorry in between.</td><td>Inland port and Major port…</td><td class="n">12</td></tr>
+        <tr><th scope="row">🚢 <a href="/wiki/cargo/rail-box">Rail Container</a></th><td>Swapped from ship to rail at the quay depot.</td><td>Harbour depot</td><td class="n">12</td></tr>
+        <tr><th scope="row">📦 <a href="/wiki/cargo/container">Shipping Container</a></th><td>A forty-footer for the port across the island.</td><td>Major port</td><td class="n">12</td></tr>
+        <tr><th scope="row">📦 <a href="/wiki/cargo/terminal-box">Terminal Container</a></th><td>Lifted off the stack by the gantry, for the last leg inland.</td><td>Container terminal and Major port</td><td class="n">12</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <footer><span>TinyFleet is a free online driving and logistics game, played in the browser.</span><a href="/play/">Play now</a><a href="/">Home</a><a href="/wiki">Guide</a><a href="/devlog">Devlog</a><a href="/press">Press kit</a></footer>
+</main>
+</body>
+</html>

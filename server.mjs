@@ -77507,6 +77507,7 @@ var TYPES = {
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".png": "image/png",
+  ".gif": "image/gif",
   ".jpg": "image/jpeg",
   ".svg": "image/svg+xml",
   ".ico": "image/x-icon",
@@ -77521,7 +77522,7 @@ var TYPES = {
   ".txt": "text/plain; charset=utf-8",
   ".xml": "application/xml; charset=utf-8"
 };
-var SITE_FILES = /^\/(index\.html|version\.json|favicon\.(svg|ico)|favicon-\d+\.png|apple-touch-icon\.png|robots\.txt|sitemap\.xml|llms\.txt|media\/[\w.-]+\.(mp4|webm|jpg|png)|downloads\/[\w.-]+\.zip)$/;
+var SITE_FILES = /^\/(index\.html|version\.json|favicon\.(svg|ico)|favicon-\d+\.png|apple-touch-icon\.png|robots\.txt|sitemap\.xml|llms\.txt|media\/[\w.-]+\.(mp4|webm|jpg|png|gif)|downloads\/[\w.-]+\.zip)$/;
 var ENCODINGS = [["br", ".br"], ["gzip", ".gz"]];
 function sendFile(req, res, file, head) {
   let size;
@@ -77683,8 +77684,8 @@ function http(req, res) {
     }
     if (!path3.startsWith("/play/")) {
       if (path3 === "/") path3 = "/index.html";
-      const landing = /^\/([a-z0-9-]+)(\/?)$/.exec(path3);
-      if (landing && existsSync2(join3(SITE, "pages", `${landing[1]}.html`))) {
+      const landing = /^\/((?:[a-z0-9][a-z0-9.-]*\/){0,2}[a-z0-9][a-z0-9.-]*)(\/?)$/.exec(path3);
+      if (landing && !landing[1].includes("..") && existsSync2(join3(SITE, "pages", `${landing[1]}.html`))) {
         if (landing[2]) {
           res.writeHead(308, { location: `/${landing[1]}` }).end();
           return;

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TinyFleet controls: every key</title>
+<meta name="description" content="The keyboard controls for TinyFleet: driving with WASD, nitrous and handbrake, loading cargo, the camera, and the keys for the map, headquarters and building.">
+<link rel="canonical" href="https://tinyfleet.online/wiki/controls">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="theme-color" content="#141b20">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TinyFleet">
+<meta property="og:title" content="TinyFleet controls: every key">
+<meta property="og:description" content="The keyboard controls for TinyFleet: driving with WASD, nitrous and handbrake, loading cargo, the camera, and the keys for the map, headquarters and building.">
+<meta property="og:url" content="https://tinyfleet.online/wiki/controls">
+<meta property="og:image" content="https://tinyfleet.online/media/shot-delivery-hud.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TinyFleet controls: every key">
+<meta name="twitter:description" content="The keyboard controls for TinyFleet: driving with WASD, nitrous and handbrake, loading cargo, the camera, and the keys for the map, headquarters and building.">
+<meta name="twitter:image" content="https://tinyfleet.online/media/shot-delivery-hud.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://tinyfleet.online/wiki/controls#page","url":"https://tinyfleet.online/wiki/controls","name":"TinyFleet controls: every key","description":"The keyboard controls for TinyFleet: driving with WASD, nitrous and handbrake, loading cargo, the camera, and the keys for the map, headquarters and building.","inLanguage":"en","dateModified":"2026-11-11","isPartOf":{"@id":"https://tinyfleet.online/#site"},"about":{"@id":"https://tinyfleet.online/#game"},"primaryImageOfPage":"https://tinyfleet.online/media/shot-delivery-hud.jpg"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TinyFleet","item":"https://tinyfleet.online/"},{"@type":"ListItem","position":2,"name":"Guide","item":"https://tinyfleet.online/wiki"},{"@type":"ListItem","position":3,"name":"Controls","item":"https://tinyfleet.online/wiki/controls"}]}]}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  :root { color-scheme: dark; --ground: #141b20; --panel: #1d262c; --panel-2: #243037; --line: #33414a; --ink: #e9efe8; --ink-2: #b7c2bb; --ink-3: #85938c;
+    --car: #f0604e; --car-2: #e2412f; --water: #4f9fcf; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35); }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; background: var(--ground); }
+  body { margin: 0; color: var(--ink); font: 16px/1.6 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; }
+  a { color: #ff8a7a; }
+  .top { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; justify-content: space-between; }
+  .top .brand { font-family: Fredoka, sans-serif; font-weight: 700; font-size: 26px; color: #fff; text-decoration: none; }
+  .top .brand span { color: #ff5a45; }
+  .top nav { font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .top nav a { color: var(--ink-2); text-decoration: none; }
+  .top nav a:hover, .top nav a[aria-current] { color: #fff; }
+  .top nav a.go { color: #ff8a7a; font-weight: 600; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 72px; }
+  .crumbs { font-size: 13.5px; color: var(--ink-3); margin: 8px 0 0; }
+  .crumbs a { color: var(--ink-2); }
+  h1 { font-family: Fredoka, sans-serif; font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.08; margin: 10px 0 0; text-wrap: balance; }
+  .lead { font-size: clamp(16.5px, 2vw, 18.5px); color: var(--ink-2); margin: 14px 0 0; max-width: 68ch; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); padding: 22px; margin-top: 16px; }
+  h2 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 23px; line-height: 1.2; margin: 0 0 12px; }
+  h3 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 18px; margin: 18px 0 8px; }
+  section p { margin: 0 0 12px; color: var(--ink-2); max-width: 72ch; }
+  section ul, section ol { margin: 0 0 12px; padding-left: 20px; color: var(--ink-2); max-width: 72ch; }
+  section li { margin-bottom: 6px; }
+  section > :last-child { margin-bottom: 0; }
+  section b { color: var(--ink); font-weight: 600; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+  thead th { font-family: Fredoka, sans-serif; font-weight: 600; color: var(--ink); white-space: nowrap; }
+  tbody th { color: var(--ink); font-weight: 600; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  thead th.n { text-align: right; }
+  table.facts th { width: 11em; white-space: nowrap; }
+  table.wide { min-width: 560px; }
+  .pic { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; background: #1b2a33; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+  .cardlink { display: block; text-decoration: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; color: var(--ink); }
+  .cardlink:hover { border-color: var(--ink-3); }
+  .cardlink img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: #1b2a33; }
+  .cardlink span { display: block; padding: 10px 14px 4px; font-weight: 600; }
+  .cardlink small { display: block; padding: 0 14px 12px; color: var(--ink-2); font-size: 13.5px; line-height: 1.45; }
+  .cardlink span:last-child { padding-bottom: 12px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+  .tags li { margin: 0; font-size: 13px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; color: var(--ink-2); }
+  kbd { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; color: var(--ink); white-space: nowrap; }
+  video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+  .media { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .media figure { margin: 0; }
+  .media img { display: block; width: 100%; height: auto; border-radius: 12px; background: #1b2a33; }
+  .media figcaption { font-size: 13.5px; color: var(--ink-2); margin-top: 6px; }
+  .logo-tile { background: #f4f2ec; border-radius: 12px; padding: 14px; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; padding: 11px 18px; border-radius: 12px; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn:hover { background: var(--panel-2); border-color: var(--ink-3); }
+  .play { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 19px; padding: 11px 22px; border-radius: 14px; background: var(--car); color: #fff; border: 1px solid var(--car-2); }
+  .play:hover { background: #f4705f; }
+  .post h2 { margin-top: 26px; } .post > h2:first-child, .post > p:first-child { margin-top: 0; }
+  .when { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; color: var(--ink-3); }
+  .posts { list-style: none; padding: 0; max-width: none; }
+  .posts li { padding: 14px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .posts li:last-child { border-bottom: 0; padding-bottom: 0; } .posts li:first-child { padding-top: 0; }
+  .posts a { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 19px; text-decoration: none; color: var(--ink); }
+  .posts a:hover { color: #ff8a7a; }
+  .posts p { margin: 4px 0 0; }
+  footer { margin-top: 18px; padding: 4px 6px; color: var(--ink-3); font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  footer a { color: var(--ink-2); }
+  @media (max-width: 760px) { section { padding: 18px 16px; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/">TinyFleet<span>.</span></a>
+  <nav aria-label="Site"><a href="/wiki" aria-current="page">Guide</a><a href="/devlog">Devlog</a><a href="/press">Press</a><a class="go" href="/play/">Play free</a></nav>
+</header>
+<main class="wrap">
+  <p class="crumbs"><a href="/">TinyFleet</a> › <a href="/wiki">Guide</a></p>
+  <h1>Controls</h1>
+  <p class="lead">TinyFleet is played with a keyboard and mouse. In the game, every control is on the sheet behind the keyboard button in the corner of the screen.</p>
+  <section>
+    <h2>Driving</h2>
+    <table class="facts"><tbody>
+      <tr><th scope="row"><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> or the arrow keys</th><td>Drive and steer</td></tr>
+      <tr><th scope="row"><kbd>Shift</kbd></th><td>Nitrous, once fitted</td></tr>
+      <tr><th scope="row">Hold <kbd>Space</kbd></th><td>Handbrake</td></tr>
+      <tr><th scope="row"><kbd>K</kbd></th><td>Horn, once bought at a Vehicle Shop</td></tr>
+      <tr><th scope="row"><kbd>N</kbd></th><td>Headlights off and on (a helicopter’s searchlight)</td></tr>
+    </tbody></table>
+  </section>
+  <section>
+    <h2>Cargo, the world and other vehicles</h2>
+    <table class="facts"><tbody>
+      <tr><th scope="row">Tap <kbd>Space</kbd> or click</th><td>Load cargo, or enter a shop or tavern</td></tr>
+      <tr><th scope="row"><kbd>Tab</kbd></th><td>Beside one of your own vehicles: take its wheel</td></tr>
+      <tr><th scope="row"><kbd>G</kbd></th><td>In a Dealer’s or Vehicle Shop’s striped ring: open its counter</td></tr>
+      <tr><th scope="row">Click a vehicle or building</th><td>Show its card</td></tr>
+    </tbody></table>
+  </section>
+  <section>
+    <h2>Camera</h2>
+    <table class="facts"><tbody>
+      <tr><th scope="row"><kbd>Q</kbd> <kbd>E</kbd> or right-drag</th><td>Orbit</td></tr>
+      <tr><th scope="row"><kbd>P</kbd></th><td>Pitch</td></tr>
+      <tr><th scope="row">Scroll wheel or <kbd>+</kbd> <kbd>−</kbd></th><td>Zoom in and out</td></tr>
+      <tr><th scope="row"><kbd>R</kbd></th><td>Lock the camera behind the car</td></tr>
+      <tr><th scope="row"><kbd>C</kbd></th><td>Photos and clips</td></tr>
+    </tbody></table>
+  </section>
+  <section>
+    <h2>Menus and tools</h2>
+    <table class="facts"><tbody>
+      <tr><th scope="row"><kbd>H</kbd></th><td>Headquarters</td></tr>
+      <tr><th scope="row"><kbd>F</kbd></th><td>Fleet</td></tr>
+      <tr><th scope="row"><kbd>J</kbd></th><td>Journal</td></tr>
+      <tr><th scope="row"><kbd>I</kbd></th><td>Standings</td></tr>
+      <tr><th scope="row"><kbd>O</kbd></th><td>Settings</td></tr>
+      <tr><th scope="row"><kbd>M</kbd></th><td>Island overview</td></tr>
+      <tr><th scope="row"><kbd>Y</kbd></th><td>Region map</td></tr>
+      <tr><th scope="row"><kbd>B</kbd></th><td>Build roads</td></tr>
+      <tr><th scope="row"><kbd>X</kbd></th><td>Bulldoze</td></tr>
+      <tr><th scope="row"><kbd>T</kbd></th><td>Terrain</td></tr>
+    </tbody></table>
+  </section>
+  <section>
+    <h2>Trains</h2>
+    <p><kbd>W</kbd> and <kbd>S</kbd> move the throttle, which stays where it is set: <kbd>S</kbd> goes through stop into reverse. <kbd>A</kbd> and <kbd>D</kbd> take the left or right branch at a turnout.</p>
+  </section>
+  <section>
+    <h2>Try them</h2>
+    <p>The first few deliveries teach the controls as you go.</p>
+    <p><a class="play" href="/play/">Play TinyFleet free</a></p>
+  </section>
+  <footer><span>TinyFleet is a free online driving and logistics game, played in the browser.</span><a href="/play/">Play now</a><a href="/">Home</a><a href="/wiki">Guide</a><a href="/devlog">Devlog</a><a href="/press">Press kit</a></footer>
+</main>
+</body>
+</html>

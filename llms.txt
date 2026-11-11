@@ -41,4 +41,8 @@ People looking for a free browser game with no download, a relaxed driving or tr
 - [Games like OpenTTD](https://tinyfleet.online/games-like-openttd): Looking for games like OpenTTD or Transport Tycoon? TinyFleet is a free browser transport game with road, rail, sea and air, rivals and one shared world.
 - [Games like Euro Truck Simulator](https://tinyfleet.online/games-like-euro-truck-simulator): Looking for games like Euro Truck Simulator? TinyFleet is a free browser trucking game: haul cargo between towns, hire drivers and grow a haulage company.
 - [How it works](https://tinyfleet.online/procedural-world-in-the-browser): How TinyFleet works: an endless procedural 3D world generated in the browser with TypeScript, three.js and WebGL, and a Node server for multiplayer.
+- [The guide](https://tinyfleet.online/wiki): every vehicle, kind of cargo, faction and town style, and the controls, from the game's own data
+- [Vehicles](https://tinyfleet.online/wiki/vehicles), [cargo](https://tinyfleet.online/wiki/cargo), [factions](https://tinyfleet.online/wiki/factions), [town styles](https://tinyfleet.online/wiki/town-styles), [controls](https://tinyfleet.online/wiki/controls)
+- [Devlog](https://tinyfleet.online/devlog): patch notes for every release
+- [Press kit](https://tinyfleet.online/press): fact sheet, trailers, screenshots, GIFs and logos
 - [Trailer (video, 66 seconds)](https://tinyfleet.online/media/trailer-best-of.mp4)

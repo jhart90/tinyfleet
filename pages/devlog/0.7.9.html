@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TinyFleet 0.7.9: Made by You (patch notes)</title>
+<meta name="description" content="TinyFleet 0.7.9 patch notes, 8 November 2026. Your buildings go to work. Own a mill and it mills; own the bakery down the road and your flour comes back as…">
+<link rel="canonical" href="https://tinyfleet.online/devlog/0.7.9">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="theme-color" content="#141b20">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="TinyFleet">
+<meta property="og:title" content="TinyFleet 0.7.9: Made by You (patch notes)">
+<meta property="og:description" content="TinyFleet 0.7.9 patch notes, 8 November 2026. Your buildings go to work. Own a mill and it mills; own the bakery down the road and your flour comes back as…">
+<meta property="og:url" content="https://tinyfleet.online/devlog/0.7.9">
+<meta property="og:image" content="https://tinyfleet.online/media/og-card-after-dark.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TinyFleet 0.7.9: Made by You (patch notes)">
+<meta name="twitter:description" content="TinyFleet 0.7.9 patch notes, 8 November 2026. Your buildings go to work. Own a mill and it mills; own the bakery down the road and your flour comes back as…">
+<meta name="twitter:image" content="https://tinyfleet.online/media/og-card-after-dark.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://tinyfleet.online/devlog/0.7.9#page","url":"https://tinyfleet.online/devlog/0.7.9","name":"TinyFleet 0.7.9: Made by You (patch notes)","description":"TinyFleet 0.7.9 patch notes, 8 November 2026. Your buildings go to work. Own a mill and it mills; own the bakery down the road and your flour comes back as…","inLanguage":"en","dateModified":"2026-11-08","isPartOf":{"@id":"https://tinyfleet.online/#site"},"about":{"@id":"https://tinyfleet.online/#game"},"primaryImageOfPage":"https://tinyfleet.online/media/og-card-after-dark.jpg"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TinyFleet","item":"https://tinyfleet.online/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://tinyfleet.online/devlog"},{"@type":"ListItem","position":3,"name":"TinyFleet 0.7.9: Made by You","item":"https://tinyfleet.online/devlog/0.7.9"}]},{"@type":"BlogPosting","headline":"TinyFleet 0.7.9: Made by You","datePublished":"2026-11-08","dateModified":"2026-11-08","url":"https://tinyfleet.online/devlog/0.7.9","description":"Your buildings go to work. Own a mill and it mills; own the bakery down the road and your flour comes back as bread. A new first drive teaches the keys while the world loads, and a batch of freezes are gone. As always, the world stays exactly as it is .","author":{"@type":"Organization","name":"TinyFleet","url":"https://tinyfleet.online/"},"publisher":{"@type":"Organization","name":"TinyFleet","url":"https://tinyfleet.online/"},"about":{"@id":"https://tinyfleet.online/#game"}}]}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  :root { color-scheme: dark; --ground: #141b20; --panel: #1d262c; --panel-2: #243037; --line: #33414a; --ink: #e9efe8; --ink-2: #b7c2bb; --ink-3: #85938c;
+    --car: #f0604e; --car-2: #e2412f; --water: #4f9fcf; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35); }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; background: var(--ground); }
+  body { margin: 0; color: var(--ink); font: 16px/1.6 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; }
+  a { color: #ff8a7a; }
+  .top { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; justify-content: space-between; }
+  .top .brand { font-family: Fredoka, sans-serif; font-weight: 700; font-size: 26px; color: #fff; text-decoration: none; }
+  .top .brand span { color: #ff5a45; }
+  .top nav { font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .top nav a { color: var(--ink-2); text-decoration: none; }
+  .top nav a:hover, .top nav a[aria-current] { color: #fff; }
+  .top nav a.go { color: #ff8a7a; font-weight: 600; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 72px; }
+  .crumbs { font-size: 13.5px; color: var(--ink-3); margin: 8px 0 0; }
+  .crumbs a { color: var(--ink-2); }
+  h1 { font-family: Fredoka, sans-serif; font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.08; margin: 10px 0 0; text-wrap: balance; }
+  .lead { font-size: clamp(16.5px, 2vw, 18.5px); color: var(--ink-2); margin: 14px 0 0; max-width: 68ch; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); padding: 22px; margin-top: 16px; }
+  h2 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 23px; line-height: 1.2; margin: 0 0 12px; }
+  h3 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 18px; margin: 18px 0 8px; }
+  section p { margin: 0 0 12px; color: var(--ink-2); max-width: 72ch; }
+  section ul, section ol { margin: 0 0 12px; padding-left: 20px; color: var(--ink-2); max-width: 72ch; }
+  section li { margin-bottom: 6px; }
+  section > :last-child { margin-bottom: 0; }
+  section b { color: var(--ink); font-weight: 600; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+  thead th { font-family: Fredoka, sans-serif; font-weight: 600; color: var(--ink); white-space: nowrap; }
+  tbody th { color: var(--ink); font-weight: 600; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  thead th.n { text-align: right; }
+  table.facts th { width: 11em; white-space: nowrap; }
+  table.wide { min-width: 560px; }
+  .pic { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; background: #1b2a33; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+  .cardlink { display: block; text-decoration: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; color: var(--ink); }
+  .cardlink:hover { border-color: var(--ink-3); }
+  .cardlink img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: #1b2a33; }
+  .cardlink span { display: block; padding: 10px 14px 4px; font-weight: 600; }
+  .cardlink small { display: block; padding: 0 14px 12px; color: var(--ink-2); font-size: 13.5px; line-height: 1.45; }
+  .cardlink span:last-child { padding-bottom: 12px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+  .tags li { margin: 0; font-size: 13px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; color: var(--ink-2); }
+  kbd { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; color: var(--ink); white-space: nowrap; }
+  video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+  .media { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .media figure { margin: 0; }
+  .media img { display: block; width: 100%; height: auto; border-radius: 12px; background: #1b2a33; }
+  .media figcaption { font-size: 13.5px; color: var(--ink-2); margin-top: 6px; }
+  .logo-tile { background: #f4f2ec; border-radius: 12px; padding: 14px; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; padding: 11px 18px; border-radius: 12px; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn:hover { background: var(--panel-2); border-color: var(--ink-3); }
+  .play { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 19px; padding: 11px 22px; border-radius: 14px; background: var(--car); color: #fff; border: 1px solid var(--car-2); }
+  .play:hover { background: #f4705f; }
+  .post h2 { margin-top: 26px; } .post > h2:first-child, .post > p:first-child { margin-top: 0; }
+  .when { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; color: var(--ink-3); }
+  .posts { list-style: none; padding: 0; max-width: none; }
+  .posts li { padding: 14px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .posts li:last-child { border-bottom: 0; padding-bottom: 0; } .posts li:first-child { padding-top: 0; }
+  .posts a { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 19px; text-decoration: none; color: var(--ink); }
+  .posts a:hover { color: #ff8a7a; }
+  .posts p { margin: 4px 0 0; }
+  footer { margin-top: 18px; padding: 4px 6px; color: var(--ink-3); font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  footer a { color: var(--ink-2); }
+  @media (max-width: 760px) { section { padding: 18px 16px; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/">TinyFleet<span>.</span></a>
+  <nav aria-label="Site"><a href="/wiki">Guide</a><a href="/devlog" aria-current="page">Devlog</a><a href="/press">Press</a><a class="go" href="/play/">Play free</a></nav>
+</header>
+<main class="wrap">
+  <p class="crumbs"><a href="/">TinyFleet</a> › <a href="/devlog">Devlog</a></p>
+  <h1>TinyFleet 0.7.9: Made by You</h1>
+  <p class="lead"><span class="when">Version 0.7.9 · 8 November 2026</span></p>
+  <section class="post">
+<p>Your buildings go to work. Own a mill and it mills; own the bakery down the road and your flour comes back as bread. A new first drive teaches the keys while the world loads, and a batch of freezes are gone. As always, <b>the world stays exactly as it is</b>.</p>
+
+<h2>🏭 Supply chains</h2>
+<ul>
+  <li><b>Owned buildings make goods.</b> Every mill, dairy, sawmill, paper mill, bakery, steelworks and nearly a hundred kinds in all now has a recipe: deliver its inputs to the door and a run starts on the clock; a base plant (a dairy, a quarry, a cabin) simply makes on its own. The made load waits at the kerb, in your fleet's colour, for your drivers first; leave it a while and the island's haulers take it and you still get the maker's fee.</li>
+  <li><b>Chains.</b> Twenty-five of them, two or three steps each: timber to lumber to furniture, pulpwood to paper to books, milk and ice to ice cream, crude to fuel, scrap to steel to new cars. A good made from your own goods is worth more at every step (up to +60% with three steps of pedigree behind it), and the dearest made goods pass $3,000 a load.</li>
+  <li><b>Routes.</b> A vehicle card's <b>Set a route</b> lets you right-click a line or loop of your doors; the driver runs it, carrying what each stop has for the next.</li>
+  <li><b>Fetch.</b> Each bin on a plant's card has a Fetch button: the nearest free driver that can carry it goes looking for that kind of load and brings it in, working normally in between.</li>
+  <li><b>Vehicles with a trade.</b> The Mule is a horsebox (+20% on horses and livestock), the Bramble carries plantation goods, the Zippy is a despatch rider (+30%), Big Bertha a flatbed for timber, steel and panels, the Stomper hauls whisky, the Sundae keeps ice cream cold and pays +30% on it, and the Clod pays on farm goods. No chain involves the jets.</li>
+  <li><b>Loads with a job.</b> Building sites take ready-mix, panels and asphalt and pay a tenth of the building when yours tops it out. Fireworks pay more to a show that's on. A launch pad fed telemetry sends a rocket up. The Dozer's knock-downs leave rubble for the crusher. Glass, fireworks, a racehorse and instruments are fragile: a hard knock takes a tenth off.</li>
+  <li>Plants show a bar in the world and on their deed card; the HQ Estate pane has a chains strip, a Plants filter and a Next load sort; a town's Buildings tab gets an Industry section. Five new deeds: Production Line, Made by You, Cone Zone, Lap of Honour and Vertical. The paper writes up a plant's 50th, 250th and 1,000th load.</li>
+  <li>A few chains have nowhere to stand yet (a bindery, a creamery, a winery…): those buildings arrive with the new world in 0.8.0.</li>
+</ul>
+
+<h2>🛣️ The first road</h2>
+<ul>
+  <li>A new player's loading screen is now a lit road in the dark. While the world is made you learn W, take a bend with A and D, stop for a sign with S, then try the camera keys, so you arrive knowing how to drive.</li>
+  <li>The welcome card docks at the side with the keys in view and the car free to drive. It no longer closes when you press W.</li>
+  <li>Helping Hand comes a little later, the handbrake lesson waits for a level 2 HQ, and Put her to Work is shown by a click guide.</li>
+</ul>
+
+<h2>⚡ Fewer freezes</h2>
+<ul>
+  <li>Opening the garage, the Tech window or the HQ's Fleet tab no longer stalls for seconds while the vehicle pictures are drawn: they fill in as you watch, and are kept for next time.</li>
+  <li>A click in the road or rail builder no longer plans the whole county in one go: it searches a little each frame toward where you point.</li>
+  <li>More shaders and the biggest buildings are warmed up under the loading screen, and the game makes about a quarter less garbage as you play, so there is less for the browser to sweep up mid-drive.</li>
+</ul>
+
+<h2>🔧 Smaller changes</h2>
+<ul>
+  <li>A train can change ends while it is stopped.</li>
+  <li>The HQ's Diamonds columns show three rows each and scroll when opened, leaving the tree more room; a vehicle's Mode comes before its cut.</li>
+  <li>The Tribune never carries two near-identical stories, and its bylines get two lines.</li>
+  <li>Cut hillsides are lit by the day: they no longer glow at night or show a field of pale dots. The tow card no longer flashes white in dark mode.</li>
+</ul>
+
+<p>Thanks for playing, and for the reports that led to these fixes (the pause menu's Feedback button comes straight to me). See you on the road! 🚗</p>
+  </section>
+  <section>
+    <h2>More releases</h2>
+    <p>Newer: <a href="/devlog/0.8.0">TinyFleet 0.8.0: Coast to Coast</a> · Older: <a href="/devlog/0.7.8">TinyFleet 0.7.8: Sworn In</a> · <a href="/devlog">All releases</a></p>
+    <p><a class="play" href="/play/">Play TinyFleet free</a></p>
+  </section>
+  <footer><span>TinyFleet is a free online driving and logistics game, played in the browser.</span><a href="/play/">Play now</a><a href="/">Home</a><a href="/wiki">Guide</a><a href="/devlog">Devlog</a><a href="/press">Press kit</a></footer>
+</main>
+</body>
+</html>
