@@ -1,0 +1,25 @@
+# TinyFleet: a free multiplayer driving and delivery game, played in the browser.
+# Everyone is welcome to read the site, search engines and AI assistants alike.
+
+User-agent: *
+User-agent: Googlebot
+User-agent: Bingbot
+User-agent: Google-Extended
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Applebot
+User-agent: Applebot-Extended
+User-agent: DuckDuckBot
+User-agent: CCBot
+Allow: /
+Disallow: /api/
+Disallow: /join/
+Disallow: /downloads/
+
+Sitemap: https://tinyfleet.online/sitemap.xml

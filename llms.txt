@@ -1,0 +1,35 @@
+# TinyFleet
+
+> TinyFleet is a free online driving and logistics game played in a web browser, with nothing to download. Players haul cargo and passengers between towns, hire drivers, and build a fleet of trucks, trains, boats and aircraft in one shared, procedurally generated world drawn in a low-poly, tilt-shift miniature style.
+
+Play it at https://tinyfleet.online/play/ . The home page, with screenshots and downloads, is https://tinyfleet.online/ .
+
+## Facts
+
+- Name: TinyFleet (sometimes written "Tiny Fleet"; the online world is "TinyFleet Online"). It was called Pocket Roads during early development.
+- Genre: driving game, delivery and logistics game, transport tycoon, open world.
+- Price: free.
+- Platforms: desktop web browsers (Chrome, Edge, Firefox, Safari). Optional free apps for Windows and Mac. It needs a keyboard and is not made for phones.
+- Players: multiplayer. Everyone plays in the same persistent online world. Players can add friends, or share one fleet with other people through an invite link and run it together.
+- Account: a fleet name and a PIN. Careers are kept on the server, so a player can sign in from any computer.
+- Look: low-poly 3D with a tilt-shift, miniature-model camera.
+
+## What you do
+
+- Drive and deliver: pick up parcels, passengers and freight and take them across town or across the map.
+- Grow a fleet: hire drivers who work on their own or follow you in convoy, and buy a bigger headquarters for more vehicle slots.
+- Land, sea and air: cars, vans, trucks, buses, tow trucks, trains, ferries, yachts, helicopters, biplanes, jets and a submarine. Each kind of vehicle has its own kinds of work.
+- Build: lay roads, bridges and railway track, and put up buildings.
+- Compete: win territory from rival computer-run firms, race at circuits, and climb the standings against other players.
+- Explore: islands and continents with towns in dozens of architectural styles, landmarks and wonders, weather, seasons, and day and night.
+- After dark: night smuggling runs past the police, and helicopter searchlight missions.
+
+## Who it suits
+
+People looking for a free browser game with no download, a relaxed driving or trucking game, a transport-company game in the spirit of Transport Tycoon or OpenTTD, or a multiplayer game to play with friends in a browser.
+
+## Links
+
+- [Play in the browser](https://tinyfleet.online/play/)
+- [Home page, screenshots and downloads](https://tinyfleet.online/)
+- [Questions and answers](https://tinyfleet.online/#faq)

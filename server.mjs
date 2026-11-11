@@ -77518,9 +77518,10 @@ var TYPES = {
   ".webm": "video/webm",
   ".mp4": "video/mp4",
   ".wasm": "application/wasm",
-  ".txt": "text/plain; charset=utf-8"
+  ".txt": "text/plain; charset=utf-8",
+  ".xml": "application/xml; charset=utf-8"
 };
-var SITE_FILES = /^\/(index\.html|version\.json|favicon\.svg|media\/[\w.-]+\.(mp4|webm|jpg|png)|downloads\/[\w.-]+\.zip)$/;
+var SITE_FILES = /^\/(index\.html|version\.json|favicon\.svg|robots\.txt|sitemap\.xml|llms\.txt|media\/[\w.-]+\.(mp4|webm|jpg|png)|downloads\/[\w.-]+\.zip)$/;
 var ENCODINGS = [["br", ".br"], ["gzip", ".gz"]];
 function sendFile(req, res, file, head) {
   let size;
