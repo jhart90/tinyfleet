@@ -8,7 +8,9 @@
 <link rel="canonical" href="https://tinyfleet.online/">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 <meta name="theme-color" content="#141b20">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <!-- link previews (Reddit, Discord, X…): the card is site/media/og-card-after-dark.jpg -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="TinyFleet">
@@ -259,6 +261,10 @@
   .shots figure { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
   .shots img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
   .shots figcaption { padding: 10px 14px 12px; color: var(--ink-2); font-size: 14px; }
+  .trailer video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+  .more { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .more a { display: block; text-decoration: none; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; color: var(--ink); font-weight: 600; font-size: 15px; }
+  .more a:hover { border-color: var(--ink-3); }
   .faq details { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; margin-bottom: 10px; }
   .faq details:last-child { margin-bottom: 0; }
   .faq summary { cursor: pointer; padding: 14px 0; font-weight: 600; font-size: 15.5px; }
@@ -357,6 +363,27 @@
       <figure><img src="media/shot-airport.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="An airport with a runway, hangars and parked planes among green fields"><figcaption>Airports, for the planes and jets you buy later.</figcaption></figure>
     </div>
   </section>
+
+  <!-- landing:start (written by scripts/landing.mjs) -->
+  <section class="about glass" id="trailer">
+    <h2>Watch the trailer</h2>
+    <div class="trailer"><video controls preload="none" playsinline poster="media/trailer-best-of.jpg" aria-label="TinyFleet trailer"><source src="media/trailer-best-of.mp4" type="video/mp4"></video></div>
+  </section>
+
+  <section class="about glass" id="more">
+    <h2>More about TinyFleet</h2>
+    <div class="more">
+      <a href="free-browser-game">Free browser game</a>
+      <a href="multiplayer-browser-game">Multiplayer and co-op</a>
+      <a href="transport-tycoon-game">Transport tycoon</a>
+      <a href="cozy-exploration-game">A cozy world to explore</a>
+      <a href="train-game">Trains and track building</a>
+      <a href="games-like-openttd">Games like OpenTTD</a>
+      <a href="games-like-euro-truck-simulator">Games like Euro Truck Simulator</a>
+      <a href="procedural-world-in-the-browser">How it works</a>
+    </div>
+  </section>
+  <!-- landing:end -->
 
   <section class="about glass faq" id="faq">
     <h2>Questions and answers</h2>

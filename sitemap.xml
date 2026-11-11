@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
   <url>
     <loc>https://tinyfleet.online/</loc>
     <lastmod>2026-11-11</lastmod>
@@ -10,9 +10,86 @@
     <image:image><image:loc>https://tinyfleet.online/media/shot-boats-dusk.jpg</image:loc></image:image>
     <image:image><image:loc>https://tinyfleet.online/media/shot-town-winter.jpg</image:loc></image:image>
     <image:image><image:loc>https://tinyfleet.online/media/shot-airport.jpg</image:loc></image:image>
+    <video:video><video:thumbnail_loc>https://tinyfleet.online/media/trailer-best-of.jpg</video:thumbnail_loc><video:title>TinyFleet trailer</video:title><video:description>One car, then a fleet, then trains, aircraft and a world that never ends: the TinyFleet trailer.</video:description><video:content_loc>https://tinyfleet.online/media/trailer-best-of.mp4</video:content_loc><video:duration>66</video:duration><video:publication_date>2026-11-11T00:00:00+00:00</video:publication_date><video:family_friendly>yes</video:family_friendly></video:video>
   </url>
   <url>
     <loc>https://tinyfleet.online/play/</loc>
     <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
+    <loc>https://tinyfleet.online/free-browser-game</loc>
+    <lastmod>2026-11-11</lastmod>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-delivery-hud.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-convoy-autumn.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-city-night.jpg</image:loc></image:image>
+    <video:video><video:thumbnail_loc>https://tinyfleet.online/media/trailer-best-of.jpg</video:thumbnail_loc><video:title>TinyFleet trailer</video:title><video:description>One car, then a fleet, then trains, aircraft and a world that never ends: the TinyFleet trailer.</video:description><video:content_loc>https://tinyfleet.online/media/trailer-best-of.mp4</video:content_loc><video:duration>66</video:duration><video:publication_date>2026-11-11T00:00:00+00:00</video:publication_date><video:family_friendly>yes</video:family_friendly></video:video>
+  </url>
+  <url>
+    <loc>https://tinyfleet.online/multiplayer-browser-game</loc>
+    <lastmod>2026-11-11</lastmod>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-standings.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-fleet-board.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-convoy-bridge.jpg</image:loc></image:image>
+    <video:video><video:thumbnail_loc>https://tinyfleet.online/media/trailer-empire.jpg</video:thumbnail_loc><video:title>TinyFleet trailer: the company</video:title><video:description>From one van to a transport company: vehicles, drivers, a headquarters, rival firms and one shared world.</video:description><video:content_loc>https://tinyfleet.online/media/trailer-empire.mp4</video:content_loc><video:duration>66</video:duration><video:publication_date>2026-11-11T00:00:00+00:00</video:publication_date><video:family_friendly>yes</video:family_friendly></video:video>
+  </url>
+  <url>
+    <loc>https://tinyfleet.online/transport-tycoon-game</loc>
+    <lastmod>2026-11-11</lastmod>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-hq-books.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-hq-home.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-megacity-drive.jpg</image:loc></image:image>
+    <video:video><video:thumbnail_loc>https://tinyfleet.online/media/trailer-empire.jpg</video:thumbnail_loc><video:title>TinyFleet trailer: the company</video:title><video:description>From one van to a transport company: vehicles, drivers, a headquarters, rival firms and one shared world.</video:description><video:content_loc>https://tinyfleet.online/media/trailer-empire.mp4</video:content_loc><video:duration>66</video:duration><video:publication_date>2026-11-11T00:00:00+00:00</video:publication_date><video:family_friendly>yes</video:family_friendly></video:video>
+  </url>
+  <url>
+    <loc>https://tinyfleet.online/cozy-exploration-game</loc>
+    <lastmod>2026-11-11</lastmod>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-paris.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-falls.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-amsterdam.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-tokyo.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-ski.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-castle.jpg</image:loc></image:image>
+    <video:video><video:thumbnail_loc>https://tinyfleet.online/media/trailer-wander.jpg</video:thumbnail_loc><video:title>TinyFleet trailer: the world</video:title><video:description>A slow drive through a tilt-shift world that never ends: towns in twenty styles, waterfalls, seasons and weather.</video:description><video:content_loc>https://tinyfleet.online/media/trailer-wander.mp4</video:content_loc><video:duration>63</video:duration><video:publication_date>2026-11-11T00:00:00+00:00</video:publication_date><video:family_friendly>yes</video:family_friendly></video:video>
+  </url>
+  <url>
+    <loc>https://tinyfleet.online/train-game</loc>
+    <lastmod>2026-11-11</lastmod>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-train-viaduct.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-train-spiral.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-train-junction.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-train-snow.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-train-freight.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-train-town.jpg</image:loc></image:image>
+    <video:video><video:thumbnail_loc>https://tinyfleet.online/media/trailer-trains.jpg</video:thumbnail_loc><video:title>TinyFleet trailer: trains</video:title><video:description>Steam, diesel and express trains on viaducts, bridges and mountain lines, on track you can lay yourself.</video:description><video:content_loc>https://tinyfleet.online/media/trailer-trains.mp4</video:content_loc><video:duration>68</video:duration><video:publication_date>2026-11-11T00:00:00+00:00</video:publication_date><video:family_friendly>yes</video:family_friendly></video:video>
+  </url>
+  <url>
+    <loc>https://tinyfleet.online/games-like-openttd</loc>
+    <lastmod>2026-11-11</lastmod>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-train-freight.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-airport.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-boats-dusk.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-hq-books.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-islands.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-convoy-bridge.jpg</image:loc></image:image>
+    <video:video><video:thumbnail_loc>https://tinyfleet.online/media/trailer-trains.jpg</video:thumbnail_loc><video:title>TinyFleet trailer: trains</video:title><video:description>Steam, diesel and express trains on viaducts, bridges and mountain lines, on track you can lay yourself.</video:description><video:content_loc>https://tinyfleet.online/media/trailer-trains.mp4</video:content_loc><video:duration>68</video:duration><video:publication_date>2026-11-11T00:00:00+00:00</video:publication_date><video:family_friendly>yes</video:family_friendly></video:video>
+  </url>
+  <url>
+    <loc>https://tinyfleet.online/games-like-euro-truck-simulator</loc>
+    <lastmod>2026-11-11</lastmod>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-megacity-drive.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-convoy-autumn.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-vegas.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-fleet-board.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-convoy-bridge.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-race-meeting.jpg</image:loc></image:image>
+    <video:video><video:thumbnail_loc>https://tinyfleet.online/media/trailer-cars.jpg</video:thumbnail_loc><video:title>TinyFleet trailer: cars and trucks</video:title><video:description>Cars, trucks and convoys on the roads of TinyFleet, from main streets to canyon highways and neon cities.</video:description><video:content_loc>https://tinyfleet.online/media/trailer-cars.mp4</video:content_loc><video:duration>64</video:duration><video:publication_date>2026-11-11T00:00:00+00:00</video:publication_date><video:family_friendly>yes</video:family_friendly></video:video>
+  </url>
+  <url>
+    <loc>https://tinyfleet.online/procedural-world-in-the-browser</loc>
+    <lastmod>2026-11-11</lastmod>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-islands.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-city-night.jpg</image:loc></image:image>
+    <image:image><image:loc>https://tinyfleet.online/media/shot-jumbo-city.jpg</image:loc></image:image>
+    <video:video><video:thumbnail_loc>https://tinyfleet.online/media/trailer-planes.jpg</video:thumbnail_loc><video:title>TinyFleet trailer: aircraft</video:title><video:description>Balloons, biplanes, helicopters and jets over the islands and cities of TinyFleet.</video:description><video:content_loc>https://tinyfleet.online/media/trailer-planes.mp4</video:content_loc><video:duration>70</video:duration><video:publication_date>2026-11-11T00:00:00+00:00</video:publication_date><video:family_friendly>yes</video:family_friendly></video:video>
   </url>
 </urlset>

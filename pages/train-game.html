@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Train game: lay track and drive trains online | TinyFleet</title>
+<meta name="description" content="A free train game in your browser. Lay your own track, build stations and junctions, drive steam, diesel and express trains, and run a railway online.">
+<link rel="canonical" href="https://tinyfleet.online/train-game">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="theme-color" content="#141b20">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TinyFleet">
+<meta property="og:title" content="Train game: lay track and drive trains online | TinyFleet">
+<meta property="og:description" content="A free train game in your browser. Lay your own track, build stations and junctions, drive steam, diesel and express trains, and run a railway online.">
+<meta property="og:url" content="https://tinyfleet.online/train-game">
+<meta property="og:image" content="https://tinyfleet.online/media/shot-train-viaduct.jpg">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="720">
+<meta property="og:image:alt" content="A steam train crossing a long viaduct over the sea">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Train game: lay track and drive trains online | TinyFleet">
+<meta name="twitter:description" content="A free train game in your browser. Lay your own track, build stations and junctions, drive steam, diesel and express trains, and run a railway online.">
+<meta name="twitter:image" content="https://tinyfleet.online/media/shot-train-viaduct.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://tinyfleet.online/train-game#page","url":"https://tinyfleet.online/train-game","name":"Train game: lay track and drive trains online | TinyFleet","description":"A free train game in your browser. Lay your own track, build stations and junctions, drive steam, diesel and express trains, and run a railway online.","inLanguage":"en","dateModified":"2026-11-11","isPartOf":{"@id":"https://tinyfleet.online/#site"},"about":{"@id":"https://tinyfleet.online/#game"},"primaryImageOfPage":"https://tinyfleet.online/media/shot-train-viaduct.jpg"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TinyFleet","item":"https://tinyfleet.online/"},{"@type":"ListItem","position":2,"name":"Trains and track building","item":"https://tinyfleet.online/train-game"}]},{"@type":"VideoGame","@id":"https://tinyfleet.online/#game","name":"TinyFleet","url":"https://tinyfleet.online/","description":"A free train game in your browser. Lay your own track, build stations and junctions, drive steam, diesel and express trains, and run a railway online.","gamePlatform":["Web browser","Windows","macOS"],"applicationCategory":"Game","playMode":["MultiPlayer","CoOp"],"isAccessibleForFree":true,"image":["https://tinyfleet.online/media/shot-train-viaduct.jpg","https://tinyfleet.online/media/shot-train-spiral.jpg","https://tinyfleet.online/media/shot-train-junction.jpg","https://tinyfleet.online/media/shot-train-snow.jpg","https://tinyfleet.online/media/shot-train-freight.jpg","https://tinyfleet.online/media/shot-train-town.jpg"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock","url":"https://tinyfleet.online/play/"}},{"@type":"VideoObject","name":"TinyFleet trailer: trains","description":"Steam, diesel and express trains on viaducts, bridges and mountain lines, on track you can lay yourself.","thumbnailUrl":"https://tinyfleet.online/media/trailer-trains.jpg","contentUrl":"https://tinyfleet.online/media/trailer-trains.mp4","uploadDate":"2026-11-11T00:00:00Z","duration":"PT1M8S"},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Can I build my own railway?","acceptedAnswer":{"@type":"Answer","text":"Yes. You can lay track, junctions, parallel lines and raised sections, and build six kinds of station."}},{"@type":"Question","name":"Can I drive the trains?","acceptedAnswer":{"@type":"Answer","text":"Yes. You drive any train in your fleet yourself, or hire a driver to work the line for you."}},{"@type":"Question","name":"Do I have to place signals?","acceptedAnswer":{"@type":"Answer","text":"No. A dispatcher holds trains for each other at junctions and on single track."}},{"@type":"Question","name":"What kinds of train are there?","acceptedAnswer":{"@type":"Answer","text":"Seven locomotives: steam tank engines, freight diesels, a streamliner, a high-speed express, a long-haul heavy and a mountain cog railway."}},{"@type":"Question","name":"Is it multiplayer?","acceptedAnswer":{"@type":"Answer","text":"Yes. It is one shared online world, and other players’ trains run on the same network."}},{"@type":"Question","name":"Is it free?","acceptedAnswer":{"@type":"Answer","text":"Yes, in your browser, with nothing to download."}}]}]}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root { color-scheme: dark; --ground: #141b20; --panel: #1d262c; --panel-2: #243037; --line: #33414a; --ink: #e9efe8; --ink-2: #b7c2bb; --ink-3: #85938c;
+    --car: #f0604e; --car-2: #e2412f; --water: #4f9fcf; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35); }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; background: var(--ground); }
+  body { margin: 0; color: var(--ink); font: 16px/1.6 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; }
+  a { color: #ff8a7a; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 72px; }
+  .top { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; justify-content: space-between; position: relative; z-index: 2; }
+  .top .brand { font-family: Fredoka, sans-serif; font-weight: 700; font-size: 26px; color: #fff; text-decoration: none; }
+  .top .brand span { color: #ff5a45; }
+  .top nav { font-size: 13.5px; color: rgba(255,255,255,.75); }
+  .top nav a { color: rgba(255,255,255,.92); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.4); }
+  .hero { position: relative; isolation: isolate; margin-top: -62px; padding-top: 62px; }
+  .hero::before { content: ''; position: absolute; inset: 0; z-index: -2; background: #1b2a33 var(--poster) center / cover no-repeat; }
+  .hero::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(10,16,22,.72) 0%, rgba(10,16,22,.6) 55%, var(--ground) 100%); }
+  .hero-in { max-width: 980px; margin: 0 auto; padding: 48px 16px 64px; }
+  h1 { font-family: Fredoka, sans-serif; font-weight: 700; font-size: clamp(32px, 5.4vw, 54px); line-height: 1.05; margin: 0; max-width: 20ch; text-wrap: balance; text-shadow: 0 2px 18px rgba(0,0,0,.35); }
+  .lead { font-size: clamp(16.5px, 2vw, 19px); color: rgba(255,255,255,.92); margin: 18px 0 0; max-width: 62ch; }
+  .play { display: inline-flex; align-items: center; gap: 12px; margin-top: 26px; text-decoration: none; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 22px;
+    padding: 14px 28px 14px 22px; border-radius: 16px; background: var(--car); color: #fff; border: 1px solid var(--car-2); box-shadow: 0 10px 28px rgba(226,65,47,.42), inset 0 1px 0 rgba(255,255,255,.22); transition: transform .12s ease, background .12s ease; }
+  .play:hover { background: #f4705f; transform: translateY(-2px); }
+  .play:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .play svg { width: 20px; height: 20px; flex: none; }
+  .note { margin: 10px 0 0; font-size: 14px; color: rgba(255,255,255,.8); }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); padding: 22px; margin-top: 16px; }
+  h2 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 24px; line-height: 1.2; margin: 0 0 12px; }
+  section p { margin: 0 0 12px; color: var(--ink-2); max-width: 72ch; }
+  section p:last-child, section ul:last-child { margin-bottom: 0; }
+  section ul { margin: 0 0 12px; padding-left: 20px; color: var(--ink-2); max-width: 72ch; }
+  section li { margin-bottom: 8px; }
+  section b { color: var(--ink); font-weight: 600; }
+  p.small { font-size: 13px; color: var(--ink-3); }
+  .film video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+  .film p { margin: 10px 0 0; font-size: 14px; }
+  .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+  .shots figure { margin: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .shots img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+  .shots figcaption { padding: 10px 14px 12px; color: var(--ink-2); font-size: 14px; }
+  .scroll { overflow-x: auto; margin: 0 0 12px; }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+  thead th { font-family: Fredoka, sans-serif; font-weight: 600; color: var(--ink); font-size: 15.5px; }
+  tbody th { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  details { background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; margin-bottom: 10px; }
+  details:last-child { margin-bottom: 0; }
+  summary { cursor: pointer; padding: 14px 0; font-weight: 600; font-size: 15.5px; }
+  summary:focus-visible { outline: 3px solid var(--water); outline-offset: 2px; border-radius: 6px; }
+  details p { margin: 0 0 14px; font-size: 14.5px; }
+  .cta { text-align: center; }
+  .cta .play { margin-top: 6px; }
+  .more { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .more a { display: block; text-decoration: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; color: var(--ink); font-weight: 600; font-size: 15px; }
+  .more a:hover { border-color: var(--ink-3); }
+  footer { margin-top: 16px; padding: 4px 6px; color: var(--ink-3); font-size: 13.5px; }
+  footer a { color: var(--ink-2); }
+  @media (max-width: 760px) { .play { width: 100%; justify-content: center; } section { padding: 18px 16px; } .hero-in { padding: 32px 16px 48px; } }
+  @media (prefers-reduced-motion: reduce) { .play, .play:hover { transition: none; transform: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/">TinyFleet<span>.</span></a>
+  <nav aria-label="Breadcrumb"><a href="/">TinyFleet</a> › Trains and track building</nav>
+</header>
+<div class="hero" style="--poster: url('/media/shot-train-viaduct.jpg')">
+  <div class="hero-in">
+    <h1>A train game where you lay the track and drive the trains</h1>
+    <p class="lead">Take the controls of a steam engine on a sea viaduct, a freight diesel through the snow or an express across open country. Carry freight and passengers from station to station, and put the money back into the railway: more track, more stations, more trains.</p>
+    <a class="play" href="/play/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Play Now</a>
+    <p class="note">Free, in your browser. Nothing to download or install.</p>
+  </div>
+</div>
+<main class="wrap">
+  <section class="film">
+    <h2>Watch the trailer</h2>
+    <video controls preload="none" playsinline poster="/media/trailer-trains.jpg" aria-label="TinyFleet trailer: trains"><source src="/media/trailer-trains.mp4" type="video/mp4"></video>
+    <p>Steam, diesel and express trains on viaducts, bridges and mountain lines, on track you can lay yourself.</p>
+  </section>
+  <section>
+    <h2>Your railway</h2>
+    <ul>
+      <li><b>Lay your own track.</b> Draw lines the way you draw roads: junctions, parallel track, raised sections on viaducts, and six kinds of station, from a country halt to a city terminus.</li>
+      <li><b>Seven locomotives.</b> Steam tank engines, freight diesels, a silver streamliner, a high-speed express, a long-haul heavy and a mountain cog railway.</li>
+      <li><b>Drive them yourself.</b> Bring the train into the platform, load, and take it down the line.</li>
+      <li><b>Hire drivers for every line.</b> Give a train its stops and it works the line while you drive something else.</li>
+      <li><b>Station-to-station freight.</b> Loads tell you how many stops ahead they are going, and the route follows the rails.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>A working network</h2>
+    <p>The world already has railways when you arrive: main lines between the cities, branch lines up the valleys, level crossings where the gates come down for you. Your trains share that track with everyone else’s, and the dispatcher holds trains for each other at junctions and single-track sections, so there is no signalling to wire up.</p>
+    <p>Some towns run their own commuter railways in their own colours. In winter, look out for the Christmas train, and for a few others that are on no timetable.</p>
+  </section>
+  <section>
+    <h2>Screenshots</h2>
+    <div class="shots">
+      <figure><img src="/media/shot-train-viaduct.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A steam train crossing a long viaduct over the sea"><figcaption>Steam on the sea viaduct.</figcaption></figure>
+      <figure><img src="/media/shot-train-spiral.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A railway curving over a port on a timber trestle viaduct"><figcaption>A spiral viaduct over the port.</figcaption></figure>
+      <figure><img src="/media/shot-train-junction.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A freight train passing a level crossing beside a road junction"><figcaption>A level crossing: the gates come down for the train.</figcaption></figure>
+      <figure><img src="/media/shot-train-snow.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A railway line through a snow-covered mountain town"><figcaption>A mountain town in the snow.</figcaption></figure>
+      <figure><img src="/media/shot-train-freight.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A freight train crossing a bridge at dusk in autumn"><figcaption>Freight at dusk.</figcaption></figure>
+      <figure><img src="/media/shot-train-town.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A railway line running into a town through autumn trees"><figcaption>The line into town.</figcaption></figure>
+    </div>
+  </section>
+  <section>
+    <h2>The country it runs through</h2>
+    <p>Mountain passes, river gorges, long sea crossings, autumn forests and snowfields, and towns in more than twenty styles from Amsterdam canals to Tokyo neon. Every crossing is a real bridge or viaduct, and five famous bridge designs turn up on the great ones.</p>
+  </section>
+  <section>
+    <h2>More than trains</h2>
+    <p>The same company runs road vehicles, boats and aircraft. A railway does best with trucks feeding its stations, and you can drive any of them. If the management side is what you are after, see <a href="/transport-tycoon-game">TinyFleet as a transport tycoon</a>.</p>
+  </section>
+  <section>
+    <h2>Questions and answers</h2>
+    <details><summary>Can I build my own railway?</summary><p>Yes. You can lay track, junctions, parallel lines and raised sections, and build six kinds of station.</p></details>
+    <details><summary>Can I drive the trains?</summary><p>Yes. You drive any train in your fleet yourself, or hire a driver to work the line for you.</p></details>
+    <details><summary>Do I have to place signals?</summary><p>No. A dispatcher holds trains for each other at junctions and on single track.</p></details>
+    <details><summary>What kinds of train are there?</summary><p>Seven locomotives: steam tank engines, freight diesels, a streamliner, a high-speed express, a long-haul heavy and a mountain cog railway.</p></details>
+    <details><summary>Is it multiplayer?</summary><p>Yes. It is one shared online world, and other players’ trains run on the same network.</p></details>
+    <details><summary>Is it free?</summary><p>Yes, in your browser, with nothing to download.</p></details>
+  </section>
+  <section class="cta">
+    <h2>Play TinyFleet now</h2>
+    <p style="margin-inline:auto">It is free and it runs in your browser. You will be driving in a few moments.</p>
+    <a class="play" href="/play/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Play Now</a>
+  </section>
+  <section>
+    <h2>More about TinyFleet</h2>
+    <div class="more">
+      <a href="/">Home, screenshots and downloads</a>
+      <a href="/free-browser-game">Free browser game</a>
+      <a href="/multiplayer-browser-game">Multiplayer and co-op</a>
+      <a href="/transport-tycoon-game">Transport tycoon</a>
+      <a href="/cozy-exploration-game">A cozy world to explore</a>
+      <a href="/games-like-openttd">Games like OpenTTD</a>
+      <a href="/games-like-euro-truck-simulator">Games like Euro Truck Simulator</a>
+      <a href="/procedural-world-in-the-browser">How it works</a>
+    </div>
+  </section>
+  <footer>TinyFleet is a free online driving and logistics game. <a href="/">tinyfleet.online</a></footer>
+</main>
+</body>
+</html>

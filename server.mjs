@@ -77521,7 +77521,7 @@ var TYPES = {
   ".txt": "text/plain; charset=utf-8",
   ".xml": "application/xml; charset=utf-8"
 };
-var SITE_FILES = /^\/(index\.html|version\.json|favicon\.svg|robots\.txt|sitemap\.xml|llms\.txt|media\/[\w.-]+\.(mp4|webm|jpg|png)|downloads\/[\w.-]+\.zip)$/;
+var SITE_FILES = /^\/(index\.html|version\.json|favicon\.(svg|ico)|favicon-\d+\.png|apple-touch-icon\.png|robots\.txt|sitemap\.xml|llms\.txt|media\/[\w.-]+\.(mp4|webm|jpg|png)|downloads\/[\w.-]+\.zip)$/;
 var ENCODINGS = [["br", ".br"], ["gzip", ".gz"]];
 function sendFile(req, res, file, head) {
   let size;
@@ -77683,6 +77683,15 @@ function http(req, res) {
     }
     if (!path3.startsWith("/play/")) {
       if (path3 === "/") path3 = "/index.html";
+      const landing = /^\/([a-z0-9-]+)(\/?)$/.exec(path3);
+      if (landing && existsSync2(join3(SITE, "pages", `${landing[1]}.html`))) {
+        if (landing[2]) {
+          res.writeHead(308, { location: `/${landing[1]}` }).end();
+          return;
+        }
+        sendFile(req, res, join3(SITE, "pages", `${landing[1]}.html`), { "content-type": TYPES[".html"], "cache-control": "no-cache" });
+        return;
+      }
       const file2 = normalize(join3(SITE, path3));
       if (!SITE_FILES.test(path3) || !file2.startsWith(SITE)) {
         res.writeHead(404, { "content-type": "text/plain" }).end("Not found");

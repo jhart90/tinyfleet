@@ -33,3 +33,12 @@ People looking for a free browser game with no download, a relaxed driving or tr
 - [Play in the browser](https://tinyfleet.online/play/)
 - [Home page, screenshots and downloads](https://tinyfleet.online/)
 - [Questions and answers](https://tinyfleet.online/#faq)
+- [Free browser game](https://tinyfleet.online/free-browser-game): TinyFleet is a free 3D browser game with no download and no install. Drive, deliver cargo and build a transport fleet in an endless online world.
+- [Multiplayer and co-op](https://tinyfleet.online/multiplayer-browser-game): A free multiplayer browser game where every player shares one persistent world. Run a co-op fleet with friends, build roads others drive on, and climb the boards.
+- [Transport tycoon](https://tinyfleet.online/transport-tycoon-game): A free transport tycoon and management game you drive yourself. Buy vehicles, hire drivers, grow a headquarters, buy property and beat rival firms.
+- [A cozy world to explore](https://tinyfleet.online/cozy-exploration-game): A cozy, free browser game set in an endless tilt-shift world. Drive through towns in twenty styles, find waterfalls and wonders, and stamp your passport.
+- [Trains and track building](https://tinyfleet.online/train-game): A free train game in your browser. Lay your own track, build stations and junctions, drive steam, diesel and express trains, and run a railway online.
+- [Games like OpenTTD](https://tinyfleet.online/games-like-openttd): Looking for games like OpenTTD or Transport Tycoon? TinyFleet is a free browser transport game with road, rail, sea and air, rivals and one shared world.
+- [Games like Euro Truck Simulator](https://tinyfleet.online/games-like-euro-truck-simulator): Looking for games like Euro Truck Simulator? TinyFleet is a free browser trucking game: haul cargo between towns, hire drivers and grow a haulage company.
+- [How it works](https://tinyfleet.online/procedural-world-in-the-browser): How TinyFleet works: an endless procedural 3D world generated in the browser with TypeScript, three.js and WebGL, and a Node server for multiplayer.
+- [Trailer (video, 66 seconds)](https://tinyfleet.online/media/trailer-best-of.mp4)

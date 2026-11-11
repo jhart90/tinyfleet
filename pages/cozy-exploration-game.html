@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cozy open-world driving game to explore: TinyFleet</title>
+<meta name="description" content="A cozy, free browser game set in an endless tilt-shift world. Drive through towns in twenty styles, find waterfalls and wonders, and stamp your passport.">
+<link rel="canonical" href="https://tinyfleet.online/cozy-exploration-game">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="theme-color" content="#141b20">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TinyFleet">
+<meta property="og:title" content="Cozy open-world driving game to explore: TinyFleet">
+<meta property="og:description" content="A cozy, free browser game set in an endless tilt-shift world. Drive through towns in twenty styles, find waterfalls and wonders, and stamp your passport.">
+<meta property="og:url" content="https://tinyfleet.online/cozy-exploration-game">
+<meta property="og:image" content="https://tinyfleet.online/media/shot-paris.jpg">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="720">
+<meta property="og:image:alt" content="A Paris-style town of mansard roofs at golden hour">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cozy open-world driving game to explore: TinyFleet">
+<meta name="twitter:description" content="A cozy, free browser game set in an endless tilt-shift world. Drive through towns in twenty styles, find waterfalls and wonders, and stamp your passport.">
+<meta name="twitter:image" content="https://tinyfleet.online/media/shot-paris.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://tinyfleet.online/cozy-exploration-game#page","url":"https://tinyfleet.online/cozy-exploration-game","name":"Cozy open-world driving game to explore: TinyFleet","description":"A cozy, free browser game set in an endless tilt-shift world. Drive through towns in twenty styles, find waterfalls and wonders, and stamp your passport.","inLanguage":"en","dateModified":"2026-11-11","isPartOf":{"@id":"https://tinyfleet.online/#site"},"about":{"@id":"https://tinyfleet.online/#game"},"primaryImageOfPage":"https://tinyfleet.online/media/shot-paris.jpg"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TinyFleet","item":"https://tinyfleet.online/"},{"@type":"ListItem","position":2,"name":"A cozy world to explore","item":"https://tinyfleet.online/cozy-exploration-game"}]},{"@type":"VideoGame","@id":"https://tinyfleet.online/#game","name":"TinyFleet","url":"https://tinyfleet.online/","description":"A cozy, free browser game set in an endless tilt-shift world. Drive through towns in twenty styles, find waterfalls and wonders, and stamp your passport.","gamePlatform":["Web browser","Windows","macOS"],"applicationCategory":"Game","playMode":["MultiPlayer","CoOp"],"isAccessibleForFree":true,"image":["https://tinyfleet.online/media/shot-paris.jpg","https://tinyfleet.online/media/shot-falls.jpg","https://tinyfleet.online/media/shot-amsterdam.jpg","https://tinyfleet.online/media/shot-tokyo.jpg","https://tinyfleet.online/media/shot-ski.jpg","https://tinyfleet.online/media/shot-castle.jpg"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock","url":"https://tinyfleet.online/play/"}},{"@type":"VideoObject","name":"TinyFleet trailer: the world","description":"A slow drive through a tilt-shift world that never ends: towns in twenty styles, waterfalls, seasons and weather.","thumbnailUrl":"https://tinyfleet.online/media/trailer-wander.jpg","contentUrl":"https://tinyfleet.online/media/trailer-wander.mp4","uploadDate":"2026-11-11T00:00:00Z","duration":"PT1M3S"},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is TinyFleet a relaxing game?","acceptedAnswer":{"@type":"Answer","text":"It can be. Deliveries have clocks, but you choose which to take, and you are free to simply drive and explore."}},{"@type":"Question","name":"How big is the world?","acceptedAnswer":{"@type":"Answer","text":"It has no edge. New islands and continents are generated as you travel towards them."}},{"@type":"Question","name":"Is every town different?","acceptedAnswer":{"@type":"Answer","text":"Towns come in more than twenty architectural styles, with different layouts, landmarks and surroundings, so no two are the same."}},{"@type":"Question","name":"Can I take screenshots and share them?","acceptedAnswer":{"@type":"Answer","text":"Yes. Photo mode takes stills and short clips, and a postcard link opens the game at the place you photographed."}},{"@type":"Question","name":"Do I have to play with other people?","acceptedAnswer":{"@type":"Answer","text":"No. Other players share the world, but you can explore entirely on your own."}}]}]}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root { color-scheme: dark; --ground: #141b20; --panel: #1d262c; --panel-2: #243037; --line: #33414a; --ink: #e9efe8; --ink-2: #b7c2bb; --ink-3: #85938c;
+    --car: #f0604e; --car-2: #e2412f; --water: #4f9fcf; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35); }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; background: var(--ground); }
+  body { margin: 0; color: var(--ink); font: 16px/1.6 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; }
+  a { color: #ff8a7a; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 72px; }
+  .top { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; justify-content: space-between; position: relative; z-index: 2; }
+  .top .brand { font-family: Fredoka, sans-serif; font-weight: 700; font-size: 26px; color: #fff; text-decoration: none; }
+  .top .brand span { color: #ff5a45; }
+  .top nav { font-size: 13.5px; color: rgba(255,255,255,.75); }
+  .top nav a { color: rgba(255,255,255,.92); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.4); }
+  .hero { position: relative; isolation: isolate; margin-top: -62px; padding-top: 62px; }
+  .hero::before { content: ''; position: absolute; inset: 0; z-index: -2; background: #1b2a33 var(--poster) center / cover no-repeat; }
+  .hero::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(10,16,22,.72) 0%, rgba(10,16,22,.6) 55%, var(--ground) 100%); }
+  .hero-in { max-width: 980px; margin: 0 auto; padding: 48px 16px 64px; }
+  h1 { font-family: Fredoka, sans-serif; font-weight: 700; font-size: clamp(32px, 5.4vw, 54px); line-height: 1.05; margin: 0; max-width: 20ch; text-wrap: balance; text-shadow: 0 2px 18px rgba(0,0,0,.35); }
+  .lead { font-size: clamp(16.5px, 2vw, 19px); color: rgba(255,255,255,.92); margin: 18px 0 0; max-width: 62ch; }
+  .play { display: inline-flex; align-items: center; gap: 12px; margin-top: 26px; text-decoration: none; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 22px;
+    padding: 14px 28px 14px 22px; border-radius: 16px; background: var(--car); color: #fff; border: 1px solid var(--car-2); box-shadow: 0 10px 28px rgba(226,65,47,.42), inset 0 1px 0 rgba(255,255,255,.22); transition: transform .12s ease, background .12s ease; }
+  .play:hover { background: #f4705f; transform: translateY(-2px); }
+  .play:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .play svg { width: 20px; height: 20px; flex: none; }
+  .note { margin: 10px 0 0; font-size: 14px; color: rgba(255,255,255,.8); }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); padding: 22px; margin-top: 16px; }
+  h2 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 24px; line-height: 1.2; margin: 0 0 12px; }
+  section p { margin: 0 0 12px; color: var(--ink-2); max-width: 72ch; }
+  section p:last-child, section ul:last-child { margin-bottom: 0; }
+  section ul { margin: 0 0 12px; padding-left: 20px; color: var(--ink-2); max-width: 72ch; }
+  section li { margin-bottom: 8px; }
+  section b { color: var(--ink); font-weight: 600; }
+  p.small { font-size: 13px; color: var(--ink-3); }
+  .film video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+  .film p { margin: 10px 0 0; font-size: 14px; }
+  .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+  .shots figure { margin: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .shots img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+  .shots figcaption { padding: 10px 14px 12px; color: var(--ink-2); font-size: 14px; }
+  .scroll { overflow-x: auto; margin: 0 0 12px; }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+  thead th { font-family: Fredoka, sans-serif; font-weight: 600; color: var(--ink); font-size: 15.5px; }
+  tbody th { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  details { background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; margin-bottom: 10px; }
+  details:last-child { margin-bottom: 0; }
+  summary { cursor: pointer; padding: 14px 0; font-weight: 600; font-size: 15.5px; }
+  summary:focus-visible { outline: 3px solid var(--water); outline-offset: 2px; border-radius: 6px; }
+  details p { margin: 0 0 14px; font-size: 14.5px; }
+  .cta { text-align: center; }
+  .cta .play { margin-top: 6px; }
+  .more { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .more a { display: block; text-decoration: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; color: var(--ink); font-weight: 600; font-size: 15px; }
+  .more a:hover { border-color: var(--ink-3); }
+  footer { margin-top: 16px; padding: 4px 6px; color: var(--ink-3); font-size: 13.5px; }
+  footer a { color: var(--ink-2); }
+  @media (max-width: 760px) { .play { width: 100%; justify-content: center; } section { padding: 18px 16px; } .hero-in { padding: 32px 16px 48px; } }
+  @media (prefers-reduced-motion: reduce) { .play, .play:hover { transition: none; transform: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/">TinyFleet<span>.</span></a>
+  <nav aria-label="Breadcrumb"><a href="/">TinyFleet</a> › A cozy world to explore</nav>
+</header>
+<div class="hero" style="--poster: url('/media/shot-paris.jpg')">
+  <div class="hero-in">
+    <h1>A cozy little world with no edge of the map</h1>
+    <p class="lead">TinyFleet is a driving game set in a tilt-shift miniature world that keeps going for as long as you do. Islands and continents are made as you reach them, each with its own towns, coast and weather. Pick a road and follow it.</p>
+    <a class="play" href="/play/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Play Now</a>
+    <p class="note">Free, in your browser. Nothing to download or install.</p>
+  </div>
+</div>
+<main class="wrap">
+  <section class="film">
+    <h2>Watch the trailer</h2>
+    <video controls preload="none" playsinline poster="/media/trailer-wander.jpg" aria-label="TinyFleet trailer: the world"><source src="/media/trailer-wander.mp4" type="video/mp4"></video>
+    <p>A slow drive through a tilt-shift world that never ends: towns in twenty styles, waterfalls, seasons and weather.</p>
+  </section>
+  <section>
+    <h2>What is out there</h2>
+    <ul>
+      <li><b>Towns in more than twenty styles.</b> Paris boulevards, Tokyo neon, Amsterdam canals, Chicago towers, San Francisco’s painted ladies, the Vegas Strip, Tudor villages, medieval walled towns, onion-domed Russian cities, Ottoman bazaars, Maya pyramids, Japanese hot-spring towns and more, each with its landmarks.</li>
+      <li><b>Wonders and oddities.</b> Castles, lighthouses, ancient wonders, a temple on a karst island, covered bridges, and thirty strange things in the middle of nowhere.</li>
+      <li><b>Big country.</b> Mesas, canyons, great waterfalls, river deltas, dunes and ice. Ski resorts with working lifts, beach resorts, theme parks with coasters that run, stadiums and race circuits.</li>
+      <li><b>Seasons and weather.</b> Autumn colour, blossom, snow, evening fog, rain and thunderstorms, and a day and night that change how every town looks.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>How you travel</h2>
+    <p>You start in a little red car. Deliveries along the way pay for the next vehicle: a convertible for the coast road, a yacht or a paddle steamer for the rivers, a biplane, a helicopter, a hot-air balloon, a submarine.</p>
+    <p>You choose which jobs to take and when, and nothing stops you from ignoring the work and driving. Hire a driver or two and they will follow you, so you are never the only car on an empty road.</p>
+  </section>
+  <section>
+    <h2>Screenshots</h2>
+    <div class="shots">
+      <figure><img src="/media/shot-paris.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A Paris-style town of mansard roofs at golden hour"><figcaption>A Paris-style town at golden hour.</figcaption></figure>
+      <figure><img src="/media/shot-falls.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A great horseshoe waterfall dropping into a river gorge"><figcaption>A horseshoe waterfall, out past the last town.</figcaption></figure>
+      <figure><img src="/media/shot-amsterdam.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="Canals lined with narrow gabled houses in an Amsterdam-style town"><figcaption>Amsterdam canals.</figcaption></figure>
+      <figure><img src="/media/shot-tokyo.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A Tokyo-style city lit with neon signs at night"><figcaption>Tokyo neon at night.</figcaption></figure>
+      <figure><img src="/media/shot-ski.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A ski field in winter with runs through the trees"><figcaption>A ski field in winter.</figcaption></figure>
+      <figure><img src="/media/shot-castle.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A castle surrounded by a moat"><figcaption>A moated castle.</figcaption></figure>
+    </div>
+  </section>
+  <section>
+    <h2>Keeping what you find</h2>
+    <ul>
+      <li><b>The Passport.</b> A booklet of the sights you have seen and the towns you have visited, with stamps to collect.</li>
+      <li><b>Photo mode.</b> Frame a still or a short clip and send it as a postcard link anyone can open in their browser.</li>
+      <li><b>Marks.</b> Sign a guestbook or put up a sign, and find the ones other players left.</li>
+      <li><b>The map.</b> A region map that fills in as you survey each county.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>A world with other people in it</h2>
+    <p>It is one shared online world. You will see other players’ cars pass and find their names on the bridges they built, but nobody can get in your way, and you can play the whole thing on your own.</p>
+  </section>
+  <section>
+    <h2>Questions and answers</h2>
+    <details><summary>Is TinyFleet a relaxing game?</summary><p>It can be. Deliveries have clocks, but you choose which to take, and you are free to simply drive and explore.</p></details>
+    <details><summary>How big is the world?</summary><p>It has no edge. New islands and continents are generated as you travel towards them.</p></details>
+    <details><summary>Is every town different?</summary><p>Towns come in more than twenty architectural styles, with different layouts, landmarks and surroundings, so no two are the same.</p></details>
+    <details><summary>Can I take screenshots and share them?</summary><p>Yes. Photo mode takes stills and short clips, and a postcard link opens the game at the place you photographed.</p></details>
+    <details><summary>Do I have to play with other people?</summary><p>No. Other players share the world, but you can explore entirely on your own.</p></details>
+  </section>
+  <section class="cta">
+    <h2>Play TinyFleet now</h2>
+    <p style="margin-inline:auto">It is free and it runs in your browser. You will be driving in a few moments.</p>
+    <a class="play" href="/play/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Play Now</a>
+  </section>
+  <section>
+    <h2>More about TinyFleet</h2>
+    <div class="more">
+      <a href="/">Home, screenshots and downloads</a>
+      <a href="/free-browser-game">Free browser game</a>
+      <a href="/multiplayer-browser-game">Multiplayer and co-op</a>
+      <a href="/transport-tycoon-game">Transport tycoon</a>
+      <a href="/train-game">Trains and track building</a>
+      <a href="/games-like-openttd">Games like OpenTTD</a>
+      <a href="/games-like-euro-truck-simulator">Games like Euro Truck Simulator</a>
+      <a href="/procedural-world-in-the-browser">How it works</a>
+    </div>
+  </section>
+  <footer>TinyFleet is a free online driving and logistics game. <a href="/">tinyfleet.online</a></footer>
+</main>
+</body>
+</html>

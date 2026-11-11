@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free browser game, no download: TinyFleet</title>
+<meta name="description" content="TinyFleet is a free 3D browser game with no download and no install. Drive, deliver cargo and build a transport fleet in an endless online world.">
+<link rel="canonical" href="https://tinyfleet.online/free-browser-game">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="theme-color" content="#141b20">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TinyFleet">
+<meta property="og:title" content="Free browser game, no download: TinyFleet">
+<meta property="og:description" content="TinyFleet is a free 3D browser game with no download and no install. Drive, deliver cargo and build a transport fleet in an endless online world.">
+<meta property="og:url" content="https://tinyfleet.online/free-browser-game">
+<meta property="og:image" content="https://tinyfleet.online/media/shot-delivery-hud.jpg">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="720">
+<meta property="og:image:alt" content="A red delivery car driving through a town, with the fleet dock along the bottom of the screen">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Free browser game, no download: TinyFleet">
+<meta name="twitter:description" content="TinyFleet is a free 3D browser game with no download and no install. Drive, deliver cargo and build a transport fleet in an endless online world.">
+<meta name="twitter:image" content="https://tinyfleet.online/media/shot-delivery-hud.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://tinyfleet.online/free-browser-game#page","url":"https://tinyfleet.online/free-browser-game","name":"Free browser game, no download: TinyFleet","description":"TinyFleet is a free 3D browser game with no download and no install. Drive, deliver cargo and build a transport fleet in an endless online world.","inLanguage":"en","dateModified":"2026-11-11","isPartOf":{"@id":"https://tinyfleet.online/#site"},"about":{"@id":"https://tinyfleet.online/#game"},"primaryImageOfPage":"https://tinyfleet.online/media/shot-delivery-hud.jpg"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TinyFleet","item":"https://tinyfleet.online/"},{"@type":"ListItem","position":2,"name":"Free browser game","item":"https://tinyfleet.online/free-browser-game"}]},{"@type":"VideoGame","@id":"https://tinyfleet.online/#game","name":"TinyFleet","url":"https://tinyfleet.online/","description":"TinyFleet is a free 3D browser game with no download and no install. Drive, deliver cargo and build a transport fleet in an endless online world.","gamePlatform":["Web browser","Windows","macOS"],"applicationCategory":"Game","playMode":["MultiPlayer","CoOp"],"isAccessibleForFree":true,"image":["https://tinyfleet.online/media/shot-delivery-hud.jpg","https://tinyfleet.online/media/shot-convoy-autumn.jpg","https://tinyfleet.online/media/shot-city-night.jpg"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD","availability":"https://schema.org/InStock","url":"https://tinyfleet.online/play/"}},{"@type":"VideoObject","name":"TinyFleet trailer","description":"One car, then a fleet, then trains, aircraft and a world that never ends: the TinyFleet trailer.","thumbnailUrl":"https://tinyfleet.online/media/trailer-best-of.jpg","contentUrl":"https://tinyfleet.online/media/trailer-best-of.mp4","uploadDate":"2026-11-11T00:00:00Z","duration":"PT1M6S"},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is TinyFleet really free?","acceptedAnswer":{"@type":"Answer","text":"Yes. The browser game is free to play, and the Windows and Mac apps are free downloads."}},{"@type":"Question","name":"Do I have to download anything?","acceptedAnswer":{"@type":"Answer","text":"No. The game loads and runs in a browser tab. The Windows and Mac apps are optional."}},{"@type":"Question","name":"Do I need an email address to sign up?","acceptedAnswer":{"@type":"Answer","text":"No. You choose a fleet name and a PIN, and that is the whole sign-up."}},{"@type":"Question","name":"Can I play on a phone or a tablet?","acceptedAnswer":{"@type":"Answer","text":"TinyFleet is made for a desktop or laptop with a keyboard, and is not made for phones."}},{"@type":"Question","name":"Is it a single-player or a multiplayer game?","acceptedAnswer":{"@type":"Answer","text":"Both, in a way. Everyone plays in the same online world, but you can run your own company without ever dealing with another player, or share a fleet with friends."}}]}]}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root { color-scheme: dark; --ground: #141b20; --panel: #1d262c; --panel-2: #243037; --line: #33414a; --ink: #e9efe8; --ink-2: #b7c2bb; --ink-3: #85938c;
+    --car: #f0604e; --car-2: #e2412f; --water: #4f9fcf; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35); }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; background: var(--ground); }
+  body { margin: 0; color: var(--ink); font: 16px/1.6 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; }
+  a { color: #ff8a7a; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 72px; }
+  .top { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; justify-content: space-between; position: relative; z-index: 2; }
+  .top .brand { font-family: Fredoka, sans-serif; font-weight: 700; font-size: 26px; color: #fff; text-decoration: none; }
+  .top .brand span { color: #ff5a45; }
+  .top nav { font-size: 13.5px; color: rgba(255,255,255,.75); }
+  .top nav a { color: rgba(255,255,255,.92); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.4); }
+  .hero { position: relative; isolation: isolate; margin-top: -62px; padding-top: 62px; }
+  .hero::before { content: ''; position: absolute; inset: 0; z-index: -2; background: #1b2a33 var(--poster) center / cover no-repeat; }
+  .hero::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(10,16,22,.72) 0%, rgba(10,16,22,.6) 55%, var(--ground) 100%); }
+  .hero-in { max-width: 980px; margin: 0 auto; padding: 48px 16px 64px; }
+  h1 { font-family: Fredoka, sans-serif; font-weight: 700; font-size: clamp(32px, 5.4vw, 54px); line-height: 1.05; margin: 0; max-width: 20ch; text-wrap: balance; text-shadow: 0 2px 18px rgba(0,0,0,.35); }
+  .lead { font-size: clamp(16.5px, 2vw, 19px); color: rgba(255,255,255,.92); margin: 18px 0 0; max-width: 62ch; }
+  .play { display: inline-flex; align-items: center; gap: 12px; margin-top: 26px; text-decoration: none; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 22px;
+    padding: 14px 28px 14px 22px; border-radius: 16px; background: var(--car); color: #fff; border: 1px solid var(--car-2); box-shadow: 0 10px 28px rgba(226,65,47,.42), inset 0 1px 0 rgba(255,255,255,.22); transition: transform .12s ease, background .12s ease; }
+  .play:hover { background: #f4705f; transform: translateY(-2px); }
+  .play:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+  .play svg { width: 20px; height: 20px; flex: none; }
+  .note { margin: 10px 0 0; font-size: 14px; color: rgba(255,255,255,.8); }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); padding: 22px; margin-top: 16px; }
+  h2 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 24px; line-height: 1.2; margin: 0 0 12px; }
+  section p { margin: 0 0 12px; color: var(--ink-2); max-width: 72ch; }
+  section p:last-child, section ul:last-child { margin-bottom: 0; }
+  section ul { margin: 0 0 12px; padding-left: 20px; color: var(--ink-2); max-width: 72ch; }
+  section li { margin-bottom: 8px; }
+  section b { color: var(--ink); font-weight: 600; }
+  p.small { font-size: 13px; color: var(--ink-3); }
+  .film video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+  .film p { margin: 10px 0 0; font-size: 14px; }
+  .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+  .shots figure { margin: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .shots img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+  .shots figcaption { padding: 10px 14px 12px; color: var(--ink-2); font-size: 14px; }
+  .scroll { overflow-x: auto; margin: 0 0 12px; }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+  thead th { font-family: Fredoka, sans-serif; font-weight: 600; color: var(--ink); font-size: 15.5px; }
+  tbody th { color: var(--ink); font-weight: 600; white-space: nowrap; }
+  details { background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; padding: 0 16px; margin-bottom: 10px; }
+  details:last-child { margin-bottom: 0; }
+  summary { cursor: pointer; padding: 14px 0; font-weight: 600; font-size: 15.5px; }
+  summary:focus-visible { outline: 3px solid var(--water); outline-offset: 2px; border-radius: 6px; }
+  details p { margin: 0 0 14px; font-size: 14.5px; }
+  .cta { text-align: center; }
+  .cta .play { margin-top: 6px; }
+  .more { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .more a { display: block; text-decoration: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; color: var(--ink); font-weight: 600; font-size: 15px; }
+  .more a:hover { border-color: var(--ink-3); }
+  footer { margin-top: 16px; padding: 4px 6px; color: var(--ink-3); font-size: 13.5px; }
+  footer a { color: var(--ink-2); }
+  @media (max-width: 760px) { .play { width: 100%; justify-content: center; } section { padding: 18px 16px; } .hero-in { padding: 32px 16px 48px; } }
+  @media (prefers-reduced-motion: reduce) { .play, .play:hover { transition: none; transform: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/">TinyFleet<span>.</span></a>
+  <nav aria-label="Breadcrumb"><a href="/">TinyFleet</a> › Free browser game</nav>
+</header>
+<div class="hero" style="--poster: url('/media/shot-delivery-hud.jpg')">
+  <div class="hero-in">
+    <h1>A free browser game with a whole world in it</h1>
+    <p class="lead">TinyFleet is a free 3D driving and delivery game that runs in a browser tab. There is nothing to download, nothing to install and no launcher: press Play and you are in a little red car with a parcel to deliver.</p>
+    <a class="play" href="/play/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Play Now</a>
+    <p class="note">Free, in your browser. Nothing to download or install.</p>
+  </div>
+</div>
+<main class="wrap">
+  <section class="film">
+    <h2>Watch the trailer</h2>
+    <video controls preload="none" playsinline poster="/media/trailer-best-of.jpg" aria-label="TinyFleet trailer"><source src="/media/trailer-best-of.mp4" type="video/mp4"></video>
+    <p>One car, then a fleet, then trains, aircraft and a world that never ends: the TinyFleet trailer.</p>
+  </section>
+  <section>
+    <h2>Press Play and you are driving</h2>
+    <p>Open the game, choose a name for your fleet and a PIN, and you start at the edge of a town with your first delivery waiting. The first few jobs teach the controls as you go: drive with the keyboard, pick up at one ring, drop off at another, get paid.</p>
+    <p>From there it opens out. The money buys a second vehicle and a driver to go with it, then a headquarters, then trucks, buses, trains, boats and aircraft. The world keeps going in every direction, so there is always another town down the road.</p>
+  </section>
+  <section>
+    <h2>What is in the free game</h2>
+    <ul>
+      <li><b>A world with no edge.</b> Islands and continents generated county by county, with towns in more than twenty architectural styles.</li>
+      <li><b>More than 70 vehicles.</b> Cars, vans, trucks and buses, trains, ferries and yachts, helicopters, biplanes and jets.</li>
+      <li><b>A company to build.</b> Hired drivers, a headquarters, property, and rival firms after the same trade.</li>
+      <li><b>Things to build.</b> Your own roads, bridges, tunnels and railway lines.</li>
+      <li><b>Other people.</b> One shared online world, with friends, shared fleets and leaderboards.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Screenshots</h2>
+    <div class="shots">
+      <figure><img src="/media/shot-delivery-hud.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A red delivery car driving through a town, with the fleet dock along the bottom of the screen"><figcaption>A delivery in town, with the fleet in the dock below.</figcaption></figure>
+      <figure><img src="/media/shot-convoy-autumn.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A convoy of small red trucks crossing a river bridge between autumn trees"><figcaption>Your fleet follows you in convoy, or works on its own.</figcaption></figure>
+      <figure><img src="/media/shot-city-night.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="A low-poly city at night with lit towers, neon signs and a red suspension bridge"><figcaption>Cities light up after dark.</figcaption></figure>
+    </div>
+  </section>
+  <section>
+    <h2>What it runs on</h2>
+    <p>A desktop or laptop computer with a keyboard, and a current browser: Chrome, Edge, Firefox or Safari. The game draws in 3D with WebGL, so the browser’s graphics acceleration needs to be on, which it is by default. An Auto quality setting adjusts the detail to keep the game smooth on modest laptops.</p>
+    <p>TinyFleet is not made for phones. If you would rather have it in its own window than in a tab, there are free apps for Windows and Mac on the <a href="/">home page</a>.</p>
+  </section>
+  <section>
+    <h2>Your progress is kept</h2>
+    <p>Your company is saved on the TinyFleet server under your fleet name. Sign in with the same name and PIN on any computer and it is all there: your vehicles, your drivers, your money and the roads you built.</p>
+  </section>
+  <section>
+    <h2>Questions and answers</h2>
+    <details><summary>Is TinyFleet really free?</summary><p>Yes. The browser game is free to play, and the Windows and Mac apps are free downloads.</p></details>
+    <details><summary>Do I have to download anything?</summary><p>No. The game loads and runs in a browser tab. The Windows and Mac apps are optional.</p></details>
+    <details><summary>Do I need an email address to sign up?</summary><p>No. You choose a fleet name and a PIN, and that is the whole sign-up.</p></details>
+    <details><summary>Can I play on a phone or a tablet?</summary><p>TinyFleet is made for a desktop or laptop with a keyboard, and is not made for phones.</p></details>
+    <details><summary>Is it a single-player or a multiplayer game?</summary><p>Both, in a way. Everyone plays in the same online world, but you can run your own company without ever dealing with another player, or share a fleet with friends.</p></details>
+  </section>
+  <section class="cta">
+    <h2>Play TinyFleet now</h2>
+    <p style="margin-inline:auto">It is free and it runs in your browser. You will be driving in a few moments.</p>
+    <a class="play" href="/play/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Play Now</a>
+  </section>
+  <section>
+    <h2>More about TinyFleet</h2>
+    <div class="more">
+      <a href="/">Home, screenshots and downloads</a>
+      <a href="/multiplayer-browser-game">Multiplayer and co-op</a>
+      <a href="/transport-tycoon-game">Transport tycoon</a>
+      <a href="/cozy-exploration-game">A cozy world to explore</a>
+      <a href="/train-game">Trains and track building</a>
+      <a href="/games-like-openttd">Games like OpenTTD</a>
+      <a href="/games-like-euro-truck-simulator">Games like Euro Truck Simulator</a>
+      <a href="/procedural-world-in-the-browser">How it works</a>
+    </div>
+  </section>
+  <footer>TinyFleet is a free online driving and logistics game. <a href="/">tinyfleet.online</a></footer>
+</main>
+</body>
+</html>
