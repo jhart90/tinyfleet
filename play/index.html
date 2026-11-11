@@ -336,6 +336,12 @@
     #loading.road .ld-line { text-align: left; max-width: min(70vw, 560px); }
     #loading.road .ld-line b { display: block; font-size: clamp(16px, 2.2vw, 26px); font-weight: 700; color: #fff; line-height: 1.15; }
     #loading.road .ld-line small { display: block; margin-top: 3px; font-size: clamp(11px, 1.2vw, 14px); color: rgba(255,255,255,.68); }
+    /* the world made, the first road still up: the bar gives way to a Skip button in its place, centred (the user, 8 Nov 2026) */
+    #loading .ld-skip { position: absolute; left: 50%; bottom: max(24px, 4vh); transform: translateX(-50%); font: 600 16px/1 "IBM Plex Sans", "Segoe UI", sans-serif; color: #fff; background: rgba(255,255,255,.1); border: 1.5px solid rgba(255,255,255,.55); border-radius: 99px; padding: 12px 26px; cursor: pointer; white-space: nowrap; animation: ld-skip-in .35s ease-out; }
+    #loading .ld-skip:hover, #loading .ld-skip:focus-visible { background: rgba(255,255,255,.2); border-color: #fff; outline: none; }
+    #loading .ld-skip[hidden] { display: none; }
+    #loading.ld-ready .ld-bottom { display: none; }
+    @keyframes ld-skip-in { from { opacity: 0; transform: translate(-50%, 8px); } to { opacity: 1; transform: translateX(-50%); } }
     @keyframes bounce { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-5px) } }
     /* the fleet dock beside the speedo (game/fleetDock.ts): YOU, then a square per fleet slot */
     #dock { z-index: 2; bottom: 16px; display: flex; gap: 10px; align-items: flex-end; }
@@ -888,6 +894,7 @@
     #build .rb-sq.on { background: #fff; border-color: #e2412f; }
     #build .rb-sq .rb-img { width: 58px; height: 58px; border-radius: 9px; pointer-events: none; }
     #build .rb-sq .rb-sw { width: 58px; height: 58px; border-radius: 9px; }
+    #build .rb-sq .rb-boost { display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; color: #fff; background: linear-gradient(135deg, #2bb3a3, #1f6fb5); }
     #build .rb-sq .nm { font-size: 11px; font-weight: 700; color: #1f2b33; line-height: 1.15; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
     #build .rb-sq .pr { font-size: 10.5px; color: #1e9e4a; font-weight: 600; }
     #build .rb-sq .rb-k { position: absolute; top: 4px; left: 4px; font-size: 9.5px; padding: 0 4px; }
@@ -2707,7 +2714,19 @@
     #net-chat .hint { margin-top: 5px; font-size: 11.5px; color: #4c5a63; background: rgba(255,255,255,.7); border-radius: 999px; padding: 2px 9px; display: inline-block; pointer-events: auto; cursor: text; }
     #net-chat.typing .hint { display: none; }
     #net-chat kbd, #social kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
-    #net-chip { margin-top: 5px; font-size: 12px; font-weight: 600; color: #1e9e4a; display: flex; align-items: center; gap: 6px; }
+    #net-chip { margin-top: 6px; font-size: 13px; font-weight: 600; color: #1f2b33; display: inline-flex; align-items: center; gap: 7px; background: #e6f6ea; border: 1px solid #b9e3c4; border-radius: 999px; padding: 3px 11px 3px 9px; }
+    #net-chip b { color: #1e9e4a; font-weight: 800; }
+    #net-chip .hint { color: #4c5a63; font-weight: 500; font-size: 12px; }
+    #net-chip.pulse { animation: netPulse 1.4s ease-out 2; }
+    @keyframes netPulse { 0% { box-shadow: 0 0 0 0 rgba(30,158,74,.55); } 100% { box-shadow: 0 0 0 12px rgba(30,158,74,0); } }
+    #net-roster { position: absolute; margin-top: 6px; width: 380px; max-height: 52vh; overflow: auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 28px rgba(31,43,51,.22); padding: 10px 12px; pointer-events: auto; font-size: 13px; color: #1f2b33; z-index: 40; }
+    #net-roster[hidden] { display: none; }
+    #net-roster .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    #net-roster ul.people { list-style: none; margin: 0; padding: 0; }
+    #net-roster ul.people li { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid #eef1ec; }
+    #net-roster .what { display: flex; flex-direction: column; } #net-roster .what small { color: #6a7a83; }
+    #net-roster .acts { display: flex; gap: 8px; align-items: center; white-space: nowrap; }
+    #net-roster .foot { color: #7d8a92; font-size: 11.5px; margin: 6px 0 0; }
     #net-chip[hidden] { display: none; }
     /* the camera sent somewhere far, while that county is built and drawn (game/travelLoading.ts) */
     #travel-load { left: 50%; top: 42%; transform: translate(-50%, -50%); min-width: 240px; z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; padding: 12px 18px 14px; }
@@ -3968,8 +3987,8 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-BvUdE2lr.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/three-B97_EtTR.js">
+  <script type="module" crossorigin src="./assets/index-DQMbWbGU.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/three-Dv0uXxgI.js">
   <link rel="stylesheet" crossorigin href="./assets/index-BV6iPe3q.css">
 </head>
 <body>
@@ -4091,8 +4110,8 @@
       <span>Settings</span><kbd>O</kbd>
     </button>
   </div>
-  <div id="br" class="hud chip">
-    <button id="br-toggle" type="button" tabindex="-1" aria-controls="br" aria-expanded="true" title="Hide the controls">
+  <div id="br" class="hud chip collapsed">
+    <button id="br-toggle" type="button" tabindex="-1" aria-controls="br" aria-expanded="false" title="Show the controls">
       <svg class="shrink" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3.5 12.5h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9.5 3.5 6.5 6.5M6.5 3.5v3h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
       <svg class="grow" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M6 9.5h1.5M9.5 9.5H11M13 9.5h1.5M16.5 9.5H18M6 12h1.5M9.5 12H11M13 12h1.5M16.5 12H18M8 14.8h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
     </button>
@@ -4164,6 +4183,7 @@
       <div class="ld-row"><span class="ld-label">Unpacking the toy box</span><span class="ld-pct">0%</span></div>
       <div class="ld-bar"><i></i></div>
     </div>
+    <button class="ld-skip" type="button" hidden>Skip controls tutorial</button>
   </div>
 
   <!-- something went wrong: said plainly, with a way out, instead of a loading screen that never ends or a frozen picture -->
@@ -4178,7 +4198,8 @@
     (function () {
       var card = document.getElementById('trouble'), title = document.getElementById('tb-title'), text = document.getElementById('tb-text');
       var wait = document.getElementById('tb-wait');
-      var loading = function () { var l = document.getElementById('loading'); return !!l && !l.hidden; };
+      // (the first road waiting on its player over a finished world, .ld-ready, is not loading: render/loadingShow.ts)
+      var loading = function () { var l = document.getElementById('loading'); return !!l && !l.hidden && !l.classList.contains('ld-ready'); };
       var show = function (t, body, canWait) { title.textContent = t; text.textContent = body; wait.hidden = !canWait; card.classList.add('on'); };
       var hide = function () { card.classList.remove('on'); };
       document.getElementById('tb-reload').addEventListener('click', function () { location.reload(); });
