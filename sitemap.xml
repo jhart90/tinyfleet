@@ -40,7 +40,7 @@
     <image:image><image:loc>https://tinyfleet.online/media/shot-hq-books.jpg</image:loc></image:image>
     <image:image><image:loc>https://tinyfleet.online/media/shot-hq-home.jpg</image:loc></image:image>
     <image:image><image:loc>https://tinyfleet.online/media/shot-megacity-drive.jpg</image:loc></image:image>
-    <video:video><video:thumbnail_loc>https://tinyfleet.online/media/trailer-best-of-neon-katsu-sandwich.jpg</video:thumbnail_loc><video:title>TinyFleet trailer (Neon Katsu Sandwich)</video:title><video:description>The TinyFleet trailer, cut to Neon Katsu Sandwich: one car, then a fleet, trains, aircraft and a world that never ends.</video:description><video:content_loc>https://tinyfleet.online/media/trailer-best-of-neon-katsu-sandwich.mp4</video:content_loc><video:duration>67</video:duration><video:publication_date>2026-11-11T00:00:00+00:00</video:publication_date><video:family_friendly>yes</video:family_friendly></video:video>
+    <video:video><video:thumbnail_loc>https://tinyfleet.online/media/trailer-company.jpg</video:thumbnail_loc><video:title>TinyFleet trailer: the company</video:title><video:description>From one car to a transport company: a fleet on every route, a whole town bought up building by building, and books that grow day by day.</video:description><video:content_loc>https://tinyfleet.online/media/trailer-company.mp4</video:content_loc><video:duration>55</video:duration><video:publication_date>2026-11-11T00:00:00+00:00</video:publication_date><video:family_friendly>yes</video:family_friendly></video:video>
     <video:video><video:thumbnail_loc>https://tinyfleet.online/media/reel-neon-katsu-sandwich.jpg</video:thumbnail_loc><video:title>TinyFleet in 30 seconds (Neon Katsu Sandwich)</video:title><video:description>A 30-second vertical reel of TinyFleet, filmed in the game.</video:description><video:content_loc>https://tinyfleet.online/media/reel-neon-katsu-sandwich.mp4</video:content_loc><video:duration>30</video:duration><video:publication_date>2026-11-11T00:00:00+00:00</video:publication_date><video:family_friendly>yes</video:family_friendly></video:video>
   </url>
   <url>
@@ -1678,6 +1678,10 @@
     <image:image><image:loc>https://tinyfleet.online/media/shot-convoy-bridge.jpg</image:loc></image:image>
   </url>
   <url>
+    <loc>https://tinyfleet.online/devlog/0.8.2</loc>
+    <lastmod>2026-11-11</lastmod>
+  </url>
+  <url>
     <loc>https://tinyfleet.online/devlog/0.8.1</loc>
     <lastmod>2026-11-10</lastmod>
   </url>
@@ -1727,7 +1731,7 @@
   </url>
   <url>
     <loc>https://tinyfleet.online/devlog</loc>
-    <lastmod>2026-11-10</lastmod>
+    <lastmod>2026-11-11</lastmod>
   </url>
   <url>
     <loc>https://tinyfleet.online/press</loc>

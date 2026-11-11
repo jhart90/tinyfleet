@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TinyFleet 0.8.2: Through the Hills (patch notes)</title>
+<meta name="description" content="TinyFleet 0.8.2 patch notes, 11 November 2026. The first patch for 0.8.0's new world, made mostly from your reports in its first days. Tunnels you can actually…">
+<link rel="canonical" href="https://tinyfleet.online/devlog/0.8.2">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="theme-color" content="#141b20">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="TinyFleet">
+<meta property="og:title" content="TinyFleet 0.8.2: Through the Hills (patch notes)">
+<meta property="og:description" content="TinyFleet 0.8.2 patch notes, 11 November 2026. The first patch for 0.8.0's new world, made mostly from your reports in its first days. Tunnels you can actually…">
+<meta property="og:url" content="https://tinyfleet.online/devlog/0.8.2">
+<meta property="og:image" content="https://tinyfleet.online/media/og-card-after-dark.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TinyFleet 0.8.2: Through the Hills (patch notes)">
+<meta name="twitter:description" content="TinyFleet 0.8.2 patch notes, 11 November 2026. The first patch for 0.8.0's new world, made mostly from your reports in its first days. Tunnels you can actually…">
+<meta name="twitter:image" content="https://tinyfleet.online/media/og-card-after-dark.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://tinyfleet.online/devlog/0.8.2#page","url":"https://tinyfleet.online/devlog/0.8.2","name":"TinyFleet 0.8.2: Through the Hills (patch notes)","description":"TinyFleet 0.8.2 patch notes, 11 November 2026. The first patch for 0.8.0's new world, made mostly from your reports in its first days. Tunnels you can actually…","inLanguage":"en","dateModified":"2026-11-11","isPartOf":{"@id":"https://tinyfleet.online/#site"},"about":{"@id":"https://tinyfleet.online/#game"},"primaryImageOfPage":"https://tinyfleet.online/media/og-card-after-dark.jpg"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TinyFleet","item":"https://tinyfleet.online/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://tinyfleet.online/devlog"},{"@type":"ListItem","position":3,"name":"TinyFleet 0.8.2: Through the Hills","item":"https://tinyfleet.online/devlog/0.8.2"}]},{"@type":"BlogPosting","headline":"TinyFleet 0.8.2: Through the Hills","datePublished":"2026-11-11","dateModified":"2026-11-11","url":"https://tinyfleet.online/devlog/0.8.2","description":"The first patch for 0.8.0's new world, made mostly from your reports in its first days. Tunnels you can actually build, raised track and roads that cross over any line, far towns lit up at night, a big round of performance work, and shared fleets made whole after the restart. Same world: nothing restarts and no career is touched.","author":{"@type":"Organization","name":"TinyFleet","url":"https://tinyfleet.online/"},"publisher":{"@type":"Organization","name":"TinyFleet","url":"https://tinyfleet.online/"},"about":{"@id":"https://tinyfleet.online/#game"}}]}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+  :root { color-scheme: dark; --ground: #141b20; --panel: #1d262c; --panel-2: #243037; --line: #33414a; --ink: #e9efe8; --ink-2: #b7c2bb; --ink-3: #85938c;
+    --car: #f0604e; --car-2: #e2412f; --water: #4f9fcf; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35); }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; background: var(--ground); }
+  body { margin: 0; color: var(--ink); font: 16px/1.6 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; }
+  a { color: #ff8a7a; }
+  .top { max-width: 980px; margin: 0 auto; padding: 16px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; justify-content: space-between; }
+  .top .brand { font-family: Fredoka, sans-serif; font-weight: 700; font-size: 26px; color: #fff; text-decoration: none; }
+  .top .brand span { color: #ff5a45; }
+  .top nav { font-size: 14px; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .top nav a { color: var(--ink-2); text-decoration: none; }
+  .top nav a:hover, .top nav a[aria-current] { color: #fff; }
+  .top nav a.go { color: #ff8a7a; font-weight: 600; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 72px; }
+  .crumbs { font-size: 13.5px; color: var(--ink-3); margin: 8px 0 0; }
+  .crumbs a { color: var(--ink-2); }
+  h1 { font-family: Fredoka, sans-serif; font-weight: 700; font-size: clamp(30px, 5vw, 46px); line-height: 1.08; margin: 10px 0 0; text-wrap: balance; }
+  .lead { font-size: clamp(16.5px, 2vw, 18.5px); color: var(--ink-2); margin: 14px 0 0; max-width: 68ch; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); padding: 22px; margin-top: 16px; }
+  h2 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 23px; line-height: 1.2; margin: 0 0 12px; }
+  h3 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 18px; margin: 18px 0 8px; }
+  section p { margin: 0 0 12px; color: var(--ink-2); max-width: 72ch; }
+  section ul, section ol { margin: 0 0 12px; padding-left: 20px; color: var(--ink-2); max-width: 72ch; }
+  section li { margin-bottom: 6px; }
+  section > :last-child { margin-bottom: 0; }
+  section b { color: var(--ink); font-weight: 600; }
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line); color: var(--ink-2); }
+  thead th { font-family: Fredoka, sans-serif; font-weight: 600; color: var(--ink); white-space: nowrap; }
+  tbody th { color: var(--ink); font-weight: 600; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  thead th.n { text-align: right; }
+  table.facts th { width: 11em; white-space: nowrap; }
+  table.wide { min-width: 560px; }
+  .pic { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; background: #1b2a33; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+  .cardlink { display: block; text-decoration: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; color: var(--ink); }
+  .cardlink:hover { border-color: var(--ink-3); }
+  .cardlink img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: #1b2a33; }
+  .cardlink span { display: block; padding: 10px 14px 4px; font-weight: 600; }
+  .cardlink small { display: block; padding: 0 14px 12px; color: var(--ink-2); font-size: 13.5px; line-height: 1.45; }
+  .cardlink span:last-child { padding-bottom: 12px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; padding: 0; list-style: none; }
+  .tags li { margin: 0; font-size: 13px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; color: var(--ink-2); }
+  kbd { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; color: var(--ink); white-space: nowrap; }
+  video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+  .reels { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  .reels figure { margin: 0; } .reels video { aspect-ratio: 9 / 16; }
+  .reels figcaption { font-size: 13.5px; color: var(--ink-2); margin-top: 6px; }
+  .media { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+  .media figure { margin: 0; }
+  .media img { display: block; width: 100%; height: auto; border-radius: 12px; background: #1b2a33; }
+  .media figcaption { font-size: 13.5px; color: var(--ink-2); margin-top: 6px; }
+  .logo-tile { background: #f4f2ec; border-radius: 12px; padding: 14px; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 600; padding: 11px 18px; border-radius: 12px; color: var(--ink); border: 1.5px solid var(--line); }
+  .btn:hover { background: var(--panel-2); border-color: var(--ink-3); }
+  .play { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 19px; padding: 11px 22px; border-radius: 14px; background: var(--car); color: #fff; border: 1px solid var(--car-2); }
+  .play:hover { background: #f4705f; }
+  .post h2 { margin-top: 26px; } .post > h2:first-child, .post > p:first-child { margin-top: 0; }
+  .when { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 13px; color: var(--ink-3); }
+  .posts { list-style: none; padding: 0; max-width: none; }
+  .posts li { padding: 14px 0; border-bottom: 1px solid var(--line); margin: 0; }
+  .posts li:last-child { border-bottom: 0; padding-bottom: 0; } .posts li:first-child { padding-top: 0; }
+  .posts a { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 19px; text-decoration: none; color: var(--ink); }
+  .posts a:hover { color: #ff8a7a; }
+  .posts p { margin: 4px 0 0; }
+  footer { margin-top: 18px; padding: 4px 6px; color: var(--ink-3); font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  footer a { color: var(--ink-2); }
+  @media (max-width: 760px) { section { padding: 18px 16px; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/">TinyFleet<span>.</span></a>
+  <nav aria-label="Site"><a href="/wiki">Guide</a><a href="/devlog" aria-current="page">Devlog</a><a href="/press">Press</a><a class="go" href="/play/">Play free</a></nav>
+</header>
+<main class="wrap">
+  <p class="crumbs"><a href="/">TinyFleet</a> › <a href="/devlog">Devlog</a></p>
+  <h1>TinyFleet 0.8.2: Through the Hills</h1>
+  <p class="lead"><span class="when">Version 0.8.2 · 11 November 2026</span></p>
+  <section class="post">
+<p>The first patch for 0.8.0's new world, made mostly from your reports in its first days. Tunnels you can actually build, raised track and roads that cross over any line, far towns lit up at night, a big round of performance work, and shared fleets made whole after the restart. Same world: nothing restarts and no career is touched.</p>
+
+<h2>⛰️ Tunnels and raised crossings</h2>
+<ul>
+  <li><b>Tunnels work.</b> With Tunnels on, the road and rail builders now bore through ordinary hills, not only under cliffs, and a tunnel costs a little less than going over the top, so the route really takes it. A tunnel mouth can start with up to three tiles of covered cutting.</li>
+  <li><b>Built track keeps its tunnel.</b> Laid track is no longer pulled back up onto the hillside at the mouth or out of its own bore.</li>
+  <li><b>Proper portals.</b> Road tunnels get a portal to match the road (timber, stone arch, brick, concrete, twin bores), and railway portals follow the era: a stone arch for steam, brick for streamline, a concrete box for modern lines.</li>
+  <li><b>Raised track and roads cross over any line.</b> Set a height with + and the route is planned in the air: other lines and roads are free to cross, curved track can be crossed, and steep ground under the deck is no bar. Piers keep off the rails below, and when something truly can't be crossed you're told why.</li>
+</ul>
+
+<h2>🌆 Lights in the distance</h2>
+<ul>
+  <li><b>Far towns light up at night.</b> Distant towns switch their windows on through the evening, so a skyline glows across the bay instead of popping alight as its buildings load.</li>
+  <li><b>Far towns in their own colours.</b> They used to look snow-white from afar. Now their roofs, walls and windows match the town's style.</li>
+  <li><b>Rail bridges rebuilt.</b> Double track crosses on one solid viaduct instead of two thin ones with sky between, and viaducts are built in proper masonry for their era: stone, brick and concrete, with arches, cornices and cutwaters in the water.</li>
+  <li><b>Train carriages no longer flicker.</b> Stripes, panels and number boards used to shimmer on most carriages; they're steady now.</li>
+  <li>Shop, dealer and faction depot signs only appear within 40 tiles of their door, so they no longer hang over a town's skyline from miles away.</li>
+</ul>
+
+<h2>⚡ Smoother running</h2>
+<p>We went through the performance reports your games send and fixed what they showed:</p>
+<ul>
+  <li><b>Fewer freezes.</b> Route searches, cargo demand, saves and the region map now spread their work over several frames instead of stopping the game.</li>
+  <li><b>Lighter frames.</b> Traffic and people out of sight update less often, the fleet dock only redraws what changed, and busy counties with big fleets check for nearby vehicles far more cheaply.</li>
+  <li><b>No slow creep.</b> Several things that piled up over a long session (quarry machines, barges, people, wildlife, signs and liveries) are now let go properly.</li>
+  <li><b>Low and Lowest go further</b> on slower machines, with less traffic and fewer crowds, and Auto quality steps down on battery or when the computer is struggling.</li>
+</ul>
+
+<h2>🗺️ The region map</h2>
+<ul>
+  <li><b>Trains on the map.</b> Your fleet's trains show in the Fleet view at last, as their own engines and carriages in your colour, coupled along the track. The Rails view draws every train the same way, other fleets' in white.</li>
+  <li>Aircraft are drawn bigger in the Fleet view so they read beside the road vehicles.</li>
+  <li>The key for the Culture, Rails, Traffic and Demand views sits on its own line above the caption instead of running underneath it.</li>
+</ul>
+
+<h2>💸 Shared fleets made whole</h2>
+<ul>
+  <li><b>Buildings refunded.</b> When the world began again, shared fleets (even a shared fleet of one) lost their buildings and HQ with nothing paid back. Every shared fleet from the old world has been refunded into its purse at what was paid, the same as solo fleets.</li>
+  <li><b>Hired trains and jets find work again.</b> Their orders still pointed at the old world's bases, lines and routes. Those are cleared (your choice of cargo, urgency and range stays), so they look for work in this world.</li>
+  <li>A shared fleet's new HQ is bought once, by the first member back, not again by each member after.</li>
+</ul>
+
+<h2>🧹 Smaller things</h2>
+<ul>
+  <li><b>The first delivery is a real trip.</b> New players' first parts wait a proper drive away from the Auto Shop instead of round the corner.</li>
+  <li>Following a fleet vehicle, a train or another player's car, buildings between the camera and it fade out of the way, as they do for your own car.</li>
+  <li>The commonest homes (townhouses, farmhouses, crofts, yurt camps, bothies and kraals) are no longer part of the supply chains: there were too many for a plant to mean anything. They still put out their ordinary cargo.</li>
+  <li>A delivery's rent float rises just after its pay float, so the two don't sit on top of each other over a door you own.</li>
+  <li>The "Your territory" card over a town is sharp at any quality, and buildings no longer cut through it.</li>
+  <li>A building's, town's or sign's card always sits below the top-left panel, never over the online chip.</li>
+  <li>The online list's buttons (Players tab, follow, HQ, whisper) are proper links.</li>
+  <li>After signing out, nothing from the road (stock bars, territory cards, "Entering…" titles) is left floating over the sign-in screen.</li>
+</ul>
+
+<p>Thanks for the reports, keep them coming from the pause menu's Feedback button. 🚗</p>
+  </section>
+  <section>
+    <h2>More releases</h2>
+    <p>Older: <a href="/devlog/0.8.1">TinyFleet 0.8.1: Settling In</a> · <a href="/devlog">All releases</a></p>
+    <p><a class="play" href="/play/">Play TinyFleet free</a></p>
+  </section>
+  <footer><span>TinyFleet is a free online driving and logistics game, played in the browser.</span><a href="/play/">Play now</a><a href="/">Home</a><a href="/wiki">Guide</a><a href="/devlog">Devlog</a><a href="/press">Press kit</a><a href="https://tinyfleet.itch.io/tinyfleet" rel="me">itch.io</a></footer>
+</main>
+<script>(function(){try{var r=document.referrer,u=new URLSearchParams(location.search).get('utm_source')||'',x=r&&r.indexOf(location.origin)!==0,s=u?'utm:'+u:'';if((x||s)&&!sessionStorage.getItem('tf-ref'))sessionStorage.setItem('tf-ref',s||r);navigator.sendBeacon&&navigator.sendBeacon('/api/visit',new Blob([JSON.stringify({kind:'site',ref:x?r:'',src:s,path:location.pathname})],{type:'text/plain'}))}catch(e){}})();</script>
+</body>
+</html>
