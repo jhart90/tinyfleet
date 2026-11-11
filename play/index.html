@@ -228,8 +228,9 @@
     .regionmap .ecokey { position: absolute; right: 16px; bottom: 16px; display: flex; align-items: center; gap: 8px; font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: #dbe3dd; padding: 4px 12px; border-radius: 999px; background: rgba(18,26,32,.55); pointer-events: none; }
     .regionmap .ecokey i { display: inline-block; width: 90px; height: 9px; border-radius: 999px; background: linear-gradient(90deg, #07090b, #2bff6a); box-shadow: 0 0 0 1px rgba(255,255,255,.25); }
     .regionmap .ecokey .top { color: #2bff6a; font-weight: 700; }
-    .regionmap .viewkey { flex-wrap: wrap; max-width: calc(100vw - 32px); }
-    @media (max-width: 1200px) { .regionmap .viewkey { bottom: 44px; } }
+    /* a view's key stands on its own line above the caption (which is centred along the bottom), never across it: the
+       Culture view's eight styles ran under "7 x 7 counties…" (the user, 11 Nov 2026) */
+    .regionmap .viewkey { bottom: 52px; flex-wrap: wrap; justify-content: flex-end; gap: 6px 16px; max-width: min(980px, calc(100vw - 32px)); border-radius: 14px; padding: 6px 14px; }
     .regionmap .viewkey { pointer-events: auto; }
     .regionmap .viewkey em { font-style: normal; opacity: .65; }
     .regionmap .viewkey .note { opacity: .7; }
@@ -239,7 +240,8 @@
     .rtag span.cul { font-size: 10.5px; font-weight: 700; color: #e6ece8; }
     .rtag span.cul em { font-style: normal; font-weight: 800; }
     .rtag span.cul i { font-style: normal; font-weight: 600; color: #ffd76a; }
-    .regionmap .viewkey span { display: inline-flex; align-items: center; gap: 6px; }
+    .regionmap .viewkey span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .regionmap .viewkey em { margin-left: 2px; }
     .regionmap .viewkey b.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; box-shadow: 0 0 0 2px rgba(18,26,32,.95), 0 0 0 3px rgba(255,255,255,.25); }
     /* the Fleet view: the player and the fleet's vehicles in the fleet's colour */
     .regionmap[data-view="fleet"] .rmark.mine { background: var(--fleet, #e2412f); }
@@ -2727,6 +2729,11 @@
     #net-roster .what { display: flex; flex-direction: column; } #net-roster .what small { color: #6a7a83; }
     #net-roster .acts { display: flex; gap: 8px; align-items: center; white-space: nowrap; }
     #net-roster .foot { color: #7d8a92; font-size: 11.5px; margin: 6px 0 0; }
+    /* its buttons (Players tab, follow, HQ, whisper) are text links, as on the town card and the register */
+    #net-roster button.link { all: unset; cursor: pointer; color: #2f7fb5; font-weight: 600; font-size: 12.5px; border-radius: 4px; }
+    #net-roster button.link:hover { text-decoration: underline; }
+    #net-roster button.link:focus-visible { outline: 2px solid #2f7fb5; outline-offset: 2px; }
+    #net-roster .head button.link { font-size: 12px; }
     #net-chip[hidden] { display: none; }
     /* the camera sent somewhere far, while that county is built and drawn (game/travelLoading.ts) */
     #travel-load { left: 50%; top: 42%; transform: translate(-50%, -50%); min-width: 240px; z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; padding: 12px 18px 14px; }
@@ -3082,6 +3089,14 @@
     #social .worldtab .none { margin: 8px 0 0; color: #7d8a92; }
     #social .worldtab li .what b { font-size: 12.5px; }
     /* marks (docs/marks.html): the sign/drift/GG card, the prompt, the lap chip, guestbooks, holders, suggestions and picks */
+    /* the town banners' cards (net/marks.ts townTags): in the page, over the game, placed every frame */
+    #mark-towntags { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
+    #mark-towntags .mk-tt { position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 8px; padding: 5px 12px 5px 9px; border-radius: 12px; background: rgba(255,255,255,.95); box-shadow: 0 2px 10px rgba(16,24,30,.28); font-family: "IBM Plex Sans", "Segoe UI", sans-serif; color: #1f2b33; white-space: nowrap; will-change: transform; }
+    #mark-towntags .mk-tt[hidden] { display: none; }
+    #mark-towntags .mk-tt i { width: 10px; height: 10px; border-radius: 50%; flex: none; box-shadow: 0 0 0 2px rgba(255,255,255,.95), 0 0 0 3px rgba(31,43,51,.18); }
+    #mark-towntags .mk-tt span { display: flex; flex-direction: column; line-height: 1.15; }
+    #mark-towntags .mk-tt b { font-size: 12.5px; font-weight: 700; }
+    #mark-towntags .mk-tt small { font-size: 10.5px; color: #5b676e; }
     #mark-card { position: fixed; top: 104px; left: 16px; width: 300px; max-width: calc(100vw - 32px); box-sizing: border-box; pointer-events: auto; font-size: 12px; color: #4c5a63; z-index: 5; padding: 11px 14px 12px; }
     #mark-card[hidden] { display: none; }
     #mark-card .x { position: absolute; top: 6px; right: 8px; border: 0; background: none; font: inherit; font-size: 20px; line-height: 1; color: #9aa6ad; cursor: pointer; padding: 2px 5px; border-radius: 6px; }
@@ -3987,7 +4002,7 @@
       #hq .hq-card { width: 120px; }
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-B2Nfmvlj.js"></script>
+  <script type="module" crossorigin src="./assets/index-iHXll1tZ.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-Dv0uXxgI.js">
   <link rel="stylesheet" crossorigin href="./assets/index-BV6iPe3q.css">
 </head>
