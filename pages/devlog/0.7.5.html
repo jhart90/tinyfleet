@@ -75,6 +75,9 @@
   .tags li { margin: 0; font-size: 13px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; color: var(--ink-2); }
   kbd { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12.5px; background: var(--panel-2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; color: var(--ink); white-space: nowrap; }
   video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+  .reels { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  .reels figure { margin: 0; } .reels video { aspect-ratio: 9 / 16; }
+  .reels figcaption { font-size: 13.5px; color: var(--ink-2); margin-top: 6px; }
   .media { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
   .media figure { margin: 0; }
   .media img { display: block; width: 100%; height: auto; border-radius: 12px; background: #1b2a33; }
@@ -184,5 +187,6 @@
   </section>
   <footer><span>TinyFleet is a free online driving and logistics game, played in the browser.</span><a href="/play/">Play now</a><a href="/">Home</a><a href="/wiki">Guide</a><a href="/devlog">Devlog</a><a href="/press">Press kit</a></footer>
 </main>
+<script>(function(){try{var r=document.referrer,u=new URLSearchParams(location.search).get('utm_source')||'',x=r&&r.indexOf(location.origin)!==0,s=u?'utm:'+u:'';if((x||s)&&!sessionStorage.getItem('tf-ref'))sessionStorage.setItem('tf-ref',s||r);navigator.sendBeacon&&navigator.sendBeacon('/api/visit',new Blob([JSON.stringify({kind:'site',ref:x?r:'',src:s,path:location.pathname})],{type:'text/plain'}))}catch(e){}})();</script>
 </body>
 </html>

@@ -483,5 +483,6 @@
     document.getElementById('built').textContent = 'TinyFleet ' + v.version + ' · ' + v.date;
   }).catch(function () {});
 </script>
+<script>(function(){try{var r=document.referrer,u=new URLSearchParams(location.search).get('utm_source')||'',x=r&&r.indexOf(location.origin)!==0,s=u?'utm:'+u:'';if((x||s)&&!sessionStorage.getItem('tf-ref'))sessionStorage.setItem('tf-ref',s||r);navigator.sendBeacon&&navigator.sendBeacon('/api/visit',new Blob([JSON.stringify({kind:'site',ref:x?r:'',src:s,path:location.pathname})],{type:'text/plain'}))}catch(e){}})();</script>
 </body>
 </html>

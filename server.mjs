@@ -12052,6 +12052,14 @@ function renderGames() {
   var week = games.filter(function (g) { return Date.now() - g.last < 7 * 86400000; }).length;
   var vis = { page: 0, mobile: 0, anyway: 0, soft: 0, none: 0, glon: 0 };
   visits.forEach(function (d) { var n = d.n || {}; vis.page += n.page || 0; vis.mobile += n.mobile || 0; vis.anyway += n.anyway || 0; vis.soft += n['gl-soft'] || 0; vis.none += n['gl-none'] || 0; vis.glon += (n['gl-anyway'] || 0) + (n['gl-never'] || 0); });
+  // where visitors came from (server/admin.ts sourceOf): the site's pages and the game's, 30 days
+  var src = {};
+  visits.forEach(function (d) { var n = d.n || {}; Object.keys(n).forEach(function (k) { var m = /^(site|page):(.+)$/.exec(k); if (m) { src[m[2]] = src[m[2]] || { site: 0, page: 0 }; src[m[2]][m[1]] += n[k]; } }); });
+  var AI = [['chatgpt', 'ChatGPT'], ['gemini', 'Gemini'], ['claude', 'Claude'], ['perplexity', 'Perplexity'], ['copilot', 'Copilot']];
+  var aiStats = AI.map(function (a) { var s = src[a[0]] || { site: 0, page: 0 }; return [num(s.site) + ' / ' + num(s.page), 'from ' + a[1] + ': site views / game loads, 30 days']; });
+  var top = Object.keys(src).filter(function (k) { return k !== 'direct'; }).sort(function (a, b) { return (src[b].site + src[b].page) - (src[a].site + src[a].page); }).slice(0, 6)
+    .map(function (k) { return k + ' ' + num(src[k].site + src[k].page); }).join(' · ');
+  aiStats.push([top || '—', 'top sources besides direct (site views + game loads, 30 days)']);
   var perfGames = games.filter(function (g) { return g.fps != null; });
   var neverDrove = perfGames.filter(function (g) { return !g.youTiles; }).length;
   $('stats').innerHTML = [
@@ -12062,7 +12070,7 @@ function renderGames() {
     [num(vis.soft) + ' / ' + num(vis.none), 'software graphics / no WebGL (card shown, 30 days)'], [num(vis.glon), 'played on in software graphics'],
     [perfGames.length ? Math.round(perfGames.reduce(function (s, g) { return s + g.fps; }, 0) / perfGames.length) : '—', 'average FPS (games with perf data)'],
     [neverDrove + ' / ' + perfGames.length, 'never drove a tile (perf-tracked games)']
-  ].concat(funnelStats()).map(function (s) { return '<div class="stat"><b>' + esc(s[0]) + '</b><span>' + esc(s[1]) + '</span></div>'; }).join('');
+  ].concat(funnelStats()).concat(aiStats).map(function (s) { return '<div class="stat"><b>' + esc(s[0]) + '</b><span>' + esc(s[1]) + '</span></div>'; }).join('');
   $('ghead').innerHTML = '<tr>' + COLS.map(function (c) { return '<th data-k="' + c[0] + '"' + (c[2] ? ' class="n"' : '') + '>' + esc(c[1]) + (sortKey === c[0] ? (sortDir > 0 ? ' ▲' : ' ▼') : '') + '</th>'; }).join('') + '</tr>';
   Array.prototype.forEach.call($('ghead').querySelectorAll('th'), function (th) {
     th.onclick = function () { var k = th.dataset.k; if (sortKey === k) sortDir = -sortDir; else { sortKey = k; sortDir = typeof (games[0] || {})[k] === 'string' ? 1 : -1; } renderGames(); };
@@ -15960,6 +15968,41 @@ function json(res, code, body2, head = {}) {
   res.writeHead(code, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...head }).end(JSON.stringify(body2));
 }
 var str = (v, max) => (typeof v === "string" ? v : v == null ? "" : String(v)).slice(0, max);
+function sourceOf(ref, src) {
+  const host = (s) => {
+    try {
+      return new URL(s).hostname.toLowerCase();
+    } catch {
+      return s.toLowerCase();
+    }
+  };
+  const name = (h) => {
+    if (!h) return "direct";
+    if (/(^|\.)(chatgpt\.com|chat\.openai\.com|openai\.com)$|^chatgpt/.test(h)) return "chatgpt";
+    if (/(^|\.)(gemini\.google\.com|bard\.google\.com)$|^gemini/.test(h)) return "gemini";
+    if (/(^|\.)claude\.ai$|^claude/.test(h)) return "claude";
+    if (/(^|\.)perplexity\.ai$|^perplexity/.test(h)) return "perplexity";
+    if (/(^|\.)copilot\.microsoft\.com$|^copilot/.test(h)) return "copilot";
+    if (/(^|\.)tinyfleet\.(online|up\.railway\.app)$|^localhost$|^127\./.test(h)) return "self";
+    if (/(^|\.)google\.[a-z.]+$/.test(h)) return "google";
+    if (/(^|\.)bing\.com$/.test(h)) return "bing";
+    if (/(^|\.)duckduckgo\.com$/.test(h)) return "duckduckgo";
+    if (/(^|\.)(reddit\.com|redd\.it)$/.test(h)) return "reddit";
+    if (/(^|\.)itch\.io$/.test(h)) return "itch";
+    if (/(^|\.)(youtube\.com|youtu\.be)$/.test(h)) return "youtube";
+    if (/(^|\.)(t\.co|x\.com|twitter\.com)$/.test(h)) return "x";
+    if (/(^|\.)(facebook\.com|instagram\.com|tiktok\.com|discord\.com|discord\.gg)$/.test(h)) return h.split(".").slice(-2)[0];
+    return "other";
+  };
+  if (src.startsWith("utm:")) return name(host(src.slice(4)));
+  const fromRef = name(host(ref));
+  if (fromRef !== "direct" && fromRef !== "self") return fromRef;
+  if (src) {
+    const carried = name(host(src));
+    if (carried !== "self") return carried;
+  }
+  return fromRef === "self" ? "direct" : fromRef;
+}
 function cookieOf(req, name) {
   const m = new RegExp(`(?:^|;\\s*)${name}=([^;]+)`).exec(String(req.headers.cookie ?? ""));
   return m ? m[1] : "";
@@ -16144,10 +16187,6 @@ async function adminHttp(req, res, path3, store3, hooks) {
       json(res, 405, { ok: false }, OPEN);
       return true;
     }
-    if (limited(`v|${ip}`, 12, 6e5)) {
-      json(res, 429, { ok: false }, OPEN);
-      return true;
-    }
     let m = {};
     try {
       m = JSON.parse(await readBody(req, 4e3) ?? "");
@@ -16156,6 +16195,25 @@ async function adminHttp(req, res, path3, store3, hooks) {
       return true;
     }
     const kind = str(m.kind, 20);
+    if (kind === "site" ? limited(`s|${ip}`, 40, 6e5) : limited(`v|${ip}`, 12, 6e5)) {
+      json(res, 429, { ok: false }, OPEN);
+      return true;
+    }
+    if (kind === "site" || kind === "page") {
+      const day2 = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+      const doc2 = await store3.get(`visits:${day2}`) ?? { day: day2, n: {}, rows: [] };
+      const from = sourceOf(str(m.ref, 300), str(m.src, 300));
+      doc2.n[`${kind}:${from}`] = (doc2.n[`${kind}:${from}`] ?? 0) + 1;
+      const at2 = str(m.path, 80).replace(/[^a-z0-9/._-]/gi, "");
+      if (kind === "site" && at2 && from !== "direct") doc2.n[`land:${from}:${at2}`] = (doc2.n[`land:${from}:${at2}`] ?? 0) + 1;
+      if (kind === "site") {
+        doc2.n.site = (doc2.n.site ?? 0) + 1;
+        await store3.set(`visits:${day2}`, doc2);
+        json(res, 200, { ok: true }, OPEN);
+        return true;
+      }
+      await store3.set(`visits:${day2}`, doc2);
+    }
     const card = kind === "card-drawn" || kind === "card-looked" || kind === "card-phone" || kind.startsWith("gl-");
     if (kind !== "page" && kind !== "mobile" && kind !== "anyway" && !card) {
       json(res, 400, { ok: false }, OPEN);
