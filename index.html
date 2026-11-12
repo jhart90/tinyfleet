@@ -300,6 +300,12 @@
   .faq details p { margin: 0 0 14px; color: var(--ink-2); font-size: 14.5px; max-width: 72ch; }
   footer { margin-top: 16px; padding: 16px 22px; color: var(--ink-2); font-size: 13.5px; display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; }
 
+  /* a phone that won't play the footage (Low Power Mode, Data Saver) gets the fleet on a turntable instead: an animated
+     image, which plays where a video won't. Loaded only then (scripts/heroTurntable.mjs makes it) */
+  .spin { display: none; }
+  html.nofilm .spin { display: block; position: absolute; right: max(2vw, calc(50% - 560px)); top: 50%; width: min(42vw, 460px); transform: translateY(-58%); pointer-events: none; z-index: 0; }
+  html.nofilm .spin::before { content: ''; position: absolute; inset: 8% 4% 0; z-index: -1; background: radial-gradient(ellipse 50% 42% at 50% 60%, rgba(255,250,235,.55), rgba(255,250,235,0) 100%); }
+  .spin img { display: block; width: 100%; height: auto; filter: drop-shadow(0 10px 24px rgba(0,0,0,.25)); }
   .wrap.below { margin-top: -110px; position: relative; }
   @media (max-width: 760px) {
     .hero { min-height: 72vh; }
@@ -308,6 +314,7 @@
     section.about, footer { padding: 18px 16px; }
     .dl { grid-template-columns: 1fr; gap: 22px; }
     .wrap.below { margin-top: -80px; }
+    html.nofilm .spin { position: relative; right: auto; top: auto; width: min(88vw, 400px); margin: 10px auto -14px; transform: none; }
   }
   @media (max-width: 760px) { .play { width: 100%; justify-content: center; } }
   @media (prefers-reduced-motion: reduce) { .btn, .btn:hover, .play, .play:hover { transition: none; transform: none; } }
@@ -325,6 +332,7 @@
     <h1 class="logo">TinyFleet<span>.</span></h1>
     <p class="tag">A tiny tilt-shift driving game. Haul cargo between towns, hire drivers, buy an HQ and grow a fleet across endless islands.</p>
     <p class="meta" id="meta">Free · plays in your browser</p>
+    <div class="spin" aria-hidden="true"><img alt="" width="480" height="360" decoding="async"></div>
     <a class="play" href="play/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Play Now</a>
     <p class="play-note">Right here in your browser: nothing to download or install.</p>
     <div class="jump"><span>Rather have the app?</span><a href="#win" id="jump-win">Windows</a><a href="#mac" id="jump-mac">Mac</a></div>
@@ -449,8 +457,17 @@
     dim();
     // footage filmed in the game; a visitor who asked for less motion gets its first frame, still
     var film = document.getElementById('film');
+    // the turntable, for when the footage won't play: its image is fetched only then
+    var spun = false, spin = function () { if (spun) return; spun = true; var i = document.querySelector('.spin img'); if (i) i.src = 'media/hero-spin.webp?v=1'; document.documentElement.classList.add('nofilm'); };
+    var saver = navigator.connection && navigator.connection.saveData;
     if (film && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { film.removeAttribute('autoplay'); film.pause(); }
-    else if (film) { var go = function () { var p = film.play(); if (p && p.catch) p.catch(function () {}); }; go(); document.addEventListener('visibilitychange', function () { if (!document.hidden) go(); }); }
+    else if (film && saver) { film.removeAttribute('autoplay'); film.preload = 'none'; film.pause(); spin(); }
+    else if (film) {
+      var go = function () { var p = film.play(); if (p && p.catch) p.catch(spin); }; go();
+      document.addEventListener('visibilitychange', function () { if (!document.hidden) go(); });
+      // still not moving after a moment (Low Power Mode refuses it without a word)
+      setTimeout(function () { if (film.paused || !(film.currentTime > 0)) spin(); }, 2500);
+    }
 
     // Each shot's subject, so a phone (or any screen whose shape crops the 16:9 footage) shows it rather
     // than whatever happens to be in the middle. Per shot: its start and end in seconds, and where the
