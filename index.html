@@ -322,7 +322,8 @@
 </head>
 <body>
 <div class="film" aria-hidden="true">
-  <video id="film" autoplay muted loop playsinline preload="auto" poster="media/hero.jpg?v=4">
+  <!-- no autoplay or preload here: the script below starts it on a desktop, and a phone never downloads it -->
+  <video id="film" muted loop playsinline preload="none" poster="media/hero.jpg?v=4">
     <source src="media/hero.webm?v=4" type="video/webm">
     <source src="media/hero.mp4?v=4" type="video/mp4">
   </video>
@@ -460,9 +461,13 @@
     // the turntable, for when the footage won't play: its image is fetched only then
     var spun = false, spin = function () { if (spun) return; spun = true; var i = document.querySelector('.spin img'); if (i) i.src = 'media/hero-spin.webp?v=1'; document.documentElement.classList.add('nofilm'); };
     var saver = navigator.connection && navigator.connection.saveData;
-    if (film && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { film.removeAttribute('autoplay'); film.pause(); }
-    else if (film && saver) { film.removeAttribute('autoplay'); film.preload = 'none'; film.pause(); spin(); }
+    // phones and tablets always get the turntable, never the footage (the user, 12 Nov 2026): a narrow screen,
+    // or a touch screen with no mouse
+    var mobile = window.matchMedia && matchMedia('(max-width: 760px), (hover: none) and (pointer: coarse)').matches;
+    if (film && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { /* the poster, still */ }
+    else if (film && (saver || mobile)) spin();
     else if (film) {
+      film.preload = 'auto';
       var go = function () { var p = film.play(); if (p && p.catch) p.catch(spin); }; go();
       document.addEventListener('visibilitychange', function () { if (!document.hidden) go(); });
       // still not moving after a moment (Low Power Mode refuses it without a word)
