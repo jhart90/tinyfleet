@@ -77974,6 +77974,7 @@ var TYPES = {
   ".jpg": "image/jpeg",
   ".gif": "image/gif",
   ".webp": "image/webp",
+  ".glb": "model/gltf-binary",
   ".svg": "image/svg+xml",
   ".ico": "image/x-icon",
   ".woff2": "font/woff2",
@@ -77987,7 +77988,7 @@ var TYPES = {
   ".txt": "text/plain; charset=utf-8",
   ".xml": "application/xml; charset=utf-8"
 };
-var SITE_FILES = /^\/(index\.html|version\.json|favicon\.(svg|ico)|favicon-\d+\.png|apple-touch-icon\.png|robots\.txt|sitemap\.xml|llms\.txt|media\/[\w.-]+\.(mp4|webm|jpg|png|gif|webp)|downloads\/[\w.-]+\.zip)$/;
+var SITE_FILES = /^\/(index\.html|version\.json|favicon\.(svg|ico)|favicon-\d+\.png|apple-touch-icon\.png|robots\.txt|sitemap\.xml|llms\.txt|media\/[\w.-]+\.(mp4|webm|jpg|png|gif|webp|js|glb)|downloads\/[\w.-]+\.zip)$/;
 var ENCODINGS = [["br", ".br"], ["gzip", ".gz"]];
 function sendFile(req, res, file, head) {
   let size;
