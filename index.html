@@ -263,6 +263,56 @@
   .addr button { font: inherit; font-weight: 600; font-size: 13px; color: #fff; background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.45); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
   .tip { margin-top: 18px; padding: 14px 16px; border-radius: 16px; background: rgba(12,20,26,.62); border: 1px solid rgba(255,255,255,.18); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); color: rgba(255,255,255,.88); font-size: 14.5px; line-height: 1.45; max-width: 34em; }
   .tip b { display: block; color: #fff; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 17px; margin-bottom: 3px; }
+  /* phone fleets (docs/phonefleet.html) */
+  .alt { display: block; margin-top: 16px; font: inherit; font-family: Fredoka, sans-serif; font-weight: 600; font-size: 18px; color: #fff; background: rgba(255,255,255,.14); border: 1.5px solid rgba(255,255,255,.55); border-radius: 999px; padding: 10px 22px; cursor: pointer; }
+  .play-note.small { font-size: 13px; }
+  .pill { font: inherit; font-weight: 600; font-size: 15px; color: #1f2b33; background: #fbf8f2; border: 0; border-radius: 999px; padding: 9px 16px; cursor: pointer; }
+  .link { display: block; margin: 12px 0 0; font: inherit; font-size: 14px; color: rgba(255,255,255,.75); background: none; border: 0; text-decoration: underline; cursor: pointer; padding: 0; }
+  .mk, .ready { margin-top: 18px; padding: 18px 16px 20px; border-radius: 22px; background: rgba(12,20,26,.72); border: 1px solid rgba(255,255,255,.18); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: #fff; max-width: 520px; }
+  .mk[hidden], .ready[hidden], .welcome[hidden] { display: none; }
+  .mk-stage { margin: -6px auto 4px; width: min(76vw, 340px); }
+  .mk-stage .spin { display: block !important; position: relative !important; right: auto !important; top: auto !important; width: 100% !important; margin: 0 !important; transform: none !important; }
+  .mk-prev { display: flex; align-items: center; gap: 12px; margin: 4px 0 10px; }
+  .mk-prev b { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 24px; line-height: 1.1; }
+  .badge { flex: none; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; line-height: 1; box-shadow: 0 2px 8px rgba(0,0,0,.3); border: 3px solid #fff; }
+  .mk-f { display: block; margin-top: 14px; font-weight: 600; font-size: 15px; }
+  .mk-f small { display: block; font-weight: 400; font-size: 13px; color: rgba(255,255,255,.7); }
+  .mk-f input, .rd-mail input { display: block; width: 100%; margin-top: 6px; font: inherit; font-size: 17px; color: #1f2b33; background: #fbf8f2; border: 2px solid transparent; border-radius: 12px; padding: 10px 12px; }
+  .mk-f input:focus, .rd-mail input:focus { outline: none; border-color: #f5cf3a; }
+  .mk-f input.bad { border-color: #ff6a55; }
+  .mk-row { display: flex; gap: 8px; align-items: center; }
+  .mk-row input { flex: 1; min-width: 0; }
+  .mk-row .pill { margin-top: 6px; font-size: 20px; padding: 6px 14px; }
+  .mk-l { margin-top: 14px; font-weight: 600; font-size: 15px; }
+  .sw, .logos { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 6px; margin-top: 6px; }
+  .sw button, .logos button { aspect-ratio: 1; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); cursor: pointer; padding: 0; }
+  .sw button.on { border: 3px solid #fff; box-shadow: 0 0 0 2px #1f2b33 inset; }
+  .logos button { background: rgba(255,255,255,.1); color: #fff; font-size: 18px; line-height: 1; border-radius: 10px; }
+  .logos button.on { background: #fbf8f2; color: #1f2b33; border-color: #fff; }
+  .mk-err, .wl-err { min-height: 1.2em; margin: 12px 0 0; color: #ffb3a8; font-size: 14.5px; }
+  .rd-lede { margin: 0; font-size: 16px; line-height: 1.45; }
+  .rd-gift { margin: 8px 0 0; font-size: 15px; color: #f5cf3a; }
+  .rd-when { display: flex; align-items: center; gap: 10px; margin-top: 16px; font-weight: 600; font-size: 15px; }
+  .rd-when select { flex: 1; min-width: 0; font: inherit; font-size: 15px; color: #1f2b33; background: #fbf8f2; border: 0; border-radius: 10px; padding: 8px 10px; }
+  .rd-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .rd-mail { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+  .rd-mail[hidden] { display: none; }
+  .rd-mail input { flex: 1; min-width: 180px; margin: 0; }
+  .rd-mail small { flex-basis: 100%; font-size: 12.5px; color: rgba(255,255,255,.7); }
+  .ready .tip { margin-top: 14px; }
+  .rd-lost { margin: 12px 0 0; font-size: 13px; color: rgba(255,255,255,.72); }
+  .welcome { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px; background: rgba(10,16,22,.55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+  .wl-card { width: min(460px, 100%); max-height: calc(100vh - 32px); overflow: auto; background: #fbf8f2; color: #1f2b33; border-radius: 26px; padding: 18px 26px 22px; box-shadow: 0 24px 60px rgba(0,0,0,.4); text-align: center; }
+  .wl-card .mk-prev { justify-content: center; margin-top: 0; }
+  .wl-card .mk-prev b { font-size: 26px; }
+  .wl-card h2 { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 20px; margin: 4px 0 6px; color: #4c5a63; }
+  .wl-card p { margin: 6px 0 0; font-size: 16px; line-height: 1.45; color: #4c5a63; }
+  .wl-card .rd-gift { color: #9a6d00; }
+  .wl-card .play { margin-top: 18px; }
+  .wl-card .link { color: #4c5a63; margin: 14px auto 0; }
+  .wl-card .wl-err { color: #c0392b; }
+  .wl-stage { position: relative; width: min(300px, 70vw); aspect-ratio: 4 / 3; margin: 0 auto; }
+  .wl-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: pan-y; cursor: grab; }
   .anyway { display: inline-block; margin-top: 14px; font-size: 13px; color: rgba(255,255,255,.7); text-shadow: 0 1px 8px rgba(0,0,0,.5); }
 
   /* the two downloads: second to playing in the browser, so outlined rather than filled */
@@ -360,15 +410,58 @@
     <div class="jump"><span>Rather have the app?</span><a href="#win" id="jump-win">Windows</a><a href="#mac" id="jump-mac">Mac</a></div>
     <!-- phones and tablets only (the user, 12 Nov 2026): the game wants a keyboard, so send it to a computer for later -->
     <div class="later">
-      <p class="later-lede">TinyFleet is played on a computer with a keyboard. Send it to yours for later:</p>
-      <button class="play send" type="button" id="send"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M3 18h18M5 15V6a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v9M12 8v5M9.5 10.5 12 8l2.5 2.5"/></svg>Send to my computer</button>
-      <p class="play-note" id="send-note">AirDrop it to your Mac, text or email it to yourself, or save it to Reminders.</p>
+      <div id="later-start">
+      <p class="later-lede">TinyFleet is played on a computer with a keyboard. Start your fleet here, and drive it tonight:</p>
+      <button class="play send" type="button" id="start"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M5 11 6.6 6.3A2 2 0 0 1 8.5 5h7a2 2 0 0 1 1.9 1.3L19 11a2 2 0 0 1 1 1.7V17a1 1 0 0 1-1 1h-1a2 2 0 0 1-4 0h-4a2 2 0 0 1-4 0H5a1 1 0 0 1-1-1v-4.3A2 2 0 0 1 5 11zm2.1 0h9.8l-1.1-3.3a1 1 0 0 0-.9-.7H9.1a1 1 0 0 0-.9.7z"/></svg>Start your fleet now</button>
+      <p class="play-note" id="start-note">Name it, paint it, pick a logo. Open it on your computer within a week and it comes with $500.</p>
+      <button class="alt" type="button" id="send">Just send me the link</button>
+      <p class="play-note small" id="send-note">AirDrop it to your Mac, text or email it to yourself, or save it to Reminders.</p>
       <div class="addr"><span>or type</span><b>tinyfleet.online</b><button type="button" id="copy">Copy link</button></div>
       <div class="tip" id="tip" hidden><b id="tip-h"></b><span id="tip-p"></span></div>
       <a class="anyway" href="play/">Or try it here anyway</a>
+      </div>
+      <!-- make a fleet here, play it on a computer (docs/phonefleet.html, the user, 12 Nov 2026) -->
+      <form class="mk" id="mk" hidden novalidate autocomplete="off">
+        <div class="mk-stage" id="mk-stage"></div>
+        <div class="mk-prev"><span class="badge" id="mk-badge"></span><b id="mk-show">Your fleet</b></div>
+        <label class="mk-f">Fleet name<span class="mk-row"><input id="mk-fleet" maxlength="24" autocapitalize="words" spellcheck="false"><button type="button" class="pill" id="mk-shuffle" aria-label="Suggest another name">&#8635;</button></span></label>
+        <div class="mk-l">Body colour</div><div class="sw" id="mk-p"></div>
+        <div class="mk-l">Trim colour</div><div class="sw" id="mk-a"></div>
+        <div class="mk-l">Logo</div><div class="logos" id="mk-logo"></div>
+        <label class="mk-f">Your name<small>What you sign in with: 3 to 16 letters, digits, - or _</small><input id="mk-name" maxlength="16" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="username"></label>
+        <label class="mk-f">PIN<small>4 or more characters, for signing in on any other computer</small><input id="mk-pin" type="password" maxlength="32" autocomplete="new-password"></label>
+        <label class="mk-f">PIN again<input id="mk-pin2" type="password" maxlength="32" autocomplete="new-password"></label>
+        <p class="mk-err" id="mk-err" role="alert"></p>
+        <button class="play send" type="submit" id="mk-go">Make my fleet</button>
+        <button type="button" class="link" id="mk-cancel">Not now</button>
+      </form>
+      <div class="ready" id="ready" hidden>
+        <div class="mk-stage" id="rd-stage"></div>
+        <div class="mk-prev"><span class="badge" id="rd-badge"></span><b id="rd-name"></b></div>
+        <p class="rd-lede" id="rd-lede">is ready to drive. Open it on your computer and you’re straight in, no PIN needed.</p>
+        <p class="rd-gift" id="rd-gift">Open it within a week and it comes with <b>$500</b> to start.</p>
+        <button class="play send" type="button" id="rd-send"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M3 18h18M5 15V6a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v9M12 8v5M9.5 10.5 12 8l2.5 2.5"/></svg>Send to my computer</button>
+        <div class="rd-when"><span>Remind me</span><select id="rd-when" aria-label="When to be reminded"></select></div>
+        <div class="rd-acts"><button type="button" class="pill" id="rd-cal">Add to my calendar</button><button type="button" class="pill" id="rd-copy">Copy link</button></div>
+        <div class="rd-mail" id="rd-mail" hidden><input type="email" id="rd-to" placeholder="you@example.com" autocomplete="email" inputmode="email"><button type="button" class="pill" id="rd-mailgo">Email me then</button><small id="rd-mailnote">One email at that time, then we forget your address.</small></div>
+        <div class="tip" id="rd-tip"><b>Or just leave this tab open.</b><span id="rd-tip-p">If your browser syncs tabs, this one is on your computer too, link and all.</span></div>
+        <p class="rd-lost">Lost the link? Sign in at tinyfleet.online with <b id="rd-user"></b> and your PIN.</p>
+      </div>
     </div>
   </div>
 </section>
+<div class="welcome" id="welcome" hidden role="dialog" aria-modal="true" aria-labelledby="wl-h">
+  <div class="wl-card">
+    <div class="wl-stage" id="wl-stage"></div>
+    <div class="mk-prev"><span class="badge" id="wl-badge"></span><b id="wl-fleet"></b></div>
+    <h2 id="wl-h">Your fleet is ready</h2>
+    <p id="wl-p">You started it on your phone. Press start and you’re in, no PIN needed.</p>
+    <p class="rd-gift" id="wl-gift" hidden>And it comes with a <b>$500</b> welcome gift.</p>
+    <button class="play" type="button" id="wl-go"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Start driving</button>
+    <p class="wl-err" id="wl-err" role="alert"></p>
+    <button type="button" class="link" id="wl-close">Not now</button>
+  </div>
+</div>
 <div class="wrap below">
   <div class="dl-head glass">
     <h3>Or download the app</h3>
@@ -499,17 +592,18 @@
       var still = function () { if (img && !img.getAttribute('src')) img.src = 'media/hero-spin.webp?v=1'; };
       var wait = setTimeout(still, 3000);
       try {
-        import('./media/hero3d.js?v=1')
-          .then(function (m) { return m.mount(box, 'media/hero-fleet.glb?v=1', 'media/hero-fleet-more.glb?v=1'); })
-          .then(function () { clearTimeout(wait); box.classList.add('live'); }, function () { clearTimeout(wait); still(); });
+        window.tinyTurn = import('./media/hero3d.js?v=2')
+          .then(function (m) { return m.mount(box, 'media/hero-fleet.glb?v=2', 'media/hero-fleet-more.glb?v=2', 'media/hero-livery.glb?v=2'); });
+        window.tinyTurn.then(function () { clearTimeout(wait); box.classList.add('live'); }, function () { clearTimeout(wait); still(); });
       } catch (e) { clearTimeout(wait); still(); }
     };
     var saver = navigator.connection && navigator.connection.saveData;
     // phones and tablets always get the turntable, never the footage (the user, 12 Nov 2026): a narrow screen,
     // or a touch screen with no mouse
     var mobile = window.matchMedia && matchMedia('(max-width: 760px), (hover: none) and (pointer: coarse)').matches;
-    if (film && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { /* the poster, still */ }
-    else if (film && (saver || mobile)) spin();
+    // phones get the turntable even with Reduce Motion on (the user, 12 Nov 2026): it turns slowly and stops under a finger
+    if (film && (saver || mobile)) spin();
+    else if (film && window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { /* the poster, still */ }
     else if (film) {
       film.preload = 'auto';
       var go = function () { var p = film.play(); if (p && p.catch) p.catch(spin); }; go();
@@ -553,6 +647,227 @@
       else if (firefox) { h = 'Signed in to Firefox? Just leave this tab open.'; p = 'On your computer it’s under Firefox’s synced tabs. Or tap Share, then “Send to device”.'; }
       else if (samsung) { h = 'Tip: email it to yourself'; p = 'Samsung Internet doesn’t sync tabs with a computer, so the Send button is the easy way.'; }
       if (h) { document.getElementById('tip-h').textContent = h; document.getElementById('tip-p').textContent = p; document.getElementById('tip').hidden = false; }
+    })();
+
+    // Fleets started on a phone (docs/phonefleet.html, the user, 12 Nov 2026). The phone makes the fleet through
+    // /api/reserve and gets a one-use claim; the claim link (tinyfleet.online/#claim=…, in the fragment so it reaches
+    // no server log) opened on a computer shows the fleet and, on Start driving, trades the claim for a sign-in token
+    // the game finds waiting (localStorage 'tinyfleet-online', as the game keeps it) and goes straight in.
+    (function () {
+      var root = document.documentElement, phone = root.classList.contains('phone');
+      var $ = function (id) { return document.getElementById(id); };
+      // the game's own palette and logos (src/game/brand.ts BRAND_PALETTE, src/game/logos.ts LOGOS + MORE_LOGOS)
+      var PAL = [0xf7c5d4, 0xe2412f, 0xef6a4c, 0xf28c38, 0xf2a93b, 0xf5cf3a, 0x86c36c, 0xa7dcc8, 0x2bb3a3, 0x3f78c0, 0x8e5cc7, 0xf4f2ec, 0xc9ced4, 0x8a8f96,
+        0xb23a6c, 0x9e2b3a, 0xa9482a, 0xb07a4a, 0xd9b34a, 0x948a2c, 0x3f9b4a, 0x6f9e6b, 0x1f6d66, 0x2f4d7a, 0x5c3a84, 0x5a6169, 0x2a2a2e];
+      var LOGOS = ['★', '⚓', '⚡', '♛', '♞', '✦', '❖', '☀', '☾', '♥', '♣', '♠', '✿', '❄', '▲', '●', '◆', '✚', '➤', '∞', '☘', '⚑', '✈', '⛵',
+        '⚙', '⚜', '♜', '♫', '✪', '❀', '⬢', '☂', '♦', '⚒', '☯', '✉'];
+      var FIRST = ['Tiny', 'Little', 'Pocket', 'Plucky', 'Busy', 'Sunny', 'Swift', 'Jolly', 'Happy', 'Bright'];
+      var LAST = ['Haulage', 'Freight', 'Movers', 'Express', 'Carriers', 'Logistics', 'Transport', 'Couriers'];
+      var pick = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+      var hex = function (c) { return '#' + ('00000' + c.toString(16)).slice(-6); };
+      var light = function (c) { return (0.299 * ((c >> 16) & 255) + 0.587 * ((c >> 8) & 255) + 0.114 * (c & 255)) / 255; };
+      var KEY = 'tinyfleet-phone-fleet';
+      var saved = null;
+      try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { saved = null; }
+      var cfg = { gift: 500, giftDays: 7, mail: false };
+      fetch('/api/phone', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (j) { cfg = j; if (j.mail) $('rd-mail').hidden = false; }).catch(function () {});
+      var linkFor = function (claim, via) { return location.origin + '/#claim=' + encodeURIComponent(claim) + '&via=' + via; };
+      var badge = function (el, b) { el.style.background = hex(b.primary); el.style.color = hex(light(b.primary) > 0.6 ? 0x1f2b33 : b.accent); el.style.borderColor = hex(b.accent); el.textContent = b.logo; };
+      var paint = function (b) { if (window.tinyTurn) window.tinyTurn.then(function (t) { return t.paint(b); }).catch(function () {}); };
+      // the turntable moves into the card being shown, and back to the hero after
+      var spinBox = document.querySelector('.spin'), spinHome = spinBox && spinBox.parentNode, spinNext = spinBox && spinBox.nextSibling;
+      var stage = function (where) { if (!spinBox) return; if (where) where.appendChild(spinBox); else spinHome.insertBefore(spinBox, spinNext); };
+      var post = function (path, body) {
+        return fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+          .then(function (r) { return r.json(); });
+      };
+
+      // ---- a claim link opened here
+      var hash = new URLSearchParams(location.hash.slice(1)), claim = hash.get('claim'), via = (hash.get('via') || 'link').replace(/[^a-z-]/g, '');
+      // a claim link pasted into a tab already on this page changes only the fragment: start again with it
+      window.addEventListener('hashchange', function () { var c = new URLSearchParams(location.hash.slice(1)).get('claim'); if (c && c !== claim) location.reload(); });
+      if (claim) {
+        post('/api/claim', { claim: claim, peek: true }).then(function (r) {
+          if (phone) {
+            // on a phone: it's the link to open elsewhere, not to spend here
+            if (r.ok) showReady({ claim: claim, name: r.name, brand: r.brand, gift: r.gift }, true);
+            return;
+          }
+          welcome(r);
+        }).catch(function () { if (!phone) welcome({ ok: false, why: 'Couldn’t reach TinyFleet just now: try again in a moment.' }); });
+      } else if (phone && saved && saved.claim) {
+        // back on the phone page: their fleet, waiting
+        post('/api/claim', { claim: saved.claim, peek: true }).then(function (r) {
+          if (r.ok) showReady({ claim: saved.claim, name: r.name, brand: r.brand, gift: r.gift }, false);
+          else { try { localStorage.removeItem(KEY); } catch (e) {} }
+        }).catch(function () {});
+      }
+
+      function welcome(r) {
+        var w = $('welcome');
+        w.hidden = false;
+        $('wl-close').onclick = function () { w.hidden = true; history.replaceState(null, '', location.pathname + location.search); };
+        if (!r.ok) {
+          $('wl-h').textContent = 'This link has been used';
+          $('wl-fleet').textContent = '';
+          $('wl-badge').style.display = 'none';
+          $('wl-p').textContent = r.why || 'Sign in with your fleet’s name and PIN.';
+          $('wl-go').lastChild.textContent = 'Sign in';
+          $('wl-go').onclick = function () { location.href = 'play/'; };
+          return;
+        }
+        badge($('wl-badge'), r.brand || { primary: 0xe2412f, accent: 0xf5cf3a, logo: '★' });
+        $('wl-fleet').textContent = (r.brand && r.brand.name) || r.name;
+        $('wl-gift').hidden = !r.gift;
+        if (r.gift) $('wl-gift').querySelector('b').textContent = '$' + r.gift.toLocaleString('en-US');
+        // their Tomato, in their livery
+        import('./media/hero3d.js?v=2').then(function (m) { return m.mount($('wl-stage'), 'media/hero-fleet.glb?v=2', undefined, 'media/hero-livery.glb?v=2'); })
+          .then(function (t) { if (r.brand) t.paint(r.brand); }).catch(function () {});
+        $('wl-go').onclick = function () {
+          $('wl-go').disabled = true;
+          post('/api/claim', { claim: claim, via: via }).then(function (c) {
+            if (!c.ok) { $('wl-err').textContent = c.why; $('wl-go').disabled = false; return; }
+            // as the game keeps a sign-in: it finds this and goes straight in
+            try { localStorage.setItem('tinyfleet-online', JSON.stringify({ server: location.origin, name: c.name, token: c.token })); } catch (e) {}
+            location.href = 'play/';
+          }).catch(function () { $('wl-err').textContent = 'Couldn’t reach TinyFleet just now: try again.'; $('wl-go').disabled = false; });
+        };
+        setTimeout(function () { $('wl-go').focus(); }, 50);
+      }
+
+      if (!phone) return;
+
+      // ---- making one on the phone
+      var b = { name: pick(FIRST) + ' ' + pick(LAST), primary: pick(PAL), accent: 0, logo: pick(LOGOS) };
+      var far = PAL.filter(function (c) { return Math.abs(light(c) - light(b.primary)) > 0.28; });
+      b.accent = pick(far.length ? far : PAL);
+      var swatches = function (box, key) {
+        box.innerHTML = '';
+        PAL.forEach(function (c) {
+          var x = document.createElement('button');
+          x.type = 'button'; x.style.background = hex(c); x.setAttribute('aria-label', hex(c));
+          if (b[key] === c) x.className = 'on';
+          x.onclick = function () { b[key] = c; swatches(box, key); show(); };
+          box.appendChild(x);
+        });
+      };
+      var logos = function () {
+        var box = $('mk-logo');
+        box.innerHTML = '';
+        LOGOS.forEach(function (g) {
+          var x = document.createElement('button');
+          x.type = 'button'; x.textContent = g; if (b.logo === g) x.className = 'on';
+          x.onclick = function () { b.logo = g; logos(); show(); };
+          box.appendChild(x);
+        });
+      };
+      var show = function () { b.name = $('mk-fleet').value.trim() || b.name; $('mk-show').textContent = b.name; badge($('mk-badge'), b); paint(b); };
+      $('mk-fleet').addEventListener('input', function () { $('mk-show').textContent = $('mk-fleet').value.trim() || 'Your fleet'; });
+      $('mk-shuffle').onclick = function () { $('mk-fleet').value = pick(FIRST) + ' ' + pick(LAST); show(); };
+      $('start').onclick = function () {
+        $('later-start').hidden = true;
+        $('mk').hidden = false;
+        $('mk-fleet').value = b.name;
+        swatches($('mk-p'), 'primary'); swatches($('mk-a'), 'accent'); logos(); show();
+        stage($('mk-stage'));
+        $('mk').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      };
+      $('mk-cancel').onclick = function () { $('mk').hidden = true; $('later-start').hidden = false; stage(null); paint(null); };
+      $('mk').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var name = $('mk-name').value.trim(), pin = $('mk-pin').value, err = $('mk-err');
+        ['mk-name', 'mk-pin', 'mk-pin2'].forEach(function (id) { $(id).classList.remove('bad'); });
+        var bad = function (id, why) { $(id).classList.add('bad'); err.textContent = why; $(id).focus(); };
+        b.name = $('mk-fleet').value.trim() || b.name;
+        if (!/^[A-Za-z0-9_-]{3,16}$/.test(name)) return bad('mk-name', 'A name is 3 to 16 letters, digits, - or _.');
+        if (pin.length < 4) return bad('mk-pin', 'A PIN is at least 4 characters.');
+        if (pin !== $('mk-pin2').value) return bad('mk-pin2', 'The two PINs aren’t the same.');
+        err.textContent = '';
+        $('mk-go').disabled = true;
+        post('/api/reserve', { name: name, pin: pin, brand: { name: b.name, primary: b.primary, accent: b.accent, logo: b.logo } }).then(function (r) {
+          $('mk-go').disabled = false;
+          if (!r.ok) return r.field ? bad(r.field === 'pin' ? 'mk-pin' : 'mk-name', r.why) : (err.textContent = r.why);
+          var f = { claim: r.claim, name: r.name, brand: r.brand, gift: r.gift, at: Date.now() };
+          try { localStorage.setItem(KEY, JSON.stringify(f)); } catch (e2) {}
+          $('mk').hidden = true;
+          showReady(f, false);
+        }).catch(function () { $('mk-go').disabled = false; err.textContent = 'Couldn’t reach TinyFleet just now: try again.'; });
+      });
+
+      // ---- the ready card: every way home carries the claim link, never the PIN
+      function showReady(f, opened) {
+        var br = f.brand || { name: f.name, primary: 0xe2412f, accent: 0xf5cf3a, logo: '★' };
+        $('later-start').hidden = true;
+        $('ready').hidden = false;
+        badge($('rd-badge'), br);
+        $('rd-name').textContent = br.name;
+        $('rd-user').textContent = f.name;
+        $('rd-gift').hidden = !f.gift;
+        if (opened) $('rd-lede').textContent = 'is waiting. This is its link: open it on your computer and you’re straight in, no PIN needed.';
+        stage($('rd-stage'));
+        paint(br);
+        // the address bar carries the link too, so a synced tab or Handoff takes it to the computer
+        history.replaceState(null, '', '/#claim=' + encodeURIComponent(f.claim) + '&via=tab');
+        var times = whenList(), sel = $('rd-when');
+        sel.innerHTML = '';
+        times.forEach(function (t, i) { var o = document.createElement('option'); o.value = String(i); o.textContent = t.label; sel.appendChild(o); });
+        var when = function () { return times[Number(sel.value) || 0].at; };
+        var line = br.name + ', my TinyFleet fleet, is ready to drive. Open this on my computer:';
+        $('rd-send').onclick = function () {
+          var url = linkFor(f.claim, 'share');
+          if (navigator.share) navigator.share({ title: br.name + ' · TinyFleet', text: line, url: url }).catch(function () {});
+          else location.href = 'mailto:?subject=' + encodeURIComponent(br.name + ' is ready to drive') + '&body=' + encodeURIComponent(line + '\n\n' + url);
+        };
+        $('rd-copy').onclick = function () {
+          var c = $('rd-copy');
+          if (navigator.clipboard) navigator.clipboard.writeText(linkFor(f.claim, 'copy')).then(function () { c.textContent = 'Copied'; setTimeout(function () { c.textContent = 'Copy link'; }, 2000); }, function () {});
+        };
+        $('rd-cal').onclick = function () { calendar(br, f, when()); };
+        $('rd-mailgo').onclick = function () {
+          var to = $('rd-to').value.trim(), note = $('rd-mailnote');
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) { note.textContent = 'That doesn’t look like an email address.'; return; }
+          post('/api/remind', { claim: f.claim, to: to, at: when() }).then(function (r) {
+            note.textContent = r.ok ? 'Done: one email ' + times[Number(sel.value) || 0].label.toLowerCase() + ', then we forget your address.' : r.why;
+          }).catch(function () { note.textContent = 'Couldn’t reach TinyFleet just now: try again.'; });
+        };
+        var tip = $('tip-p') && $('tip-p').textContent;
+        if (tip) $('rd-tip-p').textContent = tip;
+      }
+
+      // reminder times, in this phone's own clock: this evening (if it's still to come), tomorrow evening, the weekend
+      function whenList() {
+        var out = [], now = new Date();
+        var at = function (days, h, m) { var d = new Date(now); d.setDate(d.getDate() + days); d.setHours(h, m, 0, 0); return d; };
+        var tonight = at(0, 19, 30);
+        if (tonight - now > 30 * 60e3) out.push({ label: 'This evening, 7:30', at: +tonight });
+        out.push({ label: 'Tomorrow evening, 7:30', at: +at(1, 19, 30) });
+        var toSat = (6 - now.getDay() + 7) % 7 || 7;
+        if (toSat > 1) out.push({ label: 'Saturday morning, 10:00', at: +at(toSat, 10, 0) });
+        var toSun = (7 - now.getDay()) % 7 || 7;
+        if (toSun > 1) out.push({ label: 'Sunday afternoon, 2:00', at: +at(toSun, 14, 0) });
+        if (now.getHours() >= 6 && now.getHours() < 18) out.splice(1, 0, { label: 'In an hour', at: +now + 3600e3 });
+        return out;
+      }
+
+      // a calendar event with the link in it: an .ics an iPhone opens straight into Calendar (iCloud puts the alert on
+      // the Mac too), Google Calendar's add-event page on Android
+      function calendar(br, f, at) {
+        var url = linkFor(f.claim, 'calendar'), end = at + 30 * 60e3;
+        var title = 'Drive ' + br.name + ' 🚚';
+        var desc = br.name + ' is ready. Open this on your computer and you’re straight in: ' + url + '\n\nLost the link? Sign in at tinyfleet.online with ' + f.name + ' and your PIN.';
+        var utc = function (t) { return new Date(t).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, ''); };
+        if (/Android/.test(navigator.userAgent)) {
+          window.open('https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(title) + '&dates=' + utc(at) + '/' + utc(end)
+            + '&details=' + encodeURIComponent(desc), '_blank');
+          return;
+        }
+        var esc = function (t) { return t.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n'); };
+        var ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//TinyFleet//Phone fleet//EN', 'CALSCALE:GREGORIAN', 'BEGIN:VEVENT',
+          'UID:' + f.claim.slice(0, 12) + '-' + at + '@tinyfleet.online', 'DTSTAMP:' + utc(Date.now()), 'DTSTART:' + utc(at), 'DTEND:' + utc(end),
+          'SUMMARY:' + esc(title), 'DESCRIPTION:' + esc(desc), 'URL:' + url,
+          'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + esc(title), 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+        location.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+      }
     })();
 
     // Each shot's subject, so a phone (or any screen whose shape crops the 16:9 footage) shows it rather

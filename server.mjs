@@ -76070,6 +76070,283 @@ var leagues;
 var townCulture;
 var gazetteer;
 var postcards;
+var phones;
+// server/phoneFleets.ts (docs/phonefleet.html)
+"use strict";
+var __phoneFleets = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
+    get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
+  }) : x)(function(x) {
+    if (typeof require !== "undefined") return require.apply(this, arguments);
+    throw Error('Dynamic require of "' + x + '" is not supported');
+  });
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // server/phoneFleets.ts
+  var phoneFleets_exports = {};
+  __export(phoneFleets_exports, {
+    GIFT: () => GIFT,
+    GIFT_DAYS: () => GIFT_DAYS,
+    PhoneFleets: () => PhoneFleets
+  });
+  var import_node_crypto = __require("node:crypto");
+  var CLAIM_DAYS = 30;
+  var GIFT_DAYS = 7;
+  var GIFT = 500;
+  var MAIL_AHEAD_DAYS = 8;
+  var DAY = 864e5;
+  var EMAIL = /^[^\s@<>()",;:]{1,64}@[A-Za-z0-9.-]{1,190}\.[A-Za-z]{2,24}$/;
+  var sha = (s) => (0, import_node_crypto.createHash)("sha256").update(s).digest("hex");
+  var esc = (s) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  var PhoneFleets = class {
+    constructor(host) {
+      this.host = host;
+    }
+    /** Requests by address in the last hour, per kind: reserve 3, claim 40, remind 4. */
+    tries = /* @__PURE__ */ new Map();
+    mailKey = process.env.RESEND_API_KEY ?? "";
+    mailFrom = process.env.MAIL_FROM ?? "";
+    ticking = false;
+    get mail() {
+      return !!(this.mailKey && this.mailFrom);
+    }
+    limited(kind, ip, per) {
+      const k = `${kind}|${ip}`, now = Date.now();
+      const a = (this.tries.get(k) ?? []).filter((t) => now - t < 36e5);
+      if (a.length >= per) {
+        this.tries.set(k, a);
+        return true;
+      }
+      a.push(now);
+      this.tries.set(k, a);
+      return false;
+    }
+    /** The phone fleet a claim opens, if it is good. */
+    byClaim(claim) {
+      if (typeof claim !== "string" || claim.length < 20 || claim.length > 80) return null;
+      const h = sha(claim), now = Date.now();
+      for (const [pid, r] of Object.entries(this.host.rows())) if (r.claim === h && now - r.at < CLAIM_DAYS * DAY) return pid;
+      return null;
+    }
+    /** Answers the module's paths; false for any other. */
+    async http(req, res, path, ip) {
+      const json = (code, body2) => {
+        res.writeHead(code, { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" }).end(JSON.stringify(body2));
+      };
+      if (path === "/api/phone" && req.method === "GET") {
+        json(200, { mail: this.mail, gift: GIFT, giftDays: GIFT_DAYS });
+        return true;
+      }
+      if (!["/api/reserve", "/api/claim", "/api/remind"].includes(path)) return false;
+      if (req.method !== "POST") {
+        json(405, { ok: false, why: "POST only." });
+        return true;
+      }
+      let body;
+      try {
+        body = await readJson(req, 4096);
+      } catch {
+        json(400, { ok: false, why: "That didn\u2019t come through: try again." });
+        return true;
+      }
+      if (path === "/api/reserve") json(200, await this.reserve(body, ip));
+      else if (path === "/api/claim") json(200, await this.claim(body, ip));
+      else json(200, await this.remind(body, ip, linkBase(req)));
+      return true;
+    }
+    async reserve(b, ip) {
+      const name = String(b.name ?? "").trim(), pin = String(b.pin ?? "");
+      const bad = this.host.nameProblem(name);
+      if (bad) return { ok: false, field: "name", why: bad };
+      if (pin.length < 4 || pin.length > 32) return { ok: false, field: "pin", why: "A PIN is 4 to 32 characters." };
+      if (this.limited("reserve", ip, 3) || !this.host.signup(ip)) return { ok: false, why: "A few fleets have been made from here this hour: try again later." };
+      const salt = (0, import_node_crypto.randomBytes)(12).toString("hex"), hash = await this.host.pinHash(pin, salt);
+      const doc = await this.host.make(name, this.host.brand(b.brand, name), salt, hash);
+      if (!doc) return { ok: false, field: "name", why: `${name} already belongs to a player here: pick another name.` };
+      const claim = (0, import_node_crypto.randomBytes)(24).toString("base64url"), now = Date.now();
+      doc.phone = { at: now, claim: sha(claim) };
+      this.host.rows()[doc.id] = { at: now, claim: sha(claim) };
+      this.host.touch(doc.id);
+      this.host.dirty();
+      this.host.count("phone-reserve");
+      console.log(`phone fleet: ${doc.name} (${doc.id})`);
+      return { ok: true, name: doc.name, brand: doc.brand, claim, gift: GIFT, giftDays: GIFT_DAYS };
+    }
+    async claim(b, ip) {
+      if (this.limited("claim", ip, 40)) return { ok: false, why: "Too many tries from here just now: wait a little." };
+      const pid = this.byClaim(b.claim);
+      if (!pid) return { ok: false, code: "used", why: "This link has been used or has run out. Sign in with your fleet\u2019s name and PIN." };
+      const doc = await this.host.open(pid);
+      const row = this.host.rows()[pid];
+      const fresh = Date.now() - row.at < GIFT_DAYS * DAY;
+      if (b.peek) return { ok: true, name: doc.name, brand: doc.brand, gift: fresh ? GIFT : 0 };
+      const token = (0, import_node_crypto.randomBytes)(24).toString("base64url");
+      doc.token = sha(token);
+      doc.tokenAt = Date.now();
+      this.claimed(doc);
+      this.host.count("phone-claim");
+      const via = String(b.via ?? "").replace(/[^a-z-]/g, "").slice(0, 20);
+      if (via) this.host.count(`phone-claim-${via}`);
+      return { ok: true, name: doc.name, brand: doc.brand, token, gift: doc.gift ?? 0 };
+    }
+    /** A phone fleet's first sign-in or claim: the claim is spent, and the gift is due if it came soon enough. */
+    claimed(doc) {
+      const row = this.host.rows()[doc.id];
+      if (!row || row.claimed) return;
+      const now = Date.now();
+      row.claimed = now;
+      delete row.claim;
+      if (doc.phone) {
+        doc.phone.claimed = now;
+        delete doc.phone.claim;
+      }
+      if (now - row.at < GIFT_DAYS * DAY) doc.gift = (doc.gift ?? 0) + GIFT;
+      this.host.touch(doc.id);
+      this.host.dirty();
+    }
+    /** At every sign-in (index.ts hello): a phone fleet signing in by PIN counts as claimed too. */
+    signedIn(doc) {
+      if (doc.phone && !doc.phone.claimed) this.claimed(doc);
+    }
+    /** The gift for a game that can say what it is (hello `gifts`), taken off the record; 0 when there is none. */
+    takeGift(doc, canSay) {
+      if (!canSay || !doc.gift) return 0;
+      const g = doc.gift;
+      delete doc.gift;
+      this.host.touch(doc.id);
+      return g;
+    }
+    async remind(b, ip, base) {
+      if (!this.mail) return { ok: false, why: "Email reminders aren\u2019t set up on this server." };
+      if (this.limited("remind", ip, 4)) return { ok: false, why: "Too many reminders from here this hour." };
+      const pid = this.byClaim(b.claim);
+      if (!pid) return { ok: false, why: "This fleet has been claimed already: no reminder needed." };
+      const to = String(b.to ?? "").trim(), at = Number(b.at), now = Date.now();
+      if (!EMAIL.test(to)) return { ok: false, field: "to", why: "That doesn\u2019t look like an email address." };
+      if (!Number.isFinite(at) || at < now - 6e4 || at > now + MAIL_AHEAD_DAYS * DAY) return { ok: false, why: "Pick a time in the next week." };
+      const doc = await this.host.open(pid);
+      doc.mail = { to, at: Math.max(at, now), link: `${base}/#claim=${encodeURIComponent(String(b.claim))}&via=email` };
+      this.host.rows()[pid].mail = doc.mail.at;
+      this.host.touch(pid);
+      this.host.dirty();
+      this.host.count("phone-remind");
+      return { ok: true, at: doc.mail.at };
+    }
+    /** Every minute or so: emails that are due go out (the address is forgotten once sent); claims run out. */
+    async tick() {
+      if (this.ticking) return;
+      this.ticking = true;
+      try {
+        const now = Date.now(), rows = this.host.rows();
+        for (const [pid, r] of Object.entries(rows)) {
+          if (r.mail && r.mail <= now && this.mail) await this.send(pid, r);
+          if (!r.claimed && now - r.at > CLAIM_DAYS * DAY && !r.mail) {
+            this.host.forget(pid);
+            delete rows[pid];
+            this.host.dirty();
+          } else if (r.claimed && now - r.claimed > DAY && !r.mail) {
+            delete rows[pid];
+            this.host.dirty();
+          }
+        }
+      } finally {
+        this.ticking = false;
+      }
+    }
+    async send(pid, r) {
+      const doc = await this.host.open(pid);
+      const m = doc.mail;
+      if (!m || r.claimed) {
+        delete doc.mail;
+        delete r.mail;
+        this.host.touch(pid);
+        this.host.dirty();
+        return;
+      }
+      const fleet = doc.brand?.name ?? doc.name;
+      const subject = `${fleet} is waiting for you`;
+      const text = `Your TinyFleet fleet, ${fleet}, is ready to drive.
+
+Open this on your computer and you're straight in, no PIN needed:
+${m.link}
+
+Lost the link? Sign in at tinyfleet.online with the name ${doc.name} and your PIN.
+
+You asked for this one email when you made your fleet. We don't keep your address and won't write again.`;
+      const html = `<div style="font-family:system-ui,sans-serif;font-size:16px;line-height:1.5;color:#1f2b33;max-width:520px"><p style="font-size:22px;font-weight:600;margin:0 0 12px">${esc(fleet)} is ready to drive.</p><p>Open this on your computer and you\u2019re straight in, no PIN needed:</p><p><a href="${esc(m.link)}" style="display:inline-block;background:#e2412f;color:#fff;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:12px">Start driving ${esc(fleet)}</a></p><p style="color:#4c5a63;font-size:14px">Lost the link? Sign in at tinyfleet.online with the name <b>${esc(doc.name)}</b> and your PIN.</p><p style="color:#7d8a92;font-size:13px">You asked for this one email when you made your fleet. We don\u2019t keep your address and won\u2019t write again.</p></div>`;
+      let ok = false;
+      try {
+        const r2 = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: { authorization: `Bearer ${this.mailKey}`, "content-type": "application/json" },
+          body: JSON.stringify({ from: this.mailFrom, to: [m.to], subject, text, html })
+        });
+        ok = r2.ok;
+        if (!ok) console.error(`phone fleet mail: ${r2.status} ${(await r2.text()).slice(0, 200)}`);
+      } catch (e) {
+        console.error("phone fleet mail:", e.message);
+      }
+      m.tries = (m.tries ?? 0) + 1;
+      if (ok || m.tries >= 3) {
+        delete doc.mail;
+        delete r.mail;
+        if (ok) this.host.count("phone-mail-sent");
+      } else {
+        m.at = Date.now() + 10 * 6e4;
+        r.mail = m.at;
+      }
+      this.host.touch(pid);
+      this.host.dirty();
+    }
+  };
+  function linkBase(req) {
+    const host = String(req.headers["x-forwarded-host"] ?? req.headers.host ?? "tinyfleet.online").split(",")[0].trim();
+    const proto = String(req.headers["x-forwarded-proto"] ?? (/^(localhost|127\.)/.test(host) ? "http" : "https")).split(",")[0].trim();
+    return `${proto}://${host}`;
+  }
+  function readJson(req, max) {
+    return new Promise((ok, bad) => {
+      let n = 0;
+      const parts = [];
+      req.on("data", (c) => {
+        n += c.length;
+        if (n > max) {
+          bad(new Error("too big"));
+          req.destroy();
+          return;
+        }
+        parts.push(c);
+      });
+      req.on("end", () => {
+        try {
+          const v = JSON.parse(Buffer.concat(parts).toString("utf8"));
+          ok(v && typeof v === "object" ? v : {});
+        } catch (e) {
+          bad(e);
+        }
+      });
+      req.on("error", bad);
+    });
+  }
+  return __toCommonJS(phoneFleets_exports);
+})();
+var PhoneFleets = __phoneFleets.PhoneFleets;
 var crews;
 var range;
 var challenges;
@@ -76609,6 +76886,13 @@ async function hello(ws, ip, m) {
     }
   }
   pid = doc.id;
+  if (!doc.home) {
+    doc.home = takeHome();
+    doc.epoch = world.epoch;
+    world.homes[cellKey(doc.home[0], doc.home[1])] = pid;
+    worldDirty = true;
+  }
+  phones.signedIn(doc);
   if (doc.epoch !== world.epoch) {
     doc.home = takeHome();
     doc.epoch = world.epoch;
@@ -76660,6 +76944,7 @@ async function hello(ws, ip, m) {
   if (doc.auto) (world.autos ??= {})[pid] = now;
   c.token = token;
   c.owedNow = owed;
+  c.giftNow = phones.takeGift(doc, !!m.gifts);
   const crew = await crews.signedIn(c);
   const offer = doc.auto ? void 0 : await crews.offer(c, m.invite);
   send(ws, { ...welcomeOf(c), ...crew ? { crew } : {}, ...offer ? { offer } : {} });
@@ -76685,6 +76970,7 @@ function welcomeOf(c) {
     owed: c.owedNow ?? 0,
     ...doc.auto ? { auto: true } : {},
     ...doc.renames ? { renames: doc.renames } : {},
+    ...c.giftNow ? { gift: c.giftNow } : {},
     acks: 1,
     online: [...conns.values()].filter((x) => x !== c).map((x) => ({ who: x.who, c: x.cell, look: x.look ?? void 0 })),
     community: community.welcome(doc),
@@ -77760,6 +78046,7 @@ async function flush(evict = true) {
   };
   try {
     sweepAutos();
+    void phones?.tick().catch((e) => console.error("phone fleets:", e.message));
     if (worldDirty) {
       worldDirty = false;
       await part("world", () => store2.set("world", world).catch((e) => {
@@ -78063,6 +78350,15 @@ function http(req, res) {
       if (!done && !res.headersSent) res.writeHead(404, { "content-type": "text/plain" }).end("Not found");
     }).catch((e) => {
       console.error("crews:", e.message);
+      if (!res.headersSent) res.writeHead(500).end();
+    });
+    return;
+  }
+  if (path3 === "/api/phone" || path3 === "/api/reserve" || path3 === "/api/claim" || path3 === "/api/remind") {
+    phones.http(req, res, path3, ipOf(req)).then((done) => {
+      if (!done && !res.headersSent) res.writeHead(404, { "content-type": "text/plain" }).end("Not found");
+    }).catch((e) => {
+      console.error("phone fleets:", e.message);
       if (!res.headersSent) res.writeHead(500).end();
     });
     return;
@@ -78493,6 +78789,52 @@ async function main() {
     news: (pid, n2) => void marks.news(pid, n2),
     likes: (pid, n2, what, who) => void community.likes(pid, n2, "postcard", what, who),
     week: (id, by, title, x, z, open) => marks.card(id, by, title, x, z, open)
+  });
+  phones = new PhoneFleets({
+    rows: () => world.phones ??= {},
+    dirty: () => {
+      worldDirty = true;
+    },
+    make: async (name, brand, salt, hash) => {
+      const lower = name.toLowerCase(), had = world.names[lower];
+      if (had) {
+        const d = await players.open(had);
+        if (d.hash || d.auto) return null;
+      }
+      if (world.names[lower] && world.names[lower] !== had) return null;
+      const pid = `p:${world.nextId++}`, now = Date.now();
+      const doc = await players.open(pid);
+      if (world.names[lower] && world.names[lower] !== had) return null;
+      Object.assign(doc, { id: pid, name, salt, hash, brand, home: null, epoch: world.epoch, created: now, seen: now, owed: 0, record: null });
+      world.names[lower] = pid;
+      world.people[pid] = { name, brand };
+      worldDirty = true;
+      players.touch(pid);
+      return doc;
+    },
+    open: async (pid) => await players.open(pid),
+    touch: (pid) => players.touch(pid),
+    forget: (pid) => {
+      const name = world.people[pid]?.name;
+      if (name && world.names[name.toLowerCase()] === pid) delete world.names[name.toLowerCase()];
+      delete world.people[pid];
+      worldDirty = true;
+      void players.open(pid).then((d) => {
+        d.removed = Date.now();
+        players.touch(pid);
+      });
+      console.log(`let go: ${name ?? pid}, a phone fleet never claimed`);
+    },
+    nameProblem: (name) => NAME3.test(name) ? nameProblem(name) : "A name is 3 to 16 letters, digits, - or _.",
+    brand: (b, player) => fairBrand(cleanBrand(b), player),
+    pinHash: (pin, salt) => pinHash(pin, salt),
+    signup: (ip) => {
+      const now = Date.now(), made = (signups.get(ip) ?? []).filter((t) => now - t < 36e5);
+      if (made.length >= 10) return false;
+      signups.set(ip, [...made, now]);
+      return true;
+    },
+    count: count2
   });
   const server = createServer(http);
   const wss = new import_websocket_server.default({ server, maxPayload: LIMITS.player.one });
