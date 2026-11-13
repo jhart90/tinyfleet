@@ -272,6 +272,19 @@
   .mk, .ready { margin-top: 18px; padding: 18px 16px 20px; border-radius: 22px; background: rgba(12,20,26,.72); border: 1px solid rgba(255,255,255,.18); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); color: #fff; max-width: 520px; }
   .mk[hidden], .ready[hidden], .welcome[hidden] { display: none; }
   .mk-stage { margin: -6px auto 4px; width: min(76vw, 340px); }
+  /* designing a fleet (the user, 13 Nov 2026): the hero's big logo, line and version go, and a small logo, the turning
+     car and the fleet's badge and name stay pinned at the top while the options below scroll */
+  html.designing .hero { align-items: flex-start; min-height: 0; }
+  html.designing .hero-in { padding-top: 10px; }
+  html.designing .hero-in > .logo, html.designing .hero .tag, html.designing .hero .meta { display: none; }
+  .mk-shelf { position: -webkit-sticky; position: sticky; top: 0; z-index: 5; margin: -18px -16px 4px; padding: 10px 16px 10px;
+    background: #0e161c; border-radius: 22px 22px 0 0; box-shadow: 0 12px 18px -14px rgba(0,0,0,.7); }
+  .mk-logo { font-family: Fredoka, sans-serif; font-weight: 700; font-size: 26px; line-height: 1; text-align: center; letter-spacing: -.01em; }
+  .mk-logo span { color: #ff5a45; }
+  .mk-shelf .mk-stage { width: min(56vw, 240px); margin: 2px auto 0; }
+  .mk-shelf .mk-prev { justify-content: center; margin: 0; }
+  .mk-shelf .mk-prev b { font-size: 21px; }
+  .mk-shelf .badge { width: 36px; height: 36px; font-size: 19px; }
   .mk-stage .spin { display: block !important; position: relative !important; right: auto !important; top: auto !important; width: 100% !important; margin: 0 !important; transform: none !important; }
   .mk-prev { display: flex; align-items: center; gap: 12px; margin: 4px 0 10px; }
   .mk-prev b { font-family: Fredoka, sans-serif; font-weight: 600; font-size: 24px; line-height: 1.1; }
@@ -423,8 +436,12 @@
       </div>
       <!-- make a fleet here, play it on a computer (docs/phonefleet.html, the user, 12 Nov 2026) -->
       <form class="mk" id="mk" hidden novalidate autocomplete="off">
-        <div class="mk-stage" id="mk-stage"></div>
-        <div class="mk-prev"><span class="badge" id="mk-badge"></span><b id="mk-show">Your fleet</b></div>
+        <!-- pinned at the top while the options below scroll (the user, 13 Nov 2026) -->
+        <div class="mk-shelf">
+          <div class="mk-logo" aria-hidden="true">TinyFleet<span>.</span></div>
+          <div class="mk-stage" id="mk-stage"></div>
+          <div class="mk-prev"><span class="badge" id="mk-badge"></span><b id="mk-show">Your fleet</b></div>
+        </div>
         <label class="mk-f">Fleet name<span class="mk-row"><input id="mk-fleet" maxlength="24" autocapitalize="words" spellcheck="false"><button type="button" class="pill" id="mk-shuffle" aria-label="Suggest another name">&#8635;</button></span></label>
         <div class="mk-l">Body colour</div><div class="sw" id="mk-p"></div>
         <div class="mk-l">Trim colour</div><div class="sw" id="mk-a"></div>
@@ -790,9 +807,11 @@
         $('mk-fleet').value = b.name;
         swatches($('mk-p'), 'primary'); swatches($('mk-a'), 'accent'); logos(); show();
         stage($('mk-stage'));
-        $('mk').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // the header shrinks to the pinned shelf: start at the very top
+        root.classList.add('designing');
+        window.scrollTo(0, 0);
       };
-      $('mk-cancel').onclick = function () { $('mk').hidden = true; $('later-start').hidden = false; stage(null); paint(null); };
+      $('mk-cancel').onclick = function () { root.classList.remove('designing'); $('mk').hidden = true; $('later-start').hidden = false; stage(null); paint(null); };
       $('mk').addEventListener('submit', function (e) {
         e.preventDefault();
         var name = $('mk-name').value.trim(), pin = $('mk-pin').value, err = $('mk-err');
@@ -810,6 +829,7 @@
           if (!r.ok) return r.field ? bad(r.field === 'pin' ? 'mk-pin' : 'mk-name', r.why) : (err.textContent = r.why);
           var f = { claim: r.claim, name: r.name, brand: r.brand, gift: r.gift, at: Date.now() };
           try { localStorage.setItem(KEY, JSON.stringify(f)); } catch (e2) {}
+          root.classList.remove('designing');
           $('mk').hidden = true;
           showReady(f, false);
           // the form was long and is gone: bring the ready card's top (the vehicle, the fleet's name, Send to my
