@@ -613,11 +613,21 @@
       setTimeout(function () { if (film.paused || !(film.currentTime > 0)) spin(); }, 2500);
     }
 
+    // The phone fleet funnel's steps, counted by day for the dev page (server/admin.ts PHONE_STEPS, the user, 13 Nov 2026).
+    // `once`: at most once in this tab (a reload doesn't count the page or an arrival again).
+    var pfStep = function (step, once) {
+      try {
+        if (once) { if (sessionStorage.getItem('tf-pf-' + step)) return; sessionStorage.setItem('tf-pf-' + step, '1'); }
+      } catch (e) { /* storage blocked: counted anyway */ }
+      try { if (navigator.sendBeacon) navigator.sendBeacon('/api/visit', new Blob([JSON.stringify({ kind: 'pf', step: step })], { type: 'text/plain' })); } catch (e) { /* only a count */ }
+    };
+
     // Phones: send the game to a computer for later (the user, 12 Nov 2026). The share sheet holds AirDrop, Messages,
     // Mail, Reminders and Reading List on an iPhone, and "Send to your devices" in Chrome; links carry ?from= so the
     // arrival shows where it came from.
     (function () {
       if (!document.documentElement.classList.contains('phone')) return;
+      pfStep('view', true);
       var ua = navigator.userAgent || '';
       var ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       var android = /Android/.test(ua);
@@ -628,6 +638,7 @@
       var note = document.getElementById('send-note');
       if (!ios) note.textContent = android ? 'Email it to yourself, send it to your computer’s browser, or save it for later.' : 'Email or message it to yourself, or save it for later.';
       document.getElementById('send').addEventListener('click', function () {
+        pfStep('send');
         var text = 'TinyFleet: a free driving and delivery game. Open this on my computer:';
         if (navigator.share) {
           navigator.share({ title: 'TinyFleet', text: text, url: link('phone-share') }).catch(function () { /* closed the sheet */ });
@@ -637,6 +648,7 @@
       });
       var copy = document.getElementById('copy');
       copy.addEventListener('click', function () {
+        pfStep('sendcopy');
         var done = function () { copy.textContent = 'Copied'; setTimeout(function () { copy.textContent = 'Copy link'; }, 2000); };
         if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link('phone-copy')).then(done, function () {});
       });
@@ -691,15 +703,16 @@
         post('/api/claim', { claim: claim, peek: true }).then(function (r) {
           if (phone) {
             // on a phone: it's the link to open elsewhere, not to spend here
-            if (r.ok) showReady({ claim: claim, name: r.name, brand: r.brand, gift: r.gift }, true);
+            if (r.ok) { pfStep('open-phone', true); showReady({ claim: claim, name: r.name, brand: r.brand, gift: r.gift }, true); }
             return;
           }
+          pfStep(r.ok ? 'open-' + (['share', 'copy', 'calendar', 'email', 'tab', 'link'].indexOf(via) >= 0 ? via : 'link') : 'open-used', true);
           welcome(r);
         }).catch(function () { if (!phone) welcome({ ok: false, why: 'Couldn’t reach TinyFleet just now: try again in a moment.' }); });
       } else if (phone && saved && saved.claim) {
         // back on the phone page: their fleet, waiting
         post('/api/claim', { claim: saved.claim, peek: true }).then(function (r) {
-          if (r.ok) showReady({ claim: saved.claim, name: r.name, brand: r.brand, gift: r.gift }, false);
+          if (r.ok) { pfStep('back', true); showReady({ claim: saved.claim, name: r.name, brand: r.brand, gift: r.gift }, false); }
           else { try { localStorage.removeItem(KEY); } catch (e) {} }
         }).catch(function () {});
       }
@@ -725,6 +738,7 @@
         import('./media/hero3d.js?v=2').then(function (m) { return m.mount($('wl-stage'), 'media/hero-fleet.glb?v=2', undefined, 'media/hero-livery.glb?v=2'); })
           .then(function (t) { if (r.brand) t.paint(r.brand); }).catch(function () {});
         $('wl-go').onclick = function () {
+          pfStep('go');
           $('wl-go').disabled = true;
           post('/api/claim', { claim: claim, via: via }).then(function (c) {
             if (!c.ok) { $('wl-err').textContent = c.why; $('wl-go').disabled = false; return; }
@@ -735,6 +749,10 @@
         };
         setTimeout(function () { $('wl-go').focus(); }, 50);
       }
+
+      // a computer opening the older "Just send me the link" link (?from=phone-share/-email/-copy)
+      var fromPhone = /^phone-(share|email|copy)$/.exec(new URLSearchParams(location.search).get('from') || '');
+      if (!phone && fromPhone) pfStep('arrive-' + fromPhone[1], true);
 
       if (!phone) return;
 
@@ -766,6 +784,7 @@
       $('mk-fleet').addEventListener('input', function () { $('mk-show').textContent = $('mk-fleet').value.trim() || 'Your fleet'; });
       $('mk-shuffle').onclick = function () { $('mk-fleet').value = pick(FIRST) + ' ' + pick(LAST); show(); };
       $('start').onclick = function () {
+        pfStep('start');
         $('later-start').hidden = true;
         $('mk').hidden = false;
         $('mk-fleet').value = b.name;
@@ -784,6 +803,7 @@
         if (pin.length < 4) return bad('mk-pin', 'A PIN is at least 4 characters.');
         if (pin !== $('mk-pin2').value) return bad('mk-pin2', 'The two PINs aren’t the same.');
         err.textContent = '';
+        pfStep('submit');
         $('mk-go').disabled = true;
         post('/api/reserve', { name: name, pin: pin, brand: { name: b.name, primary: b.primary, accent: b.accent, logo: b.logo } }).then(function (r) {
           $('mk-go').disabled = false;
@@ -792,6 +812,12 @@
           try { localStorage.setItem(KEY, JSON.stringify(f)); } catch (e2) {}
           $('mk').hidden = true;
           showReady(f, false);
+          // the form was long and is gone: bring the ready card's top (the vehicle, the fleet's name, Send to my
+          // computer) into view, not wherever the Make my fleet button left the page (the user, 13 Nov 2026)
+          requestAnimationFrame(function () {
+            var top = $('ready').getBoundingClientRect().top + window.scrollY - 12;
+            try { window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' }); } catch (e3) { window.scrollTo(0, Math.max(0, top)); }
+          });
         }).catch(function () { $('mk-go').disabled = false; err.textContent = 'Couldn’t reach TinyFleet just now: try again.'; });
       });
 
@@ -815,18 +841,21 @@
         var when = function () { return times[Number(sel.value) || 0].at; };
         var line = br.name + ', my TinyFleet fleet, is ready to drive. Open this on my computer:';
         $('rd-send').onclick = function () {
+          pfStep('share');
           var url = linkFor(f.claim, 'share');
           if (navigator.share) navigator.share({ title: br.name + ' · TinyFleet', text: line, url: url }).catch(function () {});
           else location.href = 'mailto:?subject=' + encodeURIComponent(br.name + ' is ready to drive') + '&body=' + encodeURIComponent(line + '\n\n' + url);
         };
         $('rd-copy').onclick = function () {
           var c = $('rd-copy');
+          pfStep('copy');
           if (navigator.clipboard) navigator.clipboard.writeText(linkFor(f.claim, 'copy')).then(function () { c.textContent = 'Copied'; setTimeout(function () { c.textContent = 'Copy link'; }, 2000); }, function () {});
         };
-        $('rd-cal').onclick = function () { calendar(br, f, when()); };
+        $('rd-cal').onclick = function () { pfStep('cal'); calendar(br, f, when()); };
         $('rd-mailgo').onclick = function () {
           var to = $('rd-to').value.trim(), note = $('rd-mailnote');
           if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) { note.textContent = 'That doesn’t look like an email address.'; return; }
+          pfStep('mail');
           post('/api/remind', { claim: f.claim, to: to, at: when() }).then(function (r) {
             note.textContent = r.ok ? 'Done: one email ' + times[Number(sel.value) || 0].label.toLowerCase() + ', then we forget your address.' : r.why;
           }).catch(function () { note.textContent = 'Couldn’t reach TinyFleet just now: try again.'; });
