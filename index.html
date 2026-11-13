@@ -237,7 +237,8 @@
   .hero-in { width: 100%; max-width: 980px; margin: 0 auto; padding: 72px 16px 140px; color: #fff; }
   .logo { font-family: Fredoka, sans-serif; font-weight: 700; font-size: clamp(56px, 10vw, 104px); line-height: .95; letter-spacing: -.01em; margin: 0; text-shadow: 0 2px 18px rgba(0,0,0,.35); }
   .logo span { color: #ff5a45; }
-  .tag { font-size: clamp(17px, 2.2vw, 21px); color: rgba(255,255,255,.92); margin: 16px 0 0; max-width: 34ch; text-shadow: 0 1px 10px rgba(0,0,0,.45); }
+  .tag { font-size: clamp(17px, 2.2vw, 21px); color: rgba(255,255,255,.92); margin: 16px 0 0; max-width: 36ch; text-shadow: 0 1px 10px rgba(0,0,0,.45); }
+  .tag-hook { display: block; margin-bottom: 6px; font-family: Fredoka, sans-serif; font-weight: 600; font-size: clamp(21px, 2.8vw, 27px); line-height: 1.2; color: #fff; }
   .meta { margin-top: 18px; font-family: "IBM Plex Mono", monospace; font-size: 13px; color: rgba(255,255,255,.75); text-shadow: 0 1px 8px rgba(0,0,0,.5); }
   /* the one thing to do here: play, in the browser. Big, red and first */
   .play { display: inline-flex; align-items: center; gap: 12px; margin-top: 28px; text-decoration: none; font-family: Fredoka, sans-serif; font-weight: 600; font-size: clamp(22px, 2.6vw, 26px); letter-spacing: .01em;
@@ -402,7 +403,7 @@
 <section class="hero">
   <div class="hero-in">
     <h1 class="logo">TinyFleet<span>.</span></h1>
-    <p class="tag">A tiny tilt-shift driving game. Haul cargo between towns, hire drivers, buy an HQ and grow a fleet across endless islands.</p>
+    <p class="tag"><b class="tag-hook">Start with one car. Build a transport empire.</b> Haul cargo between towns, hire drivers and grow a fleet of trucks, trains, boats and planes, in one tilt-shift world shared with everyone online.</p>
     <p class="meta" id="meta">Free · plays in your browser</p>
     <div class="spin" aria-hidden="true"><img alt="" width="480" height="360" decoding="async"></div>
     <a class="play" href="play/"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg>Play Now</a>
@@ -593,7 +594,7 @@
       var wait = setTimeout(still, 3000);
       try {
         window.tinyTurn = import('./media/hero3d.js?v=2')
-          .then(function (m) { return m.mount(box, 'media/hero-fleet.glb?v=2', 'media/hero-fleet-more.glb?v=2', 'media/hero-livery.glb?v=2'); });
+          .then(function (m) { return m.mount(box, 'media/hero-fleet.glb?v=2', 'media/hero-fleet-more.glb?v=3', 'media/hero-livery.glb?v=2'); });
         window.tinyTurn.then(function () { clearTimeout(wait); box.classList.add('live'); }, function () { clearTimeout(wait); still(); });
       } catch (e) { clearTimeout(wait); still(); }
     };

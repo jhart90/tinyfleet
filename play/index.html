@@ -2245,6 +2245,10 @@
     #title-menu .tm-btn.primary { background: #e2412f; border-color: #e2412f; color: #fff; }
     #title-menu .tm-btn.primary:hover { background: #cc3524; }
     #title-menu .tm-btn.primary:focus-visible { box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgba(226,65,47,.6); }
+    /* Play as guest on the sign-in card: solid blue beside the red Sign in, so it stands out (the user, 11 Nov 2026) */
+    #title-menu .tm-btn.guest { background: #2f7fb5; border-color: #2a6f9f; color: #fff; box-shadow: 0 2px 6px rgba(47,127,181,.35); }
+    #title-menu .tm-btn.guest:hover { background: #3a8cc4; box-shadow: 0 4px 12px rgba(47,127,181,.4); }
+    #title-menu .tm-btn.guest:focus-visible { box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgba(47,127,181,.6); }
     #title-menu .tm-btn.continue { display: flex; align-items: baseline; gap: 8px; }
     #title-menu .tm-btn.continue small { font-size: 13px; font-weight: 500; opacity: .85; }
     #title-menu .tm-btn.small { display: inline-block; width: auto; padding: 6px 12px; font-size: 13px; border-radius: 10px; }
@@ -2725,15 +2729,28 @@
     #net-chip .hint { color: #4c5a63; font-weight: 500; font-size: 12px; }
     #net-chip.pulse { animation: netPulse 1.4s ease-out 2; }
     @keyframes netPulse { 0% { box-shadow: 0 0 0 0 rgba(30,158,74,.55); } 100% { box-shadow: 0 0 0 12px rgba(30,158,74,0); } }
-    #net-roster { position: absolute; margin-top: 6px; width: 380px; max-height: 52vh; overflow: auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 28px rgba(31,43,51,.22); padding: 10px 12px; pointer-events: auto; font-size: 13px; color: #1f2b33; z-index: 40; }
+    #net-roster { position: absolute; margin-top: 6px; width: 460px; max-width: calc(100vw - 24px); box-sizing: border-box; max-height: 52vh; overflow: auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 28px rgba(31,43,51,.22); padding: 10px 12px; pointer-events: auto; font-size: 13px; color: #1f2b33; z-index: 40; }
     #net-roster[hidden] { display: none; }
     #net-roster .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     #net-roster ul.people { list-style: none; margin: 0; padding: 0; }
-    #net-roster ul.people li { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid #eef1ec; }
-    #net-roster .what { display: flex; flex-direction: column; } #net-roster .what small { color: #6a7a83; }
-    #net-roster .acts { display: flex; gap: 8px; align-items: center; white-space: nowrap; }
+    #net-roster ul.people li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid #eef1ec; }
+    /* a player: their fleet's shield the row's whole height, the name in its colours; clicked, their fleet card (the user, 11 Nov 2026) */
+    #net-roster button.who { all: unset; display: flex; align-items: stretch; gap: 9px; flex: 1; min-width: 0; padding: 3px 8px 3px 4px; margin-left: -4px; border-radius: 9px; cursor: pointer; transition: background .12s; }
+    #net-roster button.who .shield { position: relative; flex: none; width: 38px; align-self: stretch; transition: transform .12s; }
+    #net-roster button.who .shield img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1px 1.5px rgba(31,43,51,.25)); }
+    #net-roster button.who b { font-weight: 800; font-size: 14px; }
+    #net-roster button.who:hover { background: #eef4f8; }
+    #net-roster button.who:hover b { text-decoration: underline; text-underline-offset: 2px; }
+    #net-roster button.who:hover .shield { transform: scale(1.08) rotate(-3deg); }
+    #net-roster button.who:focus-visible { outline: 2px solid #2f7fb5; outline-offset: 1px; }
+    #net-roster .fc-btn { font: inherit; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; border: 1px solid #cdd6db; background: #fff; color: #1f2b33; cursor: pointer; }
+    #net-roster .fc-btn:hover { background: #f5f8f6; }
+    #net-roster .fc-btn.cta { background: #1fb954; border-color: #1fb954; color: #fff; font-weight: 800; }
+    #net-roster .fc-btn.cta:hover { background: #17a148; border-color: #17a148; }
+    #net-roster .what { display: flex; flex-direction: column; justify-content: center; min-width: 0; } #net-roster .what small { color: #6a7a83; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #net-roster .acts { display: flex; gap: 5px; align-items: center; white-space: nowrap; }
     #net-roster .foot { color: #7d8a92; font-size: 11.5px; margin: 6px 0 0; }
-    /* its buttons (Players tab, follow, HQ, whisper) are text links, as on the town card and the register */
+    /* its Players tab link is a text link, as on the town card and the register */
     #net-roster button.link { all: unset; cursor: pointer; color: #2f7fb5; font-weight: 600; font-size: 12.5px; border-radius: 4px; }
     #net-roster button.link:hover { text-decoration: underline; }
     #net-roster button.link:focus-visible { outline: 2px solid #2f7fb5; outline-offset: 2px; }
@@ -2884,6 +2901,9 @@
     #social li.on > button.pick, #social li.on { background: #eaf1f6; border-radius: 8px; }
     #social ul.fleets li, #social ul.wpicks li, #social ul.people.crew li { padding: 4px 4px; border-top: 1px solid #eef2f4; }
     #social ul.fleets li.me b { color: #2f6f9c; }
+    /* a player's fleet by its shield, the row's whole height without making it taller (the user, 11 Nov 2026) */
+    #social ul.fleets button.pick .fl-shield { position: relative; flex: none; width: 40px; align-self: stretch; min-height: 34px; }
+    #social ul.fleets button.pick .fl-shield img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1px 1.5px rgba(31,43,51,.25)); }
     #social ul.fleets li.grp { display: block; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #7d8a92; padding: 10px 6px 4px; }
     #social li .what .motto { font-style: italic; color: #4c5a63; white-space: normal; }
     #social li .pay small { display: block; font-weight: 500; font-size: 10.5px; color: #9aa6ad; text-align: right; }
@@ -3363,7 +3383,10 @@
     #photo-ui .ph-card { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; gap: 18px; width: min(1040px, calc(100vw - 32px)); max-height: calc(100vh - 32px); box-sizing: border-box; padding: 18px; border-radius: 16px; background: rgba(20,28,34,.94); box-shadow: 0 12px 48px rgba(0,0,0,.5); pointer-events: auto; }
     #photo-ui .ph-card[hidden] { display: none; }
     #photo-ui .ph-media { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: center; background: #0b0f12; border-radius: 10px; overflow: hidden; }
-    #photo-ui .ph-media video, #photo-ui .ph-media img { display: block; max-width: 100%; max-height: calc(100vh - 68px); }
+    #photo-ui .ph-media video, #photo-ui .ph-media img, #photo-ui .ph-media canvas { display: block; max-width: 100%; max-height: calc(100vh - 68px); }
+    #photo-ui .ph-borders { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    #photo-ui .ph-side .ph-borders button { padding: 7px 8px; font-size: 12.5px; }
+    #photo-ui .ph-side .ph-borders button.on { background: #ffc83d; color: #1f2b33; }
     #photo-ui .ph-side { flex: 0 0 260px; display: flex; flex-direction: column; gap: 8px; }
     #photo-ui .ph-side label { display: flex; flex-direction: column; gap: 4px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8e9b95; }
     #photo-ui .ph-side input { font: 500 14px "IBM Plex Sans", sans-serif; text-transform: none; letter-spacing: 0; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06); color: #fff; outline: none; }
@@ -4005,9 +4028,16 @@
       #hq .hq-figs { grid-template-columns: 1fr; }
       #hq .hq-card { width: 120px; }
     }
+    /* the re-lock hint after a turn frees the R lock (main.ts): quiet, low in the middle, never in the way */
+    #relock-hint { position: fixed; left: 50%; bottom: 22vh; transform: translate(-50%, 6px); z-index: 3; pointer-events: none; white-space: nowrap;
+      padding: 6px 13px; border-radius: 999px; background: rgba(18,26,32,.55); color: #e9efe8; font: 500 12.5px/1.2 "IBM Plex Sans", "Segoe UI", sans-serif;
+      opacity: 0; transition: opacity .35s ease, transform .35s ease; }
+    #relock-hint.on { opacity: 1; transform: translate(-50%, 0); }
+    #relock-hint kbd { display: inline-block; font: 600 11px/1 "IBM Plex Mono", monospace; min-width: 10px; text-align: center; padding: 2px 5px; margin: 0 2px;
+      border-radius: 4px; background: #fff; color: #1f2b33; border: 1px solid #d5ddd0; border-bottom-width: 2px; vertical-align: 1px; }
   </style>
-  <script type="module" crossorigin src="./assets/index-CXv2lo7t.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/three-Dv0uXxgI.js">
+  <script type="module" crossorigin src="./assets/index-rAXlogul.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/three-CsUDwG5h.js">
   <link rel="stylesheet" crossorigin href="./assets/index-BV6iPe3q.css">
 </head>
 <body>
