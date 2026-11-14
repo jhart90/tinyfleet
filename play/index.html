@@ -190,7 +190,7 @@
     .regionbtn kbd { font-family: "IBM Plex Mono", monospace; font-size: 11px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; color: #4c5a63; }
     .terrbtn { bottom: 344px; justify-content: center; font-size: 13px; font-weight: 700; color: #1f2b33; }
     .terrbtn.on { box-shadow: inset 0 0 0 2px #ffc83d; }
-    .regionmap { position: fixed; inset: 0; z-index: 12; cursor: grab; touch-action: none; }
+    .regionmap { position: fixed; inset: 0; z-index: 12; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
     /*
      * Territory's key (render/territoryLayer.ts TerritoryLegend): a swatch, the fleet and its towns per
      * holder. Over the two big maps it sits in the lower-left corner on their dark veil; in the
@@ -1900,6 +1900,15 @@
     #town ul.lots button { display: flex; justify-content: space-between; gap: 8px; width: 100%; font: inherit; text-align: left; padding: 4px 6px; border: 0; border-radius: 6px; background: none; color: #1f2b33; cursor: pointer; }
     #town ul.lots button:hover { background: #eef4ea; }
     #town ul.lots small { color: #7d8a92; text-align: right; }
+    #town ul.lots.sale li { display: flex; align-items: center; gap: 4px; }
+    #town ul.lots.sale li > button:first-child { flex: 1; min-width: 0; }
+    #town ul.lots.sale small b { color: #1f2b33; font-weight: 700; }
+    #town ul.lots.sale small b.dear { color: #b4553f; }
+    #town ul.lots.sale button.go { width: auto; flex: none; padding: 3px 8px; font-weight: 700; color: #7a5c00; background: #fbefc4; }
+    #town ul.lots.sale button.go:hover, #town ul.lots.sale button.go.on { background: #f5c518; color: #1f2b33; }
+    #town .tc-sale { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 4px 0 6px; }
+    #town .tc-sale button.link { all: unset; cursor: pointer; font-size: 11.5px; font-weight: 600; color: #3a6b8a; }
+    #town .tc-sale button.link:hover { text-decoration: underline; }
     #town ul.pick li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 0; border-top: 1px solid #f0f3f4; }
     #town ul.pick small { color: #7d8a92; }
     #town ul.pick button { font: inherit; font-size: 11.5px; font-weight: 600; padding: 2px 9px; border-radius: 6px; border: 1px solid #1f2b33; background: #fff; color: #1f2b33; cursor: pointer; white-space: nowrap; }
@@ -2491,6 +2500,9 @@
     .mc-acts button:not(.yes) kbd { background: #fff; border-color: #d5ddd0; color: #4c5a63; }
     .mc-bar { grid-column: 1 / -1; display: flex; align-items: center; gap: 9px; padding: 10px 20px; background: #1f2b33; color: #fff; font-size: 13.5px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
     .mc-bar::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--tint, #e2412f); box-shadow: 0 0 0 3px rgba(255,255,255,.14); }
+    .mc-bar .mc-pile { all: unset; margin-left: auto; cursor: pointer; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: none; padding: 3px 9px; border-radius: 999px; background: rgba(255,255,255,.14); }
+    .mc-bar .mc-pile:hover { background: rgba(255,255,255,.26); }
+    .mc-bar .mc-pile kbd { font: inherit; font-size: 10.5px; padding: 0 5px; margin-left: 3px; border-radius: 4px; background: #fff; color: #1f2b33; }
     .mc-bar.done { background: #2f7d3a; }
     .mc-bar.done::before { background: #fff; }
     .mc-sub + .mc-rew { border-top: 0; padding-top: 0; }
@@ -3096,9 +3108,15 @@
     #work-card .note { margin: 10px 0 0; color: #7d8a92; font-size: 11.5px; }
     #work-card kbd, #heart-prompt kbd { display: inline-block; font-family: "IBM Plex Mono", monospace; font-size: 11px; background: #fff; border: 1px solid #d5ddd0; border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; color: #4c5a63; }
     #inspect .hqheart { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding-top: 8px; border-top: 1px solid #e6ecef; }
-    #heart-prompt { position: fixed; bottom: 168px; left: 50%; transform: translateX(-50%); z-index: 7; font-size: 13.5px; padding: 6px 13px; white-space: nowrap; display: flex; align-items: center; gap: 6px; pointer-events: none; }
+    /* the line under the player's vehicle on another fleet's work: a light grey pill, dark grey capitals, and a heart to
+       click, a dark grey outline until it is left (the user, 13 Nov 2026) */
+    #heart-prompt { position: fixed; left: 50%; top: 60%; transform: translateX(-50%); z-index: 7; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #3d484f; background: rgba(233,237,239,.88); border-radius: 999px; padding: 3px 5px 3px 10px; white-space: nowrap; display: flex; align-items: center; gap: 5px; pointer-events: none; }
+    #heart-prompt button { all: unset; pointer-events: auto; cursor: pointer; display: inline-flex; padding: 3px; border-radius: 50%; }
+    #heart-prompt button svg { width: 14px; height: 14px; fill: none; stroke: #3d484f; stroke-width: 2.2; stroke-linejoin: round; transition: transform .12s; }
+    #heart-prompt button:hover svg { transform: scale(1.2); }
+    #heart-prompt button.on svg { fill: #e0457b; stroke: #e0457b; }
     #heart-prompt[hidden] { display: none; }
-    #heart-prompt .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; }
+    #heart-prompt .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: -3px; }
     #heart-prompt em { font-style: normal; color: #7d8a92; font-size: 12px; }
     .communitybtn { bottom: 344px; }
     .communitybtn span { font-size: 11.5px; font-weight: 700; color: #9aa6ad; text-transform: uppercase; letter-spacing: .06em; }
@@ -3270,6 +3288,17 @@
       animation: dk-earn 1.9s ease-out forwards; }
     /* a faction's standing a driver's delivery earned, in the faction's colour, after the pay */
     #dock .dk-earn.rep { color: var(--dk-rep, #2a4f8f); font-size: 13.5px; }
+    /* a toll from one of your links, off the HQ square as rent is, in the tolls' blue (the user, 13 Nov 2026) */
+    #dock .dk-earn.toll { color: #1479b8; }
+    /* the same toll over the link that earned it, when you are near enough to see it */
+    .cfloat.toll { font-size: 17px; color: #8fd6ff; text-shadow: 0 2px 0 #0d476e, 0 0 8px rgba(8,40,66,.55); }
+    /* what your links earn an hour, beside the cash (net/tolls.ts): click for the HQ's Works */
+    #tollrate { font-family: "Fredoka", "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; color: #1479b8; font-variant-numeric: tabular-nums; white-space: nowrap; padding: 1px 4px; pointer-events: auto; cursor: pointer; border-radius: 8px; transition: background .15s; }
+    #tollrate[hidden] { display: none; }
+    #tollrate:hover { background: rgba(31,43,51,.07); }
+    #tollrate.bump { animation: cashbump .5s ease-out; }
+    body.dark-ui #tollrate { color: #8fd6ff; }
+    body.dark-ui #tollrate:hover { background: rgba(255,255,255,.1); }
     @keyframes dk-earn {
       0% { opacity: 0; transform: translate(-50%, 8px) scale(.85); }
       12% { opacity: 1; transform: translate(-50%, 0) scale(1.08); }
@@ -4036,8 +4065,8 @@
     #relock-hint kbd { display: inline-block; font: 600 11px/1 "IBM Plex Mono", monospace; min-width: 10px; text-align: center; padding: 2px 5px; margin: 0 2px;
       border-radius: 4px; background: #fff; color: #1f2b33; border: 1px solid #d5ddd0; border-bottom-width: 2px; vertical-align: 1px; }
   </style>
-  <script type="module" crossorigin src="./assets/index-rAXlogul.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/three-CsUDwG5h.js">
+  <script type="module" crossorigin src="./assets/index-Babm9uhY.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/three-7_sV-EhH.js">
   <link rel="stylesheet" crossorigin href="./assets/index-BV6iPe3q.css">
 </head>
 <body>
@@ -4103,7 +4132,7 @@
     <div class="stats" id="stats"></div>
     <div id="compass" aria-hidden="true"><div class="ring"><i style="transform:rotate(45deg)"></i><i style="transform:rotate(135deg)"></i><i style="transform:rotate(225deg)"></i><i style="transform:rotate(315deg)"></i><b class="n">N</b><b>E</b><b>S</b><b>W</b></div></div>
   </div>
-  <div id="tr" class="hud chip"><span id="fleetname" hidden title="Your HQ: fleet, garage, drivers, estate, tech and books (H)"></span><span id="cash" title="Your money · click for the Books">$0</span><button id="gems" type="button" tabindex="-1" title="Diamonds · the tech trees (H → Tech)">◆ 0</button><button id="facgoal" type="button" tabindex="-1" hidden></button><span id="likes" hidden title="Likes: hearts on your works and thumbs-up on your signs from other players · click for where they came from">♥ 0</span><span id="clock"></span></div>
+  <div id="tr" class="hud chip"><span id="fleetname" hidden title="Your HQ: fleet, garage, drivers, estate, tech and books (H)"></span><span id="cash" title="Your money · click for the Books">$0</span><span id="tollrate" hidden title="Tolls: what the county pays you an hour for the traffic on your links · click for your Works"></span><button id="gems" type="button" tabindex="-1" title="Diamonds · the tech trees (H → Tech)">◆ 0</button><button id="facgoal" type="button" tabindex="-1" hidden></button><span id="likes" hidden title="Likes: hearts on your works and thumbs-up on your signs from other players · click for where they came from">♥ 0</span><span id="clock"></span></div>
   <div id="town-labels" hidden></div>
   <div id="cargo-tags"></div>
   <div id="notices"><div id="toast" class="notice" role="status" aria-live="polite"></div><div id="earnings"></div></div>
